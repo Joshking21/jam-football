@@ -31,6 +31,14 @@ export function clamp(val: number, min: number, max: number): number {
 }
 
 /**
+ * Rounds a number to a given number of decimal places
+ */
+export function roundTo(val: number, decimals: number = 0): number {
+  const factor = 10 ** decimals;
+  return Math.round(val * factor) / factor;
+}
+
+/**
  * Formats money integers per SPEC §6: €12.4M, €850K, €9,500
  */
 export function formatMoney(amount: number): string {
