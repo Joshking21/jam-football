@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TOUCHLINE — Football Management</title>
+    <style>
+      /* Instant HTML/CSS splash painting < 300 ms (SPEC §11.1) */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #070c18;
+        color: #f3f6fb;
+        font-family:
+          'Barlow Condensed',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        overflow: hidden;
+      }
+      #splash {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+        background: radial-gradient(circle at 50% 40%, #16213a 0%, #070c18 80%);
+      }
+      .splash-logo {
+        font-size: 72px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #f3f6fb;
+        margin-bottom: 24px;
+        user-select: none;
+      }
+      .splash-progress-track {
+        width: 240px;
+        height: 3px;
+        background: #1d2b4a;
+        border-radius: 2px;
+        overflow: hidden;
+        position: relative;
+      }
+      .splash-progress-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 40%;
+        background: #00e58f;
+        border-radius: 2px;
+        animation: splash-indeterminate 1.4s infinite ease-in-out;
+      }
+      @keyframes splash-indeterminate {
+        0% {
+          left: -40%;
+          width: 30%;
+        }
+        50% {
+          left: 40%;
+          width: 50%;
+        }
+        100% {
+          left: 100%;
+          width: 30%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div id="splash">
+        <div class="splash-logo">TOUCHLINE</div>
+        <div class="splash-progress-track">
+          <div class="splash-progress-bar"></div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

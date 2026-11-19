@@ -1,0 +1,146 @@
+/* Implements SPEC §19 Global styles, craft bar and resets */
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-width: 1024px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+/* Accessibility: Larger UI text (+12.5%) (SPEC §11.22, §19.5) */
+body.large-text {
+  font-size: 112.5%;
+}
+
+/* Accessibility: Reduce motion (SPEC §19.7) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Typography styles (SPEC §19.3) */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-head);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+h1 {
+  font-size: 48px;
+}
+h2 {
+  font-size: 32px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 20px;
+}
+
+/* Numeric formatting (SPEC §19.3) */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-number {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Focus styles (SPEC §19.8) */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Custom dark scrollbars (SPEC §19.8) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--surface-3);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ContinueButton subtle pulse (SPEC §19.5) */
+@keyframes continue-pulse {
+  0%,
+  85%,
+  100% {
+    transform: scale(1);
+    box-shadow: var(--shadow-1);
+  }
+  92% {
+    transform: scale(1.03);
+    box-shadow: 0 0 12px rgba(0, 229, 143, 0.5);
+  }
+}

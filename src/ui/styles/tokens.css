@@ -1,0 +1,69 @@
+/* Implements SPEC §19.2 Tokens and §19.4 Data colours */
+:root {
+  --bg: #070c18;
+  --surface: #0f1729;
+  --surface-2: #16213a;
+  --surface-3: #1d2b4a;
+  --border: #263557;
+  --text: #f3f6fb;
+  --text-dim: #9ca9c4;
+  --text-faint: #66748f;
+
+  --accent: #00e58f;
+  --accent-ink: #032b1c;
+  --gold: #ffc83d;
+  --info: #3da5ff;
+
+  --win: #18c77a;
+  --draw: #9ca9c4;
+  --loss: #ff4d5e;
+  --warning: #ffb020;
+  --danger: #ff4d5e;
+
+  /* Runtime club theme colours */
+  --club-primary: #0b1f3a;
+  --club-secondary: #f2b705;
+
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 16px;
+
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-2: 0 8px 24px rgb(0 0 0 / 0.45);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --font-head: 'Barlow Condensed', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --dur-fast: 150ms;
+  --dur-med: 250ms;
+  --dur-slow: 400ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Attribute / OVR scale colors (default) */
+  --attr-poor: #ff4d5e;
+  --attr-subpar: #ff8a3d;
+  --attr-avg: #ffc83d;
+  --attr-good: #9be15d;
+  --attr-great: #18c77a;
+  --attr-elite: #00e5d1;
+}
+
+/* Colour-blind accessible palette (SPEC §19.4) */
+body.colorblind {
+  --attr-poor: #d55e00;
+  --attr-subpar: #e69f00;
+  --attr-avg: #f0e442;
+  --attr-good: #56b4e9;
+  --attr-great: #0072b2;
+  --attr-elite: #cc79a7;
+  --win: #0072b2;
+  --loss: #d55e00;
+}
