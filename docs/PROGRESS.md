@@ -12,3 +12,8 @@ Newest entries at the bottom. Format: SPEC §23.0.
 - Ran: npm run check → format:check PASS, typecheck (tsc --noEmit) PASS, vitest run (4 test files, 11 tests passed in 2.80s), vite build (main chunk 203.84 kB / gzip 62.31 kB, built in 8.13s) PASS
 - Notes: M0 acceptance criteria all verified. Next task is M1.1 (core math, types, rng, ids).
 - Open issues: none
+
+## 2026-11-19 · SPEC 1.1 (Claude, not a Gemini task)
+- Changed: docs/SPEC.md (v1.1: new §14.10 realism pass, §18.3 manager.glb contract, §18.5 portrait tint, new §21.2 preset rows, M4 task 7, M8 task 1), docs/design/ART-DIRECTION.md (new)
+- Ran: nothing (docs only)
+- Notes: no change to M1–M3. The new work lands in M4 (task 7) and M8 (portrait tint). Use ART-DIRECTION.md §3 for render values and fallback colours.

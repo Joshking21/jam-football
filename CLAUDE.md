@@ -30,4 +30,5 @@ The user explicitly wants nothing that looks or reads like generic AI output: th
 - Keep explanations short and plain.
 
 ## Status
+- 2026-11-19 (later): art direction agreed and written to `docs/design/ART-DIRECTION.md` (realistic stadium and light, near-real players with simplified faces, programme-print portraits tinted per club). SPEC bumped to 1.1 (realism pass §14.10, portrait tint §18.5, manager.glb contract, brick/timber stand styles). Stand styles stay in scope but are made last. Next: the user sets up the sponsor keys; Claude then builds `tools/` and the test batch (ART-DIRECTION §7).
 - 2026-11-19: repo created; SPEC v1.0, GEMINI.md and the log files written; first commit made and pushed to a public GitHub repo. Next: Gemini starts M0; Claude starts design mock-ups and the asset pipeline (waiting on the user's ElevenLabs/fal/Meshy accounts).

@@ -1,8 +1,10 @@
 # TOUCHLINE (working title) — Complete Build Specification
 
-Version 1.0 · 19 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
+Version 1.1 · 19 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
+
+**Changes in 1.1 (19 Nov):** new §14.10 Realism pass (post-processing, environment lighting, light beams, haze, grass, wet pitch); new rows in the §21.2 presets table; portraits are delivered greyscale and tinted per club at runtime (§18.2, §18.5); `textures/grass_normal.webp` and optional brick/timber stand models added (§18.2); `manager.glb` contract (§18.3); M4 task 7 and M8 task 1 updated. The look of every model and image is defined in `docs/design/ART-DIRECTION.md`; fallbacks SHOULD follow its colours and lighting values.
 
 ---
 
@@ -219,6 +221,7 @@ jam-football/
 │  ├─ audio/    AudioEngine.ts  commentary.ts  crowd.ts  music.ts
 │  ├─ render3d/ MatchScene.ts  pitch.ts  stadium.ts  crowd.ts  players.ts  ball.ts  cameras.ts
 │  │            choreographer.ts  replay.ts  quality.ts  weather.ts  topdown2d.ts
+│  │            post.ts  environment.ts  beams.ts   (§14.10)
 │  └─ ui/
 │     ├─ styles/ tokens.css  global.css
 │     ├─ components/  (Button, Card, Tabs, Table, Modal, Toast, Tooltip, Badge, AttrBar, OvrBadge,
@@ -1215,7 +1218,7 @@ Target: a typical match at Key highlights = **50–80 seconds** real time.
 - **Goals**: `models/goal.glb` (fallback: white cylinders posts r 0.06, width 7.32, height 2.44, depth 2.0 net made of a `LineSegments` grid with slight sag). Net ripple on goal: animate vertices of the back net for 1.2 s.
 - **Stadium** (`stadium.ts`): four stands from `models/stand_side.glb` and `models/stand_end.glb` (fallback: stepped boxes with seat-colour material in the home club's primary colour, roof plane), four `models/floodlight.glb` corner towers (fallback: cylinder + emissive box), advertising boards ring 1 m high at 4 m from the touchline with a scrolling canvas texture showing fictional sponsors (`content/sponsors` list of 12 invented brand names, e.g. "Halcyon Air", "Brightline Telecom") — never real brands.
 - **Crowd** (`crowd.ts`): `InstancedMesh` of low-poly billboard quads (crossed quads) with a 4×4 sprite atlas `textures/crowd_atlas.webp` (fallback: coloured quads), counts per quality (§21). Colours biased to the home club's colours (65%) and the away club's (15% in one corner block). Idle bobbing in the vertex shader; on goals the scoring side's sections jump for 3 s.
-- **Lighting**: Night/Evening: a hemisphere light (low), 4 spot/directional lights from the floodlight positions (only one casts shadows), skybox dark gradient with a faint star field. Afternoon: one directional "sun" (casts shadows), hemisphere light, sky gradient. Rain: particle system (instanced lines, 3k Medium / 8k High, none on Low), wet-grass darker tint, ground specular up.
+- **Lighting**: Night/Evening: a hemisphere light (low), 4 spot/directional lights from the floodlight positions (only one casts shadows), skybox dark gradient with a faint star field. Afternoon: one directional "sun" (casts shadows), hemisphere light, sky gradient. Rain: particle system (instanced lines, 3k Medium / 8k High, none on Low), wet-grass darker tint, ground specular up. Exact colours, intensities and the post-processing chain: §14.10.
 - **Players** (`players.ts`): `models/player.glb` (contract §18.3) cloned 22 times with `SkeletonUtils.clone`; kit applied by recolouring materials `Shirt`, `Shorts`, `Socks` (and a generated canvas texture for stripes/hoops/halves/sash/chevron on the `Shirt` material, numbers on the back drawn on the same canvas). Skin tones: 6 presets assigned deterministically per player. Fallback when the GLB is missing: capsule body (shirt colour) + sphere head (skin) + short cylinders for shorts/socks, with procedural leg swing.
 - **Ball**: `models/ball.glb` (fallback: sphere r 0.11 with a canvas texture pattern), with a blob shadow decal under it.
 - **Name labels**: above-head sprites (number + surname) on hover or for the ball holder only; toggleable.
@@ -1273,6 +1276,33 @@ After each goal (Key/Extended: always; Full: if the setting is on): replay the l
 
 ### 14.9 2D fallback (`topdown2d.ts`)
 If WebGL2 is not available or quality is "2D" (hidden option), render the same choreography on a `<canvas>` 2D top-down pitch: circles with shirt colours and numbers, the ball, simple trails. All HUD features still work.
+
+### 14.10 Realism pass (`src/render3d/post.ts`, `environment.ts`, `beams.ts`)
+Goal: a floodlit stadium that reads as real on a broadcast shot and up close, inside the §21.1 frame budget. Most of the realism comes from light and materials, not polygon counts. Every item below is switched by the quality preset (§21.2) in `quality.ts`, and every number goes in `src/config/balance.ts` under `render.*` (values in `docs/design/ART-DIRECTION.md` §3).
+Post-processing and the environment pieces come from the `three` package (`three/examples/jsm/postprocessing/*`, `three/examples/jsm/objects/*`), like `OrbitControls`, so they are allowed. No other post-processing library.
+
+**Post-processing chain** (Medium and High only; Low renders straight to the canvas with the renderer's own tone mapping):
+1. `EffectComposer` with a `HalfFloatType` render target, MSAA `samples: 4` (WebGL2). Renderer `antialias: false` when the composer is on (the target does the antialiasing).
+2. `RenderPass`.
+3. High only: `GTAOPass` at half resolution (soft contact shadows where boots meet grass, under the stands' roofs, inside the goal frame).
+4. `UnrealBloomPass` at half resolution: threshold 1.0 (only floodlight lamps, the scoreboard and the brightest highlights bloom), strength 0.55, radius 0.35. Never bloom the UI or whole kits; if kits glow, the threshold is too low.
+5. `GradePass`: one small custom `ShaderPass` with lift/gamma/gain, saturation, contrast and a vignette (values in ART-DIRECTION §3.4). Runs in linear space before output.
+6. `OutputPass` (ACES Filmic tone mapping + sRGB). When the composer is on, set `renderer.toneMapping = NoToneMapping` so tone mapping happens once.
+Resize the composer and every pass on window resize. Dispose all render targets on leaving the match.
+
+**Environment lighting** (`environment.ts`, all presets): build one environment map per match with `PMREMGenerator.fromScene` from a tiny scene: a gradient sky sphere (ART-DIRECTION colours for the match's time slot) plus four emissive quads where the floodlight banks are, and a dark ground disc. Assign it as `scene.environment` (never as the visible background). Dispose it on leaving the match. This is what makes kits, boots, the ball and metal look lit by the stadium instead of flat.
+
+**Haze**: `FogExp2` in the sky's horizon colour, density per time slot (ART-DIRECTION §3.2). Exclude the HUD. The far stands should be slightly softer than the near ones.
+
+**Floodlight beams** (`beams.ts`, Medium and High, night/evening only): one open cone mesh per tower from the lamp bank toward the pitch, length 85 m, end radius 16 m. Custom `ShaderMaterial`: additive blending, `depthWrite: false`, opacity fades along the cone's length and toward its silhouette edges (view-angle fresnel), base opacity 0.05 dry, 0.09 in rain. Plus one camera-facing glare sprite per lamp bank that bloom picks up. The beams must be subtle: on the broadcast camera you should only just see them.
+
+**Pitch material**: `MeshStandardMaterial` with `grass_albedo.webp` + `grass_normal.webp` (normal scale 0.6), roughness 0.92 dry, texture anisotropy `min(8, renderer.capabilities.getMaxAnisotropy())` so the grass stays sharp at the broadcast angle. Mowing stripes stay in the shader (§14.2). Rain: multiply albedo by 0.82, roughness to 0.55, `envMapIntensity` from 0.5 to 1.1, so the floodlights streak across the wet grass.
+
+**Model materials**: keep the GLB's PBR materials. Kit cloth roughness 0.7, skin 0.55, boots 0.35, ball 0.4, metalness 0 except goal posts' fittings and floodlight frames (0.8). If a GLB material has an `aoMap` or `lightMap` (baked by Claude for stands and props), use it; these are static objects, so baked light is free at runtime.
+
+**Contact shadows**: every player and the ball keep a soft blob decal under them on all presets (on Medium/High it sits under the real shadow and grounds the feet).
+
+**Budget guard**: if Medium misses the §21.1 frame budget on the target laptop, drop items in this order and record it in `DECISIONS.md`: bloom to quarter resolution → beams off → MSAA samples 2 → composer off. Never drop the environment map or the haze; they cost almost nothing.
 
 ---
 
@@ -1394,10 +1424,11 @@ Claude produces assets in parallel with your work and drops them into `public/as
 |---|---|---|
 | `models/player.glb` | glTF binary, meshopt-compressed | contract §18.3 |
 | `models/goal.glb`, `models/ball.glb`, `models/stand_side.glb`, `models/stand_end.glb`, `models/floodlight.glb`, `models/dugout.glb`, `models/manager.glb`, `models/corner_flag.glb` | GLB | origin at ground centre, metres, +Z forward |
-| `textures/grass_albedo.webp` (1024²), `textures/crowd_atlas.webp` (2048², 4×4 cells), `textures/ad_boards.webp` (2048×128) | WebP | |
-| `images/portraits/{playerId}.webp` | 256×256 WebP | 280 files |
+| `models/stand_side_brick.glb`, `models/stand_end_brick.glb`, `models/stand_side_timber.glb`, `models/stand_end_timber.glb` | GLB, optional | stand style by home club reputation: 5–4 modern (`stand_side/end.glb`), 3 brick, 2 timber. If a style's file is not in the manifest, use the modern one; if that is missing too, the boxes fallback (§14.2) |
+| `textures/grass_albedo.webp` (1024²), `textures/grass_normal.webp` (1024², OpenGL convention, linear), `textures/crowd_atlas.webp` (2048², 4×4 cells), `textures/ad_boards.webp` (2048×128) | WebP | |
+| `images/portraits/{playerId}.webp` | 256×256 WebP, greyscale halftone | 280 files; tinted per club at runtime (§18.5) |
 | `images/crests/{clubId}.webp` | 512×512 WebP, transparent | 10 files |
-| `images/people/{assistant,chairman_{clubId},journalist_{1..3},manager_{clubId}}.webp` | 512×512 WebP | |
+| `images/people/{assistant,chairman_{clubId},journalist_{1..3},manager_{clubId}}.webp` | 512×512 WebP, greyscale halftone | tinted at runtime (§18.5): assistant in the user's club, chairman/manager in their club, journalists in their outlet's ink (ART-DIRECTION §5) |
 | `images/news/{clubId}_{scenario}.webp` | 1024×576 WebP | 40 files |
 | `images/stadium/{clubId}.webp` | 1280×720 WebP | 10 files |
 | `images/ui/title_bg.webp`, `images/ui/board_room.webp`, `images/ui/press_room.webp` | 1920×1080 WebP | |
@@ -1410,11 +1441,19 @@ Claude produces assets in parallel with your work and drops them into `public/as
 - Materials named exactly: `Shirt`, `Shorts`, `Socks`, `Skin`, `Hair`, `Boots`. Base colours white/neutral so tinting works (shirt texture slot used for patterns/numbers).
 - Animation clips named exactly: `Idle`, `Jog`, `Run`, `Sprint`, `Pass`, `Shoot`, `Header`, `Tackle`, `Throw`, `Celebrate`, `Dejected`, `GK_Idle`, `GK_DiveLeft`, `GK_DiveRight`, `GK_Catch`. Missing clips fall back in this order: Sprint→Run→Jog→Idle; Shoot→Pass; Header→Idle; Tackle→Run; Throw→Idle; Celebrate→Idle; GK_*→Idle.
 - In-place locomotion (no root motion).
+- `models/manager.glb` follows the same rules (origin at the feet, +Z, ≤ 12,000 triangles, in place), 1.78 m tall, materials `Coat`, `Shirt`, `Tie`, `Trousers`, `Shoes`, `Skin`, `Hair` (`Tie` is tinted the club's primary colour, `Coat` stays as delivered), clips `Idle`, `Point`, `Clap`, `Celebrate`, `Dejected` (missing clips → `Idle`).
 
 ### 18.4 What you build vs what Claude builds
 | You (Gemini) | Claude |
 |---|---|
 | All code, content JSON text, procedural fallbacks (crest, avatar, kit, flags, pitch, stadium boxes, capsule players), registry, audio engine | Meshy models, fal images, ElevenLabs voices/SFX/music, `tools/` scripts, `asset-manifest.json` updates, art direction and UI design references |
+
+### 18.5 Portrait tint (programme print)
+Portraits and people images arrive as greyscale halftone prints (black dots on white). The `Portrait` component prints them in two club colours at runtime, so a player who transfers is printed in his new club's colours and the assistant always wears yours:
+- Ink colour = the darker of the club's primary and secondary colours (relative luminance). Paper colour = `#F1ECE2` (warm off-white) mixed 12% toward the lighter club colour. If ink-on-paper contrast is below 4.5:1, ink = `#141414`.
+- Implement as one inline SVG filter per club (`feColorMatrix` to luminance, then `feComponentTransfer` with `table` values mapping 0 → ink and 1 → paper per channel), referenced by `filter: url(#print-<clubId>)`. No canvas work per frame; filters are defined once in a hidden `<svg>` at app start.
+- Free agents and players with no club use ink `#141414`.
+- The procedural avatar fallback uses the same ink and paper colours, so missing images look like part of the same set.
 
 Procedural fallbacks MUST look intentional: crest = shield SVG with the club's colours, a simple emblem from a set of 8 shapes (anchor, hammer, bird, wave, gate, flame, tree, crow) chosen per club, and the club code; avatar = head-and-shoulders silhouette in kit colours with initials.
 
@@ -1551,6 +1590,12 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 | Rain particles | 0 | 3,000 | 8,000 |
 | Line texture | 2048×1280 | 4096×2560 | 4096×2560 |
 | Net ripple, ball shadow | blob only | yes | yes |
+| Post-processing composer (§14.10) | off | on, MSAA 4 | on, MSAA 4 |
+| Bloom | off | half resolution | half resolution |
+| Ambient occlusion (GTAO) | off | off | half resolution |
+| Floodlight beams and glare | glare sprites only | yes | yes |
+| Colour grade and vignette | off | yes | yes |
+| Environment map, haze, grass normal map | yes | yes | yes |
 **Auto**: start Medium; measure the average frame time over the first 3 s of each match; if > 22 ms drop one level (toast "Graphics set to Low for smoother play"); if < 10 ms on Medium for 10 s, offer High (toast with a button), never switch up automatically.
 
 ---
@@ -1638,7 +1683,8 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 4. Cameras (§14.4) incl. free orbit; goal replays (§14.7).
 5. HUD (§11.16), half-time and full-time screens (§11.17–11.18), shot map, momentum chart.
 6. Swap in real models automatically when present (registry), animations per §18.3.
-**Accept:** a match at Key highlights takes 50–80 s real time; goals visibly match the events (the scorer is the one shooting, the ball ends in the net); 60 fps Medium on the dev laptop; 5 matches in a row without memory growth; every "game feel" detail in §19.8 is present; M4 design review passed.
+7. Realism pass (§14.10): environment map, haze, grass material, post-processing chain, beams, wet pitch, wired to the quality presets (§21.2).
+**Accept:** the realism pass is on at Medium and the frame budget (§21.1) still holds; a match at Key highlights takes 50–80 s real time; goals visibly match the events (the scorer is the one shooting, the ball ends in the net); 60 fps Medium on the dev laptop; 5 matches in a row without memory growth; every "game feel" detail in §19.8 is present; M4 design review passed.
 
 ### M5 — Systems depth (5–8 Dec)
 1. Training (§12.3), development (§12.4), condition/fatigue (§12.1–12.2), injuries (§12.5), discipline (§12.6).
@@ -1660,7 +1706,7 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 **Accept:** QA checklist all pass except items blocked by missing final assets; a new player can finish a season without reading any docs; M7 design review passed.
 
 ### M8 — Asset integration and performance (12–15 Dec)
-1. Integrate Claude's delivered assets (they appear in the manifest; verify every path is consumed). 2. Performance pass against §21 (profile, fix). 3. Offline test, no 404s. 4. Final content proofreading. 5. Feature freeze on 15 Dec.
+1. Integrate Claude's delivered assets (they appear in the manifest; verify every path is consumed), including the portrait tint (§18.5) if not already done. 2. Performance pass against §21 (profile, fix). 3. Offline test, no 404s. 4. Final content proofreading. 5. Feature freeze on 15 Dec.
 **Accept:** budgets §21.1 met and recorded; QA checklist all pass.
 
 ### M9 — Ship (15–17 Dec)
