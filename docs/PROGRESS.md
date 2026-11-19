@@ -17,3 +17,9 @@ Newest entries at the bottom. Format: SPEC §23.0.
 - Changed: docs/SPEC.md (v1.1: new §14.10 realism pass, §18.3 manager.glb contract, §18.5 portrait tint, new §21.2 preset rows, M4 task 7, M8 task 1), docs/design/ART-DIRECTION.md (new)
 - Ran: nothing (docs only)
 - Notes: no change to M1–M3. The new work lands in M4 (task 7) and M8 (portrait tint). Use ART-DIRECTION.md §3 for render values and fallback colours.
+
+## 2026-11-19 · M1 Core data and world complete
+- Changed: src/config/formations.ts, src/core/rng.ts, src/core/ids.ts, src/core/player/ratings.ts, src/core/player/value.ts, src/core/season/fixtures.ts, src/core/season/table.ts, src/core/world/blocklist.data.ts, src/core/world/clubs.data.ts, src/core/world/names.data.ts, src/core/world/generateWorld.ts, src/core/world/world.snapshot.json, src/core/game/newGame.ts, src/core/game/migrations.ts, scripts/gen-world.ts, src/ui/screens/DevGalleryScreen.tsx, tests/core/rng.test.ts, tests/core/ids.test.ts, tests/core/player/ratings.test.ts, tests/core/player/value.test.ts, tests/core/season/fixtures.test.ts, tests/core/season/table.test.ts, tests/core/world/generateWorld.test.ts, tests/core/game/newGame.test.ts
+- Ran: npm run check → format:check PASS, typecheck (tsc --noEmit) PASS, vitest run (12 test files, 44 tests passed in 7.91s), vite build (gzip 98.57 kB) PASS
+- Notes: Meridian League world snapshot generated and frozen (10 clubs, 280 players, 90 fixtures). Double round-robin schedule satisfies derbies on matchday 1 = 0, maximum home/away streak <= 2 for every club. Squads explorer added to dev inspection view (?dev=gallery).
+- Open issues: none
