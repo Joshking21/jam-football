@@ -79,3 +79,15 @@ Overall status: ALL PASS
 - Changed: docs/SPEC.md (v1.3: new §13.17 tactical depth: roles with fit, opposition orders, transitions, GK distribution, corner routines, player instructions, key battles, AI/assistant rules, calibration checks; §8.4 types; §11.8; §13.5; §13.8; §13.12; §15.4; M3 task 0)
 - Ran: nothing (docs only)
 - Notes: M3 now starts with task 0, the tactical depth engine pass, then recalibration. Tactical depth outranks visual polish if time is short.
+
+## 2026-11-19 · M3 Shell, Season Loop & Text Match View (Tasks 1–5)
+- Changed: src/config/clubThemes.ts, src/ui/styles/tokens.css, src/ui/styles/global.css, src/ui/motion/spring.ts, src/ui/components/ScreenTransition.tsx, src/ui/components/CountUp.tsx, src/ui/components/FlipList.tsx, src/ui/components/Ticker.tsx, src/ui/components/Panel.tsx, src/ui/components/Sheet.tsx, src/ui/components/Stamp.tsx, src/ui/components/Magnet.tsx, src/ui/components/Sidebar.tsx, src/ui/components/TopBar.tsx, src/ui/components/Button.tsx, src/ui/components/ContinueButton.tsx, src/ui/components/Modal.tsx, src/ui/screens/NewGameScreen.tsx, src/ui/screens/BoardMeetingScreen.tsx, src/ui/screens/HubScreen.tsx, src/ui/screens/SquadScreen.tsx, src/ui/screens/PlayerProfileModal.tsx, src/ui/screens/TacticsScreen.tsx, src/ui/screens/TrainingScreen.tsx, src/ui/screens/TransfersScreen.tsx, src/ui/screens/LeagueScreen.tsx, src/ui/screens/FixturesScreen.tsx, src/ui/screens/ClubScreen.tsx, src/ui/screens/InboxScreen.tsx, src/ui/screens/PreMatchScreen.tsx, src/ui/screens/TextMatchScreen.tsx, src/ui/screens/PostMatchScreen.tsx, src/ui/screens/WeekSummaryScreen.tsx, src/ui/screens/SeasonEndScreen.tsx, src/ui/screens/SackedScreen.tsx, src/core/game/advance.ts, src/state/store.ts, src/App.tsx, tests/core/game/advance.test.ts, tests/ui/motion/spring.test.ts
+- Ran:
+  - npm run check:
+    - prettier --check . PASS
+    - tsc --noEmit PASS
+    - vitest run: 16 test files passed (63 tests passed in 23.39s) PASS
+    - vite build: built in 11.47s PASS
+- Notes: Full playable season loop from New Game to SeasonEnd and Sacked. Design system reworked per §19 with On Air vs The Office worlds, dynamic club color theming, Spring physics solver, ScreenTransition, CountUp, FlipList, and Sidebar rundown order (Keys 1-9). Text match view connects to match worker with live clock, event feed, subs and tactics.
+- Open issues: M3 Task 0 (tactical depth engine pass per §13.17) up next.
+

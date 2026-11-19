@@ -1,4 +1,6 @@
 // Implements SPEC §19.5 Modal component
+// Centred, max 960px, Esc closes, focus trap.
+// No backdrop blur (performance); dim the screen behind with rgb(0 0 0 / .6).
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { KeyHint } from './KeyHint';
@@ -9,6 +11,7 @@ export interface ModalProps {
   title: string;
   children: React.ReactNode;
   maxWidth?: number | string;
+  variant?: 'on-air' | 'office';
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -16,7 +19,8 @@ export const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   children,
-  maxWidth = 800,
+  maxWidth = 960,
+  variant = 'on-air',
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -36,6 +40,8 @@ export const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
+  const isOffice = variant === 'office';
+
   return (
     <div
       style={{
@@ -45,8 +51,7 @@ export const Modal: React.FC<ModalProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(7, 12, 24, 0.75)',
-        backdropFilter: 'blur(6px)',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
         padding: '24px',
       }}
       onClick={(e) => {
@@ -57,39 +62,50 @@ export const Modal: React.FC<ModalProps> = ({
         ref={modalRef}
         role="dialog"
         aria-modal="true"
+        className={isOffice ? 'paper-surface' : undefined}
         style={{
           width: '100%',
           maxWidth,
           maxHeight: '90vh',
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-l)',
-          boxShadow: 'var(--shadow-2)',
+          backgroundColor: isOffice ? 'var(--paper)' : 'var(--surface)',
+          color: isOffice ? 'var(--paper-ink)' : 'var(--text)',
+          border: `1px solid ${isOffice ? 'var(--paper-rule)' : 'var(--border)'}`,
+          borderRadius: isOffice ? '3px' : 'var(--radius-m)',
+          boxShadow: isOffice ? 'var(--shadow-paper)' : 'var(--shadow-1)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          animation: 'modal-pop var(--dur-med) var(--ease)',
+          animation: 'modal-pop var(--dur-med) var(--ease-snap)',
         }}
       >
         {/* Header */}
         <div
           style={{
-            padding: '18px 24px',
-            borderBottom: '1px solid var(--border)',
+            padding: '16px 24px',
+            borderBottom: `1px solid ${isOffice ? 'var(--paper-rule)' : 'var(--border)'}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'var(--surface-2)',
+            backgroundColor: isOffice ? 'var(--paper-2)' : 'var(--surface-2)',
           }}
         >
-          <h2 style={{ fontSize: '24px', margin: 0 }}>{title}</h2>
+          <h2
+            style={{
+              fontSize: '24px',
+              margin: 0,
+              fontFamily: 'var(--font-head)',
+              color: isOffice ? 'var(--paper-ink)' : 'var(--text)',
+            }}
+          >
+            {title}
+          </h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <KeyHint hint="Esc" />
             <button
               onClick={onClose}
               aria-label="Close modal"
               style={{
-                color: 'var(--text-dim)',
+                color: isOffice ? 'var(--paper-dim)' : 'var(--text-dim)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -102,9 +118,30 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
         </div>
 
-        {/* Content */}
-        <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>{children}</div>
+        {/* Body */}
+        <div
+          style={{
+            padding: '24px',
+            overflowY: 'auto',
+            flex: 1,
+          }}
+        >
+          {children}
+        </div>
       </div>
+
+      <style>{`
+        @keyframes modal-pop {
+          from {
+            opacity: 0;
+            transform: scale(0.96) translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

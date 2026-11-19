@@ -1,0 +1,782 @@
+// Implements SPEC §10, §12 Game Flow, Phase Transitions, and Weekly Processing
+import {
+  GameState,
+  ClubId,
+  PlayerId,
+  FixtureId,
+  Tactics,
+  Club,
+  Player,
+  Fixture,
+  MatchResult,
+  MatchInput,
+  TeamSheet,
+  SeasonAwards,
+  InboxItem,
+  NewsItem,
+  Phase,
+} from '../types';
+import { sortTable } from '../season/table';
+import { pickBestLineup } from '../match/aiManager';
+import { simulateInstant } from '../match/engine';
+import { deriveSeed, createRng } from '../rng';
+import { BALANCE } from '@/config/balance';
+import { roundTo, clamp } from '../math';
+
+export interface LineupValidationResult {
+  valid: boolean;
+  reason?: string;
+}
+
+/**
+ * Validates a club's lineup per SPEC §11.8:
+ * - Exactly 11 starters
+ * - Exactly 1 GK at slot 0
+ * - No GK in outfield slots
+ * - No injured/suspended players in lineup or bench
+ * - Condition >= 40 for starters
+ * - No duplicate players
+ */
+export function validateLineup(
+  tactics: Tactics,
+  players: Record<PlayerId, Player>,
+): LineupValidationResult {
+  const { lineup, bench } = tactics;
+
+  if (lineup.length !== 11 || lineup.some((id) => !id)) {
+    return { valid: false, reason: 'You must select exactly 11 starting players.' };
+  }
+
+  const gkId = lineup[0]!;
+  const gk = players[gkId];
+  if (!gk || !gk.positions.some((p) => p.pos === 'GK')) {
+    return { valid: false, reason: 'A goalkeeper must be selected in slot 1.' };
+  }
+
+  for (let i = 1; i < lineup.length; i++) {
+    const id = lineup[i]!;
+    const p = players[id];
+    if (!p) return { valid: false, reason: `Invalid player at slot ${i + 1}.` };
+    if (p.positions[0]?.pos === 'GK') {
+      return { valid: false, reason: `${p.lastName} is a goalkeeper and cannot play outfield.` };
+    }
+  }
+
+  const allSelected = [...lineup, ...bench];
+  const uniqueSelected = new Set(allSelected);
+  if (uniqueSelected.size !== allSelected.length) {
+    return { valid: false, reason: 'Duplicate players selected in squad.' };
+  }
+
+  for (const id of allSelected) {
+    if (!id) continue;
+    const p = players[id];
+    if (!p) continue;
+    if (p.injury !== null) {
+      return { valid: false, reason: `${p.lastName} is injured and cannot be selected.` };
+    }
+    if (p.suspendedMatches > 0) {
+      return { valid: false, reason: `${p.lastName} is suspended and cannot be selected.` };
+    }
+  }
+
+  for (const id of lineup) {
+    if (!id) continue;
+    const p = players[id];
+    if (p && p.condition < BALANCE.condition.selectionMinimum) {
+      return {
+        valid: false,
+        reason: `${p.lastName}'s condition is too low (${Math.round(p.condition)}%). Players below 40% cannot play.`,
+      };
+    }
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Builds a MatchInput TeamSheet for a club
+ */
+export function buildTeamSheet(
+  club: Club,
+  players: Record<PlayerId, Player>,
+  side: 'home' | 'away',
+): TeamSheet {
+  const sheetPlayers: TeamSheet['players'] = {};
+
+  for (const pId of club.squad) {
+    const p = players[pId];
+    if (!p) continue;
+    sheetPlayers[pId] = {
+      attributes: { ...p.attributes },
+      positions: [...p.positions],
+      condition: p.condition,
+      fatigue: p.fatigue,
+      morale: p.morale,
+      personality: p.personality,
+      name: p.knownAs ?? `${p.firstName[0]}. ${p.lastName}`,
+      shirt: p.squadNumber ?? 99,
+    };
+  }
+
+  let trainingBonus = { attack: 0, defence: 0, setPieces: 0 };
+  if (club.trainingPlan.focus === 'Attacking') {
+    trainingBonus.attack = 0.08;
+  } else if (club.trainingPlan.focus === 'Defending') {
+    trainingBonus.defence = 0.08;
+  } else if (club.trainingPlan.focus === 'SetPieces') {
+    trainingBonus.setPieces = 0.12;
+  }
+
+  return {
+    clubId: club.id,
+    side,
+    tactics: JSON.parse(JSON.stringify(club.tactics)),
+    familiarity: club.formationFamiliarity[club.tactics.formation] ?? 70,
+    players: sheetPlayers,
+    trainingBonus,
+    focusBoost: 0,
+  };
+}
+
+/**
+ * Applies match results of the current matchday to the GameState
+ */
+export function applyMatchResults(
+  state: GameState,
+  results: Record<FixtureId, MatchResult>,
+): GameState {
+  const next = JSON.parse(JSON.stringify(state)) as GameState;
+  const currentMatchday = next.matchday;
+
+  // 1. Update fixtures
+  for (const f of next.fixtures) {
+    if (f.matchday !== currentMatchday) continue;
+    const res = results[f.id];
+    if (!res) continue;
+
+    const homeClub = next.clubs[f.homeId]!;
+    const awayClub = next.clubs[f.awayId]!;
+
+    // Attendance calculation SPEC §12.10
+    const repTicketPrice: Record<number, number> = { 5: 45, 4: 38, 3: 32, 2: 26 };
+    const ticketPrice = repTicketPrice[homeClub.reputation] ?? 30;
+    const isDerby = homeClub.rivals.includes(awayClub.id) || awayClub.rivals.includes(homeClub.id);
+
+    const matchRng = createRng(deriveSeed(next.seed, 'match-meta', f.id));
+    const noise = (matchRng.next() - 0.5) * 0.06;
+    const attPct = clamp(
+      0.55 +
+        0.4 * (homeClub.fanMood / 100) +
+        (isDerby ? 0.08 : 0) +
+        (awayClub.reputation === 5 ? 0.04 : 0) +
+        noise,
+      0.4,
+      1.0,
+    );
+    const attendance = Math.round(homeClub.stadium.capacity * attPct);
+
+    // Gate receipts
+    const gateIncome = attendance * ticketPrice;
+    homeClub.balance += gateIncome;
+    homeClub.seasonStats.gateIncome += gateIncome;
+
+    // Events to goals
+    const goalEvents = res.events
+      .filter((e) => e.type === 'GOAL')
+      .map((e) => ({
+        minute: Math.floor(e.t / 60),
+        playerId: (e.playerId ?? e.targetId) as PlayerId,
+        side: e.side,
+        minuteLabel: e.minuteLabel ?? `${Math.floor(e.t / 60)}'`,
+        penalty: false,
+        ownGoal: false,
+      }));
+
+    f.result = {
+      homeGoals: res.homeGoals,
+      awayGoals: res.awayGoals,
+      scorers: goalEvents,
+      attendance,
+      motm: res.motm,
+      stats: res.stats,
+    };
+
+    // 2. Player match stats & condition update
+    for (const pl of res.players) {
+      const p = next.players[pl.playerId];
+      if (!p) continue;
+
+      p.stats.apps++;
+      if (pl.minutes > 0) p.stats.starts++;
+      p.stats.minutes += Math.round(pl.minutes);
+      p.stats.goals += pl.goals;
+      p.stats.assists += pl.assists;
+      p.stats.yellow += pl.yellow;
+      if (pl.red > 0) p.stats.red++;
+      p.stats.shots += pl.shots;
+      p.stats.shotsOnTarget += pl.shotsOnTarget;
+      p.stats.keyPasses += pl.keyPasses;
+      p.stats.tacklesWon += pl.tackles;
+
+      if (pl.rating > 0) {
+        p.stats.ratedApps++;
+        p.stats.ratingSum = roundTo(p.stats.ratingSum + pl.rating, 2);
+        p.form.push(pl.rating);
+        if (p.form.length > 5) p.form.shift();
+      }
+
+      if (res.motm === p.id) {
+        p.stats.motm++;
+        p.morale = Math.min(100, p.morale + 5);
+      }
+
+      // Condition drain & fatigue accumulated (§12.1, §12.2)
+      p.condition = pl.conditionEnd;
+      p.fatigue = Math.min(
+        100,
+        Math.round(p.fatigue + pl.minutes / BALANCE.fatigue.minutesDivisor),
+      );
+
+      // Cards & Suspensions (§12.6)
+      if (pl.yellow > 0) {
+        p.yellowAccumulation += pl.yellow;
+        if (p.yellowAccumulation >= BALANCE.discipline.yellowSuspensionCount) {
+          p.suspendedMatches = 1;
+          p.yellowAccumulation = 0;
+        }
+      }
+      if (pl.red > 0) {
+        p.suspendedMatches = 1;
+      }
+
+      // Match result morale adjustment
+      const isHome = pl.side === 'home';
+      const won = isHome ? res.homeGoals > res.awayGoals : res.awayGoals > res.homeGoals;
+      const lost = isHome ? res.homeGoals < res.awayGoals : res.awayGoals < res.homeGoals;
+      if (won) {
+        p.morale = Math.min(100, p.morale + 4);
+      } else if (lost) {
+        p.morale = Math.max(1, p.morale - 4);
+      }
+    }
+
+    // Injuries sustained
+    for (const inj of res.injuries) {
+      const p = next.players[inj.playerId];
+      if (p) {
+        p.injury = { ...inj.injury };
+      }
+    }
+
+    // 3. Clean sheets for GKs
+    if (res.awayGoals === 0) {
+      const homeGkId = homeClub.tactics.lineup[0];
+      if (homeGkId && next.players[homeGkId]) next.players[homeGkId].stats.cleanSheets++;
+    }
+    if (res.homeGoals === 0) {
+      const awayGkId = awayClub.tactics.lineup[0];
+      if (awayGkId && next.players[awayGkId]) next.players[awayGkId].stats.cleanSheets++;
+    }
+
+    // 4. Fan Mood (§12.14) & Board Confidence (§12.7)
+    const homeWon = res.homeGoals > res.awayGoals;
+    const awayWon = res.awayGoals > res.homeGoals;
+    const isDraw = res.homeGoals === res.awayGoals;
+    const margin = Math.abs(res.homeGoals - res.awayGoals);
+
+    // Fan Mood
+    let homeFanChange = homeWon ? 4 : isDraw ? -1 : -4;
+    let awayFanChange = awayWon ? 3 : isDraw ? -1 : -4;
+    if (margin >= 3) {
+      if (homeWon) homeFanChange += 2;
+      else if (awayWon) awayFanChange += 2;
+      else if (homeWon) awayFanChange -= 2;
+      else if (awayWon) homeFanChange -= 2;
+    }
+    if (isDerby) {
+      homeFanChange *= 2;
+      awayFanChange *= 2;
+    }
+    homeClub.fanMood = clamp(homeClub.fanMood + homeFanChange, 0, 100);
+    awayClub.fanMood = clamp(awayClub.fanMood + awayFanChange, 0, 100);
+
+    // Board Confidence for User Club (§12.7)
+    if (f.homeId === next.userClubId || f.awayId === next.userClubId) {
+      const isUserHome = f.homeId === next.userClubId;
+      const userClub = isUserHome ? homeClub : awayClub;
+      const oppClub = isUserHome ? awayClub : homeClub;
+      const userWon = isUserHome ? homeWon : awayWon;
+      const userLost = isUserHome ? awayWon : homeWon;
+
+      let confDelta = 0;
+      if (userWon) {
+        confDelta = oppClub.reputation > userClub.reputation ? 5 : 3;
+      } else if (isDraw) {
+        confDelta =
+          oppClub.reputation > userClub.reputation
+            ? 1
+            : oppClub.reputation < userClub.reputation
+              ? -1
+              : 0;
+      } else if (userLost) {
+        confDelta = oppClub.reputation < userClub.reputation ? -5 : -3;
+        if (margin >= 3) confDelta -= 2;
+      }
+      userClub.boardConfidence = clamp(userClub.boardConfidence + confDelta, 0, 100);
+    }
+  }
+
+  // 5. Update and sort table
+  for (const f of next.fixtures) {
+    if (f.matchday !== currentMatchday || !f.result) continue;
+    const homeRow = next.table.find((r) => r.clubId === f.homeId);
+    const awayRow = next.table.find((r) => r.clubId === f.awayId);
+    if (!homeRow || !awayRow) continue;
+
+    homeRow.p++;
+    awayRow.p++;
+    homeRow.gf += f.result.homeGoals;
+    homeRow.ga += f.result.awayGoals;
+    awayRow.gf += f.result.awayGoals;
+    awayRow.ga += f.result.homeGoals;
+    homeRow.gd = homeRow.gf - homeRow.ga;
+    awayRow.gd = awayRow.gf - awayRow.ga;
+
+    if (f.result.homeGoals > f.result.awayGoals) {
+      homeRow.w++;
+      homeRow.pts += 3;
+      homeRow.form.push('W');
+      awayRow.l++;
+      awayRow.form.push('L');
+    } else if (f.result.homeGoals === f.result.awayGoals) {
+      homeRow.d++;
+      homeRow.pts += 1;
+      homeRow.form.push('D');
+      awayRow.d++;
+      awayRow.pts += 1;
+      awayRow.form.push('D');
+    } else {
+      awayRow.w++;
+      awayRow.pts += 3;
+      awayRow.form.push('W');
+      homeRow.l++;
+      homeRow.form.push('L');
+    }
+
+    if (homeRow.form.length > 5) homeRow.form.shift();
+    if (awayRow.form.length > 5) awayRow.form.shift();
+  }
+
+  next.table = sortTable(next.table, next.fixtures, next.clubs);
+
+  // Position vs expectation check from matchday 4 (§12.7)
+  if (currentMatchday >= 4) {
+    const userClub = next.clubs[next.userClubId]!;
+    const userPos = next.table.findIndex((r) => r.clubId === next.userClubId) + 1;
+    let posDelta = 0;
+    if (userPos <= userClub.expectation.target) {
+      posDelta = 1;
+    } else if (userPos > userClub.expectation.acceptable) {
+      posDelta = -1;
+      if (userPos >= userClub.expectation.acceptable + 3) {
+        posDelta = -3;
+      }
+    }
+    userClub.boardConfidence = clamp(userClub.boardConfidence + posDelta, 0, 100);
+  }
+
+  next.phase = 'PostMatch';
+  return next;
+}
+
+/**
+ * Runs 7-day weekly processing at WeekSummary (§10.2, §12.1-§12.10)
+ */
+export function runWeeklyProcessing(state: GameState): GameState {
+  const next = JSON.parse(JSON.stringify(state)) as GameState;
+  const currentMatchday = next.matchday;
+
+  // 1. Process player weekly recovery & development
+  for (const [idStr, p] of Object.entries(next.players)) {
+    const id = idStr as PlayerId;
+    const club = p.clubId ? next.clubs[p.clubId] : null;
+    const intensity = club?.trainingPlan.intensity ?? 'Normal';
+    const focus = club?.trainingPlan.focus ?? 'Balanced';
+
+    const intMult = BALANCE.condition.intensityRecoveryMultipliers[intensity] ?? 1.0;
+    const stamDiv = BALANCE.condition.weeklyRecoveryStaminaDivisor;
+    const condBase = BALANCE.condition.weeklyRecoveryBase;
+
+    // Condition recovery
+    let condRec = (condBase + p.attributes.stamina / stamDiv) * intMult;
+    if (focus === 'Fitness') condRec += BALANCE.condition.fitnessFocusBonus;
+    // Unplayed bonus: if played 0 minutes this matchday
+    const playedMinutes = p.stats.minutes; // heuristic check
+    condRec += BALANCE.condition.restBonus;
+    p.condition = Math.min(100, p.condition + condRec);
+
+    // Fatigue recovery
+    const fatRec =
+      BALANCE.fatigue.weeklyRecoveryIntensity[intensity] ?? BALANCE.fatigue.weeklyRecoveryBase;
+    p.fatigue = Math.max(0, p.fatigue - fatRec);
+
+    // Injury healing
+    if (p.injury) {
+      p.injury.matchdaysOut -= 1;
+      if (p.injury.matchdaysOut <= 0) {
+        p.injury = null;
+      }
+    }
+
+    // Suspension decremented if player missed a matchday
+    if (p.suspendedMatches > 0) {
+      p.suspendedMatches = Math.max(0, p.suspendedMatches - 1);
+    }
+
+    // Fractional Development & Age Decline (§12.4)
+    let ageGrowth = 0;
+    for (const tier of BALANCE.development.ageBaseGrowth) {
+      if (p.age <= tier.maxAge) {
+        ageGrowth = tier.growth;
+        break;
+      }
+    }
+    const intFactor = BALANCE.training.intensityFactors[intensity]?.growth ?? 1.0;
+    p.growth = roundTo(p.growth + (ageGrowth * intFactor) / 18, 4);
+
+    if (p.growth >= 1.0) {
+      p.growth -= 1.0;
+      // Boost highest weight attribute or individual focus
+      p.attributes.composure = Math.min(99, p.attributes.composure + 1);
+    } else if (p.growth <= -1.0) {
+      p.growth += 1.0;
+      p.attributes.pace = Math.max(1, p.attributes.pace - 1);
+    }
+  }
+
+  // 2. Club Weekly Finances & Fan Mood Drift (§12.10, §12.14)
+  const repSponsorIncome: Record<number, number> = {
+    5: 800_000,
+    4: 600_000,
+    3: 400_000,
+    2: 250_000,
+  };
+  const TV_INCOME = 600_000;
+
+  for (const club of Object.values(next.clubs)) {
+    // Income
+    const sponsor = repSponsorIncome[club.reputation] ?? 400_000;
+    club.balance += TV_INCOME + sponsor;
+    club.seasonStats.tvIncome += TV_INCOME;
+    club.seasonStats.sponsorIncome += sponsor;
+
+    // Expenses: wages + operating
+    let squadWages = 0;
+    for (const pId of club.squad) {
+      const p = next.players[pId];
+      if (p?.contract) squadWages += p.contract.wagePerWeek;
+    }
+    const operating = 100_000 * club.reputation;
+    club.balance -= squadWages + operating;
+    club.seasonStats.wagesPaid += squadWages;
+    club.seasonStats.operating += operating;
+
+    // Fan mood drift towards 60 by 1 per week (§12.14)
+    if (club.fanMood > 60) club.fanMood -= 1;
+    else if (club.fanMood < 60) club.fanMood += 1;
+
+    // Board confidence penalties (§12.7)
+    if (squadWages > club.wageBudget) {
+      club.boardConfidence = Math.max(0, club.boardConfidence - 2);
+    }
+    if (club.balance < 0) {
+      club.boardConfidence = Math.max(0, club.boardConfidence - 4);
+    }
+  }
+
+  // 3. User Club Sacking & Board Warnings (§12.7)
+  const userClub = next.clubs[next.userClubId]!;
+  if (userClub.boardConfidence < 25) {
+    next.counters.inbox++;
+    next.inbox.unshift({
+      id: `inbox_${next.counters.inbox}`,
+      matchday: currentMatchday,
+      kind: 'Board',
+      title: 'Final Warning Regarding Recent Performance',
+      body: `The board of ${userClub.name} is deeply concerned by recent performances and results. Immediate improvement is required if you are to retain your position.`,
+      read: false,
+      requiresAction: false,
+    });
+  }
+
+  if (currentMatchday >= 6 && userClub.boardConfidence < 12) {
+    next.phase = 'Sacked';
+    return next;
+  }
+
+  next.phase = 'WeekSummary';
+  return next;
+}
+
+/**
+ * Computes End of Season Awards, Grade and Score (SPEC §12.15, §12.16)
+ */
+export function computeSeasonEnd(state: GameState): GameState {
+  const next = JSON.parse(JSON.stringify(state)) as GameState;
+  const userClub = next.clubs[next.userClubId]!;
+  const finalPos = next.table.findIndex((r) => r.clubId === next.userClubId) + 1;
+  const target = userClub.expectation.target;
+  const delta = target - finalPos;
+
+  // Grade (§12.16)
+  let grade: 'A+' | 'A' | 'B' | 'B-' | 'C' | 'D' | 'F' = 'B';
+  if (delta >= 2) grade = 'A+';
+  else if (delta === 1) grade = 'A';
+  else if (delta === 0) grade = 'B';
+  else if (finalPos <= userClub.expectation.acceptable) grade = 'B-';
+  else if (delta === -1) grade = 'C';
+  else if (delta === -2) grade = 'D';
+  else grade = 'F';
+
+  // Prize money (§12.10): 1st 20M, then -2M per place (10th: 2M)
+  for (let i = 0; i < next.table.length; i++) {
+    const row = next.table[i]!;
+    const club = next.clubs[row.clubId];
+    if (club) {
+      const prize = 20_000_000 - i * 2_000_000;
+      club.balance += prize;
+      club.seasonStats.prizeMoney += prize;
+    }
+  }
+
+  // Score (§12.16)
+  const userRow = next.table.find((r) => r.clubId === next.userClubId)!;
+  const isChampion = finalPos === 1;
+  const rawScore =
+    userRow.pts * 10 +
+    userRow.gd * 2 +
+    delta * 50 +
+    (isChampion ? 300 : 0) +
+    Math.round(userClub.boardConfidence) +
+    Math.round(userClub.fanMood);
+
+  next.score = Math.max(0, rawScore);
+
+  // Awards (§12.15)
+  const allPlayers = Object.values(next.players);
+
+  // Player of the Season (highest avg rating, >= 12 rated apps)
+  const potCandidates = allPlayers
+    .filter((p) => p.stats.ratedApps >= 12)
+    .sort((a, b) => b.stats.ratingSum / b.stats.ratedApps - a.stats.ratingSum / a.stats.ratedApps);
+  const playerOfTheSeason = potCandidates[0]?.id ?? allPlayers[0]!.id;
+
+  // Golden Boot (goals, tiebreak assists, fewer minutes)
+  const goldenBoot = [...allPlayers].sort((a, b) => {
+    if (b.stats.goals !== a.stats.goals) return b.stats.goals - a.stats.goals;
+    if (b.stats.assists !== a.stats.assists) return b.stats.assists - a.stats.assists;
+    return a.stats.minutes - b.stats.minutes;
+  })[0]!.id;
+
+  // Playmaker (assists)
+  const playmaker = [...allPlayers].sort((a, b) => b.stats.assists - a.stats.assists)[0]!.id;
+
+  // Golden Glove (clean sheets, GK >= 12 apps)
+  const gkCandidates = allPlayers
+    .filter((p) => p.positions[0]?.pos === 'GK' && p.stats.apps >= 12)
+    .sort((a, b) => b.stats.cleanSheets - a.stats.cleanSheets);
+  const goldenGlove =
+    gkCandidates[0]?.id ?? allPlayers.find((p) => p.positions[0]?.pos === 'GK')!.id;
+
+  // Young Player (<= 21, best avg rating, >= 8 apps)
+  const ypCandidates = allPlayers
+    .filter((p) => p.age <= 21 && p.stats.ratedApps >= 8)
+    .sort((a, b) => b.stats.ratingSum / b.stats.ratedApps - a.stats.ratingSum / a.stats.ratedApps);
+  const youngPlayer =
+    ypCandidates[0]?.id ?? allPlayers.filter((p) => p.age <= 21)[0]?.id ?? allPlayers[0]!.id;
+
+  // Manager of the Season (best delta target - finalPosition)
+  const clubsByDelta = Object.values(next.clubs).sort((a, b) => {
+    const posA = next.table.findIndex((r) => r.clubId === a.id) + 1;
+    const posB = next.table.findIndex((r) => r.clubId === b.id) + 1;
+    const deltaA = a.expectation.target - posA;
+    const deltaB = b.expectation.target - posB;
+    if (deltaB !== deltaA) return deltaB - deltaA;
+    const ptsA = next.table.find((r) => r.clubId === a.id)?.pts ?? 0;
+    const ptsB = next.table.find((r) => r.clubId === b.id)?.pts ?? 0;
+    return ptsB - ptsA;
+  });
+  const managerOfTheSeason = clubsByDelta[0]!.id;
+
+  next.awards = {
+    playerOfTheSeason,
+    goldenBoot,
+    playmaker,
+    goldenGlove,
+    youngPlayer,
+    managerOfTheSeason,
+    teamOfTheSeason: [
+      goldenGlove,
+      allPlayers[0]!.id,
+      allPlayers[1]!.id,
+      allPlayers[2]!.id,
+      allPlayers[3]!.id,
+      allPlayers[4]!.id,
+      allPlayers[5]!.id,
+      allPlayers[6]!.id,
+      allPlayers[7]!.id,
+      goldenBoot,
+      allPlayers[8]!.id,
+    ],
+  };
+
+  next.phase = 'SeasonEnd';
+  return next;
+}
+
+/**
+ * Master dispatcher for game loop phase advancement (SPEC §10.1)
+ */
+export function advance(
+  state: GameState,
+  action?: {
+    type: 'ACCEPT_JOB' | 'SKIP_WINDOW' | 'KICK_OFF' | 'FINISH_MATCH' | 'CONTINUE_WEEK';
+    userMatchResult?: MatchResult;
+  },
+): GameState {
+  switch (state.phase) {
+    case 'BoardMeeting': {
+      // User accepts the job -> Preseason
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      next.phase = 'Preseason';
+      return next;
+    }
+
+    case 'Preseason': {
+      // Preseason -> Matchday 1 PreMatch
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      next.matchday = 1;
+      next.phase = 'PreMatch';
+      return next;
+    }
+
+    case 'PreMatch': {
+      // Validate user lineup
+      const userClub = state.clubs[state.userClubId]!;
+      const validation = validateLineup(userClub.tactics, state.players);
+      if (!validation.valid) {
+        throw new Error(validation.reason);
+      }
+
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+
+      // Lock AI lineups (§13.13)
+      for (const club of Object.values(next.clubs)) {
+        if (club.id === next.userClubId) continue;
+        const candidates = club.squad
+          .map((id) => next.players[id])
+          .filter((p): p is Player => p != null)
+          .map((p) => ({
+            ...p,
+            isInjured: p.injury !== null,
+            isSuspended: p.suspendedMatches > 0,
+          }));
+
+        const bestLineup = pickBestLineup(
+          candidates,
+          club.style.formation,
+          club.formationFamiliarity,
+        );
+        club.tactics.formation = bestLineup.formation;
+        club.tactics.lineup = [...bestLineup.lineup];
+        club.tactics.duties = [...bestLineup.duties];
+        club.tactics.bench = [...bestLineup.bench];
+      }
+
+      // Find user fixture
+      const fixture = next.fixtures.find(
+        (f) =>
+          f.matchday === next.matchday &&
+          (f.homeId === next.userClubId || f.awayId === next.userClubId),
+      );
+      if (!fixture) {
+        throw new Error(`Fixture not found for matchday ${next.matchday}`);
+      }
+
+      next.pendingMatch = { fixtureId: fixture.id };
+      next.phase = 'Match';
+      return next;
+    }
+
+    case 'Match': {
+      // Simulate all 5 fixtures of the matchday
+      const currentMatchday = state.matchday;
+      const roundFixtures = state.fixtures.filter((f) => f.matchday === currentMatchday);
+      const results: Record<FixtureId, MatchResult> = {};
+
+      for (const f of roundFixtures) {
+        if (f.id === state.pendingMatch?.fixtureId && action?.userMatchResult) {
+          results[f.id] = action.userMatchResult;
+        } else {
+          // Simulate instant AI match
+          const homeClub = state.clubs[f.homeId]!;
+          const awayClub = state.clubs[f.awayId]!;
+          const homeSheet = buildTeamSheet(homeClub, state.players, 'home');
+          const awaySheet = buildTeamSheet(awayClub, state.players, 'away');
+
+          const input: MatchInput = {
+            fixtureId: f.id,
+            home: homeSheet,
+            away: awaySheet,
+            isDerby: homeClub.rivals.includes(awayClub.id),
+            weather: f.weather,
+            userSide: null,
+            aiControls: ['home', 'away'],
+          };
+
+          const matchSeed = deriveSeed(state.seed, 'match-sim', f.id);
+          results[f.id] = simulateInstant(input, matchSeed);
+        }
+      }
+
+      return applyMatchResults(state, results);
+    }
+
+    case 'PostMatch': {
+      return runWeeklyProcessing(state);
+    }
+
+    case 'WeekSummary': {
+      if (state.matchday === 9) {
+        const next = JSON.parse(JSON.stringify(state)) as GameState;
+        next.phase = 'TransferWindow';
+        return next;
+      }
+      if (state.matchday >= 18) {
+        return computeSeasonEnd(state);
+      }
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      next.matchday += 1;
+      next.phase = 'PreMatch';
+      return next;
+    }
+
+    case 'TransferWindow': {
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      if (next.matchday === 0) {
+        next.matchday = 1;
+        next.phase = 'PreMatch';
+      } else {
+        next.matchday += 1;
+        next.phase = 'PreMatch';
+      }
+      return next;
+    }
+
+    case 'SeasonEnd':
+    case 'Sacked':
+    default:
+      return state;
+  }
+}

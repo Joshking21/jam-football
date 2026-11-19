@@ -1,15 +1,33 @@
 // Implements SPEC §7.1, §11.0 Global Shell and Router
 import React, { useEffect } from 'react';
-import { useStore } from '@/state/store';
-import { TitleScreen } from '@/ui/screens/TitleScreen';
-import { DevGalleryScreen } from '@/ui/screens/DevGalleryScreen';
-import { SettingsModal } from '@/ui/screens/SettingsModal';
-import { CreditsModal } from '@/ui/screens/CreditsModal';
-import { TopBar } from '@/ui/components/TopBar';
-import { Sidebar } from '@/ui/components/Sidebar';
-import { Toast } from '@/ui/components/Toast';
-import { Card } from '@/ui/components/Card';
-import { applySettingsToDom } from '@/state/settings';
+import { useStore } from './state/store';
+import { TitleScreen } from './ui/screens/TitleScreen';
+import { DevGalleryScreen } from './ui/screens/DevGalleryScreen';
+import { NewGameScreen } from './ui/screens/NewGameScreen';
+import { BoardMeetingScreen } from './ui/screens/BoardMeetingScreen';
+import { HubScreen } from './ui/screens/HubScreen';
+import { SquadScreen } from './ui/screens/SquadScreen';
+import { TacticsScreen } from './ui/screens/TacticsScreen';
+import { TrainingScreen } from './ui/screens/TrainingScreen';
+import { TransfersScreen } from './ui/screens/TransfersScreen';
+import { LeagueScreen } from './ui/screens/LeagueScreen';
+import { FixturesScreen } from './ui/screens/FixturesScreen';
+import { ClubScreen } from './ui/screens/ClubScreen';
+import { InboxScreen } from './ui/screens/InboxScreen';
+import { PreMatchScreen } from './ui/screens/PreMatchScreen';
+import { TextMatchScreen } from './ui/screens/TextMatchScreen';
+import { PostMatchScreen } from './ui/screens/PostMatchScreen';
+import { WeekSummaryScreen } from './ui/screens/WeekSummaryScreen';
+import { SeasonEndScreen } from './ui/screens/SeasonEndScreen';
+import { SackedScreen } from './ui/screens/SackedScreen';
+import { PlayerProfileModal } from './ui/screens/PlayerProfileModal';
+import { SettingsModal } from './ui/screens/SettingsModal';
+import { CreditsModal } from './ui/screens/CreditsModal';
+import { TopBar } from './ui/components/TopBar';
+import { Sidebar } from './ui/components/Sidebar';
+import { Toast } from './ui/components/Toast';
+import { ScreenTransition, getScreenWorld } from './ui/components/ScreenTransition';
+import { applySettingsToDom } from './state/settings';
 
 export const App: React.FC = () => {
   const screen = useStore((state) => state.screen);
@@ -17,6 +35,7 @@ export const App: React.FC = () => {
   const isSettingsOpen = useStore((state) => state.isSettingsOpen);
   const isCreditsOpen = useStore((state) => state.isCreditsOpen);
   const closeModal = useStore((state) => state.closeModal);
+  const selectedPlayerId = useStore((state) => state.selectedPlayerId);
   const settings = useStore((state) => state.settings);
   const gameState = useStore((state) => state.gameState);
 
@@ -34,29 +53,20 @@ export const App: React.FC = () => {
       }
 
       if (e.key === 'Escape') {
-        if (isSettingsOpen || isCreditsOpen) {
+        if (selectedPlayerId) {
+          useStore.setState({ selectedPlayerId: null });
+        } else if (isSettingsOpen || isCreditsOpen) {
           e.preventDefault();
           closeModal();
-        }
-      }
-
-      if (e.code === 'Space') {
-        // Space continues primary action when modals are closed
-        if (!isSettingsOpen && !isCreditsOpen) {
-          const continueBtn = document.querySelector<HTMLButtonElement>('.btn-primary');
-          if (continueBtn && !continueBtn.disabled) {
-            e.preventDefault();
-            continueBtn.click();
-          }
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSettingsOpen, isCreditsOpen, closeModal]);
+  }, [isSettingsOpen, isCreditsOpen, selectedPlayerId, closeModal]);
 
-  // Standalone full-screen modes
+  // 1. Standalone full-screen modes
   if (screen === 'title') {
     return (
       <>
@@ -79,55 +89,97 @@ export const App: React.FC = () => {
     );
   }
 
-  // Management screens shell (TopBar + Sidebar + Content area)
+  if (screen === 'newGame') {
+    return (
+      <>
+        <NewGameScreen />
+        <SettingsModal />
+        <CreditsModal />
+        <Toast />
+      </>
+    );
+  }
+
+  if (screen === 'boardMeeting') {
+    return (
+      <>
+        <BoardMeetingScreen />
+        <SettingsModal />
+        <CreditsModal />
+        <Toast />
+      </>
+    );
+  }
+
+  if (screen === 'match') {
+    return (
+      <>
+        <TextMatchScreen />
+        <SettingsModal />
+        <CreditsModal />
+        <Toast />
+      </>
+    );
+  }
+
+  if (screen === 'seasonEnd') {
+    return (
+      <>
+        <SeasonEndScreen />
+        <SettingsModal />
+        <CreditsModal />
+        <Toast />
+      </>
+    );
+  }
+
+  if (screen === 'sacked') {
+    return (
+      <>
+        <SackedScreen />
+        <SettingsModal />
+        <CreditsModal />
+        <Toast />
+      </>
+    );
+  }
+
+  const currentWorld = getScreenWorld(screen);
+
+  // 2. Management screens shell (TopBar + Sidebar + ScreenTransition + Content)
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        width: '100vw',
-        overflow: 'hidden',
-      }}
-    >
+    <div className={`app-shell ${currentWorld}`}>
       <TopBar />
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div className={`app-shell-sidebar ${currentWorld === 'office' ? 'office' : ''}`}>
         <Sidebar />
-        <main
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '24px',
-            maxWidth: '1600px',
-            margin: '0 auto',
-            width: '100%',
-          }}
-        >
-          {/* Active Screen View */}
-          <div style={{ animation: 'screen-fade var(--dur-med) var(--ease)' }}>
-            <Card>
-              <h1 style={{ fontSize: '32px', marginBottom: '12px' }}>{screen.toUpperCase()}</h1>
-              <p style={{ color: 'var(--text-dim)', fontSize: '15px' }}>
-                Screen view for {screen}. Will be connected in milestone M1–M3.
-              </p>
-              <div style={{ marginTop: '20px' }}>
-                <button
-                  onClick={() => setScreen('title')}
-                  style={{
-                    padding: '8px 16px',
-                    background: 'var(--surface-3)',
-                    color: 'var(--text)',
-                    borderRadius: 'var(--radius-s)',
-                  }}
-                >
-                  Return to Title Screen
-                </button>
-              </div>
-            </Card>
-          </div>
-        </main>
       </div>
 
+      <main className={`app-shell-main ${currentWorld === 'office' ? 'office' : ''}`}>
+        <ScreenTransition currentScreen={screen}>
+          {screen === 'hub' && <HubScreen />}
+          {screen === 'squad' && <SquadScreen />}
+          {screen === 'tactics' && <TacticsScreen />}
+          {screen === 'training' && <TrainingScreen />}
+          {screen === 'transfers' && <TransfersScreen />}
+          {screen === 'league' && <LeagueScreen />}
+          {screen === 'fixtures' && <FixturesScreen />}
+          {screen === 'club' && <ClubScreen />}
+          {screen === 'inbox' && <InboxScreen />}
+          {screen === 'preMatch' && <PreMatchScreen />}
+          {screen === 'fullTime' && <PostMatchScreen />}
+          {screen === 'weekSummary' && <WeekSummaryScreen />}
+        </ScreenTransition>
+      </main>
+
+      {/* Player Profile Modal */}
+      {selectedPlayerId && (
+        <PlayerProfileModal
+          playerId={selectedPlayerId}
+          onClose={() => useStore.setState({ selectedPlayerId: null })}
+        />
+      )}
+
+      {/* Global Modals */}
       <SettingsModal />
       <CreditsModal />
       <Toast />

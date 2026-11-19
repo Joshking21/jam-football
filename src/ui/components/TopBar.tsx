@@ -1,15 +1,16 @@
 // Implements SPEC §11.0 Top bar (64 px)
 import React from 'react';
-import { useStore } from '@/state/store';
+import { useStore } from '../../state/store';
 import { Crest } from './Crest';
 import { ContinueButton } from './ContinueButton';
-import { formatMoney } from '@/core/math';
+import { formatMoney } from '../../core/math';
 import { Settings, Mail } from 'lucide-react';
 
 export const TopBar: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
   const openSettings = useStore((state) => state.openSettings);
   const setScreen = useStore((state) => state.setScreen);
+  const advanceGame = useStore((state) => state.advanceGame);
 
   const userClub = gameState ? gameState.clubs[gameState.userClubId] : null;
 
@@ -28,15 +29,9 @@ export const TopBar: React.FC = () => {
 
   const unreadInboxCount = gameState ? gameState.inbox.filter((item) => !item.read).length : 0;
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!gameState) return;
-    if (gameState.phase === 'PreMatch') {
-      setScreen('match');
-    } else if (gameState.phase === 'Preseason') {
-      setScreen('hub');
-    } else {
-      setScreen('preMatch');
-    }
+    await advanceGame();
   };
 
   const continueLabel =
@@ -44,27 +39,32 @@ export const TopBar: React.FC = () => {
       ? 'Kick Off'
       : gameState?.phase === 'TransferWindow'
         ? 'Next Round'
-        : gameState?.pendingMatch
-          ? 'Go to Match'
-          : 'Continue';
+        : gameState?.phase === 'Preseason'
+          ? 'Go to Hub'
+          : gameState?.phase === 'Match'
+            ? 'Resume Match'
+            : gameState?.phase === 'PostMatch'
+              ? 'To Summary'
+              : gameState?.phase === 'WeekSummary'
+                ? 'Next Match'
+                : 'Continue';
 
   return (
     <header
+      className="app-shell-topbar"
       style={{
         height: '64px',
-        background: 'var(--surface)',
+        backgroundColor: 'var(--surface)',
         borderBottom: '1px solid var(--border)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 24px',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
+        userSelect: 'none',
       }}
     >
       {/* Left: Club Identity */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         {userClub ? (
           <>
             <Crest
@@ -81,11 +81,18 @@ export const TopBar: React.FC = () => {
                   fontSize: '18px',
                   fontFamily: 'var(--font-head)',
                   letterSpacing: '0.02em',
+                  lineHeight: '1.1',
                 }}
               >
                 {userClub.name.toUpperCase()}
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+              <div
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--text-dim)',
+                  marginTop: '1px',
+                }}
+              >
                 {userClub.nickname} · {userClub.stadium.name}
               </div>
             </div>
@@ -104,106 +111,129 @@ export const TopBar: React.FC = () => {
         )}
       </div>
 
-      {/* Centre: Matchday & Standing */}
-      <div
-        style={{
-          fontSize: '14px',
-          fontWeight: 600,
-          color: 'var(--text-dim)',
-          fontVariantNumeric: 'tabular-nums',
-        }}
-      >
-        {rankLabel}
-      </div>
+      {/* Centre: Matchday & League Snapshot */}
+      {rankLabel && (
+        <div
+          className="broadcast-label"
+          style={{
+            fontSize: '14px',
+            color: 'var(--text)',
+            letterSpacing: '0.06em',
+            backgroundColor: 'var(--surface-2)',
+            padding: '6px 16px',
+            borderRadius: 'var(--radius-s)',
+            border: '1px solid var(--border)',
+          }}
+        >
+          {rankLabel}
+        </div>
+      )}
 
       {/* Right: Balance, Inbox, Settings, Continue */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         {userClub && (
-          <div
-            style={{
-              padding: '6px 12px',
-              background: 'var(--surface-2)',
-              borderRadius: 'var(--radius-s)',
-              border: '1px solid var(--border)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-            }}
-          >
-            <span
+          <div style={{ textAlign: 'right' }}>
+            <div
+              className="stat-number tabular-nums"
               style={{
-                fontSize: '10px',
-                color: 'var(--text-faint)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
+                fontSize: '15px',
+                fontWeight: 600,
+                color: userClub.balance >= 0 ? 'var(--text)' : 'var(--loss)',
+              }}
+            >
+              {formatMoney(userClub.balance)}
+            </div>
+            <div
+              style={{
+                fontSize: '11px',
+                color: 'var(--text-dim)',
+                marginTop: '1px',
               }}
             >
               Balance
-            </span>
-            <span style={{ fontWeight: 700, fontSize: '14px', fontFamily: 'var(--font-head)' }}>
-              {formatMoney(userClub.balance)}
-            </span>
+            </div>
           </div>
         )}
 
-        {/* Inbox button with badge */}
+        {/* Inbox icon with unread badge */}
         <button
           onClick={() => setScreen('inbox')}
-          title="Inbox"
-          aria-label="Open inbox"
+          aria-label={`Inbox, ${unreadInboxCount} unread`}
           style={{
             position: 'relative',
-            color: 'var(--text-dim)',
-            padding: '8px',
+            width: '36px',
+            height: '36px',
             borderRadius: 'var(--radius-m)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            color: 'var(--text-dim)',
+            background: 'var(--surface-2)',
+            border: '1px solid var(--border)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--text)';
+            e.currentTarget.style.borderColor = 'var(--text-dim)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--text-dim)';
+            e.currentTarget.style.borderColor = 'var(--border)';
           }}
         >
-          <Mail size={20} />
+          <Mail size={18} />
           {unreadInboxCount > 0 && (
             <span
               style={{
                 position: 'absolute',
-                top: '4px',
-                right: '4px',
-                background: 'var(--accent)',
-                color: 'var(--accent-ink)',
-                fontSize: '10px',
-                fontWeight: 700,
-                width: '16px',
-                height: '16px',
+                top: '-4px',
+                right: '-4px',
+                width: '18px',
+                height: '18px',
                 borderRadius: '50%',
+                backgroundColor: 'var(--accent)',
+                color: 'var(--accent-ink)',
+                fontSize: '11px',
+                fontWeight: 700,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                fontFamily: 'var(--font-head)',
               }}
             >
-              {unreadInboxCount}
+              {unreadInboxCount > 9 ? '9+' : unreadInboxCount}
             </span>
           )}
         </button>
 
-        {/* Settings button */}
+        {/* Settings gear */}
         <button
           onClick={openSettings}
-          title="Settings"
-          aria-label="Open settings"
+          aria-label="Settings"
           style={{
-            color: 'var(--text-dim)',
-            padding: '8px',
+            width: '36px',
+            height: '36px',
             borderRadius: 'var(--radius-m)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            color: 'var(--text-dim)',
+            background: 'var(--surface-2)',
+            border: '1px solid var(--border)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--text)';
+            e.currentTarget.style.borderColor = 'var(--text-dim)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--text-dim)';
+            e.currentTarget.style.borderColor = 'var(--border)';
           }}
         >
-          <Settings size={20} />
+          <Settings size={18} />
         </button>
 
-        {/* Continue action button */}
-        <ContinueButton label={continueLabel} onClick={handleContinue} />
+        {/* Primary Continue button */}
+        {gameState && <ContinueButton label={continueLabel} onClick={handleContinue} />}
       </div>
     </header>
   );

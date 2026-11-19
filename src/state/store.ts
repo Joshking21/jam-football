@@ -1,8 +1,12 @@
-// Implements SPEC §7.1, §7.2, §11.0, §20 Zustand store for GameState and UI state
+// Implements SPEC §7.1, §7.2, §10, §11.0, §20 Zustand store for GameState and UI state
 import { create } from 'zustand';
-import { GameState, PlayerId } from '@/core/types';
+import { GameState, PlayerId, Tactics, TrainingPlan, Player } from '@/core/types';
 import { GameSettings, loadSettings, saveSettings } from './settings';
-import { getSaveMeta, loadGame, SaveMeta } from './saves';
+import { getSaveMeta, loadGame, saveGame, SaveMeta } from './saves';
+import { createNewGame, NewGameOptions } from '@/core/game/newGame';
+import { advance, validateLineup } from '@/core/game/advance';
+import { pickBestLineup } from '@/core/match/aiManager';
+import { applyClubTheme } from '@/config/clubThemes';
 
 export type AppScreen =
   | 'title'
@@ -60,6 +64,15 @@ export interface AppState {
   showToast: (message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
   clearToast: () => void;
   setGameState: (state: GameState | null) => void;
+  startNewGame: (options: NewGameOptions) => Promise<void>;
+  advanceGame: (action?: any) => Promise<boolean>;
+  updateUserTactics: (partial: Partial<Tactics>) => void;
+  updateUserTraining: (partial: Partial<TrainingPlan>) => void;
+  autoPickBestLineup: () => void;
+  swapLineupSlots: (slotA: number, slotB: number) => void;
+  swapLineupWithBench: (lineupSlot: number, benchIndex: number) => void;
+  markInboxRead: (id: string) => void;
+  saveAutosave: () => Promise<void>;
   checkAutosave: () => Promise<void>;
   continueAutosave: () => Promise<boolean>;
 }
@@ -123,7 +136,180 @@ export const useStore = create<AppState>((set, get) => {
 
     clearToast: () => set({ toast: null }),
 
-    setGameState: (gameState: GameState | null) => set({ gameState }),
+    setGameState: (gameState: GameState | null) => {
+      applyClubTheme(gameState?.userClubId ?? null);
+      set({ gameState });
+    },
+
+    startNewGame: async (options: NewGameOptions) => {
+      const state = createNewGame(options);
+      applyClubTheme(state.userClubId);
+      await saveGame('autosave', state);
+      const meta = await getSaveMeta('autosave');
+      set({
+        gameState: state,
+        hasAutosave: true,
+        autosaveMeta: meta,
+        screen: 'boardMeeting',
+      });
+    },
+
+    advanceGame: async (action?: any) => {
+      const current = get().gameState;
+      if (!current) return false;
+
+      try {
+        const next = advance(current, action);
+        let nextScreen = get().screen;
+
+        // Auto-navigate screen according to new phase
+        switch (next.phase) {
+          case 'BoardMeeting':
+            nextScreen = 'boardMeeting';
+            break;
+          case 'Preseason':
+            nextScreen = 'hub';
+            break;
+          case 'PreMatch':
+            nextScreen = 'preMatch';
+            break;
+          case 'Match':
+            nextScreen = 'match';
+            break;
+          case 'PostMatch':
+            nextScreen = 'fullTime';
+            break;
+          case 'WeekSummary':
+            nextScreen = 'weekSummary';
+            break;
+          case 'TransferWindow':
+            nextScreen = 'transfers';
+            break;
+          case 'SeasonEnd':
+            nextScreen = 'seasonEnd';
+            break;
+          case 'Sacked':
+            nextScreen = 'sacked';
+            break;
+        }
+
+        // Autosave at WeekSummary, SeasonEnd, or when instructed (SPEC §20.3)
+        if (next.phase === 'WeekSummary' || next.phase === 'SeasonEnd') {
+          await saveGame('autosave', next);
+          const meta = await getSaveMeta('autosave');
+          set({ gameState: next, screen: nextScreen, hasAutosave: true, autosaveMeta: meta });
+        } else {
+          set({ gameState: next, screen: nextScreen });
+        }
+        return true;
+      } catch (err: any) {
+        get().showToast(err.message || 'Cannot advance', 'warning');
+        return false;
+      }
+    },
+
+    updateUserTactics: (partial: Partial<Tactics>) => {
+      const state = get().gameState;
+      if (!state) return;
+      const userClub = state.clubs[state.userClubId];
+      if (!userClub) return;
+
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      next.clubs[next.userClubId]!.tactics = {
+        ...next.clubs[next.userClubId]!.tactics,
+        ...partial,
+      };
+      set({ gameState: next });
+    },
+
+    updateUserTraining: (partial: Partial<TrainingPlan>) => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      next.clubs[next.userClubId]!.trainingPlan = {
+        ...next.clubs[next.userClubId]!.trainingPlan,
+        ...partial,
+      };
+      set({ gameState: next });
+    },
+
+    autoPickBestLineup: () => {
+      const state = get().gameState;
+      if (!state) return;
+      const userClub = state.clubs[state.userClubId];
+      if (!userClub) return;
+
+      const candidates = userClub.squad
+        .map((id) => state.players[id])
+        .filter((p): p is Player => p != null)
+        .map((p) => ({
+          ...p,
+          isInjured: p.injury !== null,
+          isSuspended: p.suspendedMatches > 0,
+        }));
+
+      const best = pickBestLineup(
+        candidates,
+        userClub.style.formation,
+        userClub.formationFamiliarity,
+      );
+
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const targetClub = next.clubs[next.userClubId]!;
+      targetClub.tactics.formation = best.formation;
+      targetClub.tactics.lineup = [...best.lineup];
+      targetClub.tactics.duties = [...best.duties];
+      targetClub.tactics.bench = [...best.bench];
+
+      set({ gameState: next });
+      get().showToast('Assistant selected the best XI', 'success');
+    },
+
+    swapLineupSlots: (slotA: number, slotB: number) => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const lineup = next.clubs[next.userClubId]!.tactics.lineup;
+      const temp = lineup[slotA];
+      lineup[slotA] = lineup[slotB] ?? null;
+      lineup[slotB] = temp ?? null;
+      set({ gameState: next });
+    },
+
+    swapLineupWithBench: (lineupSlot: number, benchIndex: number) => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const tactics = next.clubs[next.userClubId]!.tactics;
+      const starterId = tactics.lineup[lineupSlot];
+      const benchId = tactics.bench[benchIndex];
+      if (!benchId) return;
+
+      tactics.lineup[lineupSlot] = benchId;
+      if (starterId) {
+        tactics.bench[benchIndex] = starterId;
+      } else {
+        tactics.bench.splice(benchIndex, 1);
+      }
+      set({ gameState: next });
+    },
+
+    markInboxRead: (id: string) => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const item = next.inbox.find((i) => i.id === id);
+      if (item) item.read = true;
+      set({ gameState: next });
+    },
+
+    saveAutosave: async () => {
+      const state = get().gameState;
+      if (!state) return;
+      await saveGame('autosave', state);
+      const meta = await getSaveMeta('autosave');
+      set({ hasAutosave: true, autosaveMeta: meta });
+    },
 
     checkAutosave: async () => {
       const meta = await getSaveMeta('autosave');
@@ -136,9 +322,10 @@ export const useStore = create<AppState>((set, get) => {
     continueAutosave: async () => {
       const state = await loadGame('autosave');
       if (state) {
+        applyClubTheme(state.userClubId);
         set({
           gameState: state,
-          screen: state.phase === 'Preseason' ? 'hub' : 'hub',
+          screen: state.phase === 'BoardMeeting' ? 'boardMeeting' : 'hub',
         });
         return true;
       }
@@ -146,3 +333,5 @@ export const useStore = create<AppState>((set, get) => {
     },
   };
 });
+
+export const useSettings = () => useStore((state) => state.settings);

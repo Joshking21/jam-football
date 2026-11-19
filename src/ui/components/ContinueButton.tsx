@@ -1,7 +1,10 @@
 // Implements SPEC §11.0, §19.5 ContinueButton component
+// Primary L with KeyHint "Space", subtle pulse every 6s when idle > 10s (off with reduce motion).
+// When label changes, new label slides up into place (--dur-fast).
 import React, { useEffect, useState } from 'react';
 import { Button } from './Button';
 import { KeyHint } from './KeyHint';
+import { useSettings } from '../../state/store';
 
 export interface ContinueButtonProps {
   label?: string;
@@ -19,6 +22,7 @@ export const ContinueButton: React.FC<ContinueButtonProps> = ({
   loading = false,
 }) => {
   const [isIdle, setIsIdle] = useState(false);
+  const { reduceMotion } = useSettings();
 
   useEffect(() => {
     let idleTimer: ReturnType<typeof setTimeout>;
@@ -26,9 +30,11 @@ export const ContinueButton: React.FC<ContinueButtonProps> = ({
     const resetIdle = () => {
       setIsIdle(false);
       clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => {
-        setIsIdle(true);
-      }, 10000); // 10s idle
+      if (!reduceMotion) {
+        idleTimer = setTimeout(() => {
+          setIsIdle(true);
+        }, 10000); // 10s idle
+      }
     };
 
     resetIdle();
@@ -40,7 +46,29 @@ export const ContinueButton: React.FC<ContinueButtonProps> = ({
       window.removeEventListener('mousemove', resetIdle);
       window.removeEventListener('keydown', resetIdle);
     };
-  }, []);
+  }, [reduceMotion]);
+
+  // Global Space key trigger (SPEC §11.0)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        const target = e.target as HTMLElement;
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
+          return;
+        }
+        if (target.isContentEditable) {
+          return;
+        }
+        e.preventDefault();
+        if (!disabled && !loading) {
+          onClick();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClick, disabled, loading]);
 
   return (
     <Button
@@ -52,18 +80,42 @@ export const ContinueButton: React.FC<ContinueButtonProps> = ({
       loading={loading}
       style={{
         minWidth: '160px',
-        animation: isIdle && !disabled ? 'continue-pulse 6s infinite ease-in-out' : 'none',
+        animation:
+          isIdle && !disabled && !reduceMotion ? 'continue-pulse 6s infinite ease-in-out' : 'none',
+        overflow: 'hidden',
       }}
     >
-      <span style={{ marginRight: '8px' }}>{label}</span>
+      <span
+        key={label}
+        style={{
+          marginRight: '8px',
+          display: 'inline-block',
+          animation: !reduceMotion ? 'label-slide-up var(--dur-fast) var(--ease-snap)' : 'none',
+        }}
+      >
+        {label}
+      </span>
       <KeyHint
         hint="Space"
         style={{
-          background: 'rgba(3, 43, 28, 0.2)',
-          borderColor: 'rgba(3, 43, 28, 0.4)',
+          background: 'rgba(0, 0, 0, 0.15)',
+          borderColor: 'rgba(0, 0, 0, 0.3)',
           color: 'var(--accent-ink)',
         }}
       />
+
+      <style>{`
+        @keyframes label-slide-up {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </Button>
   );
 };

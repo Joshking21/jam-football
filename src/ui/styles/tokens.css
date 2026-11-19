@@ -1,35 +1,57 @@
-/* Implements SPEC §19.2 Tokens and §19.4 Data colours */
+/* Implements SPEC §19.2 Tokens, §19.4 Data colours, and §19.7 Motion */
 :root {
-  --bg: #070c18;
-  --surface: #0f1729;
-  --surface-2: #16213a;
-  --surface-3: #1d2b4a;
-  --border: #263557;
-  --text: #f3f6fb;
-  --text-dim: #9ca9c4;
-  --text-faint: #66748f;
+  /* on air: cool near-black */
+  --bg: #07090d;
+  --surface: #0e1218;
+  --surface-2: #151a22;
+  --surface-3: #1c222c;
+  --border: #2a313d;
 
-  --accent: #00e58f;
-  --accent-ink: #032b1c;
+  /* the office: warm dark desk, paper, whiteboard */
+  --desk: #100e0c;
+  --desk-2: #191613;
+  --desk-border: #2e2924;
+  --paper: #efebe3;
+  --paper-2: #e4ded2;
+  --paper-ink: #1b1a17;
+  --paper-dim: #5e574e;
+  --paper-rule: #cfc6b6;
+  --board: #e9ecea;
+  --board-ink: #1e2a38;
+  --marker-red: #c42b2b;
+  --marker-blue: #1f4fbf;
+  --marker-green: #1e7b3c;
+
+  /* text on dark */
+  --text: #f2f4f7;
+  --text-dim: #a3acba;
+  --text-faint: #7d8696;
+
+  /* brand: set at runtime from the club theme table; these defaults are the league brand */
+  --accent: #ff5b35;
+  --accent-ink: #1a0600;
+  --accent-text: #ff6e4d;
+  --band-1: #ff5b35;
+  --band-2: #f2f4f7;
+  --club-primary: #ff5b35;
+  --club-secondary: #f2f4f7;
+
+  /* fixed meanings (never themed) */
   --gold: #ffc83d;
   --info: #3da5ff;
-
   --win: #18c77a;
-  --draw: #9ca9c4;
+  --draw: #a3acba;
   --loss: #ff4d5e;
   --warning: #ffb020;
   --danger: #ff4d5e;
 
-  /* Runtime club theme colours */
-  --club-primary: #0b1f3a;
-  --club-secondary: #f2b705;
-
-  --radius-s: 6px;
-  --radius-m: 10px;
-  --radius-l: 16px;
-
-  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.35);
-  --shadow-2: 0 8px 24px rgb(0 0 0 / 0.45);
+  /* shape */
+  --radius-s: 2px;
+  --radius-m: 4px;
+  --radius-l: 6px;
+  --cut: 10px;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-paper: 0 1px 0 rgb(0 0 0 / 0.25), 0 10px 24px rgb(0 0 0 / 0.5);
 
   --space-1: 4px;
   --space-2: 8px;
@@ -42,18 +64,24 @@
   --font-head: 'Barlow Condensed', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
 
-  --dur-fast: 150ms;
-  --dur-med: 250ms;
-  --dur-slow: 400ms;
-  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* motion (§19.7) */
+  --dur-micro: 120ms;
+  --dur-fast: 180ms;
+  --dur-med: 260ms;
+  --dur-wipe: 440ms;
+  --dur-count: 650ms;
+  --dur-reorder: 700ms;
+  --ease-snap: cubic-bezier(0.2, 0.9, 0.1, 1);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.8, 0.2);
 
-  /* Attribute / OVR scale colors (default) */
-  --attr-poor: #ff4d5e;
-  --attr-subpar: #ff8a3d;
-  --attr-avg: #ffc83d;
-  --attr-good: #9be15d;
-  --attr-great: #18c77a;
-  --attr-elite: #00e5d1;
+  /* Attribute / OVR scale colors (SPEC §19.4) */
+  --attr-poor: #ff4d5e; /* 1–39 */
+  --attr-subpar: #ff8a3d; /* 40–54 */
+  --attr-avg: #ffc83d; /* 55–64 */
+  --attr-good: #9be15d; /* 65–74 */
+  --attr-great: #18c77a; /* 75–84 */
+  --attr-elite: #00e5d1; /* 85–99 */
 }
 
 /* Colour-blind accessible palette (SPEC §19.4) */
@@ -66,4 +94,25 @@ body.colorblind {
   --attr-elite: #cc79a7;
   --win: #0072b2;
   --loss: #d55e00;
+}
+
+/* Reduced motion preference (SPEC §19.7) */
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  body.reduce-motion {
+    --dur-micro: 0ms;
+    --dur-fast: 150ms;
+    --dur-med: 150ms;
+    --dur-wipe: 150ms;
+    --dur-count: 0ms;
+    --dur-reorder: 0ms;
+  }
+}
+body.reduce-motion {
+  --dur-micro: 0ms;
+  --dur-fast: 150ms;
+  --dur-med: 150ms;
+  --dur-wipe: 150ms;
+  --dur-count: 0ms;
+  --dur-reorder: 0ms;
 }
