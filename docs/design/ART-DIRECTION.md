@@ -25,7 +25,7 @@ This file defines how every model, texture and image in the game looks. Claude m
 
 **Always**
 - Light comes from somewhere you can name: the floodlight banks at night, the sun in the afternoon.
-- Kits are the brightest, most saturated colours on the pitch. The grass is deep, not neon; the UI's `--accent` green stays the only neon in the game.
+- Kits are the brightest, most saturated colours on the pitch. The grass is deep, not neon. The UI's accent is the user's club colour (SPEC §19.2), so the game's palette comes from the clubs, not from a UI colour.
 - Ordinary faces: varied ages (17–36 for players), builds, noses, ears and hairlines; older players look weathered.
 - Every asset is checked at the distance it is seen from (broadcast camera, free camera close-up, portrait at 48 px and 256 px) before it ships.
 

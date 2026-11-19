@@ -69,3 +69,8 @@ Overall status: ALL PASS
     - vite build: built in 12.17s PASS
 - Notes: Complete 2D deterministic match engine built with pure src/core/** functions. All calibration metrics meet SPEC §13.16 targets. simulateInstant median speed is 15.80 ms (< 30 ms target). Web Workers match.worker.ts and season.worker.ts implemented per §7.4 protocol.
 - Open issues: none
+
+## 2026-11-19 · SPEC 1.2 (Claude, not a Gemini task)
+- Changed: docs/SPEC.md (v1.2: §19.1–19.7 rewritten as "on air + the office" with club-colour theming and a full motion system; §11.0 sidebar order, §11.7, §11.8, §17.3, §19.8 focus ring; M3 task 2 added), docs/design/ART-DIRECTION.md (accent line)
+- Ran: nothing (docs only)
+- Notes: M3 now starts with reworking the M0 shell (tokens, sidebar, transitions). An animated Hub reference from Claude will follow in docs/design/; until then build to §19.

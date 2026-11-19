@@ -1,8 +1,10 @@
 # TOUCHLINE (working title) — Complete Build Specification
 
-Version 1.1 · 19 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
+Version 1.2 · 19 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
+
+**Changes in 1.2 (19 Nov):** the UI design system is rewritten (§19.1–19.7): the game is a broadcast ("on air") plus the manager's office ("behind the scenes"); the accent is now the user's club colour (club theme table, §19.2), the neon green is gone; new base palette, sharper shapes, the sidebar rundown, a ticker, and a full motion system (screen transitions, springs, count-ups, table reorders, stamps, magnets) with performance and reduce-motion rules. Related edits: §11.0 sidebar order and keys, §11.7 player file, §11.8 tactics whiteboard, §17.3 UI sounds, §19.8 focus ring, M3 task 2 (rework the M0 shell).
 
 **Changes in 1.1 (19 Nov):** new §14.10 Realism pass (post-processing, environment lighting, light beams, haze, grass, wet pitch); new rows in the §21.2 presets table; portraits are delivered greyscale and tinted per club at runtime (§18.2, §18.5); `textures/grass_normal.webp` and optional brick/timber stand models added (§18.2); `manager.glb` contract (§18.3); M4 task 7 and M8 task 1 updated. The look of every model and image is defined in `docs/design/ART-DIRECTION.md`; fallbacks SHOULD follow its colours and lighting values.
 
@@ -202,6 +204,7 @@ jam-football/
 │  ├─ config/
 │  │  ├─ constants.ts           # GAME_TITLE, versions, seeds, limits
 │  │  ├─ balance.ts             # EVERY tunable gameplay number
+│  │  ├─ clubThemes.ts          # UI theme colours per club (§19.2)
 │  │  └─ formations.ts          # formation slots and anchors
 │  ├─ core/                     # pure TypeScript, no DOM/React/three/audio
 │  │  ├─ rng.ts  types.ts  ids.ts  math.ts
@@ -226,7 +229,9 @@ jam-football/
 │     ├─ styles/ tokens.css  global.css
 │     ├─ components/  (Button, Card, Tabs, Table, Modal, Toast, Tooltip, Badge, AttrBar, OvrBadge,
 │     │               Crest, Portrait, KitIcon, PitchBoard, Sparkline, StatCompare, Meter,
-│     │               ProgressSteps, KeyHint, ContinueButton, Sidebar, TopBar, EmptyState, ConfirmDialog)
+│     │               ProgressSteps, KeyHint, ContinueButton, Sidebar, TopBar, EmptyState, ConfirmDialog,
+│     │               Panel, Sheet, Stamp, Magnet, Ticker, ScreenTransition, CountUp, FlipList)
+│     ├─ motion/      spring.ts  flip.ts  transitions.ts   (§19.7)
 │     └─ screens/     (one folder per screen in §11)
 └─ tests/  (vitest *.test.ts mirroring src paths)
 ```
@@ -652,7 +657,8 @@ Circle method for 10 teams, rounds 1–9; rounds 10–18 repeat rounds 1–9 in 
 
 ### 11.0 Global shell and keyboard map
 - **Top bar** (64 px): crest + club name (left); centre: "Matchday 7 of 18 · 3rd place · 14 pts"; right: balance, inbox icon with unread count, settings gear, **Continue** button (accent, always visible, label changes: "Continue", "Go to Match", "Kick Off", "Next Round", "Finish Window").
-- **Sidebar** (232 px, collapsible to 72 px icons below 1440 wide): Hub, Squad, Tactics, Training, Transfers (only enabled during windows; otherwise shows "Scouting" list read-only), League, Fixtures, Club (Finances + Board), Inbox.
+- **Sidebar** ("the rundown", behaviour and animation in §19.6; 232 px, collapsible to 72 px icons below 1440 wide), in two groups. On air: Hub, League, Fixtures. The office: Squad, Tactics, Training, Transfers (only enabled during windows; otherwise shows "Scouting" list read-only), Club (Finances + Board), Inbox.
+- **Ticker** (36 px, bottom of on-air screens, §19.5).
 - **Keyboard:** `Space` Continue / confirm primary; `Esc` close modal / back / pause match; `1`–`9` sidebar items in order (outside the match); in match: `P` pause, `1` `2` `3` speed (Key highlights, Extended, Full), `T` tactics panel, `S` substitutions, `C` cycle camera, `R` replay last goal, `H` hide HUD, `F` fullscreen, `I` instant result (with confirm). Show key hints (KeyHint component) next to every primary button.
 - Every list/table row is keyboard-focusable and opens with Enter.
 
@@ -689,12 +695,14 @@ Grid of cards:
 - Row click → Player Profile.
 
 ### 11.7 Player Profile (modal-sized page, 960 px wide)
+- Presented as a player file opened on the desk (Sheet "file" variant, §19.5; opening animation §19.7): manila tab with the name, the portrait clipped to the first sheet, status shown as Stamps (INJURED, SUSPENDED, TRANSFER LISTED, NOT FOR SALE, SCOUTED).
 - Header: portrait (256²), name, number, positions with familiarity chips, age, nationality flag (simple CSS flag or emoji-free SVG; no flag assets needed: draw horizontal/vertical tri-bands per nation in `procedural/flags.ts`), height, foot, personality, OVR badge, potential stars, value, wage, contract, squad role.
 - Tabs: **Attributes** (three columns Technical/Physical/Mental, plus Goalkeeping for GKs; each AttrBar coloured per §19.4; for unscouted other-club players show ranges e.g. "60–72", §12.12), **Stats** (season table + last 5 matches ratings sparkline), **Status** (condition, fatigue, morale with reasons list "Won last match +6", injury details, suspension), **History**.
 - Actions (own players): Set as captain, Set as taker (penalty/free kick/corner), Transfer list / Remove, Not for sale, Individual training focus (dropdown of attributes, §12.3), Talk to player (opens conversation if allowed: max 1 per player per matchday).
 - Actions (other players): Scout (in windows), Make offer (in windows), Shortlist toggle.
 
 ### 11.8 Tactics
+- The whole screen is the office tactics wall (§19.1): the PitchBoard is a whiteboard (`--board`, pitch lines drawn in `--board-ink` at 35% like marker pen), the tokens are Magnets (§19.5), instructions sit on a clipboard Sheet beside it, and the bench is a row of magnets along the board's bottom edge.
 - Left: **PitchBoard** (2D SVG pitch, vertical orientation, own goal at bottom) with 11 draggable player tokens (shirt colour, number, surname, OVR at slot coloured by fit: green ≥ natural, amber 0.8–0.95, red < 0.8). Drag a token onto another to swap; drag from the bench list onto a token to replace.
 - Right: formation dropdown (7), familiarity meter for the selected formation, the seven instructions as three-way segmented controls with a one-line description each (§13.10), duties per slot (click token → Defend/Support/Attack), captain, takers.
 - Bench: up to 9 players, list with drag handles.
@@ -713,7 +721,7 @@ Grid of cards:
 - "Advance day" button (Continue) resolves AI responses and AI activity (§12.13). After Deadline Day the window closes.
 
 ### 11.11 League
-Tabs: **Table** (full table with form, positions coloured: 1st gold edge, 2–3 accent edge, bottom 2 red edge), **Results by matchday** (selector 1–18), **Stats** (top scorers, assists, average ratings (min 5 apps), clean sheets (GK), yellow/red cards), **Clubs** (club cards: click → club page with squad (estimated OVRs), stadium, manager, form).
+Tabs: **Table** (full table with form, positions coloured: 1st gold mark, 2–3 accent mark, bottom 2 red mark; rows reorder with FlipList after each matchday), **Results by matchday** (selector 1–18), **Stats** (top scorers, assists, average ratings (min 5 apps), clean sheets (GK), yellow/red cards), **Clubs** (club cards: click → club page with squad (estimated OVRs), stadium, manager, form).
 
 ### 11.12 Fixtures
 Your 18 fixtures with result, scorers, attendance, MOTM; upcoming ones show opponent position and form.
@@ -1399,7 +1407,7 @@ Web Audio API. One `AudioContext` created on the first user gesture. Buses: mast
 
 ### 17.3 Crowd and SFX (match)
 - Loops: `crowd/ambience_calm.mp3`, `crowd/ambience_tense.mp3` crossfaded by `danger` = 0 (ball in own DEF third) → 1 (ball in the opponent box), smoothed over 1.5 s. Home-side bias: the crowd swells (+3 dB) on home attacks.
-- One-shots: `crowd/goal_roar.mp3` (home goals full, away goals at −8 dB plus `crowd/away_cheer.mp3`), `crowd/groan_miss.mp3`, `crowd/ooh_save.mp3`, `crowd/boo_foul.mp3`, `crowd/chant_{1..4}.mp3` (random every 60–120 s), `sfx/whistle_short.mp3`, `sfx/whistle_long.mp3` (HT/FT ×3 pattern for FT), `sfx/kick_{1..4}.mp3` (pass/shot, shot louder), `sfx/net.mp3`, `sfx/post.mp3`, `sfx/header.mp3`, `sfx/ui_click.mp3`, `sfx/ui_confirm.mp3`, `sfx/ui_error.mp3`, `sfx/notification.mp3`, `sfx/camera_shutter.mp3` (press conference).
+- One-shots: `crowd/goal_roar.mp3` (home goals full, away goals at −8 dB plus `crowd/away_cheer.mp3`), `crowd/groan_miss.mp3`, `crowd/ooh_save.mp3`, `crowd/boo_foul.mp3`, `crowd/chant_{1..4}.mp3` (random every 60–120 s), `sfx/whistle_short.mp3`, `sfx/whistle_long.mp3` (HT/FT ×3 pattern for FT), `sfx/kick_{1..4}.mp3` (pass/shot, shot louder), `sfx/net.mp3`, `sfx/post.mp3`, `sfx/header.mp3`, `sfx/ui_click.mp3`, `sfx/ui_confirm.mp3`, `sfx/ui_error.mp3`, `sfx/notification.mp3`, `sfx/camera_shutter.mp3` (press conference). UI motion sounds (§19.7): `sfx/ui_whoosh.mp3`, `sfx/ui_cut.mp3`, `sfx/ui_tick.mp3`, `sfx/ui_clack.mp3`, `sfx/ui_paper.mp3`, `sfx/ui_stamp.mp3`.
 - Spatial: kicks panned by ball x relative to the camera (StereoPannerNode, ±0.6).
 
 ### 17.4 Voice
@@ -1461,50 +1469,131 @@ Procedural fallbacks MUST look intentional: crest = shield SVG with the club's c
 
 ## 19. UI design system
 
-### 19.1 Direction
-Broadcast sports TV meets premium dark dashboard: deep navy surfaces, crisp condensed uppercase headings, one neon pitch-green accent, gold for honours, generous spacing, bold numbers. Club colours appear as accents (crest backgrounds, header stripes) on top of the neutral system. Never copy the look of an existing game's UI.
+### 19.1 Direction: two worlds, one show
+The game is a television broadcast about your club, plus the rooms behind it. This idea drives every screen, colour and animation.
 
-### 19.2 Tokens (`tokens.css`)
+- **On air (the broadcast).** Everything the public sees: Title, Hub, League, Fixtures, Pre-Match, the match and its HUD, Half-Time, Full-Time, Week Summary, Press Conference, Season End, Sacked. It looks like a sports broadcast graphics package: near-black cool surfaces, hard edges and angled cuts, bold condensed type, your club's colours as the brand, graphics that build in and wipe off, a live ticker.
+- **Behind the scenes (the office).** The manager's private work: Squad, Player Profile, Tactics, Training, Transfers/Scouting, Club (finances, board), Inbox, Board Meeting, player conversations. It looks like a manager's office at night under a desk lamp: a warm dark desk, and physical objects on it (paper files and memos, a tactics whiteboard with magnetic counters, a training clipboard, a ledger). Things are placed, slid, pinned and stamped, not just faded in.
+- Both worlds share fonts, spacing and data colours, so it reads as one product. Moving between them is a camera cut (§19.7).
+- **Your club is the brand.** Once a club is chosen, the accent everywhere is that club's theme colour (§19.2 table), not a fixed UI colour. Every club looks different. Before a club is chosen (Title, New Game), the Meridian League's own brand colour is used.
+- Never copy the look of an existing game's UI or a real broadcaster's graphics package.
+
+### 19.2 Tokens (`tokens.css`) and club themes (`src/config/clubThemes.ts`)
 ```css
 :root {
-  --bg: #070C18; --surface: #0F1729; --surface-2: #16213A; --surface-3: #1D2B4A; --border: #263557;
-  --text: #F3F6FB; --text-dim: #9CA9C4; --text-faint: #66748F;
-  --accent: #00E58F; --accent-ink: #032B1C; --gold: #FFC83D; --info: #3DA5FF;
-  --win: #18C77A; --draw: #9CA9C4; --loss: #FF4D5E; --warning: #FFB020; --danger: #FF4D5E;
-  --club-primary: #0B1F3A; --club-secondary: #F2B705;   /* set from the user's club at runtime */
-  --radius-s: 6px; --radius-m: 10px; --radius-l: 16px;
-  --shadow-1: 0 1px 2px rgb(0 0 0 / .35); --shadow-2: 0 8px 24px rgb(0 0 0 / .45);
+  /* on air: cool near-black */
+  --bg: #07090D; --surface: #0E1218; --surface-2: #151A22; --surface-3: #1C222C; --border: #2A313D;
+  /* the office: warm dark desk, paper, whiteboard */
+  --desk: #100E0C; --desk-2: #191613; --desk-border: #2E2924;
+  --paper: #EFEBE3; --paper-2: #E4DED2; --paper-ink: #1B1A17; --paper-dim: #5E574E; --paper-rule: #CFC6B6;
+  --board: #E9ECEA; --board-ink: #1E2A38; --marker-red: #C42B2B; --marker-blue: #1F4FBF; --marker-green: #1E7B3C;
+  /* text on dark */
+  --text: #F2F4F7; --text-dim: #A3ACBA; --text-faint: #7D8696;
+  /* brand: set at runtime from the club theme table; these defaults are the league brand */
+  --accent: #FF5B35; --accent-ink: #1A0600; --accent-text: #FF6E4D;
+  --band-1: #FF5B35; --band-2: #F2F4F7;
+  --club-primary: #FF5B35; --club-secondary: #F2F4F7;
+  /* fixed meanings (never themed) */
+  --gold: #FFC83D; --info: #3DA5FF;
+  --win: #18C77A; --draw: #A3ACBA; --loss: #FF4D5E; --warning: #FFB020; --danger: #FF4D5E;
+  /* shape */
+  --radius-s: 2px; --radius-m: 4px; --radius-l: 6px; --cut: 10px;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / .4);
+  --shadow-paper: 0 1px 0 rgb(0 0 0 / .25), 0 10px 24px rgb(0 0 0 / .5);
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px; --space-7: 48px;
   --font-head: 'Barlow Condensed', system-ui, sans-serif; --font-body: 'Inter', system-ui, sans-serif;
-  --dur-fast: 150ms; --dur-med: 250ms; --dur-slow: 400ms; --ease: cubic-bezier(.2,.8,.2,1);
+  /* motion (§19.7) */
+  --dur-micro: 120ms; --dur-fast: 180ms; --dur-med: 260ms; --dur-wipe: 440ms; --dur-count: 650ms; --dur-reorder: 700ms;
+  --ease-snap: cubic-bezier(.2,.9,.1,1); --ease-out: cubic-bezier(.2,.8,.2,1); --ease-in: cubic-bezier(.5,0,.8,.2);
 }
 ```
-Dark only. `body { background: var(--bg); color: var(--text); }`.
+- `--accent` fills (Continue button, active sidebar block, selected states); `--accent-ink` is text on it; `--accent-text` is accent-coloured text, icons and the focus ring on dark surfaces. `--band-1`/`--band-2` are the two stripe colours used in wipes and header stripes.
+- On paper and whiteboard surfaces, text is always `--paper-ink`/`--board-ink`; club colours appear there only as stripes, stamps and magnets.
+- Dark only. `body { background: var(--bg); color: var(--text); }`. Office screens set their content area to `--desk`.
+
+**Club themes** (`clubThemes.ts`, applied by setting the CSS variables on `:root` when a club is chosen or a save is loaded; opponents' rows are used for versus graphics). Every pair below was checked: ink on fill and text on `--bg`/`--surface`/`--desk` are all ≥ 4.5:1.
+
+| Club | accent (fill) | accent-ink | accent-text | band-1 | band-2 |
+|---|---|---|---|---|---|
+| league (no club) | `#FF5B35` | `#1A0600` | `#FF6E4D` | `#FF5B35` | `#F2F4F7` |
+| c01 Port Calloway | `#F2B705` | `#0B1F3A` | `#F2B705` | `#F2B705` | `#0B1F3A` |
+| c02 Ironvale | `#FF6A13` | `#1A0A00` | `#FF7A2E` | `#FF6A13` | `#2B2B2B` |
+| c03 Kestrel Bay | `#17A9A9` | `#03201F` | `#2BC2C2` | `#0E8C8C` | `#FFFFFF` |
+| c04 Saltmere | `#8FC5E8` | `#0D2233` | `#8FC5E8` | `#6D1A36` | `#8FC5E8` |
+| c05 Brightwater | `#4FA3E0` | `#04182A` | `#5DB0EA` | `#4FA3E0` | `#FFFFFF` |
+| c06 Northgate | `#2FA457` | `#03200D` | `#3DBA67` | `#1E7B3C` | `#FFFFFF` |
+| c07 Ashcombe | `#C8102E` | `#FFFFFF` | `#F0455D` | `#C8102E` | `#111111` |
+| c08 Veldmoor | `#6A44A8` | `#FFFFFF` | `#B396E8` | `#4B2A7B` | `#FFFFFF` |
+| c09 Lindenfield | `#FFD100` | `#111111` | `#FFD100` | `#FFD100` | `#111111` |
+| c10 Corvallen | `#F3F6FB` | `#07090D` | `#F3F6FB` | `#F3F6FB` | `#111111` |
+
+`--club-primary`/`--club-secondary` keep the club's real colours from §9.2 (crests, kits, stripes).
 
 ### 19.3 Typography
-Headings: Barlow Condensed 700 uppercase, letter-spacing 0.02em; sizes H1 48, H2 32, H3 24, H4 20. Body: Inter 400/500/600; sizes 16 (default), 14 (tables), 12 (captions). All numbers in tables and stats: `font-variant-numeric: tabular-nums`. Big stat numbers: Barlow Condensed 600.
+Headings: Barlow Condensed 700 uppercase, letter-spacing 0.02em; sizes H1 48, H2 32, H3 24, H4 20. Broadcast labels (panel headers, ticker, slates): Barlow Condensed 600 uppercase, letter-spacing 0.06em. Body: Inter 400/500/600; sizes 16 (default), 14 (tables), 12 (captions). Office paper text: Inter on `--paper-ink`, with ruled lines (`--paper-rule`) under rows. **Stamps** (office labels such as INJURED, NOT FOR SALE, SCOUTED, SIGNED): Barlow Condensed 700 uppercase in a 2 px bordered box, rotated −2°, `--marker-red` or `--paper-ink`, like a rubber stamp. All numbers in tables and stats: `font-variant-numeric: tabular-nums`. Big stat numbers: Barlow Condensed 600. No more than 2 weights on one panel or sheet.
 
 ### 19.4 Data colours
-Attribute/OVR scale: 1–39 `#FF4D5E`, 40–54 `#FF8A3D`, 55–64 `#FFC83D`, 65–74 `#9BE15D`, 75–84 `#18C77A`, 85–99 `#00E5D1`. Colour-blind mode: `#D55E00`, `#E69F00`, `#F0E442`, `#56B4E9`, `#0072B2`, `#CC79A7`. Ratings (match): < 6.0 loss colour, 6.0–6.9 text, 7.0–7.9 win colour, ≥ 8.0 gold. Form dots: W win, D draw, L loss.
+Attribute/OVR scale: 1–39 `#FF4D5E`, 40–54 `#FF8A3D`, 55–64 `#FFC83D`, 65–74 `#9BE15D`, 75–84 `#18C77A`, 85–99 `#00E5D1`. Colour-blind mode: `#D55E00`, `#E69F00`, `#F0E442`, `#56B4E9`, `#0072B2`, `#CC79A7`. Ratings (match): < 6.0 loss colour, 6.0–6.9 text, 7.0–7.9 win colour, ≥ 8.0 gold. Form dots: W win, D draw, L loss. Data colours are never replaced by the club theme.
 
 ### 19.5 Components (behaviour)
-- **Button** variants: primary (accent bg, accent-ink text), secondary (surface-3), ghost, danger; sizes S/M/L; loading state; disabled with tooltip-on-focus reason.
-- **ContinueButton**: primary L with KeyHint "Space", subtle pulse every 6 s when idle > 10 s (off with reduce motion).
-- **Card**: surface, radius-l, 1 px border, optional club-colour top stripe 4 px.
-- **Table**: sticky header, zebra rows (surface/surface-2), row hover surface-3, sortable headers with arrow, keyboard navigation.
-- **Modal**: centred, max 960 px, Esc closes, focus trap, backdrop blur 6 px.
-- **Toast**: bottom-right stack, 4 s, types info/success/warning/error.
+- **Button** variants: primary (`--accent` fill, `--accent-ink` text), secondary (surface-3 on dark, paper-ink outline on paper), ghost, danger; sizes S/M/L; radius `--radius-m`; on broadcast screens the primary L button has one angled corner (`--cut`, bottom-right, via `clip-path`); loading state; disabled with tooltip-on-focus reason; pressed state moves down 2 px.
+- **ContinueButton**: primary L with KeyHint "Space", subtle pulse every 6 s when idle > 10 s (off with reduce motion). When its label changes ("Continue" → "Kick off"), the new label slides up into place (`--dur-fast`).
+- **Panel** (on air): `--surface`, `--radius-s`, a 3 px top stripe in `--band-1` (with a 1/3-width segment of `--band-2` at its right end), header row in broadcast labels. Panels on one screen are deliberately different sizes: one dominant graphic, the rest supporting.
+- **Sheet** (office): `--paper`, radius 3 px, `--shadow-paper`, resting rotation between −0.6° and +0.6° (deterministic from its id), paper text with ruled rows. Variants: memo (inbox, board notes), file (player profile: a manila tab `#D9C9A3` with the name), clipboard (training: a dark clip at the top), ledger (finances: two ruled money columns).
+- **Table**: sticky header, rows separated by 1 px rules (no zebra on paper; zebra `--surface`/`--surface-2` on air), row hover surface-3 (on air) or `--paper-2` (office), sortable headers with arrow, keyboard navigation.
+- **Modal**: centred, max 960 px, Esc closes, focus trap. On air it is a full graphic panel; in the office it is a file opened on the desk (§19.7). No backdrop blur (performance); dim the screen behind with `rgb(0 0 0 / .6)`.
+- **ScreenTransition**, **CountUp**, **FlipList**: §19.7.
+- **Ticker** (on-air screens only): a 36 px bar along the bottom of the content area. A label block in `--accent` ("AROUND THE LEAGUE", or "LIVE" during matchday) followed by items scrolling at 60 px/s: other results, injuries, rumours, news headlines, each separated by a small two-colour band mark. Pauses on hover and focus. Items come from the week's news and results; never repeat an item within one loop.
+- **Stamp**: §19.3. Lands with the stamp animation in §19.7.
+- **Magnet** (Tactics, §11.8): a 44 px circle in the player's shirt colour with his number, surname under it in Barlow Condensed 600 `--board-ink`; drag lifts it (scale 1.08, shadow), it follows the pointer through the spring (§19.7), and on drop it settles into the slot.
+- **Toast**: bottom-right stack, 4 s, types info/success/warning/error; office screens show toasts as small memos.
 - **Tooltip**: on hover and focus, 300 ms delay, max 280 px.
 - **Meter**: 0–100 bar with coloured thresholds and trend arrow.
-- **PitchBoard**: SVG, responsive, drag with pointer events (mouse), keyboard: select token with Enter, arrows move selection between slots, Enter on a second slot swaps.
-- **StatCompare**: two-sided bars for match stats.
+- **PitchBoard**: SVG, responsive, drag with pointer events (mouse), keyboard: select token with Enter, arrows move selection between slots, Enter on a second slot swaps. Drawn as a whiteboard in Tactics (§11.8).
+- **StatCompare**: two-sided bars for match stats, each side in that club's accent.
 - **Sparkline**: inline SVG.
 
-### 19.6 Layout
-Shell: grid `232px | 1fr` (sidebar collapses to 72 px under 1440 wide), top bar 64 px. Content max width 1600 px, padding 24 px (16 px under 1280). Cards grid: 12 columns, gap 16 px. Every screen MUST be checked at 1280×720, 1920×1080 and 2560×1440 (§22.4).
+### 19.6 Layout and the sidebar
+Shell: grid `232px | 1fr` (sidebar collapses to a 72 px rail under 1440 wide), top bar 64 px, Ticker 36 px at the bottom of on-air screens. Content max width 1600 px, padding 24 px (16 px under 1280). 12-column grid, gap 16 px. Every screen MUST be checked at 1280×720, 1920×1080 and 2560×1440 (§22.4).
 
-### 19.7 Motion
-Screen transitions 250 ms fade + 8 px rise. List items stagger 20 ms (max 10 items). Respect `prefers-reduced-motion` and the reduce-motion setting (no transforms; fades ≤ 150 ms).
+**The sidebar ("the rundown")**:
+- Two groups with small broadcast-label headers: **On air**: Hub, League, Fixtures. **The office**: Squad, Tactics, Training, Transfers (Scouting outside windows), Club, Inbox. Keys `1`–`9` follow this order.
+- Only the current page is expanded: a 64 px block filled with `--accent`, the page name in Barlow Condensed 700 22 px in `--accent-ink`, and one context line under it ("Matchday 7 · v Port Calloway", "4-4-2 · 2 changes", "5 unread"). Every other item is a compact 36 px row: 18 px icon and 14 px label in `--text-dim`. Hover or focus grows the row to 40 px and lifts the label to `--text` (`--dur-fast`).
+- Changing page: the expanded block travels from the old item to the new one (shared-element FLIP, `--dur-med`, `--ease-snap`) while the old item shrinks and the new one grows; the context line fades in 120 ms after the block arrives.
+- Under 1440 wide (72 px rail): icons only; the current icon sits in the accent block, and its label shows as a flag to the right for 1.2 s after a page change, then tucks away.
+- The sidebar uses broadcast surfaces on on-air pages and desk surfaces on office pages (crossfade `--dur-med`).
+
+**Composition**: on-air screens have one dominant graphic and supporting panels of different sizes, never a uniform grid of equal cards. Office screens are a desk with objects of different sizes; slight overlap is allowed (a memo partly over a file) but data is never hidden under another object.
+
+### 19.7 Motion: the feel
+Motion explains change and gives the game weight. On-air motion is fast, precise and graphic: snap in, hold, wipe off. Office motion is physical: objects have mass, slide, settle and stack. Data never bounces.
+
+**Screen transitions** (`ScreenTransition`, one at a time; never blocks input for more than 150 ms; Space or a click during a transition finishes it at once):
+1. **On air → on air: stinger wipe.** Two parallel bands skewed −12° (`--band-2` leading by 40 ms, then `--band-1`) sweep across the content area left to right in `--dur-wipe`. They never cover the top bar or the sidebar. The new screen swaps in while the bands fully cover the content; then its panels build: each panel enters from `translateX(-16px)` and opacity 0, 40 ms apart, up to 8 panels, `--dur-med`, `--ease-snap`.
+2. **On air ↔ office: camera cut.** The content dips to black (opacity to 0 in 90 ms); a slate label ("THE OFFICE" or "ON AIR", broadcast label 14 px in `--accent-text`) shows in the content's top-left for 300 ms; the new world appears and its objects settle.
+3. **Office → office: across the desk.** The old screen slides 32 px out and fades (`--dur-fast`), the new one slides in from the other side; its sheets settle from `translateY(10px)` and ±1.2° extra rotation to their resting rotation through the spring.
+4. **Modals.** On air: the graphic panel wipes in from the left edge (`--dur-med`). Office: the file opens from the row that was clicked (scale from that row's rectangle, `--dur-med`), then its sheets fan out one by one (50 ms apart).
+
+**Spring** (`src/ui/motion/spring.ts`, no libraries, §4): stiffness 420, damping 34, mass 1; stops when velocity < 0.01 and distance < 0.5 px. Used by Magnets, sheets and the sidebar block.
+
+**CountUp**: when a number changes (points, balance, a meter), it counts from the old to the new value in `--dur-count` with `--ease-out`, tabular numerals. It runs on the first view after the change, never on every revisit.
+
+**FlipList**: rows that change order (league table after a matchday, squad sort) slide to their new places (measure, invert, play), `--dur-reorder`, 30 ms stagger. A row that moved up flashes `--win` at 12% opacity for 600 ms; down, `--loss`.
+
+**Signature moments (MUST):**
+- After every matchday: the table reorders with FlipList, points count up, the new form dot pops in (scale 0.6 → 1, `--dur-fast`).
+- A new inbox item drops onto the pile (from `translateY(-12px)` with a small rotation) with `ui_paper`.
+- Transfer complete or contract signed: a SIGNED stamp lands (scale 1.4 → 1 in 160 ms) with `ui_stamp`.
+- Tactics: magnets slide with the spring; swapping two players moves both to each other's slot at once; a dropped magnet plays `ui_clack`.
+- Kick-off from Pre-Match: the Continue press triggers a full-height stinger into the match loading screen.
+
+**Sound hooks** (effects channel, §17.3; a missing file is simply silent): wipe `sfx/ui_whoosh.mp3`; camera cut `sfx/ui_cut.mp3`; CountUp `sfx/ui_tick.mp3` (at most 12 ticks per second, quiet); magnet drop `sfx/ui_clack.mp3`; sheet or memo `sfx/ui_paper.mp3`; stamp `sfx/ui_stamp.mp3`.
+
+**Performance (MUST):** animate only `transform` and `opacity`; never animate `box-shadow`, `filter`, `backdrop-filter`, width/height/top/left or other layout properties (the wipe bands are skewed divs moved with `transform`, the sidebar block uses FLIP). Set `will-change` only while an animation runs. FlipList measures in one read pass, then writes in one pass. The ticker is one translated strip, not a timer per item. Every screen transition finishes in under 500 ms. Menus hold 60 fps on the target laptop, and the browser profiler shows no task over 50 ms during a transition.
+
+**Reduce motion** (setting or system preference): wipes, cuts and slides become a 150 ms crossfade; no springs (objects appear at rest); CountUp jumps straight to the value; FlipList highlights the rows without moving them; the ticker shows one item at a time, changing every 6 s with a fade; stamps appear without scaling.
+
+**Never:** bouncy overshoot on numbers or panels, parallax, tilting 3D cards, animated gradients, pulsing glows, confetti, text typed out letter by letter.
 
 ### 19.8 The craft bar (MUST, applies to every screen, line of copy and match moment)
 The judges score depth, fun and visual fidelity. Anything that looks or reads like generic AI output loses on all three. Treat this section as a hard requirement, not a style tip.
@@ -1521,7 +1610,7 @@ The judges score depth, fun and visual fidelity. Anything that looks or reads li
 - Hierarchy you can read in 2 seconds: one H1 per screen, then section titles, then data.
 - Every element sits on the 4 px grid and the 12-column layout. Equal gaps inside a group, larger gaps between groups.
 - Tables: numbers right-aligned with tabular numerals, text left-aligned, long names truncated with an ellipsis and shown in full on hover and focus.
-- Every interactive element has hover, `:focus-visible` (2 px accent ring, 2 px offset), active, disabled and loading states.
+- Every interactive element has hover, `:focus-visible` (2 px `--accent-text` ring, 2 px offset; `--paper-ink` ring on paper and whiteboard), active, disabled and loading states.
 - Every list has a designed empty state (an icon, one sentence that says what goes here and how to fill it, and an action if one exists).
 - Club identity everywhere it belongs: crest, colours stripe, kit icons, stadium name. The game must feel like it is about *your* club.
 
@@ -1671,10 +1760,11 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 
 ### M3 — Playable season loop, text-first (27 Nov – 1 Dec)
 1. Store actions for every phase (§10) and `advance.ts`.
-2. Screens: New Game (§11.3), Board Meeting, Hub, Squad, Player Profile, Tactics (PitchBoard with drag/swap and keyboard), League, Fixtures, Club (finances/board basic), Inbox, Week Summary, Season End (basic), Sacked.
-3. A temporary **text match view**: event feed with clock and score, speed control, subs/tactics overlays working through the worker with commands.
-4. Autosave and Continue from title.
-**Accept:** a complete 18-matchday season can be played start to finish via the text match view; save/reload mid-season works; season end shows table and grade; screenshots saved and the M3 design review (§19.8) is passed.
+2. Rework the M0 shell to the §19 design system (v1.2): new `tokens.css`, `clubThemes.ts` applied at runtime, the sidebar rundown (§19.6), Ticker, ScreenTransition, CountUp, FlipList, Panel, Sheet, Stamp, Magnet, `src/ui/motion/spring.ts`, reduce-motion handling. Every screen below is built in its world (on air or office, §19.1).
+3. Screens: New Game (§11.3), Board Meeting, Hub, Squad, Player Profile, Tactics (PitchBoard with drag/swap and keyboard), League, Fixtures, Club (finances/board basic), Inbox, Week Summary, Season End (basic), Sacked.
+4. A temporary **text match view**: event feed with clock and score, speed control, subs/tactics overlays working through the worker with commands.
+5. Autosave and Continue from title.
+**Accept:** every screen change uses the §19.7 transitions and holds 60 fps; reduce motion turns them into crossfades; a complete 18-matchday season can be played start to finish via the text match view; save/reload mid-season works; season end shows table and grade; screenshots saved and the M3 design review (§19.8) is passed.
 
 ### M4 — 3D match day (1–5 Dec)
 1. Scene skeleton with fallbacks: pitch, lines, goals, boxes stadium, capsule players, ball, lights, quality presets, resize, disposal.
