@@ -1,8 +1,10 @@
 # TOUCHLINE (working title) — Complete Build Specification
 
-Version 1.2 · 19 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
+Version 1.3 · 19 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
+
+**Changes in 1.3 (19 Nov):** new §13.17 Tactical depth: player roles with fit (replace duties), opposition orders, transition and goalkeeper-distribution settings, corner routines, player instructions, key battles, AI and assistant rules, extra calibration checks including "no dominant choice". Tactical depth now outranks visual polish when time is short. Related edits: §8.4 types, §11.8, §13.5, §13.8, §13.12, §15.4, M3 task 0.
 
 **Changes in 1.2 (19 Nov):** the UI design system is rewritten (§19.1–19.7): the game is a broadcast ("on air") plus the manager's office ("behind the scenes"); the accent is now the user's club colour (club theme table, §19.2), the neon green is gone; new base palette, sharper shapes, the sidebar rundown, a ticker, and a full motion system (screen transitions, springs, count-ups, table reorders, stamps, magnets) with performance and reduce-motion rules. Related edits: §11.0 sidebar order and keys, §11.7 player file, §11.8 tactics whiteboard, §17.3 UI sounds, §19.8 focus ring, M3 task 2 (rework the M0 shell).
 
@@ -218,6 +220,7 @@ jam-football/
 │  │  ├─ news/    news.ts
 │  │  └─ game/    newGame.ts  advance.ts  score.ts  migrations.ts
 │  ├─ content/  commentary.json  press.json  talks.json  conversations.json  news.json  assistant.json  injuries.json
+│  │            tactics.json   (role/order/setting gain and cost lines, §13.17.6)
 │  ├─ workers/  match.worker.ts  season.worker.ts
 │  ├─ state/    store.ts  saves.ts  selectors.ts  settings.ts
 │  ├─ assets/   registry.ts  procedural/crest.ts  procedural/avatar.ts  procedural/kit.ts
@@ -383,19 +386,31 @@ export type Pressing = 'Low'|'Mid'|'High';
 export type DefLine = 'Deep'|'Normal'|'High';
 export type Width = 'Narrow'|'Normal'|'Wide';
 export type Focus = 'Left'|'Centre'|'Right'|'Mixed';
-export type Duty = 'Defend'|'Support'|'Attack';
+export type RoleId = string;        // ids from src/config/roles.ts (§13.17.2)
+export type OnLoss = 'CounterPress'|'Regroup'|'Mixed';
+export type OnWin = 'Counter'|'KeepIt'|'Mixed';
+export type Distribution = 'Short'|'Long'|'Wide'|'Mixed';
+export type CornersFor = 'NearPost'|'FarPost'|'Short'|'Mixed';
+export type CornersAgainst = 'Zonal'|'ManMark'|'Mixed';
 export interface TeamInstructions {
   mentality: Mentality; passing: PassingStyle; tempo: Tempo; pressing: Pressing;
   line: DefLine; width: Width; focus: Focus;
+  onLoss: OnLoss; onWin: OnWin; distribution: Distribution;           // §13.17.4
+  cornersFor: CornersFor; cornersAgainst: CornersAgainst;             // §13.17.5
 }
+export type PlayerInstruction = 'shootMore'|'shootLess'|'dribbleMore'|'dribbleLess'|'crossMore'|'crossLess'
+  |'getForward'|'holdPosition'|'stayWider'|'closeDownMore'|'stayOnFeet'|'longThrows'; // §13.17.11
+export interface OppOrder { kind: 'tightMark'|'doubleUp'|'pressOnBall'|'showInside'|'showOutside'; target: PlayerId } // §13.17.3
 export interface Tactics {
   formation: Formation;
   lineup: (PlayerId | null)[];      // length 11, index = slot index in formations.ts
-  duties: Duty[];                   // length 11
+  roles: RoleId[];                  // length 11, replaces the old duties (§13.17.2)
+  playerInstructions: PlayerInstruction[][]; // length 11, each 0–2
   bench: PlayerId[];                // 0–9
   captain: PlayerId | null;
-  takers: { penalty: PlayerId|null; freeKick: PlayerId|null; corner: PlayerId|null };
+  takers: { penalty: PlayerId|null; freeKick: PlayerId|null; corner: PlayerId|null; longThrow: PlayerId|null };
   instructions: TeamInstructions;
+  opposition: OppOrder[];           // 0–3, set per match (cleared after each match)
 }
 ```
 
@@ -704,7 +719,7 @@ Grid of cards:
 ### 11.8 Tactics
 - The whole screen is the office tactics wall (§19.1): the PitchBoard is a whiteboard (`--board`, pitch lines drawn in `--board-ink` at 35% like marker pen), the tokens are Magnets (§19.5), instructions sit on a clipboard Sheet beside it, and the bench is a row of magnets along the board's bottom edge.
 - Left: **PitchBoard** (2D SVG pitch, vertical orientation, own goal at bottom) with 11 draggable player tokens (shirt colour, number, surname, OVR at slot coloured by fit: green ≥ natural, amber 0.8–0.95, red < 0.8). Drag a token onto another to swap; drag from the bench list onto a token to replace.
-- Right: formation dropdown (7), familiarity meter for the selected formation, the seven instructions as three-way segmented controls with a one-line description each (§13.10), duties per slot (click token → Defend/Support/Attack), captain, takers.
+- Right: formation dropdown (7), familiarity meter for the selected formation, the seven instructions as three-way segmented controls with a one-line description each (§13.10), roles and player instructions per slot (click token → role card, §13.17.6), transitions and set pieces, opposition orders, captain, takers (penalty, free kick, corner, long throw).
 - Bench: up to 9 players, list with drag handles.
 - Buttons: **Assistant picks best XI** (§13.13 algorithm), **Reset to club style**, Presets: "Park the bus" (Defensive, Direct, Slow, Low, Deep, Narrow, Centre), "Control" (Balanced, Short, Slow, Mid, Normal, Normal, Mixed), "Gegenpress" (Attacking, Short, Fast, High, High, Normal, Mixed), "Counter" (Defensive, Direct, Fast, Low, Deep, Wide, Mixed), "All-out attack" (Attacking, Mixed, Fast, High, High, Wide, Mixed).
 - Validation (blocks Kick Off with a clear message): exactly 1 GK in the GK slot, 11 starters, no injured/suspended player in XI or bench, no duplicates.
@@ -1005,7 +1020,7 @@ In possession, each on-pitch player has weights over the 9 zones (attacking fram
 
 Modifiers (apply then renormalise each player's row to sum 1):
 - Mentality Attacking: move 15% of each outfielder's DEF weight to MID and 15% of MID to ATT (CB: half of that). Defensive: the reverse.
-- Duty Attack: move 10% of MID → ATT; Defend: 10% of MID → DEF (and ATT → MID for forwards).
+- Role and player-instruction involvement modifiers (§13.17.2, §13.17.11) replace the old duty step here.
 - Width Wide: wide slots (FB, WB, LM/RM, LW/RW) move 20% of their Centre weight to their lane; Narrow: move 20% of lane weight to Centre.
 
 Out of possession, defenders for a zone are chosen with the same table using the **mirrored** zone (attacker's `(T, L)` → defender's `(opposite third, mirrored lane)`: ATT↔DEF, MID↔MID, Left↔Right).
@@ -1110,7 +1125,7 @@ Resolution:
 **Corners** → cross resolution with the corner taker using setPieces, header target weighting ×1.3 for CBs and STs (they go up for corners).
 
 **Throw-ins** → the side keeps possession at that point (next step from there with recycle +0.4).
-**Goal kicks** → defenders' possession in DEF Centre (Passing Direct: 60% long instead).
+**Goal kicks** → defenders' possession in DEF Centre (Passing Direct: 60% long instead). This is the `Mixed` distribution; other settings in §13.17.4. Corners: `cornersFor`/`cornersAgainst` in §13.17.5.
 **Kick-off** → MID Centre, holder = a central midfielder or striker; first action is recycle.
 
 ### 13.9 Transitions and counters
@@ -1134,10 +1149,11 @@ When possession changes in open play (interception, tackle, clearance won, claim
 ```ts
 export type MatchCommand =
   | { kind: 'instructions'; side: Side; instructions: TeamInstructions; issuedAtT: number }
-  | { kind: 'formation'; side: Side; formation: Formation; lineup: (PlayerId|null)[]; duties: Duty[]; issuedAtT: number }
+  | { kind: 'formation'; side: Side; formation: Formation; lineup: (PlayerId|null)[]; roles: RoleId[]; playerInstructions: PlayerInstruction[][]; issuedAtT: number }
+  | { kind: 'opposition'; side: Side; orders: OppOrder[]; issuedAtT: number }
   | { kind: 'sub'; side: Side; outId: PlayerId; inId: PlayerId; slot: number; issuedAtT: number };
 ```
-- Instructions/formation take effect at the first step starting at or after `issuedAtT + 30` (a touchline shout).
+- Instructions/formation/roles/player instructions/opposition orders take effect at the first step starting at or after `issuedAtT + 30` (a touchline shout).
 - Subs take effect at the first dead ball (THROW_IN, GOAL_KICK, CORNER, FREE_KICK, FOUL, OFFSIDE, GOAL, INJURY, HALF_TIME) at or after `issuedAtT`. Limits: 5 subs, 3 in-play windows (half-time changes do not use a window), no re-entry, a sent-off player cannot be replaced.
 - The worker, on receiving a command: find the effective step (above). If events beyond it were already produced, restore the snapshot taken at that step (snapshots stored every step in a ring buffer of the last 400 steps), emit `{type:'rewind', fromSeq}`, apply the command, continue. Everything before the effective step stays byte-identical.
 
@@ -1202,6 +1218,149 @@ Strength response (same setup, 5,000 matches each):
 Tactic sanity (must hold in the report): Pressing High vs Low (equal teams) → more opponent turnovers in their DEF/MID third and more fouls, and the pressing side's average condition at FT ≥ 4 lower; Width Wide → more crosses (≥ +30%); Passing Direct → fewer passes (≥ −20%) and more aerial duels; Line High → more offsides and more one-on-ones conceded; Mentality Attacking → more shots for and more counter-attacks against.
 
 **Tuning procedure:** only change `K.*` constants in `balance.ts`, in this order: shot utility base (goals and shots), `K.passBase` (pass %), durations (pass counts), cross/delivery constants (corners), foul rates (fouls/cards), skill coefficients 0.55/0.9 (strength response). After each change re-run `npm run calibrate`. Record the final report in `docs/PROGRESS.md`.
+
+### 13.17 Tactical depth: roles, opposition orders, transitions, set pieces
+This section adds the decisions that let one change turn a match. Design rules (MUST):
+- **No free lunch.** Every role, order and setting has a gain and a cost written into its numbers, and the UI shows both in one line each. Nothing is strictly better than the neutral choice.
+- **Neutral defaults.** Every slot's default role and every new setting's `Mixed` value have zero modifiers, so the §13.16 calibration targets still hold with defaults.
+- **Fit matters.** A role suits some players and not others. A badly suited player gets the role's risks in full but only part of its gains.
+- All numbers below go in `balance.ts` (`K.roles.*`, `K.opp.*`, `K.trans.*`, `K.setp.*`, `K.pi.*`) or in the role table `src/config/roles.ts`.
+- **Priority (the user's call, 19 Nov):** tactical depth outranks visual polish. If time runs short, cut or simplify visual and motion work (§14, §19.7) before any part of this section. Every rule here MUST work in the engine, even if its UI ends up plain.
+
+#### 13.17.1 Modifier vocabulary
+Each role or order is a list of modifiers of these kinds:
+- **inv** (involvement, applied in §13.5 after the mentality step, in place of the old duty step, then renormalise): `X→Y n%` moves n% of the player's weight in group X to group Y. Groups: `DEF`, `MID`, `ATT` (thirds), `lane→C` (from his own lane to Centre in the same third), `C→lane` (the reverse).
+- **recv** (receiver weight ×k): multiplies his weight when teammates pick a receiver (§13.5 selection), optionally limited to thirds.
+- **use** (holder utilities, §13.6): added to an action's utility when he has the ball.
+- **as A / as R / as D** (resolution ctx, §13.7–13.8): added to the ctx of rolls where he is the actor, the receiver, or the primary defender. `S_x +v` means add v to that skill term before weighting.
+- **team** (a team-wide ctx term while he is on the pitch; if two players give the same team term, only the larger applies).
+- **cost**: fatigue drain multiplier (§12.2), foul probability multiplier (§13.8).
+
+**Fit**: `score = Σ w·attribute` over the role's key attributes; `fit = clamp((score − 50) / 30, 0, 1)`. Positive modifiers (gains) are multiplied by `0.4 + 0.6·fit`; negative modifiers (risks and costs) always apply in full. The UI shows fit as 1–5 stars: `1 + round(4·fit)`. Neutral roles have no modifiers, so fit does not matter for them.
+
+#### 13.17.2 Roles (replace duties)
+Every slot has a role. Slot groups and their roles (first one listed = neutral default):
+
+| Role id | Name (UI) | Slots | Description (UI, exact) | Gains | Risks / costs | Key attributes |
+|---|---|---|---|---|---|---|
+| `gk` | Goalkeeper | GK | "Stays on his line." | none | none | none |
+| `sweeper_keeper` | Sweeper keeper | GK | "Comes off his line to sweep behind the defence." | team: opponent through balls ctx −0.3, their `oneOnOne` probability ×0.75; Short distribution pass ctx +0.2 | opponent OUTSIDE_CENTRAL `xG_ref` +0.02 (he's off his line); 3% of opponent through balls become a GK foul outside the box (FREE_KICK) | oneOnOnes .4, decisions .3, passing .3 |
+| `cb` | Centre-back | CB | "Defends his zone." | none | none | none |
+| `stopper` | Stopper | CB | "Steps out to win it early." | as D: `S_tkl` +0.35, `S_press` +0.25, `S_airD` +0.2 | when he is D and loses a tackle or duel, the opponent's next step gets through ctx +0.3; fouls ×1.2 | tackling .4, strength .3, heading .3 |
+| `covering_cb` | Covering centre-back | CB | "Drops off and sweeps up behind." | team: opponent through balls ctx −0.25 | as D: `S_tkl` −0.15, `S_press` −0.2 | positioning .4, pace .4, decisions .2 |
+| `ball_playing_cb` | Ball-playing centre-back | CB | "Brings it out and starts attacks." | use in DEF: progress +0.3, switch +0.2, long +0.1; as A: pass ctx +0.15 | when the opponent's pressing is High, his failed passes are always interceptions in our DEF (no throw-in) and the opponent's next step gets shot utility +0.3 | passing .5, composure .3, decisions .2 |
+| `fb` | Full-back | LB, RB, LWB, RWB | "Gets forward when it's on." | none | none | none |
+| `fb_defensive` | Defensive full-back | LB, RB, LWB, RWB | "Stays home and guards the flank." | team: opponent actions in his lane in our DEF ctx −0.15 | inv `ATT→DEF 60%`, `MID→DEF 15%`; use: cross −0.3 | positioning .4, tackling .4, strength .2 |
+| `fb_overlapping` | Overlapping full-back | LB, RB, LWB, RWB | "Bursts past the winger to cross." | inv `MID→ATT 25%`; use: cross +0.4; team: crosses from his lane delivery +0.1 | during an opponent Counter phase, their actions in his lane ctx +0.25; fatigue ×1.08 | crossing .4, pace .3, stamina .3 |
+| `fb_inverted` | Inverted full-back | LB, RB, LWB, RWB | "Steps into midfield when we have it." | inv `lane→C 40%` in MID; team: our recycle and progress passes in MID ctx +0.1; use: progress +0.2 | use: cross −0.4; during an opponent Counter phase, their actions in his lane ctx +0.2 | passing .4, decisions .3, firstTouch .3 |
+| `dm` | Holding midfielder | DM | "Shields the back line." | none | none | none |
+| `anchor` | Anchor | DM | "Never leaves the space in front of the defence." | inv `MID→DEF 20%`, `ATT→MID 50%`; team: opponent actions in their ATT Centre ctx −0.15; use: recycle +0.3 | use: progress −0.2, through −0.2 | positioning .5, tackling .3, decisions .2 |
+| `deep_playmaker` | Deep playmaker | DM, CM | "Dictates play from deep." | recv ×1.3 in DEF/MID; use: switch +0.3, long +0.2, through +0.2; as A: pass ctx +0.1 | when the opponent's pressing is High, his failed passes start an opponent Counter phase | passing .5, decisions .3, composure .2 |
+| `ball_winner` | Ball-winner | DM, CM | "Hunts the ball down." | as D: `S_press` +0.4, `S_tkl` +0.3 | fouls ×1.5; fatigue ×1.1; use: through −0.2 | tackling .4, workRate .3, stamina .3 |
+| `cm` | Central midfielder | CM | "Does a bit of everything." | none | none | none |
+| `box_to_box` | Box-to-box | CM | "Covers every blade of grass." | inv `MID→ATT 10%`, `MID→DEF 10%`; as D in MID: `S_press` +0.2 | fatigue ×1.12 | stamina .4, workRate .3, passing .3 |
+| `playmaker` | Playmaker | CM, AM | "Gets on the ball and picks the pass." | recv ×1.25; use: through +0.35, progress +0.1; as A: pass ctx +0.1 | as D: `S_press` −0.2, `S_tkl` −0.1 | passing .4, decisions .3, firstTouch .3 |
+| `runner` | Late runner | CM | "Arrives late in the box." | inv `MID→ATT 25%` (into ATT Centre); use in box: shot +0.3; as R on through balls: `S_run` +0.2 | team: opponent progress passes through our MID ctx +0.1 | offTheBall .5, finishing .3, stamina .2 |
+| `am` | Number 10 | AM | "Links midfield and attack." | none | none | none |
+| `shadow_striker` | Shadow striker | AM | "Plays off the striker and gets in the box." | inv `MID→ATT 30%`; use in ATT Centre and box: shot +0.3; as R on through balls: `S_run` +0.2 | as D in MID: `S_press` −0.2, `S_tkl` −0.2 | offTheBall .4, finishing .4, composure .2 |
+| `wm` | Wide midfielder | LM, RM | "Works the flank both ways." | none | none | none |
+| `wm_defensive` | Defensive winger | LM, RM, LW, RW | "Tracks back to help his full-back." | inv `ATT→MID 30%`, `MID→DEF 15%`; team: opponent actions in his lane in our DEF ctx −0.15 | use: cross −0.1, dribble −0.1 | workRate .4, tackling .3, stamina .3 |
+| `wide_playmaker` | Wide playmaker | LM, RM | "Drifts inside to make things happen." | inv `lane→C 25%` in MID; use: through +0.3, switch +0.2 | use: cross −0.3 | passing .4, decisions .3, dribbling .3 |
+| `wf` | Wide forward | LW, RW | "Attacks his flank." | none | none | none |
+| `winger` | Winger | LM, RM, LW, RW | "Hugs the line, beats his man, crosses." | inv `C→lane 25%`; use: cross +0.4, dribble +0.2 | use: shot −0.2 | crossing .4, dribbling .3, pace .3 |
+| `inside_forward` | Inside forward | LM, RM, LW, RW | "Cuts inside to shoot." | inv `lane→C 30%` in ATT; use in ATT: shot +0.4, dribble +0.1; 50% of his shots from ATT wide use the central context instead (BOX_CENTRAL / OUTSIDE_CENTRAL); if the full-back behind him is Overlapping, that full-back's cross delivery +0.15 | use: cross −0.5; if the full-back behind him is Defensive or Inverted, nobody holds the width: team cross utility from that lane −0.3 | finishing .3, dribbling .3, longShots .2, pace .2 |
+| `st` | Striker | ST | "Leads the line." | none | none | none |
+| `target_man` | Target man | ST | "Wins headers and holds it up." | team: long utility +0.2; as R in aerial duels: `S_air` +0.35; cross header target weight ×1.4; after he wins an aerial duel, the next step's recycle and progress pass ctx +0.2 (knock-down to a runner) | use: dribble −0.3; as R on through balls: `S_run` −0.2 | heading .4, strength .4, firstTouch .2 |
+| `poacher` | Poacher | ST | "Lives in the box." | inv `MID→ATT 50%`, `lane→C 20%` in ATT; use in box: shot +0.3; as A on SIX_YARD/BOX_CENTRAL shots: `S_fin` +0.15 | recv ×0.5 outside ATT; team: our pressing effect in the opponent's DEF third is 10% weaker | finishing .4, offTheBall .4, composure .2 |
+| `pressing_forward` | Pressing forward | ST | "Leads the press from the front." | team: our `S_press` +0.3 against the opponent's DEF third; opponent passes in their DEF third ctx −0.2 | fatigue ×1.15; use: shot −0.1 | workRate .4, stamina .3, pace .3 |
+| `false_nine` | False nine | ST | "Drops deep and drags defenders out." | inv `ATT→MID 35%` (ATT Centre → MID Centre); recv ×1.2 in MID; use: through +0.4, progress +0.2; team: teammates' `S_run` on through balls +0.25 | his cross header target weight ×0.5; team: header duels won from crosses −0.15 (fewer bodies in the box) | passing .3, decisions .3, firstTouch .2, dribbling .2 |
+| `advanced_forward` | Advanced forward | ST | "Runs in behind the defence." | recv ×1.4 on through balls; as R: `S_run` +0.3; `oneOnOne` probability +0.05 on his runs | offside probability ×1.25 on his runs; recv ×0.7 in MID | pace .4, offTheBall .4, finishing .2 |
+
+Slots LM/RM may use `wm`, `wm_defensive`, `wide_playmaker`, `winger`, `inside_forward`; LW/RW may use `wf`, `winger`, `inside_forward`, `wm_defensive`. The "full-back behind him" is the FB/WB slot on the same side.
+
+#### 13.17.3 Opposition orders
+`orders: OppOrder[]`, at most 3, one per target, targets must be on the pitch (an order on a substituted player lapses; on a sent-off player it is removed). The **marker** for a target = our defender with the highest weight in the target's mirrored zone at the moment the order starts (recomputed after any formation change or sub).
+
+| Order | UI wording (exact; `{player}` = target) | Effect | Cost |
+|---|---|---|---|
+| `tightMark` | "Stay touch-tight on {player}. He'll see less of the ball, but his marker gets dragged about." | target recv ×0.75; in any roll where the target is A or R, the marker is D and gets `S_press` and `S_tkl` +0.3 | when the target is in MID, opponent through balls into the marker's usual zone get ctx +0.2; marker fouls ×1.2 |
+| `doubleUp` | "Two on {player} whenever he has it. It leaves space on the other side." | when the target holds: dribble ctx −0.5, shot and cross ctx −0.2, pass ctx −0.1 | opponent actions in the lane opposite the target's lane ctx +0.2. Max one `doubleUp` |
+| `pressOnBall` | "Close {player} down the moment he gets it. If he beats the press, we're open." | when the target holds in his DEF/MID: our `S_press` +0.4 on him, his pass ctx −0.3, his recycle utility +0.3 | if his pass succeeds, the opponent's next step gets progress +0.3 and through +0.2; fatigue ×1.05 for our player nearest him |
+| `showInside` | "Force {player} inside. Fewer crosses, more shots." (wide players and full-backs only) | target cross utility −0.5, dribble −0.2 | target shot utility in ATT +0.2; 50% of his ATT-wide shots use central contexts |
+| `showOutside` | "Force {player} down the line. Fewer shots, more crosses." (wide players and full-backs only) | target shot utility −0.4; his ATT-wide shots keep wide contexts | target cross utility +0.2, dribble +0.1 |
+
+#### 13.17.4 Transitions and goalkeeper distribution (new instruction fields)
+| Field | Options (UI wording, exact) | Effect | Cost |
+|---|---|---|---|
+| `onLoss` (when we lose it) | **Counter-press** "Win it back in seconds. Get it wrong and they're through." · **Regroup** "Get back into shape and let them have it." · **Mixed** "Read the moment." (default) | Counter-press: when we lose the ball in open play in our MID or ATT third, the opponent's first step is a press check: `p_regain = σ(−1.0 + 0.8·S̄_press − 0.6·S_pass(holder))` (S̄_press = mean `S_press` of our 3 players with the highest weight in that zone); success = `TACKLE` back to us at that point. Regroup: an opponent Counter phase (§13.9) can only start if our line is High (not from our mentality), and their first step gets recycle +0.3 | Counter-press: if the press check fails, the opponent gets a Counter phase for 2 steps with an extra ctx +0.2; team fatigue ×1.05. Regroup: we never win the ball back in their half on the first step; their next 2 steps' pass ctx +0.1 |
+| `onWin` (when we win it) | **Counter** "Break at speed." · **Keep it** "Calm down and keep the ball." · **Mixed** "Read the moment." (default) | Counter: our Counter phase starts when we win the ball in DEF/MID if the §13.9 condition holds, or with probability 0.4 otherwise. Keep it: our first 2 steps after winning it get recycle +0.4 and pass ctx +0.1 | Counter: Counter-phase execution ctx −0.1 (rushed). Keep it: we never get a Counter phase |
+| `distribution` (goalkeeper) | **Short** "Play out from the back." · **Long** "Go long to the front men." · **Wide** "Find the full-backs." · **Mixed** "Keeper's choice." (default, the old §13.8 goal-kick rule) | Short: goal kicks and held saves/claims go to a CB in DEF Centre, first action utilities as normal. Long: a long ball from the GK to MID/ATT Centre (aerial duel; target man bonus applies). Wide: to a FB/WB in his DEF lane, first action progress +0.2 | Short: against opponent pressing High, the first pass ctx −0.4 and a failed first pass gives the opponent the ball in our DEF Centre. Long: 45% of deliveries are contested (aerial duel instead of a clean catch). Wide: the first pass is forced to the touchline lane (switch and through not allowed on that step) |
+
+#### 13.17.5 Set pieces (new instruction fields)
+| Field | Options (UI wording, exact) | Effect | Cost |
+|---|---|---|---|
+| `cornersFor` (our corners) | **Near post** "Flick-ons at the near post." · **Far post** "Big men at the back stick." · **Short** "Work it short and keep the ball." · **Mixed** "Taker's choice." (default) | Near post: GK claim −0.04; header target weight favours pace (heading .5, pace .5); won headers use `xG_ref` 0.13. Far post: header target weight ×1.5 for the best header; header duel +0.2 for our target. Short: no cross; we keep the ball in ATT wide outside the box, next step cross utility +0.3 | Near post: delivery ctx −0.1. Far post: GK claim +0.03. Short: no immediate header chance |
+| `cornersAgainst` (their corners) | **Zonal** "Defend the space." · **Man-mark** "Pick up a man each. Watch the wrestling." · **Mixed** "Bit of both." (default) | Zonal: their Near post deliveries ctx −0.15. Man-mark: our header defender is our best header matched to their target; header duel −0.15 for them | Zonal: their Far post header duel +0.1 for them. Man-mark: 4% of their corners become a foul in our box (penalty) |
+
+#### 13.17.6 What the player sees (Tactics, §11.8)
+- Click a magnet → its **role card** (a Sheet): the slot's roles as a list, each with the name, fit stars for this player, the description, and two short lines "Gives you: …" / "Costs you: …" generated from the modifier list (templates in `content/tactics.json`, one per modifier kind, e.g. "more crosses", "space behind him on the counter").
+- The clipboard is grouped: **With the ball** (mentality, passing, tempo, width, focus), **Without the ball** (pressing, line), **Transitions** (when we lose it, when we win it, goalkeeper), **Set pieces** (our corners, their corners, takers). Each option shows its exact wording above.
+- The role card also holds that player's **instructions** (§13.17.11): up to 2, as toggles with their gain and cost lines; conflicting ones are disabled with the reason.
+- **Opposition** tab: the opponent's likely XI as red-marker magnets on a second board; click one → choose an order (only valid ones shown), with its wording and cost line. Shows "2 of 3 orders used".
+- In Pre-Match step 2 and in the match Tactics overlay, the same controls in compact form.
+
+#### 13.17.7 Key battles (Pre-Match opponent report and half-time)
+Show up to 3 duels with an arrow to the side that has the edge: our FB vs their winger in each lane (pace + dribbling vs pace + tackling), our CBs vs their ST (heading + strength vs heading + strength; pace vs pace if their ST is an Advanced forward), our DM vs their AM/false nine (positioning + tackling vs decisions + passing). Edge = difference of the summed z-scores; label "big edge" when |diff| ≥ 1.0. Pure UI, computed from attributes and roles; the assistant uses it (§15.2).
+
+#### 13.17.8 AI managers (§13.13 additions)
+- Roles: for each slot pick the best-fit role in the slot's list; keep the neutral role unless the best fit ≥ 0.6. Club style overrides when the player's fit ≥ 0.5: Passing Direct → ST `target_man`; Pressing High → ST `pressing_forward`; Width Wide → wide slots `winger`; Passing Short → one CB `ball_playing_cb`; Mentality Defensive → DM `anchor` and FBs `fb_defensive`.
+- Transitions: Pressing High + Mentality Attacking → `onLoss` Counter-press; Mentality Defensive → `onLoss` Regroup and `onWin` Counter; Passing Direct → `distribution` Long. Everything else Mixed.
+- Orders: clubs with reputation ≥ 3 put `tightMark` on the user's highest-OVR attacker if his OVR ≥ their best defender's OVR + 5. In-match: `doubleUp` on a user player with ≥ 2 goals + assists in the match (once).
+
+#### 13.17.9 Assistant rules (add to §15.2 and §15.4)
+Pre-match (each with Apply):
+- Their highest-OVR attacker ≥ our best defender + 5 → "Put {marker} touch-tight on {player}." (`tightMark`)
+- Their slowest CB pace ≤ 60 and our best ST pace ≥ 75 → "Make {player} an advanced forward and go in behind." (role + Passing Direct)
+- Their CB with passing ≤ 55 → "Press {player} when he has it. He'll panic." (`pressOnBall`)
+- Their Inside forward with longShots or finishing ≥ 75 → "Show {player} outside. Make him cross." (`showOutside`)
+- Their best header ≥ our best header + 8 → "Go zonal at their corners." (`cornersAgainst` Zonal)
+- Their pressing High and our GK passing ≤ 50 → "Don't play out from the back today. Go long." (`distribution` Long)
+In-match (last 15 minutes of events):
+- An opponent with ≥ 2 shots or key passes → "{player} is running the show. Get two on him." (`doubleUp`)
+- Our Counter-press failed ≥ 3 times and they had a Counter phase each time → "We're getting caught. Regroup when we lose it." (`onLoss` Regroup)
+- Our far-post corners lost ≥ 3 header duels → "Their keeper's eating the back post. Try near post." (`cornersFor` Near post)
+- Our full-back role Overlapping and they had ≥ 2 Counter-phase attacks down his lane → "{player} keeps getting caught upfield. Tell him to stay home." (role `fb_defensive`)
+
+#### 13.17.10 Calibration additions (§13.16)
+With all defaults (neutral roles, Mixed settings, no orders) every §13.16 target still holds. Add these sanity checks (equal teams, 2,000 matches each), all MUST hold:
+- `tightMark` on the opponent's most-involved CM → his touches −20% to −35%.
+- Counter-press vs Mixed → our ball wins in the opponent's MID/ATT third ≥ +25%, and Counter phases conceded higher.
+- Target man + Passing Direct → aerial duels won by that striker ≥ +30%.
+- Inside forward vs Winger (same player) → his shots ≥ +40%, his crosses ≤ −40%.
+- Sweeper keeper with Line High → one-on-ones conceded ≥ −20% vs `gk`.
+- **No dominant choice:** no single role, order, setting or player instruction moves the win rate between equal teams by more than ±6 percentage points.
+- "Shoot more" on a player with longShots ≤ 50 → his xG per shot falls and his team's possession falls (shots from bad spots give the ball away).
+
+#### 13.17.11 Player instructions
+`playerInstructions: Record<slotIndex, PlayerInstruction[]>`, at most 2 per player, stacked on top of his role. Pairs that contradict each other (more/less of the same thing, Get forward + Hold position) cannot be combined. Instructions belong to the slot and move with a swap.
+
+| Instruction | UI wording (exact) | Effect | Cost |
+|---|---|---|---|
+| `shootMore` | "Shoot more: try his luck from distance." | use: shot +0.35 (also allowed from MID Centre and ATT wide at OUTSIDE contexts) | more low-xG shots; a blocked or missed long shot gives up possession |
+| `shootLess` | "Shoot less: work a better chance." | use: shot −0.35 outside the box, progress +0.15 | fewer shots; more passes in the final third (more chances to lose it) |
+| `dribbleMore` | "Take players on." | use: dribble +0.35 | failed dribbles lose the ball higher up; fouls won +, ball lost + |
+| `dribbleLess` | "Move it on quickly." | use: dribble −0.35, recycle +0.15 | fewer fouls won, fewer chances created alone |
+| `crossMore` | "Get it in the box early." | use: cross +0.4 (also early crosses from MID wide) | more crosses claimed by the keeper |
+| `crossLess` | "Keep it on the floor." | use: cross −0.4, progress +0.15 | fewer headers; wide play is easier to defend |
+| `getForward` | "Get forward at every chance." | inv `MID→ATT 20%`, `DEF→MID 15%` | his zone is empty on opponent counters (their actions there ctx +0.15); fatigue ×1.06 |
+| `holdPosition` | "Hold your position." | inv moves 50% of any weight outside his slot's main third back into it | less support in attack (recv ×0.9 for him outside his third) |
+| `stayWider` | "Stay wide and stretch them." | inv `C→lane 25%` | fewer bodies centrally (team recycle in MID Centre ctx −0.05) |
+| `closeDownMore` | "Close down more." | as D: `S_press` +0.3 | fatigue ×1.08; when beaten, the opponent's next step progress +0.2 |
+| `stayOnFeet` | "Stay on your feet." | fouls ×0.5 (fewer cards, fewer penalties) | as D: `S_tkl` −0.25 |
+| `longThrows` | "Take the long throws." (players with strength ≥ 70) | our throw-ins in the ATT third become a cross delivery into the box (delivery uses strength instead of crossing) | the throw takes longer (+6 s) and the opponent's GK claim chance +0.04 |
+
+Player instructions are part of the `instructions` command (§13.12) and of the AI manager (§13.17.8: AI uses at most one per player, only `shootLess` for low-longShots midfielders, `stayOnFeet` for players on a yellow after 60', `getForward` when chasing a game at 75'+).
+
 
 ---
 
@@ -1337,7 +1496,7 @@ One tip per week, first matching rule: a player with fatigue > 80 ("Rest {player
 ### 15.4 In-match rules (evaluated every 5 match minutes from the last 15 minutes of events)
 | Trigger | Advice (with Apply) |
 |---|---|
-| ≥ 50% of opponent's ATT-third entries come through one of our flanks and they had ≥ 3 shots from it | "They're getting joy down our {lane}. Tell {fullback} to stay back." → that FB duty Defend; if already, Width Narrow |
+| ≥ 50% of opponent's ATT-third entries come through one of our flanks and they had ≥ 3 shots from it | "They're getting joy down our {lane}. Tell {fullback} to stay back." → that FB role `fb_defensive`; if already, Width Narrow |
 | Our pressing High and our avg condition < 62 | "The lads are running out of legs. Drop the press." → Pressing Mid |
 | Our crosses ≥ 6 with success < 20% and their CB heading avg > our ST heading avg + 5 | "We're losing every header. Keep it on the floor." → Width Narrow, Passing Short |
 | Opponent line High and we had ≥ 2 offsides | "Their line is high; time the runs, go direct." → Passing Direct |
@@ -1759,6 +1918,7 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 **Accept:** determinism and legality tests pass; calibration report all PASS (record in PROGRESS); `simulateInstant` median < 30 ms.
 
 ### M3 — Playable season loop, text-first (27 Nov – 1 Dec)
+0. **Tactical depth engine pass (§13.17), before anything else in M3**: new types (§8.4), `src/config/roles.ts`, role/instruction/order/transition/set-piece hooks in involvement, utilities and resolution, the new commands, AI defaults (§13.17.8), assistant rules (§13.17.9), save migration (duties → neutral roles, new fields → Mixed), unit tests per modifier kind, then re-run `npm run calibrate`: all §13.16 targets plus every §13.17.10 check MUST pass. Paste the report into PROGRESS.md.
 1. Store actions for every phase (§10) and `advance.ts`.
 2. Rework the M0 shell to the §19 design system (v1.2): new `tokens.css`, `clubThemes.ts` applied at runtime, the sidebar rundown (§19.6), Ticker, ScreenTransition, CountUp, FlipList, Panel, Sheet, Stamp, Magnet, `src/ui/motion/spring.ts`, reduce-motion handling. Every screen below is built in its world (on air or office, §19.1).
 3. Screens: New Game (§11.3), Board Meeting, Hub, Squad, Player Profile, Tactics (PitchBoard with drag/swap and keyboard), League, Fixtures, Club (finances/board basic), Inbox, Week Summary, Season End (basic), Sacked.

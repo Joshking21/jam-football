@@ -74,3 +74,8 @@ Overall status: ALL PASS
 - Changed: docs/SPEC.md (v1.2: §19.1–19.7 rewritten as "on air + the office" with club-colour theming and a full motion system; §11.0 sidebar order, §11.7, §11.8, §17.3, §19.8 focus ring; M3 task 2 added), docs/design/ART-DIRECTION.md (accent line)
 - Ran: nothing (docs only)
 - Notes: M3 now starts with reworking the M0 shell (tokens, sidebar, transitions). An animated Hub reference from Claude will follow in docs/design/; until then build to §19.
+
+## 2026-11-19 · SPEC 1.3 (Claude, not a Gemini task)
+- Changed: docs/SPEC.md (v1.3: new §13.17 tactical depth: roles with fit, opposition orders, transitions, GK distribution, corner routines, player instructions, key battles, AI/assistant rules, calibration checks; §8.4 types; §11.8; §13.5; §13.8; §13.12; §15.4; M3 task 0)
+- Ran: nothing (docs only)
+- Notes: M3 now starts with task 0, the tactical depth engine pass, then recalibration. Tactical depth outranks visual polish if time is short.
