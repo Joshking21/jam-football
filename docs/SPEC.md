@@ -965,7 +965,7 @@ Same rules as §13.17: every option has a gain and a cost, defaults are neutral,
 
 **12.17.3 Rest days.** Per player, per week: `rest: boolean`. Rested: condition +8 and fatigue −6 on top of §12.1–12.2; no development that week. A fit player (condition ≥ 90) rested 3 weeks running gets morale −5 ("Wants to train"). A rested player can still be picked.
 
-**12.17.4 Role training.** Individual focus (§12.3) may be a role instead of an attribute: 40% of his growth goes to that role's key attributes, split by their weights (fit rises with them, §13.17.1).
+**12.17.4 Role training:** not approved (kept for later with Tier C).
 
 **12.17.5 Dressing room.**
 - Leaders: the top 3 players by `leaderScore = (personality Leader ? 30 : 0) + (captain ? 20 : 0) + (Professional ? 8 : 0) + age × 0.8 + min(apps, 40) × 0.5`, recomputed weekly.
@@ -2093,7 +2093,7 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 4. Conversations (§12.9).
 5. Board and fans (§12.7, §12.14), finances (§12.10).
 6. Transfer windows complete (§12.13) with scouting (§12.12) and AI activity; news (§16.6).
-7. Club depth (§12.17): staff and replacing them, match preparation, rest days, role training, dressing room (leaders, cohesion), injury risk column.
+7. Club depth (§12.17): staff and replacing them, match preparation, rest days, dressing room (leaders, cohesion), injury risk column.
 **Accept:** every system visibly changes something the player can see within a season; transfer window rounds behave per the tests; content files meet minimum counts.
 
 ### M6 — Assistant and audio (8–10 Dec)

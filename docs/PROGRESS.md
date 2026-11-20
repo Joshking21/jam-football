@@ -160,6 +160,6 @@ Overall status: ALL PASS
 - Open issues: none
 
 ## 2026-11-20 · SPEC 1.4 depth pass 2 (Claude, not a Gemini task)
-- Changed: docs/SPEC.md (v1.4: §8.4 types, new §12.17 club depth (staff, match prep, rest days, role training, dressing room, injury risk), new §13.18 tactics depth (5-step mentality, final third, crosses, offside trap, tackling, force them, time-wasting, extended set pieces, 6 player instructions, Plans A/B/C, familiarity per area, match analysis, calibration checks), new milestone M3b, M4 task 5, M5 task 7, §24)
+- Changed: docs/SPEC.md (v1.4: §8.4 types, new §12.17 club depth (staff, match prep, rest days, dressing room, injury risk), new §13.18 tactics depth (5-step mentality, final third, crosses, offside trap, tackling, force them, time-wasting, extended set pieces, 6 player instructions, Plans A/B/C, familiarity per area, match analysis, calibration checks), new milestone M3b, M4 task 5, M5 task 7, §24)
 - Ran: nothing (docs only)
 - Notes: after M3 task 0 is finished and M3 is accepted, do M3b. Calibration for 13.18 runs with familiarity 100. Claude will extend docs/design/tactics/ for the new controls.
