@@ -8,3 +8,5 @@ coverage/
 Thumbs.db
 tools/.cache/
 tests-ai/
+tools/.venv/
+tools/voice/models/
