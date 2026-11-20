@@ -252,9 +252,6 @@ export const HubScreen: React.FC = () => {
                   <Button variant="secondary" size="m" onClick={() => setScreen('preMatch')}>
                     Opponent Report
                   </Button>
-                  <Button variant="primary" size="m" onClick={() => setScreen('preMatch')}>
-                    Go To Match
-                  </Button>
                 </div>
               </div>
             </Panel>
@@ -463,7 +460,7 @@ export const HubScreen: React.FC = () => {
                   gap: '4px',
                 }}
               >
-                {snapshotRows.map((row) => {
+                {gameState.table.map((row) => {
                   const club = gameState.clubs[row.clubId];
                   if (!club) return null;
                   const isUser = row.clubId === userClub.id;
