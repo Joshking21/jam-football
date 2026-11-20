@@ -32,8 +32,13 @@ Tab to a magnet. **Enter** picks it and opens his file; **Enter** on a second ma
 3. **"Reset to club style" also sets club roles**, using the AI manager rules of §13.17.8 (only when the player's fit ≥ 0.5). A fresh club therefore starts with a few marker arrows on its board, not a blank one.
 4. **Injured players can't be dragged onto the board.** They sit in the Injured corner and a memo explains why, instead of a validation error after the fact. The validation line still covers the goalkeeper rules.
 
-## SPEC 1.4 controls (M3b task 3)
-The new controls (§13.18: five-step mentality, final third, crosses, offside trap, tackling, force them, time-wasting, extended set pieces, the 6 new player instructions, Plan A/B/C tabs) aren't drawn in this reference yet. Until Claude adds them, follow this rule: each is one more row on the clipboard dividers in the same style (words, chosen one circled in blue marker, exact wording under it). Plan A/B/C are three paper tabs along the top edge of the clipboard. New board marks: the offside trap as a zig-zag on the Line marker, men back as faint Xs in our half.
+## SPEC 1.4 controls (M3b task 3): drawn
+- **Plans A/B/C:** three paper tabs at the top of the clipboard (default names: Club style, Chasing a game, Protect a lead; the user can rename them). Switching slides every magnet to the plan's formation and redraws the board.
+- **Familiarity per area:** four small bars beside the formation dropdown (Formation, Mentality, Passing, Pressing), 0-100, red under 70 with "Not sharp yet. It improves every week you use it."
+- **Five dividers:** Build-up (mentality in 5 steps, passing, tempo, width), Attack (focus, final third, crosses), Defend (pressing, line, offside trap, tackling, force them), Transition (when we lose it, when we win it, goalkeeper, time-wasting), Set pieces (our corners, corner delivery, men back, free kicks, their corners, the posts, takers).
+- **Wording** for the defaults the SPEC leaves blank (use these): offside trap Off "Hold the line. No trap."; tackling Mixed "Pick the moment to go in."; force them Mixed "No preference."; time-wasting Never "Play it straight."; men back Two "Two back. The usual."; posts None "Nobody on the posts."
+- **New board marks:** offside trap = a zig-zag on the Line marker (label "Line · trap"); force them = arrows on both flanks in our third; crosses = an arrow from the wing into the box whose curve shows Low, Whipped or Floated; final third = a shot arrow or short pass arrows at their box; on the Set pieces divider, men back as Xs in our half and men on the posts as red Xs at our goal. Each mark draws on only when its own option changes.
+- **The 6 new player instructions** in the player's file, with clashes blocked and the reason shown (e.g. "Clashes with “Cross early, from deep”").
 
 ## Not in this reference
 Sound (`ui_clack` on drop, `ui_paper` on the file). The compact Pre-Match and in-match versions of these controls. Key battles (they're in the Hub's opponent report).

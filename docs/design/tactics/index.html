@@ -160,12 +160,27 @@ button{background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inh
 .fam .l{font:500 11px/1 var(--font-body);color:var(--paper-dim)}
 .fam .bar{width:96px;height:5px;background:var(--paper-rule);position:relative;overflow:hidden}
 .fam .bar i{position:absolute;inset:0;transform-origin:0 50%;background:var(--paper-ink);transition:transform 400ms var(--ease-out)}
+.plans{display:flex;gap:4px;margin:12px 0 0}
+.plan{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:7px 9px;border:1px solid var(--paper-rule);border-radius:3px}
+.plan b{font:700 15px/1 var(--font-head);letter-spacing:.04em;text-transform:uppercase}
+.plan span{max-width:100%;font-size:11px;color:var(--paper-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plan:hover:not([aria-selected="true"]){background:var(--paper-2)}
+.plan[aria-selected="true"]{background:var(--paper-ink);border-color:var(--paper-ink);color:var(--paper)}
+.plan[aria-selected="true"] span{color:var(--paper-2)}
+.fams{display:grid;grid-template-columns:auto 64px 22px;gap:4px 8px;align-items:center;font-size:11px;min-width:150px}
+.fr{display:contents}
+.fl{color:var(--paper-dim)}
+.fv{font:600 13px/1 var(--font-head);text-align:right;font-variant-numeric:tabular-nums}
+.fbar{height:4px;background:var(--paper-rule);position:relative;overflow:hidden}
+.fbar i{position:absolute;inset:0;transform-origin:0 50%;background:var(--paper-ink);transition:transform 400ms var(--ease-out)}
+.fr.low .fl,.fr.low .fv{color:var(--marker-red)}.fr.low .fbar i{background:var(--marker-red)}
+.fnote{grid-column:1/-1;font-size:11px;line-height:1.35;color:var(--paper-dim);max-width:170px}
 .presets{display:flex;flex-wrap:wrap;gap:6px;padding:12px 0 4px}
 .chip{height:28px;padding:0 10px;border:1px solid var(--paper-rule);border-radius:14px;font:500 12px/26px var(--font-body);color:var(--paper-ink);background:transparent}
 .chip:hover{background:var(--paper-2)}
 .chip:active{transform:translateY(1px)}
 .dividers{display:flex;gap:2px;margin:14px -22px 0;padding:0 14px;border-bottom:2px solid var(--paper-ink)}
-.dv{flex:1;height:30px;border-radius:3px 3px 0 0;background:var(--paper-2);color:var(--paper-dim);font:600 12px/30px var(--font-head);letter-spacing:.06em;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+.dv{flex:1;height:30px;border-radius:3px 3px 0 0;background:var(--paper-2);color:var(--paper-dim);font:600 11px/30px var(--font-head);letter-spacing:.04em;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 3px}
 .dv[aria-selected="true"]{background:var(--paper-ink);color:var(--paper)}
 .grpw{padding-top:4px;min-height:268px}
 .ins{padding:11px 0 10px;border-bottom:1px solid var(--paper-rule)}
@@ -372,35 +387,52 @@ const SLOT_ROLES = {
 };
 /* player instructions: SPEC §13.17.11 wording exact */
 const PIS = {
-  shootMore:['Shoot more: try his luck from distance.','More shots from range','Low-chance shots give the ball away','shootLess'],
-  shootLess:['Shoot less: work a better chance.','Waits for a better chance','More passes in the final third to lose','shootMore'],
-  dribbleMore:['Take players on.','Beats men and wins fouls','Loses it higher up the pitch','dribbleLess'],
-  dribbleLess:['Move it on quickly.','Keeps the ball moving','Creates less on his own','dribbleMore'],
-  crossMore:['Get it in the box early.','More crosses','The keeper claims more of them','crossLess'],
-  crossLess:['Keep it on the floor.','More passes into feet','Fewer headers; easier to defend','crossMore'],
-  getForward:['Get forward at every chance.','An extra man in attack','His zone is empty on the counter; tires faster','holdPosition'],
-  holdPosition:['Hold your position.','Keeps the shape','Less support in attack','getForward'],
-  stayWider:['Stay wide and stretch them.','Stretches their back line','Fewer bodies in the middle'],
+  shootMore:['Shoot more: try his luck from distance.','More shots from range','Low-chance shots give the ball away',['shootLess']],
+  shootLess:['Shoot less: work a better chance.','Waits for a better chance','More passes in the final third to lose',['shootMore']],
+  dribbleMore:['Take players on.','Beats men and wins fouls','Loses it higher up the pitch',['dribbleLess']],
+  dribbleLess:['Move it on quickly.','Keeps the ball moving','Creates less on his own',['dribbleMore']],
+  crossMore:['Get it in the box early.','More crosses','The keeper claims more of them',['crossLess']],
+  crossLess:['Keep it on the floor.','More passes into feet','Fewer headers; easier to defend',['crossMore','crossFromByline','crossFromDeep']],
+  crossFromByline:['Get to the byline before crossing.','Better crosses and cut-backs','No early crosses; slower attacks',['crossFromDeep','crossLess']],
+  crossFromDeep:['Cross early, from deep.','Gets it in before they’re set','Worse deliveries; the keeper claims more',['crossFromByline','crossLess']],
+  getForward:['Get forward at every chance.','An extra man in attack','His zone is empty on the counter; tires faster',['holdPosition']],
+  holdPosition:['Hold your position.','Keeps the shape','Less support in attack',['getForward','roam']],
+  roam:['Roam from position.','Turns up where they don’t expect him','Leaves gaps in his own zone',['holdPosition']],
+  stayWider:['Stay wide and stretch them.','Stretches their back line','Fewer bodies in the middle',['sitNarrower']],
+  sitNarrower:['Sit narrower.','More bodies in the middle','Fewer crosses; his flank is open',['stayWider']],
+  riskyPasses:['Try the killer pass.','More through balls','Gives the ball away more',['playSafe']],
+  playSafe:['Play it safe.','Keeps the ball','Fewer through balls',['riskyPasses']],
   closeDownMore:['Close down more.','Presses harder','Tires faster; open when he’s beaten'],
   stayOnFeet:['Stay on your feet.','Half the fouls and cards','Wins fewer tackles'],
   longThrows:['Take the long throws.','Throw-ins in their third become crosses','Slower restarts; the keeper claims more'],
 };
 /* team instructions: SPEC §13.10, §13.17.4–5 wording exact */
 const INS = [
-  ['with','mentality','Mentality',[['Defensive','Keep men behind the ball.'],['Balanced','Pick the right moments.'],['Attacking','Commit players forward.']]],
+  ['with','mentality','Mentality',[['Very defensive','Everyone behind the ball.'],['Defensive','Keep men behind the ball.'],['Balanced','Pick the right moments.'],['Attacking','Commit players forward.'],['Very attacking','Throw everything forward.']]],
   ['with','passing','Passing',[['Short','Keep it on the floor, patient.'],['Mixed','Mix it up.'],['Direct','Get it forward quickly, go long.']]],
   ['with','tempo','Tempo',[['Slow','Control the rhythm.'],['Normal','Natural pace.'],['Fast','Play at speed; more mistakes.']]],
   ['with','width','Width',[['Narrow','Crowd the middle.'],['Normal','Balanced width.'],['Wide','Stretch the pitch, cross more.']]],
-  ['with','focus','Focus',[['Left','Attack through the left.'],['Centre','Attack through the middle.'],['Right','Attack through the right.'],['Mixed','No preference.']]],
+  ['final','focus','Focus',[['Left','Attack through the left.'],['Centre','Attack through the middle.'],['Right','Attack through the right.'],['Mixed','No preference.']]],
+  ['final','finalThird','Final third',[['Work it into the box','Walk it in. Only shoot from good spots.'],['Shoot on sight','Have a go whenever you can.'],['Mixed','Players decide.']]],
+  ['final','crossStyle','Crosses',[['Low','Drill it across the six-yard box.'],['Whipped','Bend it in with pace.'],['Floated','Hang it up for the big men.'],['Mixed','Crosser’s choice.']]],
   ['without','pressing','Pressing',[['Low','Hold shape, save energy.'],['Mid','Press in midfield.'],['High','Hunt the ball high; tiring and risky.']]],
   ['without','line','Defensive line',[['Deep','Protect the space behind.'],['Normal','Standard line.'],['High','Squeeze the pitch; vulnerable to balls in behind.']]],
+  ['without','offsideTrap','Offside trap',[['Off','Hold the line. No trap.'],['On','Step up together and catch them offside.']]],
+  ['without','tackling','Tackling',[['Get stuck in','Win every fifty-fifty.'],['Stay on your feet','Stay up and stay on the pitch.'],['Mixed','Pick the moment to go in.']]],
+  ['without','forceOpp','Force them',[['Inside','Show them inside. Fewer crosses.'],['Outside','Show them down the line. Fewer shots.'],['Mixed','No preference.']]],
   ['trans','onLoss','When we lose it',[['Counter-press','Win it back in seconds. Get it wrong and they’re through.'],['Regroup','Get back into shape and let them have it.'],['Mixed','Read the moment.']]],
   ['trans','onWin','When we win it',[['Counter','Break at speed.'],['Keep it','Calm down and keep the ball.'],['Mixed','Read the moment.']]],
   ['trans','distribution','Goalkeeper',[['Short','Play out from the back.'],['Long','Go long to the front men.'],['Wide','Find the full-backs.'],['Mixed','Keeper’s choice.']]],
+  ['trans','timeWasting','Time-wasting',[['Never','Play it straight.'],['When ahead late','Take your time over everything when we’re winning late on.']]],
   ['setp','cornersFor','Our corners',[['Near post','Flick-ons at the near post.'],['Far post','Big men at the back stick.'],['Short','Work it short and keep the ball.'],['Mixed','Taker’s choice.']]],
+  ['setp','cornerSwing','Corner delivery',[['Inswinger','Bend it towards goal.'],['Outswinger','Bend it away from the keeper.'],['Mixed','Taker’s choice.']]],
+  ['setp','menBack','Men back on our corners',[['One','One back. Everyone else attacks.'],['Two','Two back. The usual.'],['Three','Three back. Safety first.']]],
+  ['setp','freeKicks','Free kicks near goal',[['Shoot','Go for goal.'],['Cross','Put it in the box.'],['Short','Play it short and keep it.'],['Mixed','Taker’s choice.']]],
   ['setp','cornersAgainst','Their corners',[['Zonal','Defend the space.'],['Man-mark','Pick up a man each. Watch the wrestling.'],['Mixed','Bit of both.']]],
+  ['setp','postMen','Their corners: the posts',[['None','Nobody on the posts.'],['Near post','A man on the near post.'],['Both posts','A man on each post.']]],
 ];
-const GROUPS = [['with','With ball'],['without','Without ball'],['trans','Transitions'],['setp','Set pieces']];
+const GROUPS = [['with','Build-up'],['final','Attack'],['without','Defend'],['trans','Transition'],['setp','Set pieces']];
+const STEPS = { mentality: ['Very defensive','Defensive','Balanced','Attacking','Very attacking'], passing: ['Short','Mixed','Direct'], pressing: ['Low','Mid','High'] };
 const PRESETS = [['Park the bus',['Defensive','Direct','Slow','Low','Deep','Narrow','Centre']],['Control',['Balanced','Short','Slow','Mid','Normal','Normal','Mixed']],
   ['Gegenpress',['Attacking','Short','Fast','High','High','Normal','Mixed']],['Counter',['Defensive','Direct','Fast','Low','Deep','Wide','Mixed']],['All-out attack',['Attacking','Mixed','Fast','High','High','Wide','Mixed']]];
 const PRESET_KEYS = ['mentality','passing','tempo','pressing','line','width','focus'];
@@ -485,13 +517,50 @@ function styleRoles(club, xi) {
 }
 function newState(club) {
   const s = CLUBS[club].st, opp = club === 'c07' ? 'c02' : 'c07', base = clubXI();
-  return {
+  const st = {
     club, opp, formation: '4-3-3', ...base,
     roles: styleRoles(club, base.xi), pis: FORMS['4-3-3'].map(() => []),
-    ins: { mentality: s[1], passing: s[2], tempo: s[3], pressing: s[4], line: s[5], width: s[6], focus: 'Mixed', onLoss: 'Mixed', onWin: 'Mixed', distribution: 'Mixed', cornersFor: 'Mixed', cornersAgainst: 'Mixed' },
+    ins: { mentality: s[1], passing: s[2], tempo: s[3], pressing: s[4], line: s[5], width: s[6], focus: 'Mixed', finalThird: 'Mixed', crossStyle: 'Mixed',
+      offsideTrap: 'Off', tackling: 'Mixed', forceOpp: 'Mixed', onLoss: 'Mixed', onWin: 'Mixed', distribution: 'Mixed', timeWasting: 'Never',
+      cornersFor: 'Mixed', cornerSwing: 'Mixed', menBack: 'Two', freeKicks: 'Mixed', cornersAgainst: 'Mixed', postMen: 'None' },
     takers: { captain: 9, penalties: 12, freeKicks: 9, corners: 13, longThrows: 4 },
-    tab: 'us', group: 'with', sel: null, armed: null, orders: [], oppSel: null,
+    tab: 'us', group: 'with', sel: null, armed: null, orders: [], oppSel: null, active: 0,
   };
+  st.plans = makePlans(st);
+  return st;
+}
+/* Plans A/B/C (§13.18.10): club style, plus two ready-made alternatives the user can change */
+function makePlans(st) {
+  const neutral = f => FORMS[f].map(([pos]) => SLOT_ROLES[pos][0]), none = f => FORMS[f].map(() => []);
+  return [
+    { name: 'Club style', formation: st.formation, roles: [...st.roles], pis: st.pis.map(a => [...a]), ins: { ...st.ins } },
+    { name: 'Chasing a game', formation: '4-2-3-1', roles: neutral('4-2-3-1'), pis: none('4-2-3-1'), ins: { ...st.ins, mentality: 'Very attacking', passing: 'Direct', tempo: 'Fast', pressing: 'High', line: 'High', width: 'Wide', finalThird: 'Shoot on sight', crossStyle: 'Whipped', onLoss: 'Counter-press' } },
+    { name: 'Protect a lead', formation: '4-1-4-1', roles: neutral('4-1-4-1'), pis: none('4-1-4-1'), ins: { ...st.ins, mentality: 'Defensive', passing: 'Short', tempo: 'Slow', pressing: 'Low', line: 'Deep', width: 'Narrow', onWin: 'Keep it', timeWasting: 'When ahead late', menBack: 'Three', postMen: 'Both posts' } },
+  ];
+}
+/* familiarity per area (§13.18.11): club style 90, one step away 65, others 45; formations 90 / same back line 65 / others 40 */
+function famArea(area, val) {
+  const s = CLUBS[T.club].st;
+  if (area === 'formation') return val === s[0] ? 90 : val.split('-')[0] === s[0].split('-')[0] ? 65 : 40;
+  const club = { mentality: s[1], passing: s[2], pressing: s[4] }[area], L = STEPS[area], d = Math.abs(L.indexOf(val) - L.indexOf(club));
+  return d === 0 ? 90 : d === 1 ? 65 : 45;
+}
+function famHTML() {
+  const rows = [['Formation', 'formation', T.formation], ['Mentality', 'mentality', T.ins.mentality], ['Passing', 'passing', T.ins.passing], ['Pressing', 'pressing', T.ins.pressing]];
+  const vals = rows.map(r => famArea(r[1], r[2])), pen = Math.min(.25, vals.reduce((a, v) => a + (v < 70 ? (70 - v) / 400 : 0), 0));
+  return rows.map(([l], i) => `<span class="fr${vals[i] < 70 ? ' low' : ''}"><span class="fl">${l}</span><span class="fbar"><i style="transform:scaleX(${vals[i] / 100})"></i></span><span class="fv">${vals[i]}</span></span>`).join('')
+    + `<span class="fnote">${pen > 0 ? 'Not sharp yet. It improves every week you use it.' : 'The squad knows this setup.'}</span>`;
+}
+function renderFam() { const b = $('#famBox'); if (b) b.innerHTML = famHTML(); }
+function switchPlan(n) {
+  if (n === T.active) return;
+  T.plans[T.active] = { ...T.plans[T.active], formation: T.formation, roles: [...T.roles], pis: T.pis.map(a => [...a]), ins: { ...T.ins } };
+  T.active = n; const p = T.plans[n], keep = T.sel;
+  T.ins = { ...p.ins }; T.roles = [...p.roles]; T.pis = p.pis.map(a => [...a]); T.formation = p.formation; T.sel = null;
+  $$('.mag .ring', $('#bd')).forEach(r => r.remove());
+  refreshMagnets(false, true); drawUs(true); drawOpp(false); renderShell(); renderSide(false);
+  const sh = $('#side .clip'); if (sh) settle({ querySelectorAll: () => [sh] });
+  if (keep !== null && locOf(keep).t === 'xi') selectPlayer(keep);
 }
 const slots = () => FORMS[T.formation];
 function locOf(pi) {
@@ -638,9 +707,23 @@ function roleMark(i, sel) {
 function teamMarks() {
   const lineX = { Deep: .15, Normal: .23, High: .32 }[T.ins.line], pressX = { Low: .52, Mid: .64, High: .8 }[T.ins.pressing];
   const v = (lbl, cls) => `${path(`M0 ${P.y + 18} L0 ${P.y + P.h - 18}`, cls + ' dash', false)}<text class="bt ${cls.includes('red') ? 'red' : 'blue'}" x="10" y="${P.y + 40}">${lbl}</text>`;
-  let s = `<g class="mvg" style="transform:translateX(${(P.x + lineX * P.w).toFixed(0)}px)">${v('Line', 'mk blue faint')}</g>`;
+  const trap = T.ins.offsideTrap === 'On' ? path(wob(Array.from({ length: 14 }, (_, k) => [k % 2 ? 9 : -9, P.y + 70 + k * 38]), 77, 1), 'mk blue tm k-offsideTrap') : '';
+  let s = `<g class="mvg" style="transform:translateX(${(P.x + lineX * P.w).toFixed(0)}px)">${v(T.ins.offsideTrap === 'On' ? 'Line · trap' : 'Line', 'mk blue faint')}${trap}</g>`;
   s += `<g class="mvg" style="transform:translateX(${(P.x + pressX * P.w).toFixed(0)}px)">${v('Press', 'mk blue faint')}</g>`;
   const wx = P.x + .58 * P.w;
+  const fo = T.ins.forceOpp;
+  if (fo !== 'Mixed') for (const dir of [1, -1]) { const y0 = dir > 0 ? .1 : .9; const [x1, y1] = sp(.36, y0), [x2, y2] = fo === 'Inside' ? sp(.22, y0 + dir * .22) : sp(.17, y0 - dir * .02); s += path(mArrow(x1, y1, x2, y2, fo === 'Inside' ? -.25 * dir : 0), 'mk blue faint tm k-forceOpp'); }
+  if (fo !== 'Mixed') s += `<text class="bt blue" x="${sp(.24, .045)[0]}" y="${sp(.24, .045)[1]}" style="font-size:18px">Show ${fo.toLowerCase()}</text>`;
+  if (T.ins.crossStyle !== 'Mixed') { const [cx0, cy0] = sp(.9, .08), [cx1, cy1] = sp(.95, .44), bend = { Low: .02, Whipped: .22, Floated: .45 }[T.ins.crossStyle]; s += path(mArrow(cx0, cy0, cx1, cy1, -bend), 'mk blue tm k-crossStyle') + `<text class="bt blue" x="${cx0 - 160}" y="${cy0 + 6}" style="font-size:18px">${T.ins.crossStyle} cross</text>`; }
+  if (T.ins.finalThird === 'Shoot on sight') { const [a0, b0] = sp(.8, .6); s += path(mArrow(a0, b0, P.x + P.w - 6, P.y + P.h * .52, .05), 'mk blue tm k-finalThird') + `<text class="bt blue" x="${a0 - 40}" y="${b0 + 34}" style="font-size:18px">Shoot on sight</text>`; }
+  if (T.ins.finalThird === 'Work it into the box') { const pts = [sp(.78, .62), sp(.85, .56), sp(.86, .66), sp(.93, .55)]; for (let k = 0; k < 3; k++) s += path(mArrow(pts[k][0], pts[k][1], pts[k + 1][0], pts[k + 1][1], 0, 11), 'mk blue tm k-finalThird'); s += `<text class="bt blue" x="${pts[0][0] - 40}" y="${pts[0][1] + 40}" style="font-size:18px">Work it in</text>`; }
+  if (T.group === 'setp') {
+    const n = { One: 1, Two: 2, Three: 3 }[T.ins.menBack];
+    for (let k = 0; k < n; k++) { const [x, y] = sp(.44, .5 + (k - (n - 1) / 2) * .16); s += path(mX(x, y, 13, 600 + k), 'mk blue tm k-menBack'); }
+    s += `<text class="bt blue" x="${sp(.38, .27)[0]}" y="${sp(.38, .27)[1]}" style="font-size:18px">Back on our corners</text>`;
+    const pm = T.ins.postMen, gy = P.h * .054;
+    if (pm !== 'None') for (const py of pm === 'Both posts' ? [-1, 1] : [-1]) s += path(mX(P.x + 14, P.y + P.h / 2 + py * gy, 8, 640 + py), 'mk red tm k-postMen');
+  }
   if (T.ins.width === 'Wide') s += path(mArrow(wx, P.y + 150, wx, P.y + 50), 'mk blue faint tm') + path(mArrow(wx, P.y + P.h - 150, wx, P.y + P.h - 50), 'mk blue faint tm');
   if (T.ins.width === 'Narrow') s += path(mArrow(wx, P.y + 50, wx, P.y + 150), 'mk blue faint tm') + path(mArrow(wx, P.y + P.h - 50, wx, P.y + P.h - 150), 'mk blue faint tm');
   const fy = { Left: .14, Centre: .5, Right: .86 }[T.ins.focus];
@@ -692,11 +775,11 @@ function takersHTML() {
   return `<div class="takers">${row('captain', 'Captain', xi)}${row('penalties', 'Penalties', xi)}${row('freeKicks', 'Free kicks', xi)}${row('corners', 'Corners', xi)}${row('longThrows', 'Long throws', xi.filter(p => ATTR[p.i].strength >= 70))}</div>`;
 }
 function clipHTML() {
-  const fam = FAMIL[T.formation];
   return `<article class="sheet clip" data-rot="-0.5">
     <div class="s-h"><span>${CLUBS[T.club].name}</span><span>v ${CLUBS[T.opp].town} · Sat</span></div>
+    <div class="plans" role="tablist" aria-label="Plans">${T.plans.map((p, i) => `<button class="plan" role="tab" data-plan="${i}" aria-selected="${i === T.active}"><b>Plan ${'ABC'[i]}</b><span>${p.name}</span></button>`).join('')}</div>
     <div class="form-row"><span><label class="ins-l" for="formSel" style="display:block;margin:0 0 6px">Formation</label><span class="sel-wrap"><select id="formSel">${Object.keys(FORMS).map(f => `<option${f === T.formation ? ' selected' : ''}>${f}</option>`).join('')}</select></span></span>
-      <span class="fam" title="How well the squad knows this shape"><span class="v">${fam}</span><span class="bar"><i style="transform:scaleX(${fam / 100})"></i></span><span class="l">Familiarity</span></span></div>
+      <span class="fams" id="famBox" aria-label="How well the squad knows this setup">${famHTML()}</span></div>
     <div class="presets" aria-label="Presets">${PRESETS.map(([n]) => `<button class="chip" data-preset="${n}">${n}</button>`).join('')}</div>
     <div class="dividers" role="tablist">${GROUPS.map(([g, n]) => `<button class="dv" role="tab" data-g="${g}" aria-selected="${g === T.group}">${n}</button>`).join('')}</div>
     <div class="grpw">${INS.filter(x => x[0] === T.group).map(insHTML).join('')}${T.group === 'setp' ? takersHTML() : ''}</div>
@@ -720,8 +803,8 @@ function fileHTML(pi) {
       return `<button class="role" role="radio" aria-checked="${rid === cur}" data-role="${rid}"><span class="rn">${r.n}</span>${f === null ? '<span class="st any">Any player</span>' : stars(f)}
         <span class="rd">${r.d}</span>${r.g ? `<span class="gc"><span class="g">Gives you: ${r.g}.</span><br><span class="c">Costs you: ${r.c}.</span></span>` : '<span class="gc">No gains, no costs. The neutral choice.</span>'}</button>`; }).join('');
     const pis = Object.keys(PIS).filter(id => id !== 'longThrows' || ATTR[pi].strength >= 70).map(id => {
-      const [w, g, c, clash] = PIS[id], on = mine.includes(id);
-      const why = on ? '' : clash && mine.includes(clash) ? `Clashes with “${PIS[clash][0].split(':')[0]}”.` : mine.length >= 2 ? 'Two instructions already. Remove one first.' : '';
+      const [w, g, c, clash = []] = PIS[id], on = mine.includes(id), hit = clash.find(x => mine.includes(x));
+      const why = on ? '' : hit ? `Clashes with “${PIS[hit][0].split(':')[0].replace(/\.$/, '')}”.` : mine.length >= 2 ? 'Two instructions already. Remove one first.' : '';
       return `<button class="pi" role="checkbox" aria-checked="${on}" data-pi="${id}"${why ? ' aria-disabled="true"' : ''}><span class="box">${on ? `<svg viewBox="0 0 30 30"><path d="M7 16 l6 6 l12 -15" fill="none" stroke="var(--marker-blue)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" data-draw/></svg>` : ''}</span>
         <span class="t">${w}</span><span class="why">${why || `<span class="g">${g}</span> · <span class="c">${c}</span>`}</span></button>`; }).join('');
     body = `<div class="sub-h"><span>Role at ${pos}</span><span>Fit</span></div><div class="roles" role="radiogroup" aria-label="Role">${roles}</div>
@@ -804,17 +887,18 @@ function setIns(key, v) {
     $$('.opt', box).forEach(o => { const on = o.dataset.v === v; o.setAttribute('aria-checked', on); const r = $('.ring', o); if (r) r.remove(); if (on) { o.insertAdjacentHTML('beforeend', ringSVG(hash(key + v))); drawOn(o); } });
     $('.ins-d', box).textContent = INS.find(x => x[1] === key)[3].find(o => o[0] === v)[1];
   }
-  if (['line', 'pressing', 'width', 'focus'].includes(key)) {
+  if (['mentality', 'passing', 'pressing'].includes(key)) renderFam();
+  if (['line', 'pressing', 'width', 'focus', 'offsideTrap', 'forceOpp', 'crossStyle', 'finalThird', 'menBack', 'postMen'].includes(key)) {
     const g = $('#lUs'), old = $$('.mvg', g).map(m => m.style.transform);
     drawUs(false); const now = $$('.mvg', g);
     if (!RM()) now.forEach((m, i) => { if (old[i] && old[i] !== m.style.transform) { const to = m.style.transform; m.style.transition = 'none'; m.style.transform = old[i]; m.getBoundingClientRect(); m.style.transition = ''; m.style.transform = to; } });
-    if (key === 'width' || key === 'focus') drawOn(g, 0, '.tm');
+    if (!['line', 'pressing'].includes(key)) drawOn(g, 0, key === 'width' || key === 'focus' ? '.tm:not([class*="k-"])' : '.k-' + key);
   }
 }
 function setFormation(f) {
   T.formation = f; T.roles = FORMS[f].map(([pos], i) => SLOT_ROLES[pos].includes(T.roles[i]) ? T.roles[i] : SLOT_ROLES[pos][0]); T.pis = FORMS[f].map((_, i) => T.pis[i] || []);
   refreshMagnets(false, true); drawUs(true); drawOpp(false);
-  const fam = $('.fam'); if (fam) { $('.v', fam).textContent = FAMIL[f]; $('.bar i', fam).style.transform = `scaleX(${FAMIL[f] / 100})`; }
+  renderFam();
   if (T.sel !== null) { const pi = T.sel; T.sel = null; selectPlayer(pi); }
 }
 function bestXI() {
@@ -896,7 +980,8 @@ document.addEventListener('click', e => {
   if (t.id === 'go') return t.getAttribute('aria-disabled') === 'true' ? toast($('#goWhy').textContent) : toast('Kick-off lives in the Hub reference.');
   if (t.dataset.nav) return toast(`${t.dataset.nav} is in the Hub reference (docs/design/hub/).`);
   if (t.classList.contains('opt')) return setIns(t.closest('.ins').dataset.key, t.dataset.v);
-  if (t.dataset.g) { T.group = t.dataset.g; const side = $('#side'), keep = T.sel; renderSide(false); if (keep !== null) { T.sel = keep; } return; }
+  if (t.dataset.g) { T.group = t.dataset.g; renderSide(false); drawUs(false); if (T.group === 'setp') drawOn($('#lUs'), 0, '.k-menBack, .k-postMen'); return; }
+  if (t.dataset.plan) return switchPlan(+t.dataset.plan);
   if (t.dataset.preset) { const v = PRESETS.find(p => p[0] === t.dataset.preset)[1]; PRESET_KEYS.forEach((k, i) => setIns(k, v[i])); return; }
   if (t.dataset.act === 'best') return bestXI();
   if (t.dataset.act === 'reset') return resetClub();
