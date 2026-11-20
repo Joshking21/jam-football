@@ -17,7 +17,7 @@ The bar above the game frame is only for the reference: switch club themes, turn
 - **Printed images:** the news photo and portraits are halftoned on a canvas (45° screen, dot size from darkness). The canvas scenes are placeholders. The real news photo is a frame from the actual match, printed as newsprint; portraits are procedural programme-print faces (fal is on hold). The look of the panels around them is final.
 
 ## Differences from SPEC (these win)
-1. **The sidebar collapses to the 72 px rail at 1100 px wide, not 1440.** At 1280×720 the full rundown fits and is the part people notice most.
+1. ~~The sidebar collapses at 1100 px.~~ **Withdrawn in SPEC 1.6: there is no sidebar.** Navigation is tabs in the top bar (§19.6); the Hub grid below keeps its layout and uses the freed width.
 2. **The Hub shows the full 10-row table, not top 3 / your row / bottom 2.** With 10 clubs it fits, and the after-matchday reorder only reads when every row is there.
 3. **One primary button.** The top-bar Continue ("Go to match") is the only primary. The Next match card has only "Opponent report" (secondary). Two primaries for the same action broke the "one primary per screen" rule in §19.8.
 4. **Rundown hover:** no height growth, because animating height breaks the performance rule in §19.7. Hover shows a background, nudges the label 2 px, and shows the item's number key.

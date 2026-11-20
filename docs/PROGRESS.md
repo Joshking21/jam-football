@@ -277,3 +277,7 @@ Overall status: ALL PASS
   - Area familiarity (formation, mentality, passing, pressing) tracking and weekly progression with sharpness penalties.
   - UI updated in TacticsScreen with clipboard tabs, all 10 new settings, and full 18-PI player file card.
 - Open issues: none
+
+## 2026-11-20 · SPEC 1.6 top bar and Tactics v4 layout (Claude, not a Gemini task)
+- Changed: docs/SPEC.md (v1.6: §11.0 and §19.6 top bar with navigation tabs, no sidebar; office work screens fit the window with no page scroll; §11.8 layout note; new RadarChart in §19.5; M3b task 3 points at the v4 layout), docs/design/tactics/README.md ("v4 layout" section), docs/design/hub/README.md (sidebar difference withdrawn).
+- Notes for Gemini: no new mock-up. Keep the v3 objects and motion and move them into the v4 layout: file left, vertical board middle, orders right. Do the shell change (remove Sidebar, tabs in TopBar) with the M3 review fixes, and Tactics v4 in M3b task 3. New pure module src/core/player/roleShapes.ts for the radar's role shapes, with a unit test.

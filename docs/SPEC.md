@@ -1,8 +1,10 @@
 # TOUCHLINE (working title) — Complete Build Specification
 
-Version 1.5 · 20 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
+Version 1.6 · 20 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
+
+**Changes in 1.6 (20 Nov):** the sidebar is gone: navigation moves into the top bar as tabs (§11.0, §19.6). Office work screens fit the window with no page scroll. Tactics becomes three columns around a vertical board: the player's file (who he is) on the left, his orders (what he's told) on the right (§11.8, layout in `docs/design/tactics/README.md` "v4 layout"). New component RadarChart: the player's shape against what his role needs (§19.5).
 
 **Changes in 1.3 (19 Nov):** new §13.17 Tactical depth: player roles with fit (replace duties), opposition orders, transition and goalkeeper-distribution settings, corner routines, player instructions, key battles, AI and assistant rules, extra calibration checks including "no dominant choice". Tactical depth now outranks visual polish when time is short. Related edits: §8.4 types, §11.8, §13.5, §13.8, §13.12, §15.4, M3 task 0.
 
@@ -690,10 +692,9 @@ Circle method for 10 teams, rounds 1–9; rounds 10–18 repeat rounds 1–9 in 
 ## 11. Screens
 
 ### 11.0 Global shell and keyboard map
-- **Top bar** (64 px): crest + club name (left); centre: "Matchday 7 of 18 · 3rd place · 14 pts"; right: balance, inbox icon with unread count, settings gear, **Continue** button (accent, always visible, label changes: "Continue", "Go to Match", "Kick Off", "Next Round", "Finish Window").
-- **Sidebar** ("the rundown", behaviour and animation in §19.6; 232 px, collapsible to 72 px icons below 1440 wide), in two groups. On air: Hub, League, Fixtures. The office: Squad, Tactics, Training, Transfers (only enabled during windows; otherwise shows "Scouting" list read-only), Club (Finances + Board), Inbox.
+- **Top bar** (56 px, full width; there is no sidebar, v1.6): crest + club name (left); then the **navigation tabs** in two groups. On air: Hub, League, Fixtures. The office: Squad, Tactics, Training, Transfers (only enabled during windows; otherwise shows "Scouting" list read-only), Club (Finances + Board), Inbox (unread count as a badge on the tab). Right: status chip "MD 7/18 · 3rd · 14 pts", balance, settings gear, **Continue** button (accent, always visible, label changes: "Continue", "Go to Match", "Kick Off", "Next Round", "Finish Window"). Behaviour and widths in §19.6.
 - **Ticker** (36 px, bottom of on-air screens, §19.5).
-- **Keyboard:** `Space` Continue / confirm primary; `Esc` close modal / back / pause match; `1`–`9` sidebar items in order (outside the match); in match: `P` pause, `1` `2` `3` speed (Key highlights, Extended, Full), `T` tactics panel, `S` substitutions, `C` cycle camera, `R` replay last goal, `H` hide HUD, `F` fullscreen, `I` instant result (with confirm). Show key hints (KeyHint component) next to every primary button.
+- **Keyboard:** `Space` Continue / confirm primary; `Esc` close modal / back / pause match; `1`–`9` navigation tabs in order (outside the match); in match: `P` pause, `1` `2` `3` speed (Key highlights, Extended, Full), `T` tactics panel, `S` substitutions, `C` cycle camera, `R` replay last goal, `H` hide HUD, `F` fullscreen, `I` instant result (with confirm). Show key hints (KeyHint component) next to every primary button.
 - Every list/table row is keyboard-focusable and opens with Enter.
 
 ### 11.1 Boot / loading
@@ -741,6 +742,7 @@ Grid of cards:
 - Right: formation dropdown (7), familiarity meter for the selected formation, the seven instructions as three-way segmented controls with a one-line description each (§13.10), roles and player instructions per slot (click token → role card, §13.17.6), transitions and set pieces, opposition orders, captain, takers (penalty, free kick, corner, long throw).
 - Bench: up to 9 players, list with drag handles.
 - Buttons: **Assistant picks best XI** (§13.13 algorithm), **Reset to club style**, Presets: "Park the bus" (Defensive, Direct, Slow, Low, Deep, Narrow, Centre), "Control" (Balanced, Short, Slow, Mid, Normal, Normal, Mixed), "Gegenpress" (Attacking, Short, Fast, High, High, Normal, Mixed), "Counter" (Defensive, Direct, Fast, Low, Deep, Wide, Mixed), "All-out attack" (Attacking, Mixed, Fast, High, High, Wide, Mixed).
+- **Layout (v1.6, wins over the bullets above where they differ):** three columns with no page scroll: the player's file on the left, the vertical whiteboard in the middle, the orders (team instructions, or the selected player's roles and instructions) on the right. Full layout in `docs/design/tactics/README.md` "v4 layout".
 - Validation (blocks Kick Off with a clear message): exactly 1 GK in the GK slot, 11 starters, no injured/suspended player in XI or bench, no duplicates.
 
 ### 11.9 Training
@@ -1941,16 +1943,24 @@ Attribute/OVR scale: 1–39 `#FF4D5E`, 40–54 `#FF8A3D`, 55–64 `#FFC83D`, 65�
 - **PitchBoard**: SVG, responsive, drag with pointer events (mouse), keyboard: select token with Enter, arrows move selection between slots, Enter on a second slot swaps. Drawn as a whiteboard in Tactics (§11.8).
 - **StatCompare**: two-sided bars for match stats, each side in that club's accent.
 - **Sparkline**: inline SVG.
+- **RadarChart** (v1.6; part of the player's file everywhere): inline SVG, 6 axes, scale 0–100, faint rings at 25/50/75 in pencil grey, drawn on the file's paper.
+  - Outfield axes (weighted means of attributes): **Pace** = pace; **Shooting** = 0.7 finishing + 0.3 longShots; **Passing** = 0.6 passing + 0.2 crossing + 0.2 firstTouch; **Dribbling** = 0.6 dribbling + 0.2 firstTouch + 0.2 composure; **Defending** = 0.5 tackling + 0.35 positioning + 0.15 heading; **Physical** = 0.4 strength + 0.4 stamina + 0.2 workRate. Goalkeepers: Reflexes, Handling, One-on-ones, Aerial (aerialCommand), Distribution (passing), Positioning.
+  - **His shape:** blue marker stroke (2 px) with a 15% fill of the same ink. Each axis label shows its number; hover or focus on a label lists the attributes behind it.
+  - **What the role needs:** a red dashed shape for the selected role at his slot (his attacking role on With ball, his defensive role on Without ball). Its values are the mean axis values of the 20 players in the world with the highest fit for that role, computed at load and again at season start (`src/core/player/roleShapes.ts`, pure, cached). Where his value is more than 5 under the dashed one, that axis label turns `--warn`.
+  - **Comparison:** while a magnet is dragged over another, the other player's shape is drawn in pencil grey on the same chart.
+  - **Motion:** a new shape draws on with `stroke-dashoffset` (320 ms, the marker exception). When the role changes, the old dashed shape fades out and the new one fades in (opacity, 180 ms). Vertices are never tweened. Reduce motion: shapes appear at once.
+  - Unscouted players (other clubs, §12.12): the range is a band between the low and high shapes, no fill.
 
-### 19.6 Layout and the sidebar
-Shell: grid `232px | 1fr` (sidebar collapses to a 72 px rail under 1440 wide), top bar 64 px, Ticker 36 px at the bottom of on-air screens. Content max width 1600 px, padding 24 px (16 px under 1280). 12-column grid, gap 16 px. Every screen MUST be checked at 1280×720, 1920×1080 and 2560×1440 (§22.4).
+### 19.6 Layout and the top bar (v1.6: no sidebar)
+Shell: top bar 56 px across the full width, content below it, Ticker 36 px at the bottom of on-air screens. There is no sidebar. Padding 24 px (16 px under 1280). 12-column grid, gap 16 px. On-air screens: content max width 1600 px, and the page may scroll. **Office work screens** (Squad, Tactics, Training, Transfers/Scouting): full width up to 2400 px (centred beyond that), and they MUST fit the window with **no page scroll** at 1280×720 and up. A column whose content is longer scrolls inside itself; the main object (board, table, clipboard) never scrolls away. Every screen MUST be checked at 1280×720, 1920×1080 and 2560×1440 (§22.4).
 
-**The sidebar ("the rundown")**:
-- Two groups with small broadcast-label headers: **On air**: Hub, League, Fixtures. **The office**: Squad, Tactics, Training, Transfers (Scouting outside windows), Club, Inbox. Keys `1`–`9` follow this order.
-- Only the current page is expanded: a 64 px block filled with `--accent`, the page name in Barlow Condensed 700 22 px in `--accent-ink`, and one context line under it ("Matchday 7 · v Port Calloway", "4-4-2 · 2 changes", "5 unread"). Every other item is a compact 36 px row: 18 px icon and 14 px label in `--text-dim`. Hover or focus grows the row to 40 px and lifts the label to `--text` (`--dur-fast`).
-- Changing page: the expanded block travels from the old item to the new one (shared-element FLIP, `--dur-med`, `--ease-snap`) while the old item shrinks and the new one grows; the context line fades in 120 ms after the block arrives.
-- Under 1440 wide (72 px rail): icons only; the current icon sits in the accent block, and its label shows as a flag to the right for 1.2 s after a page change, then tucks away.
-- The sidebar uses broadcast surfaces on on-air pages and desk surfaces on office pages (crossfade `--dur-med`).
+**The top bar (the rundown, now horizontal)**:
+- Left: crest (32 px) and club name in Barlow Condensed 700 18 px (name hidden under 1440 wide).
+- Navigation tabs in two groups, **On air** (Hub, League, Fixtures) and **The office** (Squad, Tactics, Training, Transfers/Scouting, Club, Inbox), split by a 1 px rule; each group has a 10 px broadcast label above it (hidden under 1440). Keys `1`–`9` follow this order. Each tab: 14 px label in Barlow Condensed 600, `--text-dim`, 12 px side padding; hover or focus lifts it to `--text` (`--dur-fast`). Inbox carries its unread count as a small badge.
+- **The current tab** sits in a block filled with `--accent`, label in `--accent-ink`. Changing page: the block slides from the old tab to the new one (shared-element FLIP, `--dur-med`, `--ease-snap`). Its context line ("Matchday 7 · v Port Calloway", "4-4-2 · 2 changes", "5 unread") shows as a flag hanging under the block for 1.2 s after the page change, then tucks up.
+- Right: the status chip ("MD 7/18 · 3rd · 14 pts"), balance (hidden under 1440; it is on Club), settings gear, Continue. Continue keeps its idle hop (Hub README).
+- Width at 1280: crest 40 + 9 tabs (about 640) + chip 150 + gear 40 + Continue 150 + gaps fits. If it ever doesn't, tabs drop to icons with the label only on the current tab.
+- The bar uses broadcast surfaces on on-air pages and desk surfaces on office pages (crossfade `--dur-med`).
 
 **Composition**: on-air screens have one dominant graphic and supporting panels of different sizes, never a uniform grid of equal cards. Office screens are a desk with objects of different sizes; slight overlap is allowed (a memo partly over a file) but data is never hidden under another object.
 
@@ -1958,7 +1968,7 @@ Shell: grid `232px | 1fr` (sidebar collapses to a 72 px rail under 1440 wide), t
 Motion explains change and gives the game weight. On-air motion is fast, precise and graphic: snap in, hold, wipe off. Office motion is physical: objects have mass, slide, settle and stack. Data never bounces.
 
 **Screen transitions** (`ScreenTransition`, one at a time; never blocks input for more than 150 ms; Space or a click during a transition finishes it at once):
-1. **On air → on air: stinger wipe.** Two parallel bands skewed −12° (`--band-2` leading by 40 ms, then `--band-1`) sweep across the content area left to right in `--dur-wipe`. They never cover the top bar or the sidebar. The new screen swaps in while the bands fully cover the content; then its panels build: each panel enters from `translateX(-16px)` and opacity 0, 40 ms apart, up to 8 panels, `--dur-med`, `--ease-snap`.
+1. **On air → on air: stinger wipe.** Two parallel bands skewed −12° (`--band-2` leading by 40 ms, then `--band-1`) sweep across the content area left to right in `--dur-wipe`. They never cover the top bar. The new screen swaps in while the bands fully cover the content; then its panels build: each panel enters from `translateX(-16px)` and opacity 0, 40 ms apart, up to 8 panels, `--dur-med`, `--ease-snap`.
 2. **On air ↔ office: camera cut.** The content dips to black (opacity to 0 in 90 ms); a slate label ("THE OFFICE" or "ON AIR", broadcast label 14 px in `--accent-text`) shows in the content's top-left for 300 ms; the new world appears and its objects settle.
 3. **Office → office: across the desk.** The old screen slides 32 px out and fades (`--dur-fast`), the new one slides in from the other side; its sheets settle from `translateY(10px)` and ±1.2° extra rotation to their resting rotation through the spring.
 4. **Modals.** On air: the graphic panel wipes in from the left edge (`--dur-med`). Office: the file opens from the row that was clicked (scale from that row's rectangle, `--dur-med`), then its sheets fan out one by one (50 ms apart).
@@ -2160,7 +2170,7 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 ### M3b — Depth pass 2 (SPEC 1.4; starts when M3 is accepted, about 3 days; Gemini is ahead of schedule)
 1. Engine: §13.18.1–13.18.11 and §13.19 (attacking and defensive roles, instructions by role, instruction fit; types §8.4, `K.d2.*`, the new `plan` command, AI and assistant additions, save migration with neutral defaults: Mixed / false / Never / 2 / None, plans copied from the current tactics, familiarity from §13.18.11 starting values).
 2. Unit tests per new option, then `npm run calibrate`: all §13.16 targets, every §13.17.10 check, every §13.18.13 check and every §13.19.7 check MUST pass. Paste the report into PROGRESS.md.
-3. Tactics screen rebuilt to `docs/design/tactics/` (v3): full width, board left and the tall panel right, the With ball / Without ball switch, the player's file with stats, role attribute bars and instruction fit, the swap comparison while dragging. Other office screens follow the same pattern (see that README).
+3. Tactics screen rebuilt to the **v4 layout** in `docs/design/tactics/README.md` (top bar shell, three columns around a vertical board, no page scroll, RadarChart §19.5), with every object looking as it does in the v3 reference: the With ball / Without ball switch, the player's file with stats, role attribute bars and instruction fit, the swap comparison while dragging. Other office screens follow the same pattern (see that README).
 **Accept:** calibration all pass; every new option changes the match in the direction its wording says (checked by the tests); old saves load.
 
 ### M4 — 3D match day (1–5 Dec)

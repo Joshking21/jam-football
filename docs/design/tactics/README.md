@@ -1,5 +1,7 @@
 # Tactics reference
 
+> **v4 layout (20 Nov, SPEC 1.6): build this.** No new mock-up was made. `index.html` (v3) is still the reference for how every object looks and moves (magnets, paper, marker, fit stars, attribute bars, dividers, the file's contents). The **v4 layout** section below says where those objects now sit, and it wins over v3 wherever they differ.
+>
 > **v3 (20 Nov):** full-width work mode (sidebar as icons, board left, tall panel right), attacking and defensive roles (SPEC §13.19), instructions offered by role with fit stars and the deciding attribute, the player's file with condition, morale, season stats and last-5 ratings, a With ball / Without ball switch that slides the magnets into the defensive shape, and a comparison card while dragging one player over another. Open `index.html#file` or `#file-without` to land on Calder's file.
 >
 > **The same pattern applies to every office screen** (Squad, Training, Scouting, Club, Inbox): the main object large on the left (the table, the clipboard, the ledger), and on the right a tall panel that becomes the selected player's file with the same header, stats and attribute bars. One player file component, used everywhere.
@@ -43,6 +45,64 @@ Tab to a magnet. **Enter** picks it and opens his file; **Enter** on a second ma
 - **Wording** for the defaults the SPEC leaves blank (use these): offside trap Off "Hold the line. No trap."; tackling Mixed "Pick the moment to go in."; force them Mixed "No preference."; time-wasting Never "Play it straight."; men back Two "Two back. The usual."; posts None "Nobody on the posts."
 - **New board marks:** offside trap = a zig-zag on the Line marker (label "Line · trap"); force them = arrows on both flanks in our third; crosses = an arrow from the wing into the box whose curve shows Low, Whipped or Floated; final third = a shot arrow or short pass arrows at their box; on the Set pieces divider, men back as Xs in our half and men on the posts as red Xs at our goal. Each mark draws on only when its own option changes.
 - **The 6 new player instructions** in the player's file, with clashes blocked and the reason shown (e.g. "Clashes with “Cross early, from deep”").
+
+## v4 layout (build this)
+Goal: the whole tactics screen in one view. No page scroll, no sidebar, and what a player **is** kept apart from what he's **told**.
+
+**Shell.** The sidebar is gone. Navigation is tabs in the 56 px top bar next to "MD 7/18" (SPEC §11.0, §19.6). Below the bar, the screen uses the full width.
+
+**Three columns** (grid `minmax(340px,1fr) auto minmax(360px,1fr)`, gap 16, the full height under the top bar):
+
+| Left: the file (who he is) | Middle: the board | Right: the orders (what he's told) |
+|---|---|---|
+| player selected: his file with the RadarChart | the vertical whiteboard, full height | Team tab: the five dividers |
+| nothing selected: the team sheet | | Player tab: his roles and instructions |
+
+**Middle: the whiteboard, vertical.** Own goal at the bottom, attacking upwards (back to SPEC §11.8; v3 difference 1 is withdrawn).
+- The board's height fills the column; its width follows the pitch ratio 68:105.
+- The folder tabs (Our team, Opposition) and the With ball / Without ball switch sit along the frame's top edge.
+- The bench is a vertical strip of 36 px magnets inside the frame, on its right edge, with the Injured corner at the bottom of that strip.
+- The marker tray and props show only when the window is 900 px tall or more.
+- Every board mark turns with the pitch: the Line and Pressing markers become horizontal dashed lines that slide up and down, Width arrows point left and right, and runs point upwards.
+- At 1280×720 the pitch is about 375 × 580 px and the column about 450 px wide; the side columns get about 380 px each. At 1920×1080 the pitch is about 600 px wide.
+- The board never moves when the side columns change.
+
+**Left: the file.** It's the same player-file component used on every screen.
+- **Nothing selected: the team sheet.**
+  - Plans A/B/C tabs, the formation dropdown and the four familiarity bars.
+  - The XI and bench as a compact list: number, surname, slot, OVR at slot coloured by fit, and a condition bar.
+  - Hovering a row lights up his magnet; clicking it selects him.
+  - At the bottom: the readiness line, Assistant picks best XI, Reset to club style.
+- **Player selected: his file, from top to bottom.**
+  - Header: portrait 72 px, name, number, age, position chips, foot, and the OVR at this slot.
+  - Condition and morale meters.
+  - The **RadarChart** (SPEC §19.5), 220 px square (180 px when the window is under 800 px tall): his shape against the red dashed shape of what his selected role needs.
+  - The attributes in two columns of compact bars (20 px rows). The selected role's key attributes are bold with a short marker underline.
+  - Season stats in one row, then the last-5 sparkline.
+  - Everything fits in about 560 px. If the window is shorter, this column scrolls inside itself.
+- **While dragging one magnet over another:** the other player's shape appears in pencil grey on the radar, and the header shows both OVRs at that slot. This replaces the v3 floating comparison card.
+
+**Right: the orders.**
+- Two tabs at the top: **Team** and **[Surname]**. The second appears when a player is selected, and selecting a magnet switches to it. **Esc** returns to Team and clears the selection.
+- **Team** holds the five dividers exactly as in v3 (Build-up, Attack, Defend, Transition, Set pieces). Under the Opposition folder tab it holds the opposition orders sheet.
+- **[Surname], top to bottom:**
+  - a With ball / Without ball switch, linked to the board's switch (flip one and both flip)
+  - his roles for this slot as compact rows: name, fit stars, and the deciding attribute
+  - the chosen role open: its description, Gives you, Costs you
+  - the instructions offered by that role, each with fit and its reason; instructions that clash are disabled with the reason
+  - limits per §13.19: up to 2 attacking instructions and 1 defensive
+- Changing the role here re-draws the dashed shape on the radar on the left and the marker run on the board. That link is the point of the layout: you change an order on the right and see on the left how well he suits it.
+
+**Motion.**
+- **The file (left):** enters from 24 px to the left with opacity, 180 ms.
+- **The player tab (right):** enters from 24 px to the right, 180 ms.
+- **Paper:** settles with the spring as in v3.
+- **The board:** only the magnets and marker move.
+- **Reduce motion:** follows v3.
+
+**Keyboard.** As in v3, plus **Tab** order: top bar, left column, board, right column.
+
+**Other office screens** use the same three parts where they fit: the main object large, and the player's file (with the radar) as its own column. On Squad and Training the file is on the right. Same component, same contents.
 
 ## Not in this reference
 Sound (`ui_clack` on drop, `ui_paper` on the file). The compact Pre-Match and in-match versions of these controls. Key battles (they're in the Hub's opponent report).
