@@ -163,3 +163,4 @@ Overall status: ALL PASS
 - Changed: docs/SPEC.md (v1.4: §8.4 types, new §12.17 club depth (staff, match prep, rest days, dressing room, injury risk), new §13.18 tactics depth (5-step mentality, final third, crosses, offside trap, tackling, force them, time-wasting, extended set pieces, 6 player instructions, Plans A/B/C, familiarity per area, match analysis, calibration checks), new milestone M3b, M4 task 5, M5 task 7, §24)
 - Ran: nothing (docs only)
 - Notes: after M3 task 0 is finished and M3 is accepted, do M3b. Calibration for 13.18 runs with familiarity 100. Claude will extend docs/design/tactics/ for the new controls.
+- Update (same day): role training is back in, and positional training was added (§12.17.4, M5 task 7, §11.9).

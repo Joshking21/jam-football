@@ -745,7 +745,7 @@ Grid of cards:
 
 ### 11.9 Training
 - Team focus (6 cards with icons and effect descriptions from §12.3), intensity (Light/Normal/Hard with injury-risk and recovery indicators).
-- Individual focus table: players with a dropdown of attributes (or "None").
+- Individual focus table: players with a dropdown grouped as Attribute / Role / Position (or "None") (§12.17.4), a rest toggle (§12.17.3), and an injury-risk chip (§12.17.6).
 - "Last week" panel: growth summary (players who improved, with +OVR), training injuries.
 
 ### 11.10 Transfers (only in windows)
@@ -965,7 +965,11 @@ Same rules as §13.17: every option has a gain and a cost, defaults are neutral,
 
 **12.17.3 Rest days.** Per player, per week: `rest: boolean`. Rested: condition +8 and fatigue −6 on top of §12.1–12.2; no development that week. A fit player (condition ≥ 90) rested 3 weeks running gets morale −5 ("Wants to train"). A rested player can still be picked.
 
-**12.17.4 Role training:** not approved (kept for later with Tier C).
+**12.17.4 Individual training: role or position** (approved by the user 20 Nov). A player's individual focus (§12.3) is one of: an attribute (as before), a **role**, or a **position**. Only one at a time.
+- **Role:** 40% of his growth goes to that role's key attributes, split by their weights, so his fit stars for it rise (§13.17.1). Cost: that 40% no longer goes to anything else.
+- **Position:** pick any position he isn't natural in (a GK can't learn outfield positions and vice versa). If it isn't listed yet, it's added at the §9.5 unlisted value × 100 (same group 80, adjacent group 65, otherwise 45). Each week its familiarity rises by `(3 + (age ≤ 23 ? 2 : age ≥ 30 ? −1 : 0) + (decisions ≥ 70 ? 1 : 0)) × (0.85 + 0.06 × coach stars)`, plus 2 more for each match he played there that week. The cap is 95 (only the primary position is 100). Cost: his development that week × 0.8 (time spent learning), and no attribute or role focus.
+- An inbox memo when a trained position reaches 85 ("Achebe is comfortable at RWB now"). The player's file shows each position as a chip with a small progress bar while it's being trained.
+- No engine change: `ovrAt` (§9.5) already uses position familiarity.
 
 **12.17.5 Dressing room.**
 - Leaders: the top 3 players by `leaderScore = (personality Leader ? 30 : 0) + (captain ? 20 : 0) + (Professional ? 8 : 0) + age × 0.8 + min(apps, 40) × 0.5`, recomputed weekly.
@@ -2093,7 +2097,7 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 4. Conversations (§12.9).
 5. Board and fans (§12.7, §12.14), finances (§12.10).
 6. Transfer windows complete (§12.13) with scouting (§12.12) and AI activity; news (§16.6).
-7. Club depth (§12.17): staff and replacing them, match preparation, rest days, dressing room (leaders, cohesion), injury risk column.
+7. Club depth (§12.17): staff and replacing them, match preparation, rest days, role and position training, dressing room (leaders, cohesion), injury risk column.
 **Accept:** every system visibly changes something the player can see within a season; transfer window rounds behave per the tests; content files meet minimum counts.
 
 ### M6 — Assistant and audio (8–10 Dec)
