@@ -2,7 +2,7 @@
 import { create } from 'zustand';
 import { GameState, PlayerId, Tactics, TrainingPlan, Player } from '@/core/types';
 import { GameSettings, loadSettings, saveSettings } from './settings';
-import { getSaveMeta, loadGame, saveGame, SaveMeta } from './saves';
+import { getSaveMeta, loadGame, saveGame, SaveMeta, triggerDebouncedAutosave } from './saves';
 import { createNewGame, NewGameOptions } from '@/core/game/newGame';
 import { advance, validateLineup } from '@/core/game/advance';
 import { pickBestLineup } from '@/core/match/aiManager';
@@ -220,6 +220,7 @@ export const useStore = create<AppState>((set, get) => {
         ...partial,
       };
       set({ gameState: next });
+      triggerDebouncedAutosave(next);
     },
 
     updateUserTraining: (partial: Partial<TrainingPlan>) => {
@@ -231,6 +232,7 @@ export const useStore = create<AppState>((set, get) => {
         ...partial,
       };
       set({ gameState: next });
+      triggerDebouncedAutosave(next);
     },
 
     autoPickBestLineup: () => {
@@ -258,10 +260,13 @@ export const useStore = create<AppState>((set, get) => {
       const targetClub = next.clubs[next.userClubId]!;
       targetClub.tactics.formation = best.formation;
       targetClub.tactics.lineup = [...best.lineup];
+      targetClub.tactics.roles = [...best.roles];
+      targetClub.tactics.playerInstructions = best.playerInstructions.map((p) => [...p]);
       targetClub.tactics.duties = [...best.duties];
       targetClub.tactics.bench = [...best.bench];
 
       set({ gameState: next });
+      triggerDebouncedAutosave(next);
       get().showToast('Assistant selected the best XI', 'success');
     },
 
@@ -274,6 +279,7 @@ export const useStore = create<AppState>((set, get) => {
       lineup[slotA] = lineup[slotB] ?? null;
       lineup[slotB] = temp ?? null;
       set({ gameState: next });
+      triggerDebouncedAutosave(next);
     },
 
     swapLineupWithBench: (lineupSlot: number, benchIndex: number) => {
@@ -292,6 +298,7 @@ export const useStore = create<AppState>((set, get) => {
         tactics.bench.splice(benchIndex, 1);
       }
       set({ gameState: next });
+      triggerDebouncedAutosave(next);
     },
 
     markInboxRead: (id: string) => {
