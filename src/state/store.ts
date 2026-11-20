@@ -231,10 +231,36 @@ export const useStore = create<AppState>((set, get) => {
       if (!userClub) return;
 
       const next = JSON.parse(JSON.stringify(state)) as GameState;
-      next.clubs[next.userClubId]!.tactics = {
-        ...next.clubs[next.userClubId]!.tactics,
+      const curTactics = next.clubs[next.userClubId]!.tactics;
+      const updated = {
+        ...curTactics,
         ...partial,
       };
+
+      if (updated.plans && updated.plans.length === 3) {
+        if (partial.activePlan !== undefined && partial.activePlan !== curTactics.activePlan) {
+          const targetPlan = updated.plans[partial.activePlan];
+          if (targetPlan) {
+            updated.formation = targetPlan.formation;
+            updated.roles = [...targetPlan.roles];
+            updated.playerInstructions = targetPlan.playerInstructions.map((arr) => [...arr]);
+            updated.instructions = { ...targetPlan.instructions };
+          }
+        } else {
+          const activeIdx = updated.activePlan ?? 0;
+          if (updated.plans[activeIdx]) {
+            updated.plans[activeIdx] = {
+              name: updated.plans[activeIdx]!.name,
+              formation: updated.formation,
+              roles: [...updated.roles],
+              playerInstructions: updated.playerInstructions.map((arr) => [...arr]),
+              instructions: { ...updated.instructions },
+            };
+          }
+        }
+      }
+
+      next.clubs[next.userClubId]!.tactics = updated;
       set({ gameState: next });
       triggerDebouncedAutosave(next);
     },

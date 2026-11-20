@@ -1,5 +1,14 @@
-// Implements SPEC §13.7, §13.8 Set Pieces & §13.17.5 Corner Routines
-import { PlayerId, ShotContext, Attributes, CornersFor, CornersAgainst } from '../types';
+// Implements SPEC §13.7, §13.8 Set Pieces & §13.17.5 Corner Routines & §13.18.8 Extended Set Pieces
+import {
+  PlayerId,
+  ShotContext,
+  Attributes,
+  CornersFor,
+  CornersAgainst,
+  CornerSwing,
+  MenBack,
+  PostMen,
+} from '../types';
 import { z, sigmoid } from '../math';
 import { Rng } from '../rng';
 import { K } from '@/config/balance';
@@ -36,6 +45,9 @@ export function resolveCorner(params: {
   defenderHomeAdvantage?: number;
   cornersFor?: CornersFor;
   cornersAgainst?: CornersAgainst;
+  cornerSwing?: CornerSwing;
+  menBack?: MenBack;
+  postMen?: PostMen;
   rng: Rng;
 }): CornerResult {
   const {
@@ -49,6 +61,9 @@ export function resolveCorner(params: {
     defenderHomeAdvantage,
     cornersFor = 'Mixed',
     cornersAgainst = 'Mixed',
+    cornerSwing = 'Mixed',
+    menBack = 2,
+    postMen = 'None',
     rng,
   } = params;
 
@@ -66,6 +81,10 @@ export function resolveCorner(params: {
   let claimMod = 0;
   if (cornersFor === 'NearPost') claimMod -= 0.04;
   else if (cornersFor === 'FarPost') claimMod += 0.03;
+
+  if (cornerSwing === 'Inswinger') claimMod += K.d2.setPieces.cornerSwing.inswinger.gkClaimAdd;
+  else if (cornerSwing === 'Outswinger')
+    claimMod += K.d2.setPieces.cornerSwing.outswinger.gkClaimAdd;
 
   const pClaim = Math.max(
     0.01,
@@ -99,11 +118,15 @@ export function resolveCorner(params: {
   // 3. Header Duel Target Selection
   // Pick attacker
   const attackerWeights = attackersInBox.map((p) => {
+    let base = Math.max(1, p.attributes.heading);
     if (cornersFor === 'NearPost') {
-      return Math.max(1, p.attributes.heading * 0.5 + p.attributes.pace * 0.5);
+      base = Math.max(1, p.attributes.heading * 0.5 + p.attributes.pace * 0.5);
+    } else if (p.isCbOrSt) {
+      base *= 1.3;
     }
-    const base = Math.max(1, p.attributes.heading);
-    return p.isCbOrSt ? base * 1.3 : base;
+    if (menBack === 1) base *= K.d2.setPieces.menBack[1].headerTargetWeightMult;
+    else if (menBack === 3) base *= K.d2.setPieces.menBack[3].headerTargetWeightMult;
+    return base;
   });
 
   if (cornersFor === 'FarPost') {
@@ -164,6 +187,13 @@ export function resolveCorner(params: {
     duelMod += K.setp.cornersAgainst.zonal.oppFarPostHeaderDuel;
   if (cornersAgainst === 'ManMark') duelMod += K.setp.cornersAgainst.manMark.oppHeaderDuel;
 
+  if (cornerSwing === 'Inswinger') duelMod += K.d2.setPieces.cornerSwing.inswinger.headerDuelAdd;
+  else if (cornerSwing === 'Outswinger')
+    duelMod += K.d2.setPieces.cornerSwing.outswinger.headerDuelAdd;
+
+  if (menBack === 1) duelMod += K.d2.setPieces.menBack[1].headerDuelAdd;
+  else if (menBack === 3) duelMod += K.d2.setPieces.menBack[3].headerDuelAdd;
+
   const sAirAtt =
     0.6 * z(targetAtt.attributes.heading) +
     0.4 * z(targetAtt.attributes.strength) +
@@ -179,7 +209,10 @@ export function resolveCorner(params: {
 
   const pWin = sigmoid(K.intercepts.crossHeader + 0.8 * sAirAtt - 0.8 * sAirDef);
   if (rng.chance(pWin)) {
-    const shotContext: ShotContext = rng.chance(0.4) ? 'BOX_CENTRAL' : 'HEADER';
+    let shotContext: ShotContext = rng.chance(0.4) ? 'BOX_CENTRAL' : 'HEADER';
+    if (cornerSwing === 'Inswinger' && rng.chance(0.15)) {
+      shotContext = 'SIX_YARD';
+    }
     const extraXg = cornersFor === 'NearPost' ? 0.02 : 0; // xgRef 0.13 vs 0.11
     const shotResult = resolveShot({
       context: shotContext,
@@ -190,6 +223,8 @@ export function resolveCorner(params: {
       homeAdvantage,
       defenderHomeAdvantage: defAdv,
       extraXgRefAdd: extraXg,
+      defendingPostMen: postMen,
+      isNearPostHeader: cornersFor === 'NearPost',
       rng,
     });
     return {
@@ -201,8 +236,24 @@ export function resolveCorner(params: {
     };
   }
 
-  // Defender cleared
-  const secondBallSide = rng.chance(0.4) ? 'ATTACKING' : 'DEFENDING';
+  // Defender cleared: second ball resolution (§13.18.8)
+  let secondBallAttackerProb = 0.4;
+  if (cornerSwing === 'Outswinger') {
+    secondBallAttackerProb = K.d2.setPieces.cornerSwing.outswinger.secondBallAttackerChance;
+  }
+  if (postMen === 'Near') {
+    secondBallAttackerProb = Math.max(
+      secondBallAttackerProb,
+      K.d2.setPieces.postMen.near.secondBallAttackerChance,
+    );
+  } else if (postMen === 'Both') {
+    secondBallAttackerProb = Math.max(
+      secondBallAttackerProb,
+      K.d2.setPieces.postMen.both.secondBallAttackerChance,
+    );
+  }
+
+  const secondBallSide = rng.chance(secondBallAttackerProb) ? 'ATTACKING' : 'DEFENDING';
   return {
     outcome: 'CLEARANCE',
     defenderId: targetDef?.id,

@@ -480,6 +480,187 @@ export const K = {
     stayOnFeet: { foulsMult: 0.5, asD_tkl: -0.25 },
     longThrows: { minStrength: 70, extraSeconds: 6, gkClaimAdd: 0.04 },
   },
+  // SPEC 1.4 Depth Pass 2 (SPEC §13.18)
+  d2: {
+    mentality: {
+      veryStepMultiplier: 1.6,
+      veryAttackingInvShift: 0.15,
+      veryAttackingOppCounterCtx: 0.1,
+      veryAttackingFatigueMult: 1.04,
+      veryDefensiveInvShift: 0.15,
+      veryDefensiveShotUtil: -0.1,
+    },
+    finalThird: {
+      workIntoBox: {
+        shotUtilOutsideBox: -0.25,
+        attProgressUtil: 0.2,
+        attDribbleUtil: 0.1,
+        attInBoxPassUtil: 0.2,
+        attPassCtx: 0.0,
+        inBoxXGMult: 1.15,
+      },
+      shootOnSight: {
+        shotUtilOutsideBox: 0.4,
+        midCentreShotUtil: 0.2,
+        shotUtilInBox: 0.2,
+        xGMult: 0.78,
+        blockedShotDefPossessionChance: 0.65,
+      },
+    },
+    crossStyle: {
+      low: {
+        groundChanceRatio: 0.6,
+        groundBoxCentralRatio: 0.7,
+        groundPaceWeight: 0.5,
+        groundOffTheBallWeight: 0.5,
+        gkClaimAdd: -0.04,
+        blockChance: 0.16,
+        blockCornerRatio: 0.4,
+      },
+      whipped: {
+        headerXGRef: 0.13,
+        onTargetAdd: 0.05,
+        deliveryCtx: -0.15,
+      },
+      floated: {
+        deliveryCtx: 0.15,
+        headerSkillMult: 1.3,
+        gkClaimAdd: 0.04,
+      },
+    },
+    offsideTrap: {
+      failedThroughOffsideProbAdd: 0.2,
+      failedThroughOffsideCap: 0.7,
+      oppLongBallAttOffsideChance: 0.1,
+      beatenTrapOneOnOneAdd: 0.08,
+    },
+    tackling: {
+      getStuckIn: {
+        sTklAdd: 0.25,
+        foulsMult: 1.35,
+        yellowPerFoulMult: 1.2,
+      },
+      stayOnFeet: {
+        foulsMult: 0.6,
+        sTklAdd: -0.2,
+      },
+    },
+    forceOpp: {
+      inside: {
+        oppWideCrossUtil: -0.3,
+        oppWideShotAttUtil: 0.15,
+      },
+      outside: {
+        oppWideShotUtil: -0.25,
+        oppWideCrossUtil: 0.2,
+      },
+    },
+    timeWasting: {
+      minMinute: 70,
+      restartDurationMult: 1.4,
+      recycleUtilAdd: 0.2,
+      stoppageExtraRatio: 0.5,
+      yellowRiskPerRestart: 0.02,
+      oppAttackingCtxAdd85: 0.1,
+    },
+    setPieces: {
+      freeKicks: {
+        shootDirectChance: 0.85,
+        crossChance: 0.85,
+        shortNextStepProgress: 0.3,
+      },
+      cornerSwing: {
+        inswinger: {
+          headerDuelAdd: 0.1,
+          sixYardHeaderRatio: 0.15,
+          gkClaimAdd: 0.03,
+        },
+        outswinger: {
+          gkClaimAdd: -0.03,
+          secondBallAttackerChance: 0.55,
+          headerDuelAdd: -0.05,
+        },
+      },
+      menBack: {
+        1: {
+          headerTargetWeightMult: 1.15,
+          headerDuelAdd: 0.15,
+          clearanceCounterChance: 0.5,
+        },
+        2: {
+          headerTargetWeightMult: 1.0,
+          headerDuelAdd: 0.0,
+          clearanceCounterChance: 0.0,
+        },
+        3: {
+          headerTargetWeightMult: 0.85,
+          headerDuelAdd: -0.15,
+          clearanceCounterChance: 0.0,
+        },
+      },
+      postMen: {
+        none: {
+          nearPostXGRefAdd: 0.0,
+          headerGoalMult: 1.0,
+          secondBallAttackerChance: 0.4,
+        },
+        near: {
+          nearPostXGRefAdd: -0.03,
+          headerGoalMult: 1.0,
+          secondBallAttackerChance: 0.5,
+        },
+        both: {
+          nearPostXGRefAdd: 0.0,
+          headerGoalMult: 0.85,
+          secondBallAttackerChance: 0.55,
+        },
+      },
+    },
+    pi: {
+      roam: {
+        spreadWeightRatio: 0.25,
+        recvMult: 1.15,
+        slotPressPenalty: -0.15,
+      },
+      sitNarrower: {
+        laneToCRatio: 0.25,
+        crossUtilAdd: -0.3,
+        oppLaneCtxAdd: 0.1,
+      },
+      crossFromByline: {
+        deliveryCtxAdd: 0.1,
+        cutBackChance: 0.3,
+      },
+      crossFromDeep: {
+        midWideCrossUtilAdd: 0.4,
+        deliveryCtxAdd: -0.2,
+        gkClaimAdd: 0.03,
+      },
+      riskyPasses: {
+        throughUtilAdd: 0.3,
+        progressUtilAdd: 0.1,
+        passCtxAdd: -0.15,
+      },
+      playSafe: {
+        recycleUtilAdd: 0.3,
+        passCtxAdd: 0.15,
+        throughUtilAdd: -0.3,
+      },
+    },
+    familiarity: {
+      threshold: 70,
+      divisor: 400,
+      maxPenalty: -0.25,
+      weeklyMatchGain: 6,
+      tacticalTrainingGain: 6,
+      weeklyDecay: 2,
+      decayFloor: 40,
+      startingClubStyle: 90,
+      startingClose: 65,
+      startingOther: 45,
+      startingFormationOther: 40,
+    },
+  },
 };
 
 (BALANCE as Record<string, unknown>).tacticsDepth = {
@@ -488,4 +669,5 @@ export const K = {
   trans: K.trans,
   setp: K.setp,
   pi: K.pi,
+  d2: K.d2,
 };

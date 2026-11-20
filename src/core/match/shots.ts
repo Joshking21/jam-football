@@ -1,5 +1,5 @@
-// Implements SPEC §13.8 Shots Resolution, xG, and Outcomes
-import { ShotContext, Player, RoleId } from '../types';
+// Implements SPEC §13.8 Shots Resolution, xG, and Outcomes & §13.18
+import { ShotContext, Player, RoleId, PostMen } from '../types';
 import { z, sigmoid, logit, clamp } from '../math';
 import { Rng } from '../rng';
 import { K } from '@/config/balance';
@@ -33,12 +33,18 @@ export interface ShotParams {
   defenderHomeAdvantage?: number; // +0.06 for home defender/keeper
   rng: Rng;
 
-  // Tactical Depth (§13.17)
+  // Tactical Depth (§13.17 & §13.18)
   attackerRole?: RoleId;
   attackerFit?: number;
   isSweeperKeeperOpponent?: boolean;
   extraXgRefAdd?: number;
+  extraOnTargetAdd?: number;
   attackerCtxModifier?: number;
+  shootOnSight?: boolean;
+  workIntoBox?: boolean;
+  isFloatedCross?: boolean;
+  defendingPostMen?: PostMen;
+  isNearPostHeader?: boolean;
 }
 
 const SHOT_CONTEXT_DATA: Record<
@@ -173,7 +179,13 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
     attackerFit = 1.0,
     isSweeperKeeperOpponent = false,
     extraXgRefAdd = 0,
+    extraOnTargetAdd = 0,
     attackerCtxModifier = 0,
+    shootOnSight = false,
+    workIntoBox = false,
+    isFloatedCross = false,
+    defendingPostMen = 'None',
+    isNearPostHeader = false,
   } = params;
   const data = SHOT_CONTEXT_DATA[context];
 
@@ -181,16 +193,33 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
   if (isSweeperKeeperOpponent && context === 'OUTSIDE_CENTRAL') {
     xgRef += 0.02;
   }
+  if (shootOnSight) {
+    xgRef *= K.d2.finalThird.shootOnSight.xGMult;
+  }
+  if (workIntoBox && (context === 'SIX_YARD' || context === 'BOX_CENTRAL')) {
+    xgRef *= K.d2.finalThird.workIntoBox.inBoxXGMult;
+  }
+  if (defendingPostMen === 'Near' && isNearPostHeader && context === 'HEADER') {
+    xgRef += K.d2.setPieces.postMen.near.nearPostXGRefAdd;
+  }
+  xgRef = Math.max(0.005, xgRef);
 
   const defAdv = defenderHomeAdvantage ?? 0;
   let sFin = computeAttackerSkill(attacker, context) + homeAdvantage;
+
+  if (isFloatedCross && context === 'HEADER') {
+    sFin *= K.d2.crossStyle.floated.headerSkillMult;
+  }
 
   // Poacher bonus (§13.17.2)
   if (attackerRole === 'poacher' && (context === 'SIX_YARD' || context === 'BOX_CENTRAL')) {
     sFin += 0.15 * (0.4 + 0.6 * attackerFit);
   }
 
-  const sGk = computeKeeperSkill(goalkeeper, context) + defAdv;
+  let sGk = computeKeeperSkill(goalkeeper, context) + defAdv;
+  if (isFloatedCross && context === 'HEADER') {
+    sGk *= K.d2.crossStyle.floated.headerSkillMult;
+  }
 
   let defCover = 0;
   if (defender && context !== 'PENALTY') {
@@ -198,9 +227,12 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
   }
 
   const ctx = trainingBonus + defCover + attackerCtxModifier;
-  const pGoalRaw = sigmoid(
+  let pGoalRaw = sigmoid(
     logit(xgRef) + K.coefficients.shotFinishing * sFin - K.coefficients.shotGoalkeeper * sGk + ctx,
   );
+  if (defendingPostMen === 'Both' && context === 'HEADER') {
+    pGoalRaw *= K.d2.setPieces.postMen.both.headerGoalMult;
+  }
 
   // 1. Block resolution
   let pBlock = 0;
@@ -210,7 +242,11 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
 
   if (pBlock > 0 && rng.chance(pBlock)) {
     const roll = rng.next();
-    const outcome = roll < 0.45 ? 'BLOCK_CORNER' : roll < 0.65 ? 'BLOCK_RECYCLE' : 'BLOCK_CLEAR';
+    let outcome: 'BLOCK_CORNER' | 'BLOCK_RECYCLE' | 'BLOCK_CLEAR' =
+      roll < 0.45 ? 'BLOCK_CORNER' : roll < 0.65 ? 'BLOCK_RECYCLE' : 'BLOCK_CLEAR';
+    if (shootOnSight) {
+      outcome = roll < 0.65 ? 'BLOCK_CLEAR' : roll < 0.85 ? 'BLOCK_CORNER' : 'BLOCK_RECYCLE';
+    }
     return {
       outcome,
       xg: xgRef,
@@ -239,7 +275,7 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
   }
 
   // 3. On-target check (Save)
-  const pOnTarget = clamp(0.26 + 0.08 * sFin, 0.2, 0.4);
+  const pOnTarget = clamp(0.26 + 0.08 * sFin + extraOnTargetAdd, 0.2, 0.45);
   if (rng.chance(pOnTarget)) {
     const pCatch = sigmoid(0.0 + 0.8 * z(goalkeeper.attributes.handling));
     if (rng.chance(pCatch)) {

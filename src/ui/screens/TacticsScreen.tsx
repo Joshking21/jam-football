@@ -24,6 +24,15 @@ import {
   RoleId,
   Player,
   PlayerId,
+  FinalThird,
+  CrossStyle,
+  Tackling,
+  ForceOpp,
+  TimeWasting,
+  FreeKicks,
+  CornerSwing,
+  PostMen,
+  MenBack,
 } from '../../core/types';
 import { FORMATIONS } from '../../config/formations';
 import {
@@ -252,14 +261,35 @@ export const TacticsScreen: React.FC = () => {
   const selectedSlotDef = selectedSlot !== null ? formationDef.slots[selectedSlot] : null;
   const availableRoles = selectedSlotDef ? getAvailableRolesForSlot(selectedSlotDef.position) : [];
 
-  // Toggle player instruction (max 2 per player)
+  // Toggle player instruction (max 2 per player, clears conflicting instructions)
   const togglePlayerInstruction = (inst: PlayerInstruction) => {
     if (selectedSlot === null) return;
-    const currentPIs = [...(tactics.playerInstructions[selectedSlot] ?? [])];
+    let currentPIs = [...(tactics.playerInstructions[selectedSlot] ?? [])];
     const idx = currentPIs.indexOf(inst);
     if (idx >= 0) {
       currentPIs.splice(idx, 1);
     } else {
+      const clashes: Record<string, string[]> = {
+        shootMore: ['shootLess'],
+        shootLess: ['shootMore'],
+        dribbleMore: ['dribbleLess'],
+        dribbleLess: ['dribbleMore'],
+        crossMore: ['crossLess'],
+        crossLess: ['crossMore'],
+        getForward: ['holdPosition'],
+        holdPosition: ['getForward', 'roam'],
+        roam: ['holdPosition'],
+        stayWider: ['sitNarrower'],
+        sitNarrower: ['stayWider'],
+        crossFromByline: ['crossFromDeep'],
+        crossFromDeep: ['crossFromByline'],
+        riskyPasses: ['playSafe'],
+        playSafe: ['riskyPasses'],
+      };
+
+      const toRemove = clashes[inst] ?? [];
+      currentPIs = currentPIs.filter((p) => !toRemove.includes(p));
+
       if (currentPIs.length >= 2) {
         showToast('Max 2 player instructions per player', 'warning');
         return;
@@ -998,40 +1028,65 @@ export const TacticsScreen: React.FC = () => {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                     {(
                       [
-                        'shootMore',
-                        'shootLess',
-                        'dribbleMore',
-                        'dribbleLess',
-                        'crossMore',
-                        'crossLess',
-                        'getForward',
-                        'holdPosition',
-                        'stayWider',
-                        'closeDownMore',
-                        'stayOnFeet',
-                        'longThrows',
-                      ] as PlayerInstruction[]
-                    ).map((pi) => {
+                        { id: 'shootMore', label: 'Shoot More' },
+                        { id: 'shootLess', label: 'Shoot Less' },
+                        { id: 'dribbleMore', label: 'Dribble More' },
+                        { id: 'dribbleLess', label: 'Dribble Less' },
+                        { id: 'crossMore', label: 'Cross More' },
+                        { id: 'crossLess', label: 'Cross Less' },
+                        { id: 'getForward', label: 'Get Forward' },
+                        { id: 'holdPosition', label: 'Hold Position' },
+                        { id: 'stayWider', label: 'Stay Wider' },
+                        { id: 'sitNarrower', label: 'Sit Narrower' },
+                        { id: 'closeDownMore', label: 'Close Down More' },
+                        { id: 'stayOnFeet', label: 'Stay On Feet' },
+                        { id: 'roam', label: 'Roam From Position' },
+                        { id: 'crossFromByline', label: 'Cross From Byline' },
+                        { id: 'crossFromDeep', label: 'Cross From Deep' },
+                        { id: 'riskyPasses', label: 'Take More Risks' },
+                        { id: 'playSafe', label: 'Play Safer' },
+                        { id: 'longThrows', label: 'Long Throws' },
+                      ] as { id: PlayerInstruction; label: string }[]
+                    ).map(({ id: pi, label }) => {
                       const isActive =
                         tactics.playerInstructions[selectedSlot]?.includes(pi) ?? false;
+                      const isWide = selectedSlotDef
+                        ? ['LB', 'RB', 'LWB', 'RWB', 'LM', 'RM', 'LW', 'RW'].includes(
+                            selectedSlotDef.position,
+                          )
+                        : false;
+                      const isWideOnly = pi === 'crossFromByline' || pi === 'crossFromDeep';
+                      const isDisabled = isWideOnly && !isWide;
+
                       return (
                         <button
                           key={pi}
+                          disabled={isDisabled}
                           onClick={() => togglePlayerInstruction(pi)}
+                          title={isDisabled ? 'Wide positions only' : undefined}
                           style={{
                             padding: '6px 8px',
                             borderRadius: '3px',
-                            backgroundColor: isActive ? 'var(--marker-blue)' : 'var(--paper-2)',
-                            color: isActive ? '#FFFFFF' : 'var(--paper-ink)',
+                            backgroundColor: isActive
+                              ? 'var(--marker-blue)'
+                              : isDisabled
+                                ? 'var(--paper-rule)'
+                                : 'var(--paper-2)',
+                            color: isActive
+                              ? '#FFFFFF'
+                              : isDisabled
+                                ? 'var(--paper-dim)'
+                                : 'var(--paper-ink)',
                             border: '1px solid var(--paper-rule)',
                             fontSize: '11px',
                             fontWeight: 600,
-                            cursor: 'pointer',
+                            cursor: isDisabled ? 'not-allowed' : 'pointer',
                             textAlign: 'left',
+                            opacity: isDisabled ? 0.6 : 1.0,
                           }}
                         >
                           {isActive ? '✓ ' : ''}
-                          {pi}
+                          {label}
                         </button>
                       );
                     })}
@@ -1043,6 +1098,56 @@ export const TacticsScreen: React.FC = () => {
             /* CLIPBOARD (Normal View with 4 Dividers) */
             <Sheet id="tactics-clipboard" variant="clipboard">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Tactical Plans Tabs: Plan A, Plan B, Plan C (SPEC §13.18.10) */}
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {(['Plan A', 'Plan B', 'Plan C'] as const).map((planName, pIdx) => {
+                    const isActive = (tactics.activePlan ?? 0) === pIdx;
+                    return (
+                      <button
+                        key={planName}
+                        onClick={() => {
+                          updateUserTactics({ activePlan: pIdx as 0 | 1 | 2 });
+                          showToast(`Switched to ${planName}`, 'info');
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '6px 8px',
+                          backgroundColor: isActive ? 'var(--paper-ink)' : 'var(--paper-2)',
+                          color: isActive ? 'var(--paper)' : 'var(--paper-ink)',
+                          border: isActive
+                            ? '1px solid var(--paper-ink)'
+                            : '1px solid var(--paper-rule)',
+                          borderRadius: '4px',
+                          fontWeight: 700,
+                          fontSize: '11px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        {isActive && <CheckCircle2 size={12} color="var(--marker-green)" />}
+                        <span>{planName}</span>
+                        {isActive && (
+                          <span
+                            style={{
+                              fontSize: '9px',
+                              padding: '1px 4px',
+                              borderRadius: '2px',
+                              backgroundColor: 'rgba(255,255,255,0.2)',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                            }}
+                          >
+                            ACTIVE
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
                 {/* Header: Formation & Familiarity */}
                 <div
                   style={{
@@ -1178,35 +1283,44 @@ export const TacticsScreen: React.FC = () => {
                         className="broadcast-label"
                         style={{ color: 'var(--paper-dim)', fontSize: '11px' }}
                       >
-                        MENTALITY
+                        MENTALITY (5-STEP, §13.18.1)
                       </div>
                       <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
-                        {(['Defensive', 'Balanced', 'Attacking'] as Mentality[]).map((m) => (
+                        {[
+                          { id: 'VeryDefensive', label: 'Very Def' },
+                          { id: 'Defensive', label: 'Defensive' },
+                          { id: 'Balanced', label: 'Balanced' },
+                          { id: 'Attacking', label: 'Attacking' },
+                          { id: 'VeryAttacking', label: 'Very Att' },
+                        ].map(({ id, label }) => (
                           <button
-                            key={m}
+                            key={id}
                             onClick={() =>
                               updateUserTactics({
-                                instructions: { ...tactics.instructions, mentality: m },
+                                instructions: {
+                                  ...tactics.instructions,
+                                  mentality: id as Mentality,
+                                },
                               })
                             }
                             style={{
                               flex: 1,
-                              padding: '5px',
+                              padding: '5px 2px',
                               backgroundColor:
-                                tactics.instructions.mentality === m
+                                tactics.instructions.mentality === id
                                   ? 'var(--paper-ink)'
                                   : 'var(--paper-2)',
                               color:
-                                tactics.instructions.mentality === m
+                                tactics.instructions.mentality === id
                                   ? 'var(--paper)'
                                   : 'var(--paper-ink)',
                               border: '1px solid var(--paper-rule)',
                               borderRadius: '2px',
-                              fontSize: '11px',
+                              fontSize: '10px',
                               fontWeight: 600,
                             }}
                           >
-                            {m}
+                            {label}
                           </button>
                         ))}
                       </div>
@@ -1371,6 +1485,101 @@ export const TacticsScreen: React.FC = () => {
                         ))}
                       </div>
                     </div>
+
+                    {/* Final Third */}
+                    <div>
+                      <div
+                        className="broadcast-label"
+                        style={{ color: 'var(--paper-dim)', fontSize: '11px' }}
+                      >
+                        FINAL THIRD (§13.18.2)
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                        {[
+                          { id: 'WorkIntoBox', label: 'Work Into Box' },
+                          { id: 'Mixed', label: 'Mixed' },
+                          { id: 'ShootOnSight', label: 'Shoot On Sight' },
+                        ].map(({ id, label }) => (
+                          <button
+                            key={id}
+                            onClick={() =>
+                              updateUserTactics({
+                                instructions: {
+                                  ...tactics.instructions,
+                                  finalThird: id as FinalThird,
+                                },
+                              })
+                            }
+                            style={{
+                              flex: 1,
+                              padding: '5px',
+                              backgroundColor:
+                                tactics.instructions.finalThird === id
+                                  ? 'var(--paper-ink)'
+                                  : 'var(--paper-2)',
+                              color:
+                                tactics.instructions.finalThird === id
+                                  ? 'var(--paper)'
+                                  : 'var(--paper-ink)',
+                              border: '1px solid var(--paper-rule)',
+                              borderRadius: '2px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Crosses */}
+                    <div>
+                      <div
+                        className="broadcast-label"
+                        style={{ color: 'var(--paper-dim)', fontSize: '11px' }}
+                      >
+                        CROSSES (§13.18.3)
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                        {[
+                          { id: 'Low', label: 'Low' },
+                          { id: 'Whipped', label: 'Whipped' },
+                          { id: 'Floated', label: 'Floated' },
+                          { id: 'Mixed', label: 'Mixed' },
+                        ].map(({ id, label }) => (
+                          <button
+                            key={id}
+                            onClick={() =>
+                              updateUserTactics({
+                                instructions: {
+                                  ...tactics.instructions,
+                                  crossStyle: id as CrossStyle,
+                                },
+                              })
+                            }
+                            style={{
+                              flex: 1,
+                              padding: '5px',
+                              backgroundColor:
+                                tactics.instructions.crossStyle === id
+                                  ? 'var(--paper-ink)'
+                                  : 'var(--paper-2)',
+                              color:
+                                tactics.instructions.crossStyle === id
+                                  ? 'var(--paper)'
+                                  : 'var(--paper-ink)',
+                              border: '1px solid var(--paper-rule)',
+                              borderRadius: '2px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -1452,6 +1661,142 @@ export const TacticsScreen: React.FC = () => {
                             }}
                           >
                             {dl}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Offside Trap */}
+                    <div>
+                      <div
+                        className="broadcast-label"
+                        style={{ color: 'var(--paper-dim)', fontSize: '11px' }}
+                      >
+                        OFFSIDE TRAP (§13.18.4)
+                      </div>
+                      <button
+                        onClick={() =>
+                          updateUserTactics({
+                            instructions: {
+                              ...tactics.instructions,
+                              offsideTrap: !tactics.instructions.offsideTrap,
+                            },
+                          })
+                        }
+                        style={{
+                          width: '100%',
+                          marginTop: '2px',
+                          padding: '6px',
+                          backgroundColor: tactics.instructions.offsideTrap
+                            ? 'var(--marker-blue)'
+                            : 'var(--paper-2)',
+                          color: tactics.instructions.offsideTrap ? '#FFFFFF' : 'var(--paper-ink)',
+                          border: '1px solid var(--paper-rule)',
+                          borderRadius: '2px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        {tactics.instructions.offsideTrap
+                          ? '✓ Offside Trap Active (Step up together)'
+                          : 'Offside Trap Inactive (Hold the line)'}
+                      </button>
+                    </div>
+
+                    {/* Tackling */}
+                    <div>
+                      <div
+                        className="broadcast-label"
+                        style={{ color: 'var(--paper-dim)', fontSize: '11px' }}
+                      >
+                        TACKLING (§13.18.5)
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                        {[
+                          { id: 'StayOnFeet', label: 'Stay On Feet' },
+                          { id: 'Mixed', label: 'Mixed' },
+                          { id: 'GetStuckIn', label: 'Get Stuck In' },
+                        ].map(({ id, label }) => (
+                          <button
+                            key={id}
+                            onClick={() =>
+                              updateUserTactics({
+                                instructions: {
+                                  ...tactics.instructions,
+                                  tackling: id as Tackling,
+                                },
+                              })
+                            }
+                            style={{
+                              flex: 1,
+                              padding: '5px',
+                              backgroundColor:
+                                tactics.instructions.tackling === id
+                                  ? 'var(--paper-ink)'
+                                  : 'var(--paper-2)',
+                              color:
+                                tactics.instructions.tackling === id
+                                  ? 'var(--paper)'
+                                  : 'var(--paper-ink)',
+                              border: '1px solid var(--paper-rule)',
+                              borderRadius: '2px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Force Opposition */}
+                    <div>
+                      <div
+                        className="broadcast-label"
+                        style={{ color: 'var(--paper-dim)', fontSize: '11px' }}
+                      >
+                        FORCE OPPOSITION (§13.18.6)
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                        {[
+                          { id: 'Inside', label: 'Inside' },
+                          { id: 'Mixed', label: 'Mixed' },
+                          { id: 'Outside', label: 'Outside' },
+                        ].map(({ id, label }) => (
+                          <button
+                            key={id}
+                            onClick={() =>
+                              updateUserTactics({
+                                instructions: {
+                                  ...tactics.instructions,
+                                  forceOpp: id as ForceOpp,
+                                },
+                              })
+                            }
+                            style={{
+                              flex: 1,
+                              padding: '5px',
+                              backgroundColor:
+                                tactics.instructions.forceOpp === id
+                                  ? 'var(--paper-ink)'
+                                  : 'var(--paper-2)',
+                              color:
+                                tactics.instructions.forceOpp === id
+                                  ? 'var(--paper)'
+                                  : 'var(--paper-ink)',
+                              border: '1px solid var(--paper-rule)',
+                              borderRadius: '2px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {label}
                           </button>
                         ))}
                       </div>
@@ -1542,6 +1887,52 @@ export const TacticsScreen: React.FC = () => {
                       </div>
                     </div>
 
+                    {/* Time-Wasting */}
+                    <div>
+                      <div
+                        className="broadcast-label"
+                        style={{ color: 'var(--paper-dim)', fontSize: '11px' }}
+                      >
+                        TIME-WASTING (§13.18.7)
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                        {[
+                          { id: 'Never', label: 'Never (Play on)' },
+                          { id: 'WhenAhead', label: "When Ahead Late (70'+)" },
+                        ].map(({ id, label }) => (
+                          <button
+                            key={id}
+                            onClick={() =>
+                              updateUserTactics({
+                                instructions: {
+                                  ...tactics.instructions,
+                                  timeWasting: id as TimeWasting,
+                                },
+                              })
+                            }
+                            style={{
+                              flex: 1,
+                              padding: '5px',
+                              backgroundColor:
+                                tactics.instructions.timeWasting === id
+                                  ? 'var(--paper-ink)'
+                                  : 'var(--paper-2)',
+                              color:
+                                tactics.instructions.timeWasting === id
+                                  ? 'var(--paper)'
+                                  : 'var(--paper-ink)',
+                              border: '1px solid var(--paper-rule)',
+                              borderRadius: '2px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* GK Distribution */}
                     <div>
                       <div
@@ -1587,6 +1978,54 @@ export const TacticsScreen: React.FC = () => {
                 {/* TAB 4: SET PIECES */}
                 {clipboardTab === 'setPieces' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {/* Free Kicks */}
+                    <div>
+                      <div
+                        className="broadcast-label"
+                        style={{ color: 'var(--paper-dim)', fontSize: '11px' }}
+                      >
+                        FREE KICKS (ATT CENTRE WITHIN 30M, §13.18.8)
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                        {[
+                          { id: 'Shoot', label: 'Shoot' },
+                          { id: 'Cross', label: 'Cross' },
+                          { id: 'Short', label: 'Short' },
+                          { id: 'Mixed', label: 'Mixed' },
+                        ].map(({ id, label }) => (
+                          <button
+                            key={id}
+                            onClick={() =>
+                              updateUserTactics({
+                                instructions: {
+                                  ...tactics.instructions,
+                                  freeKicks: id as FreeKicks,
+                                },
+                              })
+                            }
+                            style={{
+                              flex: 1,
+                              padding: '5px',
+                              backgroundColor:
+                                tactics.instructions.freeKicks === id
+                                  ? 'var(--paper-ink)'
+                                  : 'var(--paper-2)',
+                              color:
+                                tactics.instructions.freeKicks === id
+                                  ? 'var(--paper)'
+                                  : 'var(--paper-ink)',
+                              border: '1px solid var(--paper-rule)',
+                              borderRadius: '2px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* Corners For */}
                     <div>
                       <div
@@ -1627,6 +2066,53 @@ export const TacticsScreen: React.FC = () => {
                       </div>
                     </div>
 
+                    {/* Corner Swing */}
+                    <div>
+                      <div
+                        className="broadcast-label"
+                        style={{ color: 'var(--paper-dim)', fontSize: '11px' }}
+                      >
+                        CORNER DELIVERY SWING (§13.18.8)
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                        {[
+                          { id: 'Inswinger', label: 'Inswinger' },
+                          { id: 'Outswinger', label: 'Outswinger' },
+                          { id: 'Mixed', label: 'Mixed' },
+                        ].map(({ id, label }) => (
+                          <button
+                            key={id}
+                            onClick={() =>
+                              updateUserTactics({
+                                instructions: {
+                                  ...tactics.instructions,
+                                  cornerSwing: id as CornerSwing,
+                                },
+                              })
+                            }
+                            style={{
+                              flex: 1,
+                              padding: '5px',
+                              backgroundColor:
+                                tactics.instructions.cornerSwing === id
+                                  ? 'var(--paper-ink)'
+                                  : 'var(--paper-2)',
+                              color:
+                                tactics.instructions.cornerSwing === id
+                                  ? 'var(--paper)'
+                                  : 'var(--paper-ink)',
+                              border: '1px solid var(--paper-rule)',
+                              borderRadius: '2px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* Corners Against */}
                     <div>
                       <div
@@ -1662,6 +2148,100 @@ export const TacticsScreen: React.FC = () => {
                             }}
                           >
                             {ca}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Men Back */}
+                    <div>
+                      <div
+                        className="broadcast-label"
+                        style={{ color: 'var(--paper-dim)', fontSize: '11px' }}
+                      >
+                        MEN BACK AT CORNERS (§13.18.8)
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                        {[
+                          { id: 1, label: '1 Back (Counter Risk)' },
+                          { id: 2, label: '2 Back (Balanced)' },
+                          { id: 3, label: '3 Back (Safe)' },
+                        ].map(({ id, label }) => (
+                          <button
+                            key={id}
+                            onClick={() =>
+                              updateUserTactics({
+                                instructions: {
+                                  ...tactics.instructions,
+                                  menBack: id as MenBack,
+                                },
+                              })
+                            }
+                            style={{
+                              flex: 1,
+                              padding: '5px',
+                              backgroundColor:
+                                tactics.instructions.menBack === id
+                                  ? 'var(--paper-ink)'
+                                  : 'var(--paper-2)',
+                              color:
+                                tactics.instructions.menBack === id
+                                  ? 'var(--paper)'
+                                  : 'var(--paper-ink)',
+                              border: '1px solid var(--paper-rule)',
+                              borderRadius: '2px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Defending Men on Posts */}
+                    <div>
+                      <div
+                        className="broadcast-label"
+                        style={{ color: 'var(--paper-dim)', fontSize: '11px' }}
+                      >
+                        DEFENDING MEN ON POSTS (§13.18.8)
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                        {[
+                          { id: 'None', label: 'None (Pack Box)' },
+                          { id: 'Near', label: 'Near Post' },
+                          { id: 'Both', label: 'Both Posts' },
+                        ].map(({ id, label }) => (
+                          <button
+                            key={id}
+                            onClick={() =>
+                              updateUserTactics({
+                                instructions: {
+                                  ...tactics.instructions,
+                                  postMen: id as PostMen,
+                                },
+                              })
+                            }
+                            style={{
+                              flex: 1,
+                              padding: '5px',
+                              backgroundColor:
+                                tactics.instructions.postMen === id
+                                  ? 'var(--paper-ink)'
+                                  : 'var(--paper-2)',
+                              color:
+                                tactics.instructions.postMen === id
+                                  ? 'var(--paper)'
+                                  : 'var(--paper-ink)',
+                              border: '1px solid var(--paper-rule)',
+                              borderRadius: '2px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {label}
                           </button>
                         ))}
                       </div>

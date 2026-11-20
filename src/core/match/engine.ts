@@ -116,6 +116,7 @@ export class MatchEngine implements MatchSim {
   private shortCornerCrossBonus: boolean = false;
   private isLongThrowIn: boolean = false;
   private counterPhaseExtraCtx: number = 0;
+  private shortFkProgressBonus: boolean = false;
 
   // Tactical Depth involvement and role fit cache
   private roleFitCache = new Map<string, number>();
@@ -178,18 +179,28 @@ export class MatchEngine implements MatchSim {
     const awayLossMult = this.awayTeam.instructions.onLoss === 'CounterPress' ? 1.05 : 1.0;
     const homeWinMult = this.homeTeam.instructions.onWin === 'Counter' ? 1.04 : 1.0;
     const awayWinMult = this.awayTeam.instructions.onWin === 'Counter' ? 1.04 : 1.0;
+    const homeVeryAttMult =
+      this.homeTeam.instructions.mentality === 'VeryAttacking'
+        ? K.d2.mentality.veryAttackingFatigueMult
+        : 1.0;
+    const awayVeryAttMult =
+      this.awayTeam.instructions.mentality === 'VeryAttacking'
+        ? K.d2.mentality.veryAttackingFatigueMult
+        : 1.0;
     this.homeDrainRate =
       BALANCE.condition.drainPerMinuteBase *
       BALANCE.condition.pressingFactors[this.homeTeam.instructions.pressing] *
       BALANCE.condition.tempoFactors[this.homeTeam.instructions.tempo] *
       homeLossMult *
-      homeWinMult;
+      homeWinMult *
+      homeVeryAttMult;
     this.awayDrainRate =
       BALANCE.condition.drainPerMinuteBase *
       BALANCE.condition.pressingFactors[this.awayTeam.instructions.pressing] *
       BALANCE.condition.tempoFactors[this.awayTeam.instructions.tempo] *
       awayLossMult *
-      awayWinMult;
+      awayWinMult *
+      awayVeryAttMult;
   }
 
   constructor(input: MatchInput, seed: number, enableSnapshots: boolean = true) {
@@ -324,7 +335,9 @@ export class MatchEngine implements MatchSim {
 
   public applyCommandWithRewind(c: MatchCommand): { rewound: boolean; fromSeq?: number } {
     const effectiveT =
-      c.kind === 'instructions' || c.kind === 'formation' ? c.issuedAtT + 30 : c.issuedAtT;
+      c.kind === 'instructions' || c.kind === 'formation' || c.kind === 'plan'
+        ? c.issuedAtT + 30
+        : c.issuedAtT;
 
     if (this.t > effectiveT && this.snapshotHistory.length > 0) {
       // Find the latest snapshot taken before or at effectiveT
@@ -630,6 +643,21 @@ export class MatchEngine implements MatchSim {
           importance: 1,
         });
       }
+    } else if (cmd.kind === 'plan') {
+      const sheet = cmd.side === 'home' ? this.input.home : this.input.away;
+      const plan = sheet.tactics.plans?.[cmd.plan];
+      if (plan) {
+        team.formation = plan.formation;
+        team.roles = [...plan.roles];
+        team.playerInstructions = [...plan.playerInstructions];
+        team.instructions = { ...plan.instructions };
+        this.updateDrainRates();
+        this.invalidateTeamInvolvements(cmd.side);
+        this.emitEvent('TACTIC_CHANGE', 0, {
+          side: cmd.side,
+          importance: 0,
+        });
+      }
     }
   }
 
@@ -852,11 +880,6 @@ export class MatchEngine implements MatchSim {
       // Next action is recycle
       this.forcedAction = { action: 'recycle' };
     } else if (restart.type === 'THROW_IN') {
-      const dur = K.durations.throwIn;
-      this.t += dur;
-      this.teamStats[restart.side].possessionSec += dur;
-      this.updatePlayerMinutes(dur);
-
       this.ballPosAttacking = { ...restart.pos };
       this.ballPosAbsolute = toAbsolute(restart.pos.ax, restart.pos.ay, restart.side, this.half);
 
@@ -870,10 +893,14 @@ export class MatchEngine implements MatchSim {
       }
 
       if (longThrowId && restart.pos.ax >= 70) {
-        this.t += 6;
+        const dur = this.getRestartDuration(K.durations.throwIn + 6, restart.side, longThrowId);
+        this.t += dur;
+        this.teamStats[restart.side].possessionSec += dur;
+        this.updatePlayerMinutes(dur);
+
         this.ballHolderId = longThrowId;
         this.lastPasserId = null;
-        this.emitEvent('THROW_IN', dur + 6, {
+        this.emitEvent('THROW_IN', dur, {
           side: restart.side,
           playerId: longThrowId,
           from: this.ballPosAbsolute,
@@ -887,6 +914,11 @@ export class MatchEngine implements MatchSim {
 
       // Taker = closest wide player (LB/RB/LM/RM)
       const takerId = this.findBestTakerForThrowIn(team);
+      const dur = this.getRestartDuration(K.durations.throwIn, restart.side, takerId);
+      this.t += dur;
+      this.teamStats[restart.side].possessionSec += dur;
+      this.updatePlayerMinutes(dur);
+
       this.ballHolderId = takerId;
       this.lastPasserId = null;
 
@@ -900,12 +932,12 @@ export class MatchEngine implements MatchSim {
 
       this.forcedAction = { action: 'recycle' };
     } else if (restart.type === 'GOAL_KICK') {
-      const dur = K.durations.goalKick;
+      const gkId = team.lineup[0] ?? null;
+      const dur = this.getRestartDuration(K.durations.goalKick, restart.side, gkId);
       this.t += dur;
       this.teamStats[restart.side].possessionSec += dur;
       this.updatePlayerMinutes(dur);
 
-      const gkId = team.lineup[0] ?? null;
       this.ballHolderId = gkId;
       this.lastPasserId = null;
 
@@ -989,7 +1021,8 @@ export class MatchEngine implements MatchSim {
       }
     } else if (restart.type === 'CORNER') {
       this.teamStats[restart.side].corners++;
-      const dur = K.durations.corner;
+      const takerId = team.cornerTaker ?? this.selectOutfielder(team, 'LM');
+      const dur = this.getRestartDuration(K.durations.corner, restart.side, takerId);
       this.t += dur;
       this.teamStats[restart.side].possessionSec += dur;
       this.updatePlayerMinutes(dur);
@@ -999,7 +1032,6 @@ export class MatchEngine implements MatchSim {
       this.ballPosAttacking = { ax: 105, ay: cornerAy };
       this.ballPosAbsolute = toAbsolute(105, cornerAy, restart.side, this.half);
 
-      const takerId = team.cornerTaker ?? this.selectOutfielder(team, 'LM');
       this.ballHolderId = takerId;
       this.lastPasserId = null;
 
@@ -1030,6 +1062,9 @@ export class MatchEngine implements MatchSim {
         defenderHomeAdvantage: restart.side === 'away' ? K.homeAdvantage : 0,
         cornersFor: team.instructions.cornersFor,
         cornersAgainst: oppTeam.instructions.cornersAgainst,
+        cornerSwing: team.instructions.cornerSwing,
+        menBack: team.instructions.menBack,
+        postMen: oppTeam.instructions.postMen,
         rng: this.rng,
       });
 
@@ -1096,6 +1131,20 @@ export class MatchEngine implements MatchSim {
           this.ballPosAttacking = { ax: 35, ay: 34 };
           this.ballPosAbsolute = toAbsolute(35, 34, oppTeam.side, this.half);
           this.ballHolderId = this.selectOutfielder(oppTeam, 'CB');
+
+          // Men back (corners, SPEC §13.18.8): 1 gives 50% counter on clearance
+          if (
+            team.instructions.menBack === 1 &&
+            this.rng.chance(K.d2.setPieces.menBack[1].clearanceCounterChance)
+          ) {
+            this.phase = { type: 'COUNTER', remainingSteps: 2 };
+            this.teamStats[oppTeam.side].countersStarted =
+              (this.teamStats[oppTeam.side].countersStarted ?? 0) + 1;
+            this.teamStats[restart.side].countersConceded =
+              (this.teamStats[restart.side].countersConceded ?? 0) + 1;
+            this.teamStats[restart.side].countersConcededAfterCorner =
+              (this.teamStats[restart.side].countersConcededAfterCorner ?? 0) + 1;
+          }
         }
       } else if (cornerResult.outcome === 'SHOT' && cornerResult.shotResult) {
         this.processShotResult(
@@ -1130,12 +1179,12 @@ export class MatchEngine implements MatchSim {
 
       this.processShotResult(restart.side, takerId, 'PENALTY', shotRes, undefined);
     } else if (restart.type === 'FREE_KICK') {
-      const dur = K.durations.freeKick;
+      const takerId = team.freeKickTaker ?? this.selectOutfielder(team, 'CM');
+      const dur = this.getRestartDuration(K.durations.freeKick, restart.side, takerId);
       this.t += dur;
       this.teamStats[restart.side].possessionSec += dur;
       this.updatePlayerMinutes(dur);
 
-      const takerId = team.freeKickTaker ?? this.selectOutfielder(team, 'CM');
       this.ballHolderId = takerId;
       this.ballPosAttacking = { ...restart.pos };
       this.ballPosAbsolute = toAbsolute(restart.pos.ax, restart.pos.ay, restart.side, this.half);
@@ -1167,6 +1216,11 @@ export class MatchEngine implements MatchSim {
         });
 
         this.processShotResult(restart.side, takerId, 'DIRECT_FK', shotRes, defP ?? undefined);
+      } else if (restart.shotContext === ('CROSS_FK' as any)) {
+        this.forcedAction = { action: 'cross' };
+      } else if (restart.shotContext === ('SHORT_FK' as any)) {
+        this.shortFkProgressBonus = true;
+        this.forcedAction = { action: 'progress' };
       } else {
         // Cross or keep ball
         this.forcedAction = { action: 'progress' };
@@ -1183,7 +1237,12 @@ export class MatchEngine implements MatchSim {
     // Check pressing foul hazard in DEF/MID
     const currentThird = classifyThird(this.ballPosAttacking.ax);
     if (currentThird === 'DEF' || currentThird === 'MID') {
-      const foulHazard = K.fouls.pressingHazard[oppTeam.instructions.pressing];
+      let foulHazard = K.fouls.pressingHazard[oppTeam.instructions.pressing];
+      if (oppTeam.instructions.tackling === 'GetStuckIn') {
+        foulHazard *= K.d2.tackling.getStuckIn.foulsMult;
+      } else if (oppTeam.instructions.tackling === 'StayOnFeet') {
+        foulHazard *= K.d2.tackling.stayOnFeet.foulsMult;
+      }
       if (this.rng.chance(foulHazard)) {
         const presserId = this.selectPressingFouler(oppTeam);
         this.triggerFoul(oppSide, side, this.ballPosAttacking, presserId);
@@ -1264,6 +1323,9 @@ export class MatchEngine implements MatchSim {
         isStepsAfterKeepItWin: this.stepsAfterKeepItWin > 0,
         isFirstStepWideDistribution: this.firstStepWideDistribution,
         opponentPressingHigh: oppTeam.instructions.pressing === 'High',
+        defendingTeamForceOpp: oppTeam.instructions.forceOpp,
+        isLeadingLateTimeWasting:
+          team.instructions.timeWasting === 'WhenAhead' && this.isTeamLeadingLate(side),
       };
 
       action = selectAction(currentThird, currentLane, actionCtx, this.rng);
@@ -1331,6 +1393,7 @@ export class MatchEngine implements MatchSim {
       const holderRole = holderSlot >= 0 ? (team.roles[holderSlot] ?? 'cm') : 'cm';
       const holderFit = this.getPlayerRoleFit(holderRole, holderId);
       const gainScale = 0.4 + 0.6 * holderFit;
+      const holderPIs = holderSlot >= 0 ? (team.playerInstructions[holderSlot] ?? []) : [];
 
       let sPass =
         0.6 * z(holderSheet.attributes.passing) +
@@ -1357,7 +1420,8 @@ export class MatchEngine implements MatchSim {
         ? 0.5 * z(defenderSheet.attributes.positioning) +
           0.3 * z(defenderSheet.attributes.workRate) +
           0.2 * z(defenderSheet.attributes.tackling) +
-          (oppTeam.side === 'home' ? K.homeAdvantage : 0)
+          (oppTeam.side === 'home' ? K.homeAdvantage : 0) +
+          this.getTrainingBonus(oppSide, 'defence')
         : 0;
 
       const destThird = classifyThird(dest.ax);
@@ -1369,10 +1433,16 @@ export class MatchEngine implements MatchSim {
       if (defRole === 'playmaker') sPress -= 0.2;
       if (defRole === 'shadow_striker' && destThird === 'MID') sPress -= 0.2;
       if (defPIs.includes('closeDownMore')) sPress += 0.3;
+      if (defPIs.includes('roam')) sPress += K.d2.pi.roam.slotPressPenalty;
       if (oppTeam.opposition.some((o) => o.kind === 'tightMark' && o.target === holderId))
         sPress += 0.3;
       if (oppTeam.opposition.some((o) => o.kind === 'pressOnBall' && o.target === holderId))
         sPress += 0.4;
+
+      let ctx = 0;
+      if (holderPIs.includes('playSafe')) {
+        ctx += K.d2.pi.playSafe.passCtxAdd;
+      }
 
       if (destThird === 'DEF' && oppTeam.roles.includes('pressing_forward')) {
         const pfSlot = oppTeam.roles.indexOf('pressing_forward');
@@ -1385,8 +1455,6 @@ export class MatchEngine implements MatchSim {
       if (destThird === 'DEF' && oppTeam.roles.includes('poacher')) {
         sPress *= 0.9;
       }
-
-      let ctx = 0;
       if (destThird === 'ATT') ctx -= 0.6;
       else if (destThird === 'MID') ctx -= 0.2;
 
@@ -1416,6 +1484,16 @@ export class MatchEngine implements MatchSim {
       }
       if (team.instructions.onWin === 'Counter' && this.phase.type === 'COUNTER') {
         ctx -= 0.25;
+      }
+      if (this.shortFkProgressBonus && action === 'progress') {
+        ctx += K.d2.setPieces.freeKicks.shortNextStepProgress;
+        this.shortFkProgressBonus = false;
+      }
+      if (team.instructions.finalThird === 'WorkIntoBox' && destThird === 'ATT') {
+        ctx += K.d2.finalThird.workIntoBox.attPassCtx;
+      }
+      if (holderPIs.includes('riskyPasses')) {
+        ctx += K.d2.pi.riskyPasses.passCtxAdd;
       }
 
       const pPass = sigmoid(
@@ -1474,24 +1552,48 @@ export class MatchEngine implements MatchSim {
           this.checkTransition(oppSide, side, dest);
           this.phase = { type: 'COUNTER', remainingSteps: 2 };
         } else if (this.rng.chance(0.75) && defenderId) {
-          // Interception
-          this.teamStats[oppSide].interceptions++;
+          // Ball won by defender: Tackle vs Interception based on tackling style
+          const isTackle =
+            oppTeam.instructions.tackling === 'GetStuckIn'
+              ? (defenderSheet?.attributes.tackling ?? 50) >= 35
+              : oppTeam.instructions.tackling === 'StayOnFeet'
+                ? false
+                : (defenderSheet?.attributes.tackling ?? 50) >= 65;
+
+          const defPl = this.playerLines[defenderId];
+          if (isTackle) {
+            this.teamStats[oppSide].tackles++;
+            if (defPl) defPl.tackles++;
+            this.emitEvent('TACKLE', dur, {
+              side: oppSide,
+              playerId: defenderId,
+              opponentId: holderId,
+              from: this.ballPosAbsolute,
+              to: destAbs,
+              importance: 1,
+            });
+          } else {
+            this.teamStats[oppSide].interceptions++;
+            if (defPl) defPl.interceptions++;
+            this.emitEvent('INTERCEPTION', dur, {
+              side: oppSide,
+              playerId: defenderId,
+              opponentId: holderId,
+              from: this.ballPosAbsolute,
+              to: destAbs,
+              importance: 1,
+            });
+          }
+
           if (dest.ax <= 70)
             this.teamStats[oppSide].ballWinsMidAtt =
               (this.teamStats[oppSide].ballWinsMidAtt ?? 0) + 1;
-          const defPl = this.playerLines[defenderId];
-          if (defPl) defPl.interceptions++;
-
-          this.emitEvent('INTERCEPTION', dur, {
-            side: oppSide,
-            playerId: defenderId,
-            opponentId: holderId,
-            from: this.ballPosAbsolute,
-            to: destAbs,
-            importance: 1,
-          });
 
           this.checkTransition(oppSide, side, dest);
+          if (holderPIs.includes('riskyPasses') && this.rng.chance(0.1)) {
+            this.phase = { type: 'COUNTER', remainingSteps: 2 };
+            this.counterPhaseExtraCtx = Math.max(this.counterPhaseExtraCtx, 0.1);
+          }
         } else {
           // Throw-in to opponent
           this.emitEvent('PASS_FAIL', dur, {
@@ -1559,7 +1661,16 @@ export class MatchEngine implements MatchSim {
       if (defRole === 'playmaker') sTkl -= 0.1;
       if (defRole === 'shadow_striker') sTkl -= 0.2;
       if (isTightMarkMarker) sTkl += 0.3;
-      if (defPIs.includes('stayOnFeet')) sTkl -= 0.25;
+      if (defPIs.includes('stayOnFeet')) {
+        sTkl -= 0.25;
+      } else if (oppTeam.instructions.tackling === 'GetStuckIn') {
+        sTkl += K.d2.tackling.getStuckIn.sTklAdd;
+      } else if (oppTeam.instructions.tackling === 'StayOnFeet') {
+        sTkl += K.d2.tackling.stayOnFeet.sTklAdd;
+      }
+      if (defPIs.includes('sitNarrower') && classifyLane(dest.ay) === 'Centre') {
+        sTkl += K.d2.pi.sitNarrower.oppLaneCtxAdd;
+      }
 
       const paceDiff = defenderSheet
         ? z(holderSheet.attributes.pace) - z(defenderSheet.attributes.pace)
@@ -1602,6 +1713,7 @@ export class MatchEngine implements MatchSim {
           roleId: defRole,
           isTightMarkMarker,
           playerInstructions: defPIs,
+          teamTackling: oppTeam.instructions.tackling,
         });
         foulChance *= foulMult;
 
@@ -1660,6 +1772,26 @@ export class MatchEngine implements MatchSim {
         importance: 0,
       });
 
+      if (
+        oppTeam.instructions.offsideTrap &&
+        dest.ax >= 70 &&
+        this.rng.chance(K.d2.offsideTrap.oppLongBallAttOffsideChance)
+      ) {
+        this.teamStats[side].offsides++;
+        this.emitEvent('OFFSIDE', K.durations.offside, {
+          side,
+          playerId: receiverId,
+          importance: 1,
+        });
+
+        this.pendingRestart = {
+          type: 'FREE_KICK',
+          side: oppSide,
+          pos: { ax: 105 - dest.ax, ay: 68 - dest.ay },
+        };
+        return;
+      }
+
       const recvSlot = team.lineup.indexOf(receiverId);
       const recvRole = recvSlot >= 0 ? (team.roles[recvSlot] ?? 'st') : 'st';
       const recvFit = this.getPlayerRoleFit(recvRole, receiverId);
@@ -1675,7 +1807,7 @@ export class MatchEngine implements MatchSim {
         0.4 * z(receiverSheet.attributes.strength) +
         (side === 'home' ? K.homeAdvantage : 0);
 
-      if (recvRole === 'target_man') sAirAtt += 0.35 * recvGainScale;
+      if (recvRole === 'target_man') sAirAtt += 0.38 * recvGainScale;
 
       let sAirDef = defenderSheet
         ? 0.5 * z(defenderSheet.attributes.heading) +
@@ -1869,6 +2001,9 @@ export class MatchEngine implements MatchSim {
         if (recvRole === 'advanced_forward') {
           p1v1 += 0.05;
         }
+        if (oppTeam.instructions.offsideTrap) {
+          p1v1 += K.d2.offsideTrap.beatenTrapOneOnOneAdd;
+        }
 
         if (this.rng.chance(p1v1)) {
           this.forcedAction = { action: 'shot', context: 'ONE_ON_ONE' };
@@ -1884,6 +2019,12 @@ export class MatchEngine implements MatchSim {
 
         if (recvRole === 'advanced_forward') {
           pOffside *= 1.25;
+        }
+        if (oppTeam.instructions.offsideTrap) {
+          pOffside = Math.min(
+            K.d2.offsideTrap.failedThroughOffsideCap,
+            pOffside + K.d2.offsideTrap.failedThroughOffsideProbAdd,
+          );
         }
 
         if (this.rng.chance(pOffside)) {
@@ -1935,6 +2076,36 @@ export class MatchEngine implements MatchSim {
       const holderRole = holderSlot >= 0 ? (team.roles[holderSlot] ?? 'cm') : 'cm';
       const holderFit = this.getPlayerRoleFit(holderRole, holderId);
       const gainScale = 0.4 + 0.6 * holderFit;
+      const holderPIs = holderSlot >= 0 ? (team.playerInstructions[holderSlot] ?? []) : [];
+      const isAttWide =
+        this.ballPosAttacking.ax >= 70 && classifyLane(this.ballPosAttacking.ay) !== 'Centre';
+
+      // 0. Low cross block check (§13.18.3)
+      if (
+        team.instructions.crossStyle === 'Low' &&
+        this.rng.chance(K.d2.crossStyle.low.blockChance)
+      ) {
+        const defId = this.selectPrimaryDefenderId(oppTeam);
+        this.emitEvent('BLOCK', 1, {
+          side: oppSide,
+          playerId: defId ?? undefined,
+          importance: 1,
+        });
+        if (this.rng.chance(0.55)) {
+          this.pendingRestart = {
+            type: 'CORNER',
+            side,
+            pos: { ax: 105, ay: this.ballPosAttacking.ay < 34 ? 0 : 68 },
+          };
+        } else {
+          this.emitEvent('CLEARANCE', 2, {
+            side: oppSide,
+            importance: 0,
+          });
+          this.checkTransition(oppSide, side, { ax: 35, ay: 34 });
+        }
+        return;
+      }
 
       // 1. GK claim
       let pClaim =
@@ -1942,6 +2113,14 @@ export class MatchEngine implements MatchSim {
 
       if (this.isLongThrowIn) {
         pClaim += 0.04;
+      }
+      if (team.instructions.crossStyle === 'Low') {
+        pClaim += K.d2.crossStyle.low.gkClaimAdd;
+      } else if (team.instructions.crossStyle === 'Floated') {
+        pClaim += K.d2.crossStyle.floated.gkClaimAdd;
+      }
+      if (holderPIs.includes('crossFromDeep')) {
+        pClaim += K.d2.pi.crossFromDeep.gkClaimAdd;
       }
 
       if (this.rng.chance(pClaim)) {
@@ -1970,6 +2149,17 @@ export class MatchEngine implements MatchSim {
       if (oppTeam.opposition.some((o) => o.kind === 'doubleUp' && o.target === holderId)) {
         crossSkillTerm -= 0.2;
       }
+      if (team.instructions.crossStyle === 'Whipped') {
+        crossSkillTerm += K.d2.crossStyle.whipped.deliveryCtx;
+      } else if (team.instructions.crossStyle === 'Floated') {
+        crossSkillTerm += K.d2.crossStyle.floated.deliveryCtx;
+      }
+      if (holderPIs.includes('crossFromByline') && isAttWide) {
+        crossSkillTerm += K.d2.pi.crossFromByline.deliveryCtxAdd;
+      }
+      if (holderPIs.includes('crossFromDeep')) {
+        crossSkillTerm += K.d2.pi.crossFromDeep.deliveryCtxAdd;
+      }
 
       const pDelivery = sigmoid(
         K.intercepts.crossDelivery + crossSkillTerm + this.getTrainingBonus(side, 'attack'),
@@ -1993,7 +2183,7 @@ export class MatchEngine implements MatchSim {
         return;
       }
 
-      // 3. Header duel
+      // 3. Duel Target Selection
       const attInBox = this.getPlayersInBox(team, side);
       const defInBox = this.getPlayersInBox(oppTeam, oppSide);
 
@@ -2025,6 +2215,69 @@ export class MatchEngine implements MatchSim {
       const targetDefRole = targetDefSlot >= 0 ? (oppTeam.roles[targetDefSlot] ?? 'cb') : 'cb';
       const targetDefFit = targetDef ? this.getPlayerRoleFit(targetDefRole, targetDef.id) : 1.0;
 
+      // Ground chance check (Low cross 60% ground or cut-back)
+      const isLowCrossGround =
+        team.instructions.crossStyle === 'Low' &&
+        this.rng.chance(K.d2.crossStyle.low.groundChanceRatio);
+      const isCutBack =
+        !isLowCrossGround &&
+        holderPIs.includes('crossFromByline') &&
+        isAttWide &&
+        this.rng.chance(K.d2.pi.crossFromByline.cutBackChance);
+
+      if (isLowCrossGround || isCutBack) {
+        // Ground duel: attacker pace .5 + offTheBall .5 vs def positioning .5 + pace .5
+        const sGroundAtt =
+          0.5 * z(targetAtt.attributes.pace) +
+          0.5 * z(targetAtt.attributes.offTheBall) +
+          (side === 'home' ? K.homeAdvantage : 0);
+        const sGroundDef = targetDef
+          ? 0.5 * z(targetDef.attributes.positioning) +
+            0.5 * z(targetDef.attributes.pace) +
+            (oppSide === 'home' ? K.homeAdvantage : 0)
+          : 0;
+
+        const pWinGround = sigmoid(K.intercepts.crossHeader + 0.8 * sGroundAtt - 0.8 * sGroundDef);
+        if (this.rng.chance(pWinGround)) {
+          const shotCtx: ShotContext = isCutBack
+            ? 'BOX_CENTRAL'
+            : this.rng.chance(K.d2.crossStyle.low.groundBoxCentralRatio)
+              ? 'BOX_CENTRAL'
+              : 'SIX_YARD';
+          const shotRes = resolveShot({
+            context: shotCtx,
+            attacker: targetAtt,
+            goalkeeper: gkSheet,
+            defender: targetDef,
+            trainingBonus: this.getTrainingBonus(side, 'attack'),
+            homeAdvantage: side === 'home' ? K.homeAdvantage : 0,
+            defenderHomeAdvantage: oppSide === 'home' ? K.homeAdvantage : 0,
+            attackerRole: targetAttRole,
+            attackerFit: targetAttFit,
+            defendingPostMen: oppTeam.instructions.postMen,
+            shootOnSight: team.instructions.finalThird === 'ShootOnSight',
+            workIntoBox: team.instructions.finalThird === 'WorkIntoBox',
+            rng: this.rng,
+          });
+          this.processShotResult(side, targetAtt.id, shotCtx, shotRes, targetDef?.id);
+        } else {
+          this.emitEvent('CLEARANCE', 2, {
+            side: oppSide,
+            playerId: targetDef?.id,
+            importance: 0,
+          });
+          if (this.rng.chance(0.4)) {
+            this.ballPosAttacking = { ax: 52.5, ay: 34 };
+            this.ballPosAbsolute = toAbsolute(52.5, 34, side, this.half);
+            this.ballHolderId = this.selectOutfielder(team, 'CM');
+          } else {
+            this.checkTransition(oppSide, side, { ax: 35, ay: 34 });
+          }
+        }
+        return;
+      }
+
+      // Aerial duel
       let sAirAtt =
         0.6 * z(targetAtt.attributes.heading) +
         0.4 * z(targetAtt.attributes.strength) +
@@ -2041,6 +2294,11 @@ export class MatchEngine implements MatchSim {
 
       if (targetDefRole === 'stopper') sAirDef += 0.2 * (0.4 + 0.6 * targetDefFit);
 
+      if (team.instructions.crossStyle === 'Floated') {
+        sAirAtt *= K.d2.crossStyle.floated.headerSkillMult;
+        sAirDef *= K.d2.crossStyle.floated.headerSkillMult;
+      }
+
       let pWin = sigmoid(K.intercepts.crossHeader + 0.8 * sAirAtt - 0.8 * sAirDef);
       if (team.roles.includes('false_nine')) {
         pWin = Math.max(0.01, pWin - 0.15);
@@ -2049,7 +2307,15 @@ export class MatchEngine implements MatchSim {
       if (this.rng.chance(pWin)) {
         const attPl = this.playerLines[targetAtt.id];
         if (attPl) attPl.aerialDuelsWon = (attPl.aerialDuelsWon ?? 0) + 1;
-        const shotCtx: ShotContext = this.rng.chance(0.4) ? 'BOX_CENTRAL' : 'HEADER';
+        const shotCtx: ShotContext =
+          team.instructions.crossStyle === 'Floated'
+            ? this.rng.chance(0.05)
+              ? 'BOX_CENTRAL'
+              : 'HEADER'
+            : this.rng.chance(0.4)
+              ? 'BOX_CENTRAL'
+              : 'HEADER';
+        const isWhipped = team.instructions.crossStyle === 'Whipped';
         const shotRes = resolveShot({
           context: shotCtx,
           attacker: targetAtt,
@@ -2060,6 +2326,13 @@ export class MatchEngine implements MatchSim {
           defenderHomeAdvantage: oppSide === 'home' ? K.homeAdvantage : 0,
           attackerRole: targetAttRole,
           attackerFit: targetAttFit,
+          extraOnTargetAdd:
+            isWhipped && shotCtx === 'HEADER' ? K.d2.crossStyle.whipped.onTargetAdd : 0,
+          extraXgRefAdd: isWhipped && shotCtx === 'HEADER' ? 0.02 : 0,
+          isFloatedCross: team.instructions.crossStyle === 'Floated',
+          defendingPostMen: oppTeam.instructions.postMen,
+          shootOnSight: team.instructions.finalThird === 'ShootOnSight',
+          workIntoBox: team.instructions.finalThird === 'WorkIntoBox',
           rng: this.rng,
         });
 
@@ -2137,6 +2410,9 @@ export class MatchEngine implements MatchSim {
         attackerFit: holderFit,
         isSweeperKeeperOpponent,
         attackerCtxModifier,
+        shootOnSight: team.instructions.finalThird === 'ShootOnSight',
+        workIntoBox: team.instructions.finalThird === 'WorkIntoBox',
+        defendingPostMen: oppTeam.instructions.postMen,
         rng: this.rng,
       });
 
@@ -2349,6 +2625,7 @@ export class MatchEngine implements MatchSim {
         personality: fSheet.personality,
         attributes: fSheet.attributes,
         currentYellows: fLive.yellowCards,
+        teamTackling: foulerTeam.instructions.tackling,
       },
       this.rng,
     );
@@ -2385,7 +2662,12 @@ export class MatchEngine implements MatchSim {
     }
 
     // Determine restart
-    const restartType = determineFoulRestart(attackingPos, this.rng);
+    const awardedTeam = awardedSide === 'home' ? this.homeTeam : this.awayTeam;
+    const restartType = determineFoulRestart(
+      attackingPos,
+      this.rng,
+      awardedTeam.instructions.freeKicks,
+    );
     if (restartType === 'PENALTY') {
       this.emitEvent('PENALTY_AWARDED', 0, {
         side: awardedSide,
@@ -2402,6 +2684,20 @@ export class MatchEngine implements MatchSim {
         side: awardedSide,
         pos: { ...attackingPos },
         shotContext: 'DIRECT_FK',
+      };
+    } else if (restartType === 'CROSS_FK') {
+      this.pendingRestart = {
+        type: 'FREE_KICK',
+        side: awardedSide,
+        pos: { ...attackingPos },
+        shotContext: 'CROSS_FK' as any,
+      };
+    } else if (restartType === 'SHORT_FK') {
+      this.pendingRestart = {
+        type: 'FREE_KICK',
+        side: awardedSide,
+        pos: { ...attackingPos },
+        shotContext: 'SHORT_FK' as any,
       };
     } else {
       this.pendingRestart = {
@@ -2466,12 +2762,19 @@ export class MatchEngine implements MatchSim {
         return;
       } else {
         // Failed: opponent gets Counter phase for 2 steps with extra ctx +0.25; team fatigue ×1.05
-        this.counterPhaseExtraCtx = 0.25;
-        this.phase = { type: 'COUNTER', remainingSteps: 2 };
-        this.teamStats[winnerSide].countersStarted =
-          (this.teamStats[winnerSide].countersStarted ?? 0) + 1;
-        this.teamStats[loserSide].countersConceded =
-          (this.teamStats[loserSide].countersConceded ?? 0) + 1;
+        if (
+          winnerTeam.instructions.mentality === 'VeryDefensive' &&
+          winnerTeam.instructions.onWin !== 'Counter'
+        ) {
+          this.phase = { type: 'OPEN' };
+        } else {
+          this.counterPhaseExtraCtx = 0.25;
+          this.phase = { type: 'COUNTER', remainingSteps: 2 };
+          this.teamStats[winnerSide].countersStarted =
+            (this.teamStats[winnerSide].countersStarted ?? 0) + 1;
+          this.teamStats[loserSide].countersConceded =
+            (this.teamStats[loserSide].countersConceded ?? 0) + 1;
+        }
         for (const pid of loserTeam.lineup) {
           if (!pid) continue;
           const live = this.players[pid];
@@ -2508,9 +2811,26 @@ export class MatchEngine implements MatchSim {
 
     if (loserTeam.instructions.onLoss === 'Regroup') {
       this.stepsAfterRegroupWin = 1;
-      // An opponent Counter phase can only start if our line is High (not from mentality)
-      if (isWinnerDefOrMid && loserTeam.instructions.line === 'High') {
+      // An opponent Counter phase can only start if our line is High or VeryAttacking (§13.17.4 & §13.18.1)
+      if (
+        isWinnerDefOrMid &&
+        (loserTeam.instructions.line === 'High' ||
+          loserTeam.instructions.mentality === 'VeryAttacking')
+      ) {
+        if (
+          winnerTeam.instructions.mentality === 'VeryDefensive' &&
+          winnerTeam.instructions.onWin !== 'Counter'
+        ) {
+          this.phase = { type: 'OPEN' };
+          return;
+        }
         this.phase = { type: 'COUNTER', remainingSteps: 2 };
+        if (loserTeam.instructions.mentality === 'VeryAttacking') {
+          this.counterPhaseExtraCtx = Math.max(
+            this.counterPhaseExtraCtx,
+            K.d2.mentality.veryAttackingOppCounterCtx,
+          );
+        }
         this.teamStats[winnerSide].countersStarted =
           (this.teamStats[winnerSide].countersStarted ?? 0) + 1;
         this.teamStats[loserSide].countersConceded =
@@ -2521,9 +2841,11 @@ export class MatchEngine implements MatchSim {
       return;
     }
 
-    // Standard counter check (§13.9)
+    // Standard counter check (§13.9 & §13.18.1)
     const loserAttacking =
-      loserTeam.instructions.mentality === 'Attacking' || loserTeam.instructions.line === 'High';
+      loserTeam.instructions.mentality === 'Attacking' ||
+      loserTeam.instructions.mentality === 'VeryAttacking' ||
+      loserTeam.instructions.line === 'High';
 
     if (
       isWinnerDefOrMid &&
@@ -2531,7 +2853,20 @@ export class MatchEngine implements MatchSim {
         (winnerTeam.instructions.onWin === 'Counter' &&
           this.rng.chance(K.trans.counter.bonusTriggerChance)))
     ) {
+      if (
+        winnerTeam.instructions.mentality === 'VeryDefensive' &&
+        winnerTeam.instructions.onWin !== 'Counter'
+      ) {
+        this.phase = { type: 'OPEN' };
+        return;
+      }
       this.phase = { type: 'COUNTER', remainingSteps: 2 };
+      if (loserTeam.instructions.mentality === 'VeryAttacking') {
+        this.counterPhaseExtraCtx = Math.max(
+          this.counterPhaseExtraCtx,
+          K.d2.mentality.veryAttackingOppCounterCtx,
+        );
+      }
       this.teamStats[winnerSide].countersStarted =
         (this.teamStats[winnerSide].countersStarted ?? 0) + 1;
       this.teamStats[loserSide].countersConceded =
@@ -2575,8 +2910,10 @@ export class MatchEngine implements MatchSim {
         ax = this.rngFloat(72, 86);
         if (this.rng.chance(0.4)) ay = clamp(ay + this.rngFloat(-12, 12), 5, 63);
       } else {
-        // ATT -> 45% into box, 55% stay in ATT
-        if (this.rng.chance(0.45)) {
+        // ATT -> 45% into box (60% if WorkIntoBox), 55% stay in ATT
+        const team = this.possessionSide === 'home' ? this.homeTeam : this.awayTeam;
+        const inBoxChance = team?.instructions.finalThird === 'WorkIntoBox' ? 0.6 : 0.45;
+        if (this.rng.chance(inBoxChance)) {
           ax = this.rngFloat(89, 98);
           ay = this.rngFloat(18, 50);
         } else {
@@ -2893,9 +3230,97 @@ export class MatchEngine implements MatchSim {
     throw new Error(`Player ${id} not found in team sheets`);
   }
 
+  private isTeamLeadingLate(side: Side): boolean {
+    const oppSide: Side = side === 'home' ? 'away' : 'home';
+    return this.t >= K.d2.timeWasting.minMinute * 60 && this.score[side] > this.score[oppSide];
+  }
+
+  private getRestartDuration(baseDur: number, side: Side, takerId?: PlayerId | null): number {
+    const team = side === 'home' ? this.homeTeam : this.awayTeam;
+    if (team.instructions.timeWasting === 'WhenAhead' && this.isTeamLeadingLate(side)) {
+      const dur = Math.round(baseDur * K.d2.timeWasting.restartDurationMult);
+      const extra = dur - baseDur;
+      if (this.half === 2) {
+        this.stoppage2 += extra * K.d2.timeWasting.stoppageExtraRatio;
+        this.periodEnd += extra * K.d2.timeWasting.stoppageExtraRatio;
+      }
+      if (takerId && this.rng.chance(K.d2.timeWasting.yellowRiskPerRestart)) {
+        this.issueYellowCard(takerId, side);
+      }
+      return dur;
+    }
+    return baseDur;
+  }
+
+  private issueYellowCard(playerId: PlayerId, side: Side): void {
+    const liveP = this.players[playerId];
+    const team = side === 'home' ? this.homeTeam : this.awayTeam;
+    if (liveP && liveP.yellowCards >= 1) {
+      liveP.isRedCarded = true;
+      team.redCardedPlayers.push(playerId);
+      this.teamStats[side].red++;
+      const pl = this.playerLines[playerId];
+      if (pl) pl.red = 1;
+      this.emitEvent('RED', 0, {
+        side,
+        playerId,
+        importance: 3,
+      });
+    } else {
+      this.teamStats[side].yellow++;
+      const pl = this.playerLines[playerId];
+      if (pl) pl.yellow = 1;
+      if (liveP) liveP.yellowCards = 1;
+      this.emitEvent('YELLOW', 0, {
+        side,
+        playerId,
+        importance: 2,
+      });
+    }
+  }
+
+  private getFamiliarityCtxPenalty(side: Side): number {
+    const sheet = side === 'home' ? this.input.home : this.input.away;
+    const fam = sheet.areaFamiliarity;
+    if (!fam) return 0;
+    const team = side === 'home' ? this.homeTeam : this.awayTeam;
+    let penalty = 0;
+    const fFam = fam.formation[team.formation] ?? 100;
+    if (fFam < K.d2.familiarity.threshold) {
+      penalty -= (K.d2.familiarity.threshold - fFam) / K.d2.familiarity.divisor;
+    }
+    const mFam = fam.mentality[team.instructions.mentality] ?? 100;
+    if (mFam < K.d2.familiarity.threshold) {
+      penalty -= (K.d2.familiarity.threshold - mFam) / K.d2.familiarity.divisor;
+    }
+    const pFam = fam.passing[team.instructions.passing] ?? 100;
+    if (pFam < K.d2.familiarity.threshold) {
+      penalty -= (K.d2.familiarity.threshold - pFam) / K.d2.familiarity.divisor;
+    }
+    const prFam = fam.pressing[team.instructions.pressing] ?? 100;
+    if (prFam < K.d2.familiarity.threshold) {
+      penalty -= (K.d2.familiarity.threshold - prFam) / K.d2.familiarity.divisor;
+    }
+    return Math.max(K.d2.familiarity.maxPenalty, penalty);
+  }
+
   private getTrainingBonus(side: Side, type: 'attack' | 'defence' | 'setPieces'): number {
     const sheet = side === 'home' ? this.input.home : this.input.away;
-    return sheet.trainingBonus[type] || 0;
+    let bonus = sheet.trainingBonus[type] || 0;
+    bonus += this.getFamiliarityCtxPenalty(side);
+
+    const oppSide: Side = side === 'home' ? 'away' : 'home';
+    const oppTeam = oppSide === 'home' ? this.homeTeam : this.awayTeam;
+    if (
+      type === 'attack' &&
+      oppTeam.instructions.timeWasting === 'WhenAhead' &&
+      this.isTeamLeadingLate(oppSide) &&
+      this.t >= 85 * 60
+    ) {
+      bonus += K.d2.timeWasting.oppAttackingCtxAdd85;
+    }
+
+    return bonus;
   }
 
   private finalizeRatings(): void {

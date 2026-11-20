@@ -4,6 +4,7 @@ import { SAVE_VERSION } from '@/config/constants';
 import worldSnapshot from '../world/world.snapshot.json';
 import { WorldSnapshot } from '../world/generateWorld';
 import { migrateTactics } from './migrations';
+import { createStartingFamiliarity } from './familiarity';
 
 export interface NewGameOptions {
   seed: number;
@@ -22,6 +23,9 @@ export function createNewGame(options: NewGameOptions): GameState {
   for (const club of Object.values(snapshot.clubs)) {
     if (club.tactics) {
       club.tactics = migrateTactics(club.tactics);
+    }
+    if (!club.familiarity) {
+      club.familiarity = createStartingFamiliarity(club.style, club.tactics?.formation ?? '4-4-2');
     }
     if (club.style) {
       club.style = {

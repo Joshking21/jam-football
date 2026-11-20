@@ -1,5 +1,5 @@
 // Implements SPEC §13.6 Candidate Actions and Action Selection via Softmax & §13.17 Tactical Depth
-import { TeamInstructions, RoleId, PlayerInstruction, OppOrder } from '../types';
+import { TeamInstructions, RoleId, PlayerInstruction, OppOrder, ForceOpp } from '../types';
 import { Third, Lane, isInBox } from './frames';
 import { Rng } from '../rng';
 import { K } from '@/config/balance';
@@ -26,7 +26,7 @@ export interface ActionSelectionContext {
   isCounterPhase: boolean;
   isLosingLate: boolean; // >= 75' and losing
 
-  // Tactical Depth Context (§13.17)
+  // Tactical Depth Context (§13.17 & §13.18)
   holderRole?: RoleId;
   holderFit?: number;
   holderPIs?: PlayerInstruction[];
@@ -38,6 +38,8 @@ export interface ActionSelectionContext {
   isStepsAfterKeepItWin?: boolean;
   isFirstStepWideDistribution?: boolean;
   opponentPressingHigh?: boolean;
+  defendingTeamForceOpp?: ForceOpp;
+  isLeadingLateTimeWasting?: boolean;
 }
 
 export function getLegalCandidateActions(
@@ -84,8 +86,15 @@ export function selectAction(
   const utilities = getLegalCandidateActions(third, lane, inBox, ctx.isUnderPressure);
   const { instructions } = ctx;
 
-  // Apply tactical modifiers (SPEC §13.6)
-  if (instructions.mentality === 'Defensive') {
+  // Apply tactical modifiers (SPEC §13.6 & §13.18.1)
+  if (instructions.mentality === 'VeryDefensive') {
+    const mult = K.d2.mentality.veryStepMultiplier;
+    if (utilities.recycle !== undefined) utilities.recycle += 0.3 * mult;
+    if (utilities.progress !== undefined) utilities.progress -= 0.2 * mult;
+    if (utilities.shot !== undefined) utilities.shot -= 0.2 * mult;
+    if (utilities.long !== undefined) utilities.long += 0.1 * mult;
+    if (utilities.shot !== undefined) utilities.shot += K.d2.mentality.veryDefensiveShotUtil;
+  } else if (instructions.mentality === 'Defensive') {
     if (utilities.recycle !== undefined) utilities.recycle += 0.3;
     if (utilities.progress !== undefined) utilities.progress -= 0.2;
     if (utilities.shot !== undefined) utilities.shot -= 0.2;
@@ -95,6 +104,37 @@ export function selectAction(
     if (utilities.through !== undefined) utilities.through += 0.2;
     if (utilities.shot !== undefined) utilities.shot += 0.2;
     if (utilities.recycle !== undefined) utilities.recycle -= 0.3;
+  } else if (instructions.mentality === 'VeryAttacking') {
+    const mult = K.d2.mentality.veryStepMultiplier;
+    if (utilities.progress !== undefined) utilities.progress += 0.3 * mult;
+    if (utilities.through !== undefined) utilities.through += 0.2 * mult;
+    if (utilities.shot !== undefined) utilities.shot += 0.2 * mult;
+    if (utilities.recycle !== undefined) utilities.recycle -= 0.3 * mult;
+  }
+
+  // Final Third instructions (SPEC §13.18.2)
+  if (instructions.finalThird === 'WorkIntoBox') {
+    if (!inBox && utilities.shot !== undefined) {
+      utilities.shot += K.d2.finalThird.workIntoBox.shotUtilOutsideBox;
+    }
+    if (third === 'ATT') {
+      if (utilities.progress !== undefined)
+        utilities.progress += K.d2.finalThird.workIntoBox.attProgressUtil;
+      if (utilities.dribble !== undefined)
+        utilities.dribble += K.d2.finalThird.workIntoBox.attDribbleUtil;
+    }
+  } else if (instructions.finalThird === 'ShootOnSight') {
+    if (!inBox) {
+      if (third === 'MID' && lane === 'Centre') {
+        utilities.shot = (utilities.shot ?? 0) + K.d2.finalThird.shootOnSight.midCentreShotUtil;
+      } else {
+        utilities.shot = (utilities.shot ?? 0) + K.d2.finalThird.shootOnSight.shotUtilOutsideBox;
+      }
+    } else {
+      if (utilities.shot !== undefined) {
+        utilities.shot += K.d2.finalThird.shootOnSight.shotUtilInBox;
+      }
+    }
   }
 
   if (instructions.passing === 'Short') {
@@ -237,6 +277,28 @@ export function selectAction(
     }
   }
 
+  // Tactical Depth: Force Opp (SPEC §13.18.6)
+  const oppHasShowOrder =
+    ctx.oppOrdersOnHolder?.includes('showInside') || ctx.oppOrdersOnHolder?.includes('showOutside');
+  if (!oppHasShowOrder && ctx.defendingTeamForceOpp && ctx.defendingTeamForceOpp !== 'Mixed') {
+    if (lane !== 'Centre') {
+      if (ctx.defendingTeamForceOpp === 'Inside') {
+        if (utilities.cross !== undefined) utilities.cross += K.d2.forceOpp.inside.oppWideCrossUtil;
+        if (third === 'ATT') {
+          utilities.shot = (utilities.shot ?? 0) + K.d2.forceOpp.inside.oppWideShotAttUtil;
+        }
+      } else if (ctx.defendingTeamForceOpp === 'Outside') {
+        if (utilities.shot !== undefined) utilities.shot += K.d2.forceOpp.outside.oppWideShotUtil;
+        utilities.cross = (utilities.cross ?? 0) + K.d2.forceOpp.outside.oppWideCrossUtil;
+      }
+    }
+  }
+
+  // Tactical Depth: Time-Wasting (SPEC §13.18.7)
+  if (ctx.isLeadingLateTimeWasting) {
+    if (utilities.recycle !== undefined) utilities.recycle += K.d2.timeWasting.recycleUtilAdd;
+  }
+
   // Tactical Depth: Transitions & Distribution (§13.17.4)
   if (ctx.isStepAfterRegroupWin && utilities.recycle !== undefined) {
     utilities.recycle += 0.3;
@@ -248,7 +310,7 @@ export function selectAction(
     utilities.progress += 0.2;
   }
 
-  // Tactical Depth: Player Instructions (§13.17.11)
+  // Tactical Depth: Player Instructions (§13.17.11 & §13.18.9)
   if (ctx.holderPIs && ctx.holderPIs.length > 0) {
     if (ctx.holderPIs.includes('shootMore')) {
       if (utilities.shot !== undefined) utilities.shot += 0.35;
@@ -276,6 +338,28 @@ export function selectAction(
     if (ctx.holderPIs.includes('crossLess')) {
       if (utilities.cross !== undefined) utilities.cross -= 0.4;
       if (utilities.progress !== undefined) utilities.progress += 0.15;
+    }
+    if (ctx.holderPIs.includes('sitNarrower')) {
+      if (utilities.cross !== undefined) utilities.cross += K.d2.pi.sitNarrower.crossUtilAdd;
+    }
+    if (ctx.holderPIs.includes('crossFromByline')) {
+      if (third === 'MID' && lane !== 'Centre') {
+        delete utilities.cross;
+      }
+    }
+    if (ctx.holderPIs.includes('crossFromDeep')) {
+      if (third === 'MID' && lane !== 'Centre') {
+        utilities.cross = (utilities.cross ?? 0) + K.d2.pi.crossFromDeep.midWideCrossUtilAdd;
+      }
+    }
+    if (ctx.holderPIs.includes('riskyPasses')) {
+      utilities.through = (utilities.through ?? 0) + K.d2.pi.riskyPasses.throughUtilAdd;
+      if (utilities.progress !== undefined)
+        utilities.progress += K.d2.pi.riskyPasses.progressUtilAdd;
+    }
+    if (ctx.holderPIs.includes('playSafe')) {
+      utilities.recycle = (utilities.recycle ?? 0) + K.d2.pi.playSafe.recycleUtilAdd;
+      if (utilities.through !== undefined) utilities.through += K.d2.pi.playSafe.throughUtilAdd;
     }
   }
 

@@ -116,9 +116,33 @@ export function createMockTeamSheet(
       distribution: 'Mixed',
       cornersFor: 'Mixed',
       cornersAgainst: 'Mixed',
+      finalThird: 'Mixed',
+      crossStyle: 'Mixed',
+      offsideTrap: false,
+      tackling: 'Mixed',
+      forceOpp: 'Mixed',
+      timeWasting: 'Never',
+      freeKicks: 'Mixed',
+      cornerSwing: 'Mixed',
+      menBack: 2,
+      postMen: 'None',
     },
     ...tacticsOverrides,
   };
+
+  const planBase = {
+    name: 'Plan A',
+    formation: defaultTactics.formation,
+    roles: [...defaultTactics.roles],
+    playerInstructions: defaultTactics.playerInstructions.map((p) => [...p]),
+    instructions: { ...defaultTactics.instructions },
+  };
+  defaultTactics.plans = [
+    { ...planBase, name: 'Plan A' },
+    { ...planBase, name: 'Plan B' },
+    { ...planBase, name: 'Plan C' },
+  ];
+  defaultTactics.activePlan = 0;
 
   return {
     clubId,

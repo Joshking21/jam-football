@@ -144,7 +144,7 @@ export interface Player {
 
 // --- 8.4 Tactics ---
 export type Formation = '4-4-2' | '4-3-3' | '4-2-3-1' | '3-5-2' | '5-3-2' | '4-1-4-1' | '3-4-3';
-export type Mentality = 'Defensive' | 'Balanced' | 'Attacking';
+export type Mentality = 'VeryDefensive' | 'Defensive' | 'Balanced' | 'Attacking' | 'VeryAttacking';
 export type PassingStyle = 'Short' | 'Mixed' | 'Direct';
 export type Tempo = 'Slow' | 'Normal' | 'Fast';
 export type Pressing = 'Low' | 'Mid' | 'High';
@@ -160,6 +160,17 @@ export type Distribution = 'Short' | 'Long' | 'Wide' | 'Mixed';
 export type CornersFor = 'NearPost' | 'FarPost' | 'Short' | 'Mixed';
 export type CornersAgainst = 'Zonal' | 'ManMark' | 'Mixed';
 
+// SPEC 1.4 additions (§13.18)
+export type FinalThird = 'WorkIntoBox' | 'ShootOnSight' | 'Mixed';
+export type CrossStyle = 'Low' | 'Whipped' | 'Floated' | 'Mixed';
+export type Tackling = 'StayOnFeet' | 'GetStuckIn' | 'Mixed';
+export type ForceOpp = 'Inside' | 'Outside' | 'Mixed';
+export type TimeWasting = 'Never' | 'WhenAhead';
+export type FreeKicks = 'Shoot' | 'Cross' | 'Short' | 'Mixed';
+export type CornerSwing = 'Inswinger' | 'Outswinger' | 'Mixed';
+export type PostMen = 'None' | 'Near' | 'Both';
+export type MenBack = 1 | 2 | 3;
+
 export interface TeamInstructions {
   mentality: Mentality;
   passing: PassingStyle;
@@ -173,6 +184,17 @@ export interface TeamInstructions {
   distribution: Distribution;
   cornersFor: CornersFor;
   cornersAgainst: CornersAgainst;
+  // SPEC 1.4 additions (§13.18)
+  finalThird: FinalThird;
+  crossStyle: CrossStyle;
+  offsideTrap: boolean;
+  tackling: Tackling;
+  forceOpp: ForceOpp;
+  timeWasting: TimeWasting;
+  freeKicks: FreeKicks;
+  cornerSwing: CornerSwing;
+  menBack: MenBack;
+  postMen: PostMen;
 }
 
 export type PlayerInstruction =
@@ -187,12 +209,34 @@ export type PlayerInstruction =
   | 'stayWider'
   | 'closeDownMore'
   | 'stayOnFeet'
-  | 'longThrows'; // §13.17.11
+  | 'longThrows'
+  | 'roam'
+  | 'sitNarrower'
+  | 'crossFromByline'
+  | 'crossFromDeep'
+  | 'riskyPasses'
+  | 'playSafe'; // §13.17.11 & §13.18.9
 
 export interface OppOrder {
   kind: 'tightMark' | 'doubleUp' | 'pressOnBall' | 'showInside' | 'showOutside';
   target: PlayerId;
 } // §13.17.3
+
+export interface TacticPlan {
+  // §13.18.10: Plan A/B/C
+  name: string;
+  formation: Formation;
+  roles: RoleId[];
+  playerInstructions: PlayerInstruction[][];
+  instructions: TeamInstructions;
+}
+
+export interface Familiarity {
+  formation: Record<Formation, number>;
+  mentality: Record<string, number>;
+  passing: Record<PassingStyle, number>;
+  pressing: Record<Pressing, number>;
+} // 0–100, per club (§13.18.11)
 
 export interface Tactics {
   formation: Formation;
@@ -210,6 +254,9 @@ export interface Tactics {
   };
   instructions: TeamInstructions;
   opposition: OppOrder[]; // 0–3, set per match (cleared after each match)
+  // SPEC 1.4 additions (§13.18.10)
+  plans?: [TacticPlan, TacticPlan, TacticPlan];
+  activePlan?: 0 | 1 | 2;
 }
 
 // --- 8.5 Club ---
@@ -252,6 +299,7 @@ export interface Club {
   boardConfidence: number; // 0–100
   fanMood: number; // 0–100
   formationFamiliarity: Record<Formation, number>; // 0–100
+  familiarity?: Familiarity; // 0–100, per club (§13.18.11)
   tactics: Tactics;
   squad: PlayerId[];
   trainingPlan: TrainingPlan;
@@ -441,6 +489,7 @@ export interface TeamSheet {
   side: Side;
   tactics: Tactics;
   familiarity: number; // 0–100 for tactics.formation
+  areaFamiliarity?: Familiarity; // 0–100, per club (§13.18.11)
   players: Record<
     PlayerId,
     {
@@ -550,6 +599,7 @@ export interface TeamMatchStats {
   bigChances: number;
   countersStarted?: number;
   countersConceded?: number;
+  countersConcededAfterCorner?: number;
   ballWinsMidAtt?: number;
 }
 
@@ -617,5 +667,11 @@ export type MatchCommand =
       outId: PlayerId;
       inId: PlayerId;
       slot: number;
+      issuedAtT: number;
+    }
+  | {
+      kind: 'plan';
+      side: Side;
+      plan: 0 | 1 | 2;
       issuedAtT: number;
     };

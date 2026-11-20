@@ -22,6 +22,7 @@ import { simulateInstant } from '../match/engine';
 import { deriveSeed, createRng } from '../rng';
 import { BALANCE } from '@/config/balance';
 import { roundTo, clamp } from '../math';
+import { updateClubFamiliarity, createStartingFamiliarity } from './familiarity';
 
 export interface LineupValidationResult {
   valid: boolean;
@@ -133,6 +134,7 @@ export function buildTeamSheet(
     side,
     tactics: JSON.parse(JSON.stringify(club.tactics)),
     familiarity: club.formationFamiliarity[club.tactics.formation] ?? 70,
+    areaFamiliarity: club.familiarity,
     players: sheetPlayers,
     trainingBonus,
     focusBoost: 0,
@@ -513,6 +515,15 @@ export function runWeeklyProcessing(state: GameState): GameState {
   if (currentMatchday >= 6 && userClub.boardConfidence < 12) {
     next.phase = 'Sacked';
     return next;
+  }
+
+  // Update tactical familiarity per area (§13.18.11)
+  for (const club of Object.values(next.clubs)) {
+    if (!club.familiarity) {
+      club.familiarity = createStartingFamiliarity(club.style, club.tactics.formation);
+    }
+    const isTactical = (club.trainingPlan?.focus as string) === 'Tactical';
+    club.familiarity = updateClubFamiliarity(club.familiarity, club.tactics, isTactical);
   }
 
   next.phase = 'WeekSummary';

@@ -431,6 +431,36 @@
       "wording": "Take the long throws.",
       "gives": "Throw-ins in attacking third become dangerous box deliveries",
       "costs": "Takes longer to set up; keeper claim chance slightly higher"
+    },
+    "roam": {
+      "wording": "Roam from position.",
+      "gives": "Moves freely into adjacent zones; finds space to receive",
+      "costs": "Less defensive pressing in his primary position"
+    },
+    "sitNarrower": {
+      "wording": "Sit narrower.",
+      "gives": "Tucks inside to pack central areas",
+      "costs": "Fewer crosses; opponent gains space out wide"
+    },
+    "crossFromByline": {
+      "wording": "Get to the byline before crossing.",
+      "gives": "Pinpoint cut-backs and high-quality deliveries from the end-line",
+      "costs": "No early crosses; takes an extra step in attack"
+    },
+    "crossFromDeep": {
+      "wording": "Cross early, from deep.",
+      "gives": "Early balls delivered from deep midfield into the box",
+      "costs": "Lower delivery accuracy; keeper claims more balls"
+    },
+    "riskyPasses": {
+      "wording": "Try the killer pass.",
+      "gives": "More through balls and direct progressive penetration",
+      "costs": "Lower pass completion; more turnovers conceded"
+    },
+    "playSafe": {
+      "wording": "Play it safe.",
+      "gives": "Higher pass completion; patient possession retention",
+      "costs": "Fewer through balls or risky penetration"
     }
   }
 }

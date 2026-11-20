@@ -12,6 +12,7 @@ import {
 } from '../types';
 import { FORMATIONS } from '@/config/formations';
 import { Rng } from '../rng';
+import { K } from '@/config/balance';
 
 export type ZoneWeights = Record<ZoneKey, number>;
 
@@ -121,8 +122,8 @@ export function computePlayerInvolvementFull(params: PlayerInvolvementParams): Z
   const isCB = role.includes('CB');
   const mentFactor = isCB ? 0.075 : 0.15;
 
-  // 1. Mentality Modifiers (SPEC §13.5)
-  if (mentality === 'Attacking') {
+  // 1. Mentality Modifiers (SPEC §13.5 & §13.18.1)
+  if (mentality === 'Attacking' || mentality === 'VeryAttacking') {
     for (const lane of ['L', 'C', 'R'] as const) {
       const dKey = `D${lane}` as ZoneKey;
       const mKey = `M${lane}` as ZoneKey;
@@ -134,7 +135,16 @@ export function computePlayerInvolvementFull(params: PlayerInvolvementParams): Z
       base[mKey] += dMove - mMove;
       base[aKey] += mMove;
     }
-  } else if (mentality === 'Defensive') {
+    if (mentality === 'VeryAttacking' && !isCB) {
+      for (const lane of ['L', 'C', 'R'] as const) {
+        const mKey = `M${lane}` as ZoneKey;
+        const aKey = `A${lane}` as ZoneKey;
+        const shift = base[mKey] * K.d2.mentality.veryAttackingInvShift;
+        base[mKey] -= shift;
+        base[aKey] += shift;
+      }
+    }
+  } else if (mentality === 'Defensive' || mentality === 'VeryDefensive') {
     for (const lane of ['L', 'C', 'R'] as const) {
       const dKey = `D${lane}` as ZoneKey;
       const mKey = `M${lane}` as ZoneKey;
@@ -145,6 +155,15 @@ export function computePlayerInvolvementFull(params: PlayerInvolvementParams): Z
       base[aKey] -= aMove;
       base[mKey] += aMove - mMove;
       base[dKey] += mMove;
+    }
+    if (mentality === 'VeryDefensive' && !role.includes('ST')) {
+      for (const lane of ['L', 'C', 'R'] as const) {
+        const aKey = `A${lane}` as ZoneKey;
+        const mKey = `M${lane}` as ZoneKey;
+        const shift = base[aKey] * K.d2.mentality.veryDefensiveInvShift;
+        base[aKey] -= shift;
+        base[mKey] += shift;
+      }
     }
   }
 
@@ -353,6 +372,45 @@ export function computePlayerInvolvementFull(params: PlayerInvolvementParams): Z
     }
   }
 
+  // Tactical Depth: Sit Narrower & Roam (SPEC §13.18.9)
+  if (playerInstructions.includes('sitNarrower')) {
+    if (lane !== 'C') {
+      for (const t of ['D', 'M', 'A'] as const) {
+        const shift = base[`${t}${lane}` as ZoneKey] * K.d2.pi.sitNarrower.laneToCRatio;
+        base[`${t}${lane}` as ZoneKey] -= shift;
+        base[`${t}C` as ZoneKey] += shift;
+      }
+    }
+  }
+
+  if (playerInstructions.includes('roam')) {
+    const ADJACENT_ZONES: Record<ZoneKey, ZoneKey[]> = {
+      DL: ['DC', 'ML'],
+      DC: ['DL', 'DR', 'MC'],
+      DR: ['DC', 'MR'],
+      ML: ['DL', 'MC', 'AL'],
+      MC: ['ML', 'MR', 'DC', 'AC'],
+      MR: ['DR', 'MC', 'AR'],
+      AL: ['ML', 'AC'],
+      AC: ['AL', 'AR', 'MC'],
+      AR: ['MR', 'AC'],
+    };
+    const additions: Partial<Record<ZoneKey, number>> = {};
+    for (const zk of Object.keys(ADJACENT_ZONES) as ZoneKey[]) {
+      const w = base[zk];
+      const take = w * K.d2.pi.roam.spreadWeightRatio;
+      base[zk] -= take;
+      const neighbors = ADJACENT_ZONES[zk]!;
+      const perNeighbor = take / neighbors.length;
+      for (const n of neighbors) {
+        additions[n] = (additions[n] ?? 0) + perNeighbor;
+      }
+    }
+    for (const zk of Object.keys(additions) as ZoneKey[]) {
+      base[zk] += additions[zk]!;
+    }
+  }
+
   // 4. Width Modifiers (SPEC §13.5)
   const isWide = ['LB', 'RB', 'LWB', 'RWB', 'LM', 'RM', 'LW', 'RW'].includes(role);
   if (isWide) {
@@ -465,6 +523,11 @@ export function getReceiverWeightMultiplier(params: {
   // Player Instruction: holdPosition (SPEC §13.17.11)
   if (playerInstructions.includes('holdPosition')) {
     mult *= 0.9;
+  }
+
+  // Player Instruction: roam (SPEC §13.18.9)
+  if (playerInstructions.includes('roam')) {
+    mult *= K.d2.pi.roam.recvMult;
   }
 
   return mult;

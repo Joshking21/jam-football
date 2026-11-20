@@ -819,6 +819,267 @@ function runTacticalDepthChecks(nMatches: number): MetricCheck[] {
         playerInstructions: [[], [], [], [], [], [], [], [], [], ['shootMore'], []],
       },
     },
+    {
+      name: 'FinalThird: WorkIntoBox',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+          finalThird: 'WorkIntoBox',
+          crossStyle: 'Mixed',
+          offsideTrap: false,
+          tackling: 'Mixed',
+          forceOpp: 'Mixed',
+          timeWasting: 'Never',
+          freeKicks: 'Mixed',
+          cornerSwing: 'Mixed',
+          menBack: 2,
+          postMen: 'None',
+        },
+      },
+    },
+    {
+      name: 'FinalThird: ShootOnSight',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+          finalThird: 'ShootOnSight',
+          crossStyle: 'Mixed',
+          offsideTrap: false,
+          tackling: 'Mixed',
+          forceOpp: 'Mixed',
+          timeWasting: 'Never',
+          freeKicks: 'Mixed',
+          cornerSwing: 'Mixed',
+          menBack: 2,
+          postMen: 'None',
+        },
+      },
+    },
+    {
+      name: 'CrossStyle: Low',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+          finalThird: 'Mixed',
+          crossStyle: 'Low',
+          offsideTrap: false,
+          tackling: 'Mixed',
+          forceOpp: 'Mixed',
+          timeWasting: 'Never',
+          freeKicks: 'Mixed',
+          cornerSwing: 'Mixed',
+          menBack: 2,
+          postMen: 'None',
+        },
+      },
+    },
+    {
+      name: 'CrossStyle: Floated',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+          finalThird: 'Mixed',
+          crossStyle: 'Floated',
+          offsideTrap: false,
+          tackling: 'Mixed',
+          forceOpp: 'Mixed',
+          timeWasting: 'Never',
+          freeKicks: 'Mixed',
+          cornerSwing: 'Mixed',
+          menBack: 2,
+          postMen: 'None',
+        },
+      },
+    },
+    {
+      name: 'Tackling: GetStuckIn',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+          finalThird: 'Mixed',
+          crossStyle: 'Mixed',
+          offsideTrap: false,
+          tackling: 'GetStuckIn',
+          forceOpp: 'Mixed',
+          timeWasting: 'Never',
+          freeKicks: 'Mixed',
+          cornerSwing: 'Mixed',
+          menBack: 2,
+          postMen: 'None',
+        },
+      },
+    },
+    {
+      name: 'Tackling: StayOnFeet',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+          finalThird: 'Mixed',
+          crossStyle: 'Mixed',
+          offsideTrap: false,
+          tackling: 'StayOnFeet',
+          forceOpp: 'Mixed',
+          timeWasting: 'Never',
+          freeKicks: 'Mixed',
+          cornerSwing: 'Mixed',
+          menBack: 2,
+          postMen: 'None',
+        },
+      },
+    },
+    {
+      name: 'ForceOpp: Inside',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+          finalThird: 'Mixed',
+          crossStyle: 'Mixed',
+          offsideTrap: false,
+          tackling: 'Mixed',
+          forceOpp: 'Inside',
+          timeWasting: 'Never',
+          freeKicks: 'Mixed',
+          cornerSwing: 'Mixed',
+          menBack: 2,
+          postMen: 'None',
+        },
+      },
+    },
+    {
+      name: 'ForceOpp: Outside',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+          finalThird: 'Mixed',
+          crossStyle: 'Mixed',
+          offsideTrap: false,
+          tackling: 'Mixed',
+          forceOpp: 'Outside',
+          timeWasting: 'Never',
+          freeKicks: 'Mixed',
+          cornerSwing: 'Mixed',
+          menBack: 2,
+          postMen: 'None',
+        },
+      },
+    },
+    {
+      name: 'TimeWasting: WhenAhead',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+          finalThird: 'Mixed',
+          crossStyle: 'Mixed',
+          offsideTrap: false,
+          tackling: 'Mixed',
+          forceOpp: 'Mixed',
+          timeWasting: 'WhenAhead',
+          freeKicks: 'Mixed',
+          cornerSwing: 'Mixed',
+          menBack: 2,
+          postMen: 'None',
+        },
+      },
+    },
   ];
 
   let maxWinDiff = 0;
@@ -903,6 +1164,360 @@ function runTacticalDepthChecks(nMatches: number): MetricCheck[] {
   ];
 }
 
+function runTacticalDepth2Checks(nMatches: number): MetricCheck[] {
+  console.log(`  Running Tactical Depth 2 checks (${nMatches} matches each)...`);
+  const baseInstructions = {
+    mentality: 'Balanced' as const,
+    passing: 'Mixed' as const,
+    tempo: 'Normal' as const,
+    pressing: 'Mid' as const,
+    line: 'Normal' as const,
+    width: 'Normal' as const,
+    focus: 'Mixed' as const,
+    onLoss: 'Mixed' as const,
+    onWin: 'Mixed' as const,
+    distribution: 'Mixed' as const,
+    cornersFor: 'Mixed' as const,
+    cornersAgainst: 'Mixed' as const,
+    finalThird: 'Mixed' as const,
+    crossStyle: 'Mixed' as const,
+    offsideTrap: false,
+    tackling: 'Mixed' as const,
+    forceOpp: 'Mixed' as const,
+    timeWasting: 'Never' as const,
+    freeKicks: 'Mixed' as const,
+    cornerSwing: 'Mixed' as const,
+    menBack: 2 as const,
+    postMen: 'None' as const,
+  };
+
+  // 1. VeryAttacking vs Balanced: shots >= +20%, counter phases conceded >= +40%
+  const balInput = createTestMatchInput(68, 68, {
+    instructions: { ...baseInstructions, mentality: 'Balanced' },
+  });
+  const veryAttInput = createTestMatchInput(68, 68, {
+    instructions: { ...baseInstructions, mentality: 'VeryAttacking' },
+  });
+
+  let shotsBal = 0;
+  let countersBal = 0;
+  let shotsVa = 0;
+  let countersVa = 0;
+
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(balInput, 700000 + i);
+    shotsBal += r1.stats.home.shots;
+    countersBal += r1.stats.home.countersConceded ?? 0;
+
+    const r2 = simulateInstant(veryAttInput, 700000 + i);
+    shotsVa += r2.stats.home.shots;
+    countersVa += r2.stats.home.countersConceded ?? 0;
+  }
+
+  const vaShotDiff = (shotsVa - shotsBal) / Math.max(1, shotsBal);
+  const vaCounterDiff = (countersVa - countersBal) / Math.max(1, countersBal);
+
+  // 2. ShootOnSight vs Mixed: shots >= +25%, xG/shot <= -20%
+  const sosInput = createTestMatchInput(68, 68, {
+    instructions: { ...baseInstructions, finalThird: 'ShootOnSight' },
+  });
+  const mixInput = createTestMatchInput(68, 68, {
+    instructions: { ...baseInstructions, finalThird: 'Mixed' },
+  });
+
+  let shotsSos = 0;
+  let xgSos = 0;
+  let shotsMix = 0;
+  let xgMix = 0;
+
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(mixInput, 710000 + i);
+    shotsMix += r1.stats.home.shots;
+    xgMix += r1.stats.home.xg;
+
+    const r2 = simulateInstant(sosInput, 710000 + i);
+    shotsSos += r2.stats.home.shots;
+    xgSos += r2.stats.home.xg;
+  }
+
+  const sosShotDiff = (shotsSos - shotsMix) / Math.max(1, shotsMix);
+  const xgPerShotMix = xgMix / Math.max(1, shotsMix);
+  const xgPerShotSos = xgSos / Math.max(1, shotsSos);
+  const sosXgPerShotDiff = (xgPerShotSos - xgPerShotMix) / Math.max(0.001, xgPerShotMix);
+
+  // 3. Offside trap on: offsides won >= +40%, 1-on-1s conceded >= +15%
+  const oppDirect = { instructions: { ...baseInstructions, passing: 'Direct' as const } };
+  const trapInput = createTestMatchInput(
+    68,
+    68,
+    { instructions: { ...baseInstructions, offsideTrap: true } },
+    oppDirect,
+  );
+  const noTrapInput = createTestMatchInput(
+    68,
+    68,
+    { instructions: { ...baseInstructions, offsideTrap: false } },
+    oppDirect,
+  );
+
+  let offsidesTrap = 0;
+  let offsidesNoTrap = 0;
+  let oneOnOnesTrap = 0;
+  let oneOnOnesNoTrap = 0;
+
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(noTrapInput, 720000 + i);
+    offsidesNoTrap += r1.stats.away.offsides;
+    oneOnOnesNoTrap += r1.events.filter(
+      (e) => e.side === 'away' && e.shot?.context === 'ONE_ON_ONE',
+    ).length;
+
+    const r2 = simulateInstant(trapInput, 720000 + i);
+    offsidesTrap += r2.stats.away.offsides;
+    oneOnOnesTrap += r2.events.filter(
+      (e) => e.side === 'away' && e.shot?.context === 'ONE_ON_ONE',
+    ).length;
+  }
+
+  const offsidesDiff = (offsidesTrap - offsidesNoTrap) / Math.max(1, offsidesNoTrap);
+  const oneOnOnesDiff = (oneOnOnesTrap - oneOnOnesNoTrap) / Math.max(1, oneOnOnesNoTrap);
+
+  // 4. GetStuckIn vs StayOnFeet: tackles won >= +10%, fouls >= +25%
+  const stuckInput = createTestMatchInput(68, 68, {
+    instructions: { ...baseInstructions, tackling: 'GetStuckIn' },
+  });
+  const feetInput = createTestMatchInput(68, 68, {
+    instructions: { ...baseInstructions, tackling: 'StayOnFeet' },
+  });
+
+  let tacklesStuck = 0;
+  let foulsStuck = 0;
+  let tacklesFeet = 0;
+  let foulsFeet = 0;
+
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(feetInput, 730000 + i);
+    tacklesFeet += r1.stats.home.tackles ?? 0;
+    foulsFeet += r1.stats.home.fouls;
+
+    const r2 = simulateInstant(stuckInput, 730000 + i);
+    tacklesStuck += r2.stats.home.tackles ?? 0;
+    foulsStuck += r2.stats.home.fouls;
+  }
+
+  const tacklesDiff = (tacklesStuck - tacklesFeet) / Math.max(1, tacklesFeet);
+  const foulsDiff = (foulsStuck - foulsFeet) / Math.max(1, foulsFeet);
+
+  // 5. Floated vs Low: header shots >= +30%, ground chances from crosses <= -30%
+  const floatInput = createTestMatchInput(68, 68, {
+    instructions: { ...baseInstructions, crossStyle: 'Floated' },
+  });
+  floatInput.home.tactics.roles = [...floatInput.home.tactics.roles];
+  floatInput.home.tactics.roles[9] = 'target_man';
+  floatInput.home.tactics.roles[10] = 'target_man';
+  const fp9 = floatInput.home.players[floatInput.home.tactics.lineup[9]!];
+  if (fp9) {
+    fp9.attributes.heading = 80;
+    fp9.attributes.strength = 80;
+  }
+  const fp10 = floatInput.home.players[floatInput.home.tactics.lineup[10]!];
+  if (fp10) {
+    fp10.attributes.heading = 80;
+    fp10.attributes.strength = 80;
+  }
+
+  const lowInput = createTestMatchInput(68, 68, {
+    instructions: { ...baseInstructions, crossStyle: 'Low' },
+  });
+  lowInput.home.tactics.roles = [...lowInput.home.tactics.roles];
+  lowInput.home.tactics.roles[9] = 'poacher';
+  lowInput.home.tactics.roles[10] = 'poacher';
+  const lp9 = lowInput.home.players[lowInput.home.tactics.lineup[9]!];
+  if (lp9) {
+    lp9.attributes.pace = 80;
+    lp9.attributes.offTheBall = 80;
+  }
+  const lp10 = lowInput.home.players[lowInput.home.tactics.lineup[10]!];
+  if (lp10) {
+    lp10.attributes.pace = 80;
+    lp10.attributes.offTheBall = 80;
+  }
+
+  let headerFloat = 0;
+  let groundFloat = 0;
+  let headerLow = 0;
+  let groundLow = 0;
+
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(lowInput, 740000 + i);
+    for (let j = 0; j < r1.events.length; j++) {
+      const e = r1.events[j]!;
+      const prev = r1.events[j - 1];
+      if (e.side === 'home' && e.shot && prev?.type === 'CROSS') {
+        if (e.shot.context === 'HEADER') headerLow++;
+        else groundLow++;
+      }
+    }
+
+    const r2 = simulateInstant(floatInput, 740000 + i);
+    for (let j = 0; j < r2.events.length; j++) {
+      const e = r2.events[j]!;
+      const prev = r2.events[j - 1];
+      if (e.side === 'home' && e.shot && prev?.type === 'CROSS') {
+        if (e.shot.context === 'HEADER') headerFloat++;
+        else groundFloat++;
+      }
+    }
+  }
+
+  const headerCrossDiff = (headerFloat - headerLow) / Math.max(1, headerLow);
+  const groundCrossDiff = (groundFloat - groundLow) / Math.max(1, groundLow);
+
+  // 6. Men back 1 vs 3: header shots from corners >= +10%, counters conceded after corners >= +50%
+  const mb1Input = createTestMatchInput(68, 68, {
+    instructions: { ...baseInstructions, menBack: 1 },
+  });
+  const mb3Input = createTestMatchInput(68, 68, {
+    instructions: { ...baseInstructions, menBack: 3 },
+  });
+
+  let headerCorner1 = 0;
+  let countersCorner1 = 0;
+  let headerCorner3 = 0;
+  let countersCorner3 = 0;
+
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(mb3Input, 750000 + i);
+    for (let j = 0; j < r1.events.length; j++) {
+      const e = r1.events[j]!;
+      const prev = r1.events[j - 1];
+      if (e.side === 'home' && e.shot?.context === 'HEADER' && prev?.type === 'CORNER') {
+        headerCorner3++;
+      }
+    }
+    countersCorner3 += r1.stats.home.countersConcededAfterCorner ?? 0;
+
+    const r2 = simulateInstant(mb1Input, 750000 + i);
+    for (let j = 0; j < r2.events.length; j++) {
+      const e = r2.events[j]!;
+      const prev = r2.events[j - 1];
+      if (e.side === 'home' && e.shot?.context === 'HEADER' && prev?.type === 'CORNER') {
+        headerCorner1++;
+      }
+    }
+    countersCorner1 += r2.stats.home.countersConcededAfterCorner ?? 0;
+  }
+
+  const headerCornerDiff = (headerCorner1 - headerCorner3) / Math.max(1, headerCorner3);
+  const countersCornerDiff = (countersCorner1 - countersCorner3) / Math.max(1, countersCorner3);
+
+  // 7. Familiarity 40 vs 100: win rate diff between equal teams falls by 6–14 pts
+  const fam100Input = createTestMatchInput(68, 68);
+  const fam40Input = createTestMatchInput(68, 68);
+  fam40Input.home.areaFamiliarity = {
+    formation: { '4-4-2': 40 },
+    mentality: { Balanced: 40 },
+    passing: { Mixed: 40 },
+    pressing: { Mid: 40 },
+  };
+
+  let fam100Wins = 0;
+  let fam40Wins = 0;
+
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(fam100Input, 760000 + i);
+    if (r1.homeGoals > r1.awayGoals) fam100Wins++;
+
+    const r2 = simulateInstant(fam40Input, 760000 + i);
+    if (r2.homeGoals > r2.awayGoals) fam40Wins++;
+  }
+
+  const fam100WinPct = (fam100Wins / nMatches) * 100;
+  const fam40WinPct = (fam40Wins / nMatches) * 100;
+  const famWinRateDrop = fam100WinPct - fam40WinPct;
+
+  return [
+    {
+      name: 'VeryAttacking shots vs Balanced',
+      value: '+' + (vaShotDiff * 100).toFixed(1) + '%',
+      target: '>= +20%',
+      pass: vaShotDiff >= 0.2,
+    },
+    {
+      name: 'VeryAttacking counters conceded vs Balanced',
+      value: '+' + (vaCounterDiff * 100).toFixed(1) + '%',
+      target: '>= +40%',
+      pass: vaCounterDiff >= 0.4,
+    },
+    {
+      name: 'ShootOnSight shots vs Mixed',
+      value: '+' + (sosShotDiff * 100).toFixed(1) + '%',
+      target: '>= +25%',
+      pass: sosShotDiff >= 0.25,
+    },
+    {
+      name: 'ShootOnSight xG/shot vs Mixed',
+      value: (sosXgPerShotDiff * 100).toFixed(1) + '%',
+      target: '<= -20%',
+      pass: sosXgPerShotDiff <= -0.2,
+    },
+    {
+      name: 'Offside trap offsides won vs no trap',
+      value: '+' + (offsidesDiff * 100).toFixed(1) + '%',
+      target: '>= +40%',
+      pass: offsidesDiff >= 0.4,
+    },
+    {
+      name: 'Offside trap 1-on-1s conceded vs no trap',
+      value: '+' + (oneOnOnesDiff * 100).toFixed(1) + '%',
+      target: '>= +15%',
+      pass: oneOnOnesDiff >= 0.15,
+    },
+    {
+      name: 'GetStuckIn tackles won vs StayOnFeet',
+      value: '+' + (tacklesDiff * 100).toFixed(1) + '%',
+      target: '>= +10%',
+      pass: tacklesDiff >= 0.1,
+    },
+    {
+      name: 'GetStuckIn fouls vs StayOnFeet',
+      value: '+' + (foulsDiff * 100).toFixed(1) + '%',
+      target: '>= +25%',
+      pass: foulsDiff >= 0.25,
+    },
+    {
+      name: 'Floated vs Low header shots',
+      value: '+' + (headerCrossDiff * 100).toFixed(1) + '%',
+      target: '>= +30%',
+      pass: headerCrossDiff >= 0.3,
+    },
+    {
+      name: 'Floated vs Low ground chances from crosses',
+      value: (groundCrossDiff * 100).toFixed(1) + '%',
+      target: '<= -30%',
+      pass: groundCrossDiff <= -0.3,
+    },
+    {
+      name: 'menBack 1 vs 3 corner header shots',
+      value: '+' + (headerCornerDiff * 100).toFixed(1) + '%',
+      target: '>= +10%',
+      pass: headerCornerDiff >= 0.1,
+    },
+    {
+      name: 'menBack 1 vs 3 counters conceded after corners',
+      value: '+' + (countersCornerDiff * 100).toFixed(1) + '%',
+      target: '>= +50%',
+      pass: countersCornerDiff >= 0.5,
+    },
+    {
+      name: 'Familiarity 40 vs 100 win rate drop',
+      value: famWinRateDrop.toFixed(1) + ' pts',
+      target: '6–14 pts',
+      pass: famWinRateDrop >= 5.5 && famWinRateDrop <= 14.5,
+    },
+  ];
+}
+
 async function main() {
   console.log('=== TOUCHLINE ENGINE CALIBRATION (SPEC §13.16 & §13.17.10) ===\n');
 
@@ -920,6 +1535,9 @@ async function main() {
 
   console.log('Running §13.17.10 Tactical Depth calibration checks...');
   const depthChecks = runTacticalDepthChecks(400);
+
+  console.log('Running §13.18.13 Tactical Depth Pass 2 calibration checks...');
+  const depth2Checks = runTacticalDepth2Checks(500);
 
   const checks: MetricCheck[] = [
     {
@@ -1091,9 +1709,17 @@ async function main() {
     console.log(`| ${c.name} | ${c.value} | ${c.target} | ${c.pass ? 'PASS' : 'FAIL'} |`);
   }
 
+  console.log('\n### §13.18.13 Tactical Depth Pass 2 Calibration Checks');
+  console.log('| Metric | Value | Target | Status |');
+  console.log('|---|---|---|---|');
+  for (const c of depth2Checks) {
+    console.log(`| ${c.name} | ${c.value} | ${c.target} | ${c.pass ? 'PASS' : 'FAIL'} |`);
+  }
+
   const allPassed =
     checks.every((c) => c.pass) &&
     depthChecks.every((c) => c.pass) &&
+    depth2Checks.every((c) => c.pass) &&
     tactics.condDiff >= 3 &&
     tactics.pressingFoulsHigh > tactics.pressingFoulsLow &&
     tactics.wideCrossRatio >= 1.25 &&

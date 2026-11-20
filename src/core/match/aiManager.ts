@@ -459,11 +459,12 @@ export function evaluateInMatchAi(params: {
 
   const goalDiff = ourScore - oppScore;
 
-  // Tactical adjustments based on score and time
-  if (minute >= 65 && goalDiff < 0) {
+  // Tactical adjustments based on score and time (§13.13 & §13.18.1)
+  if (minute >= 65 && minute < 80 && goalDiff < 0) {
     instructionChanges.mentality = 'Attacking';
   }
   if (minute >= 80 && goalDiff < 0) {
+    instructionChanges.mentality = 'VeryAttacking';
     instructionChanges.tempo = 'Fast';
     instructionChanges.line = 'High';
   }

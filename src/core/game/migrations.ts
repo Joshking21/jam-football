@@ -1,8 +1,9 @@
 // Implements SPEC §20.2 Save game version migrations & SPEC §23 M3.0
-import { GameState, Tactics } from '../types';
+import { GameState, Tactics, TacticPlan } from '../types';
 import { SAVE_VERSION } from '@/config/constants';
 import { FORMATIONS } from '@/config/formations';
 import { getDefaultRoleForPos } from '@/config/roles';
+import { createStartingFamiliarity } from './familiarity';
 
 export function migrateTactics(t: Partial<Tactics>): Tactics {
   const formation = t.formation ?? '4-4-2';
@@ -33,6 +34,16 @@ export function migrateTactics(t: Partial<Tactics>): Tactics {
     distribution: t.instructions?.distribution ?? 'Mixed',
     cornersFor: t.instructions?.cornersFor ?? 'Mixed',
     cornersAgainst: t.instructions?.cornersAgainst ?? 'Mixed',
+    finalThird: t.instructions?.finalThird ?? 'Mixed',
+    crossStyle: t.instructions?.crossStyle ?? 'Mixed',
+    offsideTrap: t.instructions?.offsideTrap ?? false,
+    tackling: t.instructions?.tackling ?? 'Mixed',
+    forceOpp: t.instructions?.forceOpp ?? 'Mixed',
+    timeWasting: t.instructions?.timeWasting ?? 'Never',
+    freeKicks: t.instructions?.freeKicks ?? 'Mixed',
+    cornerSwing: t.instructions?.cornerSwing ?? 'Mixed',
+    menBack: t.instructions?.menBack ?? 2,
+    postMen: t.instructions?.postMen ?? 'None',
   };
 
   const takers = {
@@ -41,6 +52,21 @@ export function migrateTactics(t: Partial<Tactics>): Tactics {
     corner: t.takers?.corner ?? null,
     longThrow: t.takers?.longThrow ?? null,
   };
+
+  const activePlan = t.activePlan ?? 0;
+  const createPlan = (name: string, p?: Partial<TacticPlan>): TacticPlan => ({
+    name: p?.name ?? name,
+    formation: p?.formation ?? formation,
+    roles: p?.roles ? [...p.roles] : [...roles],
+    playerInstructions: p?.playerInstructions
+      ? p.playerInstructions.map((pis) => [...pis])
+      : playerInstructions.map((pis) => [...pis]),
+    instructions: p?.instructions ? { ...p.instructions } : { ...instructions },
+  });
+
+  const planA = createPlan('Plan A', t.plans?.[0]);
+  const planB = createPlan('Plan B', t.plans?.[1]);
+  const planC = createPlan('Plan C', t.plans?.[2]);
 
   return {
     formation,
@@ -53,6 +79,8 @@ export function migrateTactics(t: Partial<Tactics>): Tactics {
     takers,
     instructions,
     opposition,
+    plans: [planA, planB, planC],
+    activePlan,
   };
 }
 
@@ -75,6 +103,12 @@ export function migrateSave(raw: unknown): GameState {
         for (const club of Object.values(state.clubs)) {
           if (club.tactics) {
             club.tactics = migrateTactics(club.tactics);
+          }
+          if (!club.familiarity) {
+            club.familiarity = createStartingFamiliarity(
+              club.style,
+              club.tactics?.formation ?? '4-4-2',
+            );
           }
           if (club.style) {
             club.style = {
