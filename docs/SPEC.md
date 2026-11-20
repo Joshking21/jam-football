@@ -1501,14 +1501,17 @@ In Half-Time and Full-Time, an **Analysis** panel (on air, telestrator marker st
 - The assistant's half-time bullets (§15.5) may point at one of these ("Look where their chances are coming from").
 
 #### 13.18.13 Calibration additions (equal teams, 2,000 matches each; all MUST hold)
-- VeryAttacking vs Balanced: our shots ≥ +20% and Counter phases conceded ≥ +40%.
-- ShootOnSight vs Mixed: shots ≥ +25%, xG per shot ≤ −20%.
-- Offside trap on: offsides won ≥ +40%, one-on-ones conceded ≥ +15%.
-- Get stuck in: tackles won ≥ +10%, fouls ≥ +25%.
-- Floated crosses with a target man vs Low crosses with a pace forward: header shots ≥ +30%, ground chances from crosses ≤ −30%.
-- menBack 1 vs 3: header shots from our corners ≥ +10% and Counter phases conceded after our corners ≥ +50%.
+Every check is a **band**, not a floor (v1.6): an effect far above its target is as wrong as one below it, because real football doesn't move that much from one instruction. Tune `K.d2.*` until each value sits inside its band.
+- VeryAttacking vs Balanced: our shots +20% to +50%; Counter phases conceded +40% to +150%.
+- ShootOnSight vs Mixed: shots +25% to +55%; xG per shot −20% to −40%.
+- Offside trap on: offsides won +40% to +150%; one-on-ones conceded +15% to +45%.
+- Get stuck in vs Stay on feet: tackles won +10% to +35%; fouls +25% to +70%.
+- Floated crosses with a target man vs Low crosses with a pace forward: header shots +30% to +120%; ground chances from crosses −30% to −70%.
+- menBack 1 vs 3: header shots from our corners +10% to +40%; Counter phases conceded after our corners +50% to +250%. With menBack 3 that count MUST still be at least 0.15 per match (a percentage from a near-zero base is meaningless).
 - Familiarity 40 everywhere vs 100: win rate between equal teams falls by 6–14 points.
+- **Absolute sanity, per team per match, at every setting tested above:** shots 6–22, fouls 6–18, tackles won 10–35, offsides 0.5–5, Counter phases 2–14. A setting that pushes any of these outside its range fails even if its band passes.
 - The ±6-point "no dominant choice" rule of §13.17.10 covers every option in this section.
+- The same rule applies to §13.17.10 and §13.19.7: an upper bound of 3× the stated floor unless a band is given there.
 
 ### 13.19 Attacking and defensive roles (SPEC 1.5, approved by the user 20 Nov)
 Every player has **two roles**: an attacking role (what he does when we have the ball) and a defensive role (what he does when they have it). Instructions are split the same way and offered by role. This **replaces** the single role of §13.17.2 and the player-instruction rules of §13.17.11 / §13.18.9 where they differ. Same design rules: no free lunch, the first role in each list is neutral (zero modifiers), all numbers in `balance.ts` (`K.roles.*`, `K.droles.*`, `K.pi.*`), the UI matches `docs/design/tactics/`.

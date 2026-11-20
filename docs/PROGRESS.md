@@ -281,3 +281,9 @@ Overall status: ALL PASS
 ## 2026-11-20 · SPEC 1.6 top bar and Tactics v4 layout (Claude, not a Gemini task)
 - Changed: docs/SPEC.md (v1.6: §11.0 and §19.6 top bar with navigation tabs, no sidebar; office work screens fit the window with no page scroll; §11.8 layout note; new RadarChart in §19.5; M3b task 3 points at the v4 layout), docs/design/tactics/README.md ("v4 layout" section), docs/design/hub/README.md (sidebar difference withdrawn).
 - Notes for Gemini: no new mock-up. Keep the v3 objects and motion and move them into the v4 layout: file left, vertical board middle, orders right. Do the shell change (remove Sidebar, tabs in TopBar) with the M3 review fixes, and Tactics v4 in M3b task 3. New pure module src/core/player/roleShapes.ts for the radar's role shapes, with a unit test.
+
+## 2026-11-20 · Check of M3b commit 7e4bc3b (Claude)
+- Result: M3b task 1 is NOT finished.
+  1. §13.19 (attacking and defensive roles, instructions by role, instruction fit) is not implemented: no defensive roles in src/. It is part of M3b task 1.
+  2. Calibration overshoots: §13.18.13 checks are now bands with ceilings plus absolute per-match sanity ranges (SPEC v1.6). Out of band today: VeryAttacking counters +833%, ShootOnSight shots +79% and xG/shot −43%, offsides +158%, GetStuckIn tackles +382% and fouls +112%, Floated headers +429% and ground chances −92%, menBack counters +44500% (near-zero base). Retune K.d2.* until all sit inside.
+- Order for Gemini: (a) §13.19 engine + retune, calibration all inside bands, paste the report; (b) M3 review fixes B1–B5, M1–M8 plus the top bar shell (§19.6); (c) M3b task 3, Tactics v4 layout.
