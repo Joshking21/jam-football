@@ -18,6 +18,7 @@
 Nothing from this session is committed or pushed yet (ask the user first; the repo is public).
 
 ## Next steps, in order
+0. **Update 20 Nov:** the depth proposal was approved (all of Tier A, plus B1–B6) and is now SPEC 1.4 (§12.17, §13.18, milestone M3b). Next for Claude: extend `docs/design/tactics/` for the new controls (only when the user asks; do not re-render the pages unprompted).
 1. **Depth audit (Claude, docs only, cheap).** Compare SPEC §11–§15 and §13.17 with the list below. Mark each item as already in the SPEC, missing but worth adding (with a gain and a cost, per the "no free lunch" rule), or too big for the jam. Write the result as a SPEC 1.4 proposal for the user to approve. Keep the engine rules testable by calibration (§13.16, §13.17.10).
 2. Once approved, extend the **Tactics reference** to show the new controls, using the same clipboard, whiteboard and marker style. Do the same for any other office screen that gains depth (Squad, Training, Scouting, Club).
 3. The user adds the sponsor keys, then run `AI-TESTS.md` in its stated order (M1 and F1 first, then the captain walk-in F5/F6).

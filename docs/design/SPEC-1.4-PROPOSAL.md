@@ -1,6 +1,6 @@
 # SPEC 1.4 proposal: Football-Manager-level depth
 
-Status: **waiting for the user's approval.** Nothing here is in the SPEC yet. Once approved, Claude writes the chosen items into the SPEC (new sections, types, `balance.ts` keys, calibration checks, UI) and extends `docs/design/tactics/` and the other office references to show them.
+Status: **approved 20 Nov 2026:** all of Tier A, and from Tier B: B1, B2, B3, B4, B5, B6. B7 (scouting assignments) and Tier C wait for later. Written into SPEC 1.4 as §13.18 (tactics), §12.17 (club) and milestone M3b. This file is the record of the proposal; the SPEC wins.
 
 ## The goal and the constraint
 - **Goal (the user, 20 Nov):** "almost every tactical detail" from Football Manager, and a club as detailed as FM.

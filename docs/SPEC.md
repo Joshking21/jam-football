@@ -1,6 +1,6 @@
 # TOUCHLINE (working title) — Complete Build Specification
 
-Version 1.3 · 19 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
+Version 1.4 · 20 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
 
@@ -412,6 +412,25 @@ export interface Tactics {
   instructions: TeamInstructions;
   opposition: OppOrder[];           // 0–3, set per match (cleared after each match)
 }
+// ---- SPEC 1.4 additions (§13.18). Mentality gains two outer steps:
+//   export type Mentality = 'VeryDefensive'|'Defensive'|'Balanced'|'Attacking'|'VeryAttacking';
+export type FinalThird = 'WorkIntoBox'|'ShootOnSight'|'Mixed';
+export type CrossStyle = 'Low'|'Whipped'|'Floated'|'Mixed';
+export type Tackling = 'StayOnFeet'|'GetStuckIn'|'Mixed';
+export type ForceOpp = 'Inside'|'Outside'|'Mixed';
+export type TimeWasting = 'Never'|'WhenAhead';
+export type FreeKicks = 'Shoot'|'Cross'|'Short'|'Mixed';
+export type CornerSwing = 'Inswinger'|'Outswinger'|'Mixed';
+export type PostMen = 'None'|'Near'|'Both';
+// TeamInstructions gains: finalThird, crossStyle, offsideTrap: boolean, tackling, forceOpp, timeWasting,
+//   freeKicks, cornerSwing, menBack: 1|2|3, postMen.  Defaults (all neutral): Mixed / false / Never / 2 / None.
+// PlayerInstruction gains: 'roam'|'sitNarrower'|'crossFromByline'|'crossFromDeep'|'riskyPasses'|'playSafe'.
+export interface TacticPlan {      // §13.18.10: Plan A/B/C
+  name: string; formation: Formation; roles: RoleId[]; playerInstructions: PlayerInstruction[][]; instructions: TeamInstructions;
+}
+// Tactics: formation/roles/playerInstructions/instructions move into plans: [TacticPlan, TacticPlan, TacticPlan] + activePlan: 0|1|2.
+//   lineup, bench, captain, takers and opposition stay on Tactics (shared by all plans).
+export interface Familiarity { formation: Record<Formation, number>; mentality: Record<string, number>; passing: Record<PassingStyle, number>; pressing: Record<Pressing, number> } // 0–100, per club (§13.18.11)
 ```
 
 ### 8.5 Club
@@ -929,6 +948,37 @@ Player of the Season (highest average rating, ≥ 12 rated apps), Golden Boot (g
 - If the final position is within `acceptable` but worse than target, grade B− instead of C.
 - Score (for the OpenGame leaderboard, optional): `points × 10 + goalDifference × 2 + delta × 50 + (champion ? 300 : 0) + round(boardConfidence) + round(fanMood)`. Minimum 0.
 
+### 12.17 Club depth (SPEC 1.4, approved by the user 20 Nov)
+Same rules as §13.17: every option has a gain and a cost, defaults are neutral, all numbers in `balance.ts` under `K.club.*`. AI clubs use neutral values (3★ staff, no prep, no rest, cohesion fixed at 50), so they cost nothing to simulate.
+
+**12.17.1 Staff.** Four people per club: the assistant (Theo Vance for the user, fixed at 3★, not replaceable), first-team coach, head of scouting and physio, each `{ id, role, name, stars: 1–5, wage }`. The user's club starts with stars `round(reputation × 0.6 + 1)` ± rng(0,1), clamped 1–5. Effects:
+- Coach: positive development (§12.4) × `0.85 + 0.06·stars` (1★ 0.91 … 5★ 1.15).
+- Physio: injury length (matchdays) × `1.2 − 0.08·stars`, rounded, min 1; in-match injury hazard (§12.5) × `1.1 − 0.04·stars`.
+- Scout: knowledge gain (§12.12) × `0.6 + 0.15·stars`.
+- Cost: weekly wage = `K.club.staffWage × stars²` (default 1,500 × stars²), paid from the wage budget like players.
+- Replacing: during a transfer window round, the Club screen shows 3 generated candidates per replaceable role (stars 1–5, names from `names.data.ts`). Hiring one replaces the current person, who is paid 4 weeks' wages as compensation. At most one replacement per window round. Inbox memo on each change.
+
+**12.17.2 Match preparation.** Training gets `prep: 'None'|'SetPieces'|'Press'|'Wingers'|'Shape'`, for the next match only:
+- SetPieces: the opponent's corner and free-kick header duels −0.12 for them. Press: our passes in DEF/MID against their Mid or High press ctx +0.15. Wingers: their wide players' dribble and cross delivery ctx −0.12. Shape: +8 familiarity (§13.18.11) for the active plan's formation, this match only.
+- Cost: that week the team focus's next-match bonus is halved and development × 0.85.
+- The assistant's week tip (§15.3) suggests a prep from the next opponent's style (Direct → SetPieces, Pressing High → Press, Width Wide → Wingers).
+
+**12.17.3 Rest days.** Per player, per week: `rest: boolean`. Rested: condition +8 and fatigue −6 on top of §12.1–12.2; no development that week. A fit player (condition ≥ 90) rested 3 weeks running gets morale −5 ("Wants to train"). A rested player can still be picked.
+
+**12.17.4 Role training.** Individual focus (§12.3) may be a role instead of an attribute: 40% of his growth goes to that role's key attributes, split by their weights (fit rises with them, §13.17.1).
+
+**12.17.5 Dressing room.**
+- Leaders: the top 3 players by `leaderScore = (personality Leader ? 30 : 0) + (captain ? 20 : 0) + (Professional ? 8 : 0) + age × 0.8 + min(apps, 40) × 0.5`, recomputed weekly.
+- Cohesion 0–100, user club starts at 55. Weekly change, clamped to ±6 in total: `(mean leader morale − 55) / 10` (±3 max), win +1, loss −1, a leader sold −8, a promise broken −5, each new signing −2 (settling in).
+- Morale spread: each week every non-leader's morale moves 10% toward the leaders' mean morale.
+- Match effect: all execution ctx (passes, dribbles, shots, crosses) + `(cohesion − 50) / 1000` (±0.05).
+- Cost: unhappy leaders drag the whole squad down; selling one hurts.
+- UI: a leader badge in Squad and on magnets; a pinned "Dressing room" sheet in Club with the three leaders, the cohesion meter and the last 3 reasons it moved.
+
+**12.17.6 Injury risk (display only).** Per player, Low / Medium / High from the §12.5 hazard terms (condition, fatigue) × physio, plus age ≥ 30 shown as a reason. Thresholds: hazard factor < 1.2 Low, < 1.6 Medium, otherwise High. It shows in a Squad column and in the player's file. It is not a new engine rule.
+
+**12.17.7 Not in this jam** (SPEC-1.4 proposal Tier C, kept for later): full set-piece designer, contract clauses, youth academy, social groups, multi-season careers.
+
 ---
 
 ## 13. Match engine (complete specification)
@@ -1360,6 +1410,99 @@ With all defaults (neutral roles, Mixed settings, no orders) every §13.16 targe
 | `longThrows` | "Take the long throws." (players with strength ≥ 70) | our throw-ins in the ATT third become a cross delivery into the box (delivery uses strength instead of crossing) | the throw takes longer (+6 s) and the opponent's GK claim chance +0.04 |
 
 Player instructions are part of the `instructions` command (§13.12) and of the AI manager (§13.17.8: AI uses at most one per player, only `shootLess` for low-longShots midfielders, `stayOnFeet` for players on a yellow after 60', `getForward` when chasing a game at 75'+).
+
+### 13.18 Depth pass 2 (SPEC 1.4, approved by the user 20 Nov)
+Same design rules as §13.17: no free lunch, neutral defaults change nothing (the §13.16 targets hold), numbers in `balance.ts` under `K.d2.*`, UI wording exact as written here, and the assistant can set any of them with Apply. A season must still play in about 30 minutes, so every item has a sensible default and never needs touching.
+
+#### 13.18.1 Mentality in five steps
+`VeryDefensive` "Everyone behind the ball." · `Defensive` · `Balanced` · `Attacking` · `VeryAttacking` "Throw everything forward."
+- The Very steps apply the §13.6 Defensive/Attacking utility rows × 1.6.
+- VeryAttacking: inv `MID→ATT 15%` for every outfield player except CBs. Cost: the opponent's Counter phase (§13.9) also starts from wins in their DEF third, with their execution ctx +0.1; team fatigue × 1.04.
+- VeryDefensive: inv `ATT→MID 15%` for every player except STs. Cost: our Counter phase can only start if `onWin` is Counter; our shot utility −0.1 everywhere.
+- AI (§13.13): losing at 80'+ uses VeryAttacking instead of Attacking.
+
+#### 13.18.2 Final third (`finalThird`)
+**Work it into the box** "Walk it in. Only shoot from good spots." · **Shoot on sight** "Have a go whenever you can." · **Mixed** "Players decide." (default)
+- Work it in: shot utility outside the box −0.4; in ATT: progress +0.2, dribble +0.1, in-box pass +0.2. Cost: pass ctx −0.1 in ATT (crowded), so more turnovers near their box.
+- Shoot on sight: shot utility outside the box +0.4 (MID Centre +0.2), in the box +0.2. Cost: lower xG per shot; a blocked shot is a defenders' possession 65% of the time (not 50%).
+
+#### 13.18.3 Crosses (`crossStyle`)
+**Low** "Drill it across the six-yard box." · **Whipped** "Bend it in with pace." · **Floated** "Hang it up for the big men." · **Mixed** "Crosser's choice." (default)
+- Low: 60% of won crosses become ground chances (BOX_CENTRAL or SIX_YARD 30/70) instead of 40%; the ground "duel" uses pace .5 and offTheBall .5; GK claim −0.04. Cost: 15% of low crosses are blocked (→ 40% CORNER, 60% CLEARANCE).
+- Whipped: HEADER xG_ref 0.13 (not 0.11), on-target +0.05. Cost: delivery ctx −0.15.
+- Floated: delivery ctx +0.15; both header skills (S_air and S_airD) × 1.3, so height decides more. Cost: GK claim +0.04.
+
+#### 13.18.4 Offside trap (`offsideTrap`, on/off)
+"Step up together and catch them offside." Default off.
+- On: a failed through ball becomes offside with probability +0.20 (cap 0.7); 10% of the opponent's long balls into ATT are flagged offside.
+- Cost: a through ball that beats the trap gives `oneOnOne` +0.08.
+
+#### 13.18.5 Tackling (`tackling`, team)
+**Get stuck in** "Win every fifty-fifty." · **Stay on your feet** "Stay up and stay on the pitch." · **Mixed** (default)
+- Get stuck in: as D, `S_tkl` +0.25 for the whole team. Cost: fouls × 1.35, yellow chance per foul × 1.2.
+- Stay on your feet: fouls × 0.6. Cost: `S_tkl` −0.2.
+- A player's own `stayOnFeet` (§13.17.11) overrides the team setting for him.
+
+#### 13.18.6 Force them (`forceOpp`, team, without the ball)
+**Inside** "Show them inside. Fewer crosses." · **Outside** "Show them down the line. Fewer shots." · **Mixed** (default)
+- Inside: every opponent wide holder's cross utility −0.3. Cost: his shot utility in ATT +0.15.
+- Outside: every opponent wide holder's shot utility −0.25. Cost: his cross utility +0.2.
+- An opposition order (§13.17.3) on a player replaces this for him.
+
+#### 13.18.7 Time-wasting (`timeWasting`)
+**Never** (default) · **When ahead late** "Take your time over everything when we're winning late on."
+- When ahead late (only while leading at 70'+): restart durations (throw-in, goal kick, free kick, substitution) × 1.4, recycle +0.2.
+- Cost: the referee adds 50% of the extra time to stoppage time; each restart has a 2% yellow for the taker; from 85' the opponent's attacking steps get ctx +0.1 (we sit too deep).
+
+#### 13.18.8 Set pieces, extended
+| Field | Options (UI wording, exact) | Effect | Cost |
+|---|---|---|---|
+| `freeKicks` (ours, ATT Centre within 30 m) | **Shoot** "Go for goal." · **Cross** "Put it in the box." · **Short** "Play it short and keep it." · **Mixed** (default, the §13.8 50/50) | Shoot: 85% DIRECT_FK. Cross: 85% cross delivery. Short: we keep the ball at the point, next step progress +0.3 | Shoot or Cross: the other option is mostly gone. Short: no immediate chance |
+| `cornerSwing` (ours) | **Inswinger** "Bend it towards goal." · **Outswinger** "Bend it away from the keeper." · **Mixed** (default) | Inswinger: header duel +0.1 for our target, 15% of won headers use SIX_YARD. Outswinger: GK claim −0.03, second balls to our attackers 55% (not 40%) | Inswinger: GK claim +0.03. Outswinger: header duel −0.05 |
+| `menBack` (our corners) | **1** "One back. Everyone else attacks." · **2** (default) · **3** "Three back. Safety first." | 1: header target weights × 1.15 | 1: when their clearance reaches them, 50% chance of a Counter phase. 3: header weights × 0.85, and no Counter phase from our corners |
+| `postMen` (their corners) | **None** (default) · **Near post** "A man on the near post." · **Both posts** "A man on each post." | Near: their near-post headers xG_ref −0.03. Both: their header goals × 0.85 | Near: their second balls to attackers 50%. Both: 55% (fewer markers on the edge of the box) |
+
+#### 13.18.9 More player instructions (same rules as §13.17.11: at most 2, clashing pairs blocked)
+| Instruction | UI wording (exact) | Effect | Cost | Clashes with |
+|---|---|---|---|---|
+| `roam` | "Roam from position." | inv: 25% of his weight spread evenly over adjacent zones; recv × 1.15 | as D in his slot's zones, `S_press` −0.15 | holdPosition |
+| `sitNarrower` | "Sit narrower." | inv `lane→C 25%` | his cross utility −0.3; opponent actions in his lane ctx +0.1 | stayWider |
+| `crossFromByline` | "Get to the byline before crossing." | his crosses only from ATT wide: delivery ctx +0.1, 30% become cut-backs (in-box pass to BOX_CENTRAL) | no early crosses from MID wide; one extra step in ATT (more chances to lose it) | crossFromDeep, crossLess |
+| `crossFromDeep` | "Cross early, from deep." | early-cross utility from MID wide +0.4 | delivery ctx −0.2, GK claim +0.03 | crossFromByline, crossLess |
+| `riskyPasses` | "Try the killer pass." | use: through +0.3, progress +0.1 | his pass ctx −0.15 | playSafe |
+| `playSafe` | "Play it safe." | use: recycle +0.3; his pass ctx +0.15 | through −0.3 | riskyPasses |
+
+#### 13.18.10 Plans A, B and C
+- Three `TacticPlan`s (§8.4), named by the user (default "Plan A", "Plan B", "Plan C"). A new game copies the club style into all three. The lineup, bench, captain, takers and opposition orders are shared; switching plans keeps players on the same slot indices (as in a formation change).
+- Switching before a match is free. In a match it is one command `{ kind: 'plan'; side; plan: 0|1|2; issuedAtT }` that acts like a formation + instructions command (§13.12: takes effect after 30 s).
+- Cost: familiarity is tracked per area (§13.18.11), so a rarely used plan plays with a sharpness penalty.
+- Assistant (§15.4, in-match): losing at 60'+ and Plan B's mentality is more attacking than the active plan's → "Time for Plan B?" (Apply switches).
+- AI managers don't use plans (their in-match rules in §13.13 already cover it).
+
+#### 13.18.11 Familiarity per area
+- Per club, `Familiarity` (§8.4), 0–100 for each formation, mentality, passing style and pressing level. Starting values: the club style's values 90, one step away 65, others 45. For a formation: the club's formation 90, formations sharing its back line 65, others 40.
+- Match effect: for each of the 4 areas in use, if its familiarity is under 70, all execution ctx `−(70 − fam) / 400`. The total is capped at −0.25.
+- Weekly: every area used in a match +6 (cap 100); Tactical training (§12.3) +6 more for the active plan's areas; unused values −2 (floor 40).
+- This replaces the single formation familiarity of §12.3 (Tactical training now raises all four areas of the active plan).
+- **Calibration runs with all familiarity at 100**, so §13.16 is unchanged.
+
+#### 13.18.12 Match analysis (UI only, no engine change)
+In Half-Time and Full-Time, an **Analysis** panel (on air, telestrator marker style as in `docs/design/hub/`):
+- **Heat map** for any player: density of the event points where he was A, R or D, blurred over a 21×14 grid.
+- **Pass network**: each player as a node at his average event position (size = touches); an edge for each pair with ≥ 3 completed passes (width ∝ count).
+- **Where our chances came from**: shots grouped by the action before them (cross, through ball, dribble, set piece, long shot, rebound) and by lane, with xG totals, for both teams.
+- **Key battles** (§13.17.7): duels won and lost by each pair this match, with an arrow to the winner.
+- The assistant's half-time bullets (§15.5) may point at one of these ("Look where their chances are coming from").
+
+#### 13.18.13 Calibration additions (equal teams, 2,000 matches each; all MUST hold)
+- VeryAttacking vs Balanced: our shots ≥ +20% and Counter phases conceded ≥ +40%.
+- ShootOnSight vs Mixed: shots ≥ +25%, xG per shot ≤ −20%.
+- Offside trap on: offsides won ≥ +40%, one-on-ones conceded ≥ +15%.
+- Get stuck in: tackles won ≥ +10%, fouls ≥ +25%.
+- Floated crosses with a target man vs Low crosses with a pace forward: header shots ≥ +30%, ground chances from crosses ≤ −30%.
+- menBack 1 vs 3: header shots from our corners ≥ +10% and Counter phases conceded after our corners ≥ +50%.
+- Familiarity 40 everywhere vs 100: win rate between equal teams falls by 6–14 points.
+- The ±6-point "no dominant choice" rule of §13.17.10 covers every option in this section.
 
 
 ---
@@ -1927,12 +2070,18 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 5. Autosave and Continue from title.
 **Accept:** every screen change uses the §19.7 transitions and holds 60 fps; reduce motion turns them into crossfades; a complete 18-matchday season can be played start to finish via the text match view; save/reload mid-season works; season end shows table and grade; screenshots saved and the M3 design review (§19.8) is passed.
 
+### M3b — Depth pass 2 (SPEC 1.4; starts when M3 is accepted, about 3 days; Gemini is ahead of schedule)
+1. Engine: §13.18.1–13.18.11 (types §8.4, `K.d2.*`, the new `plan` command, AI and assistant additions, save migration with neutral defaults: Mixed / false / Never / 2 / None, plans copied from the current tactics, familiarity from §13.18.11 starting values).
+2. Unit tests per new option, then `npm run calibrate`: all §13.16 targets, every §13.17.10 check and every §13.18.13 check MUST pass. Paste the report into PROGRESS.md.
+3. Tactics screen: the new controls as shown in `docs/design/tactics/` (Claude extends that reference for 1.4 before this task starts; until then, put them on the clipboard dividers in the same style).
+**Accept:** calibration all pass; every new option changes the match in the direction its wording says (checked by the tests); old saves load.
+
 ### M4 — 3D match day (1–5 Dec)
 1. Scene skeleton with fallbacks: pitch, lines, goals, boxes stadium, capsule players, ball, lights, quality presets, resize, disposal.
 2. Choreographer (§14.3) and steering; ball flight.
 3. Playback modes and highlight selection (§14.1, §14.6); time-lapse overlay with 2D radar.
 4. Cameras (§14.4) incl. free orbit; goal replays (§14.7).
-5. HUD (§11.16), half-time and full-time screens (§11.17–11.18), shot map, momentum chart.
+5. HUD (§11.16), half-time and full-time screens (§11.17–11.18), shot map, momentum chart, and the Analysis panel (§13.18.12).
 6. Swap in real models automatically when present (registry), animations per §18.3.
 7. Realism pass (§14.10): environment map, haze, grass material, post-processing chain, beams, wet pitch, wired to the quality presets (§21.2).
 **Accept:** the realism pass is on at Medium and the frame budget (§21.1) still holds; a match at Key highlights takes 50–80 s real time; goals visibly match the events (the scorer is the one shooting, the ball ends in the net); 60 fps Medium on the dev laptop; 5 matches in a row without memory growth; every "game feel" detail in §19.8 is present; M4 design review passed.
@@ -1944,6 +2093,7 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 4. Conversations (§12.9).
 5. Board and fans (§12.7, §12.14), finances (§12.10).
 6. Transfer windows complete (§12.13) with scouting (§12.12) and AI activity; news (§16.6).
+7. Club depth (§12.17): staff and replacing them, match preparation, rest days, role training, dressing room (leaders, cohesion), injury risk column.
 **Accept:** every system visibly changes something the player can see within a season; transfer window rounds behave per the tests; content files meet minimum counts.
 
 ### M6 — Assistant and audio (8–10 Dec)
@@ -1970,7 +2120,7 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 
 ## 24. Out of scope (do not build) and stretch goals
 
-Out of scope for the jam build: online multiplayer, accounts, real-time "day/week" persistent modes, loans, youth academy intake, cups, staff hiring, stadium upgrades, editor, mobile/touch.
+Out of scope for the jam build: online multiplayer, accounts, real-time "day/week" persistent modes, loans, youth academy intake, cups, staff hiring beyond §12.17.1, stadium upgrades, editor, mobile/touch, and the SPEC-1.4 Tier C items (full set-piece designer, contract clauses, social groups).
 
 Stretch (only after M8 passes, in this order):
 1. **Career mode**: continue to Season 2+ with ageing, retirements, contract expiries, regens (new fictional players generated with a separate seed and generic commentary lines), and the board's new expectation.
@@ -1978,6 +2128,7 @@ Stretch (only after M8 passes, in this order):
 3. **Weather and pitch wear visuals** (worn goalmouths over the season).
 4. **"Create your own club"** (name, colours, crest emblem; takes the place of Veldmoor Town).
 5. A lean optional server for live AI press conferences (would need the jam's "keys stay on your server" rule and an offline fallback).
+6. **Challenge a friend (no server):** the engine is deterministic, so a "challenge code" (your club, XI and Plan A, compressed into a short string) lets a friend play a match against your side on their own machine. Optional later: a small server for friend leagues and a results board. Online play must never be needed to play the game (the review runs offline).
 
 ---
 
