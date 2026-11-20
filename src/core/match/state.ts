@@ -14,6 +14,9 @@ import {
   Duty,
   TeamInstructions,
   Injury,
+  RoleId,
+  PlayerInstruction,
+  OppOrder,
 } from '../types';
 import { RngState } from '../rng';
 
@@ -37,6 +40,9 @@ export interface LiveTeamState {
   side: Side;
   formation: Formation;
   lineup: (PlayerId | null)[]; // 11 slots
+  roles: RoleId[];
+  playerInstructions: PlayerInstruction[][];
+  opposition: OppOrder[];
   duties: Duty[];
   bench: PlayerId[];
   instructions: TeamInstructions;
@@ -44,6 +50,7 @@ export interface LiveTeamState {
   penaltyTaker: PlayerId | null;
   freeKickTaker: PlayerId | null;
   cornerTaker: PlayerId | null;
+  longThrowTaker: PlayerId | null;
   subsUsed: number;
   inPlayWindowsUsed: number;
   redCardedPlayers: PlayerId[];

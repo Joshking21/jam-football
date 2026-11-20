@@ -89,10 +89,10 @@ export const TacticsScreen: React.FC = () => {
       setSelectedSlot(slotIndex);
     } else if (selectedSlot === slotIndex) {
       // Toggle duty on repeated click
-      const currentDuty = tactics.duties[slotIndex] ?? 'Support';
+      const currentDuty = tactics.duties?.[slotIndex] ?? 'Support';
       const nextDuty: Duty =
         currentDuty === 'Defend' ? 'Support' : currentDuty === 'Support' ? 'Attack' : 'Defend';
-      const newDuties = [...tactics.duties];
+      const newDuties = [...(tactics.duties ?? new Array(11).fill('Support'))];
       newDuties[slotIndex] = nextDuty;
       updateUserTactics({ duties: newDuties });
     } else {
@@ -121,6 +121,7 @@ export const TacticsScreen: React.FC = () => {
       case 'Park the bus':
         updateUserTactics({
           instructions: {
+            ...tactics.instructions,
             mentality: 'Defensive',
             passing: 'Direct',
             tempo: 'Slow',
@@ -128,12 +129,15 @@ export const TacticsScreen: React.FC = () => {
             line: 'Deep',
             width: 'Narrow',
             focus: 'Centre',
+            onLoss: 'Regroup',
+            onWin: 'Counter',
           },
         });
         break;
       case 'Control':
         updateUserTactics({
           instructions: {
+            ...tactics.instructions,
             mentality: 'Balanced',
             passing: 'Short',
             tempo: 'Slow',
@@ -141,12 +145,15 @@ export const TacticsScreen: React.FC = () => {
             line: 'Normal',
             width: 'Normal',
             focus: 'Mixed',
+            onLoss: 'Mixed',
+            onWin: 'KeepIt',
           },
         });
         break;
       case 'Gegenpress':
         updateUserTactics({
           instructions: {
+            ...tactics.instructions,
             mentality: 'Attacking',
             passing: 'Short',
             tempo: 'Fast',
@@ -154,12 +161,15 @@ export const TacticsScreen: React.FC = () => {
             line: 'High',
             width: 'Normal',
             focus: 'Mixed',
+            onLoss: 'CounterPress',
+            onWin: 'Counter',
           },
         });
         break;
       case 'Counter':
         updateUserTactics({
           instructions: {
+            ...tactics.instructions,
             mentality: 'Defensive',
             passing: 'Direct',
             tempo: 'Fast',
@@ -167,12 +177,15 @@ export const TacticsScreen: React.FC = () => {
             line: 'Deep',
             width: 'Wide',
             focus: 'Mixed',
+            onLoss: 'Regroup',
+            onWin: 'Counter',
           },
         });
         break;
       case 'All-out attack':
         updateUserTactics({
           instructions: {
+            ...tactics.instructions,
             mentality: 'Attacking',
             passing: 'Mixed',
             tempo: 'Fast',
@@ -180,6 +193,8 @@ export const TacticsScreen: React.FC = () => {
             line: 'High',
             width: 'Wide',
             focus: 'Mixed',
+            onLoss: 'CounterPress',
+            onWin: 'Counter',
           },
         });
         break;
@@ -326,7 +341,7 @@ export const TacticsScreen: React.FC = () => {
             {formationDef.slots.map((slotDef) => {
               const playerId = tactics.lineup[slotDef.slot];
               const player = getPlayer(playerId);
-              const duty = tactics.duties[slotDef.slot] ?? 'Support';
+              const duty = tactics.duties?.[slotDef.slot] ?? 'Support';
               const isSelected = selectedSlot === slotDef.slot;
 
               // Convert pitch coords (105x68, own frame x=0 goal, y=0 left) to screen %
@@ -704,13 +719,7 @@ export const TacticsScreen: React.FC = () => {
                     updateUserTactics({
                       formation: userClub.style.formation,
                       instructions: {
-                        mentality: userClub.style.mentality,
-                        passing: userClub.style.passing,
-                        tempo: userClub.style.tempo,
-                        pressing: userClub.style.pressing,
-                        line: userClub.style.line,
-                        width: userClub.style.width,
-                        focus: userClub.style.focus,
+                        ...userClub.style,
                       },
                     });
                     showToast('Reset tactics to club identity', 'info');

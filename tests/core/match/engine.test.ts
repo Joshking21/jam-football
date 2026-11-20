@@ -92,6 +92,11 @@ describe('MatchEngine (SPEC §13, §22.1)', () => {
         line: 'High',
         width: 'Wide',
         focus: 'Centre',
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
       },
       issuedAtT: 1000,
     };

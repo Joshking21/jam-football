@@ -153,6 +153,13 @@ export type Width = 'Narrow' | 'Normal' | 'Wide';
 export type Focus = 'Left' | 'Centre' | 'Right' | 'Mixed';
 export type Duty = 'Defend' | 'Support' | 'Attack';
 
+export type RoleId = string; // ids from src/config/roles.ts (§13.17.2)
+export type OnLoss = 'CounterPress' | 'Regroup' | 'Mixed';
+export type OnWin = 'Counter' | 'KeepIt' | 'Mixed';
+export type Distribution = 'Short' | 'Long' | 'Wide' | 'Mixed';
+export type CornersFor = 'NearPost' | 'FarPost' | 'Short' | 'Mixed';
+export type CornersAgainst = 'Zonal' | 'ManMark' | 'Mixed';
+
 export interface TeamInstructions {
   mentality: Mentality;
   passing: PassingStyle;
@@ -161,20 +168,48 @@ export interface TeamInstructions {
   line: DefLine;
   width: Width;
   focus: Focus;
+  onLoss: OnLoss;
+  onWin: OnWin;
+  distribution: Distribution;
+  cornersFor: CornersFor;
+  cornersAgainst: CornersAgainst;
 }
+
+export type PlayerInstruction =
+  | 'shootMore'
+  | 'shootLess'
+  | 'dribbleMore'
+  | 'dribbleLess'
+  | 'crossMore'
+  | 'crossLess'
+  | 'getForward'
+  | 'holdPosition'
+  | 'stayWider'
+  | 'closeDownMore'
+  | 'stayOnFeet'
+  | 'longThrows'; // §13.17.11
+
+export interface OppOrder {
+  kind: 'tightMark' | 'doubleUp' | 'pressOnBall' | 'showInside' | 'showOutside';
+  target: PlayerId;
+} // §13.17.3
 
 export interface Tactics {
   formation: Formation;
   lineup: (PlayerId | null)[]; // length 11, index = slot index in formations.ts
-  duties: Duty[]; // length 11
+  roles: RoleId[]; // length 11, replaces the old duties (§13.17.2)
+  duties?: Duty[]; // legacy fallback
+  playerInstructions: PlayerInstruction[][]; // length 11, each 0–2
   bench: PlayerId[]; // 0–9
   captain: PlayerId | null;
   takers: {
     penalty: PlayerId | null;
     freeKick: PlayerId | null;
     corner: PlayerId | null;
+    longThrow: PlayerId | null;
   };
   instructions: TeamInstructions;
+  opposition: OppOrder[]; // 0–3, set per match (cleared after each match)
 }
 
 // --- 8.5 Club ---
@@ -513,6 +548,9 @@ export interface TeamMatchStats {
   interceptions: number;
   saves: number;
   bigChances: number;
+  countersStarted?: number;
+  countersConceded?: number;
+  ballWinsMidAtt?: number;
 }
 
 export interface PlayerMatchLine {
@@ -535,6 +573,7 @@ export interface PlayerMatchLine {
   red: number;
   injured: boolean;
   conditionEnd: number;
+  aerialDuelsWon?: number;
 }
 
 export interface MatchResult {
@@ -553,6 +592,7 @@ export type MatchCommand =
       kind: 'instructions';
       side: Side;
       instructions: TeamInstructions;
+      playerInstructions?: PlayerInstruction[][];
       issuedAtT: number;
     }
   | {
@@ -560,7 +600,15 @@ export type MatchCommand =
       side: Side;
       formation: Formation;
       lineup: (PlayerId | null)[];
-      duties: Duty[];
+      roles: RoleId[];
+      playerInstructions: PlayerInstruction[][];
+      duties?: Duty[];
+      issuedAtT: number;
+    }
+  | {
+      kind: 'opposition';
+      side: Side;
+      orders: OppOrder[];
       issuedAtT: number;
     }
   | {

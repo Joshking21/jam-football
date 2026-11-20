@@ -19,6 +19,9 @@ export function createEmptyTeamStats(): TeamMatchStats {
     interceptions: 0,
     saves: 0,
     bigChances: 0,
+    countersStarted: 0,
+    countersConceded: 0,
+    ballWinsMidAtt: 0,
   };
 }
 
@@ -47,5 +50,6 @@ export function createPlayerMatchLine(
     red: 0,
     injured: false,
     conditionEnd: initialCondition,
+    aerialDuelsWon: 0,
   };
 }

@@ -1,6 +1,7 @@
-// Implements SPEC §13.16 & §22.2 Engine Calibration and Benchmarking Script
+// Implements SPEC §13.16 & §13.17.10 Engine Calibration and Benchmarking Script
 import { simulateInstant } from '../src/core/match/engine';
 import { createTestMatchInput } from '../tests/core/match/testHelper';
+import { PlayerId, Tactics } from '../src/core/types';
 
 interface MetricCheck {
   name: string;
@@ -155,6 +156,11 @@ function runTacticChecks(nMatches: number) {
         line: 'Normal',
         width: 'Normal',
         focus: 'Mixed',
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
       },
     },
     {
@@ -166,6 +172,11 @@ function runTacticChecks(nMatches: number) {
         line: 'Normal',
         width: 'Normal',
         focus: 'Mixed',
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
       },
     },
   );
@@ -203,6 +214,11 @@ function runTacticChecks(nMatches: number) {
         line: 'Normal',
         width: 'Wide',
         focus: 'Mixed',
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
       },
     },
     {
@@ -214,6 +230,11 @@ function runTacticChecks(nMatches: number) {
         line: 'Normal',
         width: 'Normal',
         focus: 'Mixed',
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
       },
     },
   );
@@ -238,6 +259,11 @@ function runTacticChecks(nMatches: number) {
         line: 'Normal',
         width: 'Normal',
         focus: 'Mixed',
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
       },
     },
     {
@@ -249,6 +275,11 @@ function runTacticChecks(nMatches: number) {
         line: 'Normal',
         width: 'Normal',
         focus: 'Mixed',
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
       },
     },
   );
@@ -274,10 +305,608 @@ function runTacticChecks(nMatches: number) {
   };
 }
 
-async function main() {
-  console.log('=== TOUCHLINE ENGINE CALIBRATION (SPEC §13.16) ===\n');
+function runTacticalDepthChecks(nMatches: number): MetricCheck[] {
+  // 1. tightMark on CM -> touches -20% to -35%
+  let baseCmTouches = 0;
+  let markedCmTouches = 0;
+  const baseInput = createTestMatchInput(68, 68, {}, {}, []);
+  const markedInput = createTestMatchInput(
+    68,
+    68,
+    { opposition: [{ kind: 'tightMark', target: 'away_p6' as PlayerId }] },
+    {},
+    [],
+  );
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(baseInput, 600000 + i);
+    const p1 = r1.players.find((p) => p.playerId === 'away_p6');
+    if (p1) baseCmTouches += p1.passes + p1.dribbles + p1.shots;
 
-  const N = 500; // 500 matches for initial calibration run
+    const r2 = simulateInstant(markedInput, 600000 + i);
+    const p2 = r2.players.find((p) => p.playerId === 'away_p6');
+    if (p2) markedCmTouches += p2.passes + p2.dribbles + p2.shots;
+  }
+  const tightMarkTouchReduction = (baseCmTouches - markedCmTouches) / baseCmTouches;
+
+  // 2. Counter-press vs Mixed -> ball wins in MID/ATT third >= +25%, counter phases higher
+  let cpBallWins = 0;
+  let cpCountersConceded = 0;
+  let mixBallWins = 0;
+  let mixCountersConceded = 0;
+  const cpInput = createTestMatchInput(
+    68,
+    68,
+    {
+      instructions: {
+        mentality: 'Balanced',
+        passing: 'Mixed',
+        tempo: 'Normal',
+        pressing: 'Mid',
+        line: 'Normal',
+        width: 'Normal',
+        focus: 'Mixed',
+        onLoss: 'CounterPress',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
+      },
+    },
+    {},
+    [],
+  );
+  const mixInput = createTestMatchInput(68, 68, {}, {}, []);
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(cpInput, 610000 + i);
+    cpBallWins += r1.stats.home.ballWinsMidAtt ?? 0;
+    cpCountersConceded += r1.stats.home.countersConceded ?? 0;
+
+    const r2 = simulateInstant(mixInput, 610000 + i);
+    mixBallWins += r2.stats.home.ballWinsMidAtt ?? 0;
+    mixCountersConceded += r2.stats.home.countersConceded ?? 0;
+  }
+  const cpBallWinsGain = (cpBallWins - mixBallWins) / Math.max(1, mixBallWins);
+  const cpCountersHigher = cpCountersConceded > mixCountersConceded;
+
+  // 3. Target man + Passing Direct -> aerial duels won >= +30%
+  let tmDuelsWon = 0;
+  let neutralDuelsWon = 0;
+  const tmInput = createTestMatchInput(
+    68,
+    68,
+    {
+      roles: ['gk', 'fb', 'cb', 'cb', 'fb', 'winger', 'cm', 'cm', 'winger', 'target_man', 'st'],
+      instructions: {
+        mentality: 'Balanced',
+        passing: 'Direct',
+        tempo: 'Normal',
+        pressing: 'Mid',
+        line: 'Normal',
+        width: 'Normal',
+        focus: 'Mixed',
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
+      },
+    },
+    {},
+    [],
+  );
+  const neutralInput = createTestMatchInput(
+    68,
+    68,
+    {
+      roles: ['gk', 'fb', 'cb', 'cb', 'fb', 'winger', 'cm', 'cm', 'winger', 'st', 'st'],
+      instructions: {
+        mentality: 'Balanced',
+        passing: 'Direct',
+        tempo: 'Normal',
+        pressing: 'Mid',
+        line: 'Normal',
+        width: 'Normal',
+        focus: 'Mixed',
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
+      },
+    },
+    {},
+    [],
+  );
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(tmInput, 620000 + i);
+    const p1 = r1.players.find((p) => p.playerId === 'home_p9');
+    tmDuelsWon += p1?.aerialDuelsWon ?? 0;
+
+    const r2 = simulateInstant(neutralInput, 620000 + i);
+    const p2 = r2.players.find((p) => p.playerId === 'home_p9');
+    neutralDuelsWon += p2?.aerialDuelsWon ?? 0;
+  }
+  const tmDuelGain = (tmDuelsWon - neutralDuelsWon) / Math.max(1, neutralDuelsWon);
+
+  // 4. Inside forward vs Winger -> shots >= +40%, crosses <= -40%
+  let ifShots = 0;
+  let ifCrosses = 0;
+  let wShots = 0;
+  let wCrosses = 0;
+  const ifInput = createTestMatchInput(
+    68,
+    68,
+    { roles: ['gk', 'fb', 'cb', 'cb', 'fb', 'inside_forward', 'cm', 'cm', 'winger', 'st', 'st'] },
+    {},
+    [],
+  );
+  const wInput = createTestMatchInput(
+    68,
+    68,
+    { roles: ['gk', 'fb', 'cb', 'cb', 'fb', 'winger', 'cm', 'cm', 'winger', 'st', 'st'] },
+    {},
+    [],
+  );
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(ifInput, 630000 + i);
+    const p1 = r1.players.find((p) => p.playerId === 'home_p5');
+    ifShots += p1?.shots ?? 0;
+    ifCrosses += r1.events.filter((e) => e.type === 'CROSS' && e.playerId === 'home_p5').length;
+
+    const r2 = simulateInstant(wInput, 630000 + i);
+    const p2 = r2.players.find((p) => p.playerId === 'home_p5');
+    wShots += p2?.shots ?? 0;
+    wCrosses += r2.events.filter((e) => e.type === 'CROSS' && e.playerId === 'home_p5').length;
+  }
+  const ifShotGain = (ifShots - wShots) / Math.max(1, wShots);
+  const ifCrossDiff = (ifCrosses - wCrosses) / Math.max(1, wCrosses);
+
+  // 5. Sweeper keeper with Line High -> 1-on-1s conceded >= -20% vs gk
+  let sk1v1 = 0;
+  let gk1v1 = 0;
+  const skInput = createTestMatchInput(
+    68,
+    68,
+    {},
+    {
+      roles: ['sweeper_keeper', 'fb', 'cb', 'cb', 'fb', 'winger', 'cm', 'cm', 'winger', 'st', 'st'],
+      instructions: {
+        mentality: 'Balanced',
+        passing: 'Mixed',
+        tempo: 'Normal',
+        pressing: 'Mid',
+        line: 'High',
+        width: 'Normal',
+        focus: 'Mixed',
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
+      },
+    },
+    [],
+  );
+  const normalGkInput = createTestMatchInput(
+    68,
+    68,
+    {},
+    {
+      roles: ['gk', 'fb', 'cb', 'cb', 'fb', 'winger', 'cm', 'cm', 'winger', 'st', 'st'],
+      instructions: {
+        mentality: 'Balanced',
+        passing: 'Mixed',
+        tempo: 'Normal',
+        pressing: 'Mid',
+        line: 'High',
+        width: 'Normal',
+        focus: 'Mixed',
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
+      },
+    },
+    [],
+  );
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(skInput, 640000 + i);
+    sk1v1 += r1.events.filter((e) => e.side === 'home' && e.shot?.context === 'ONE_ON_ONE').length;
+
+    const r2 = simulateInstant(normalGkInput, 640000 + i);
+    gk1v1 += r2.events.filter((e) => e.side === 'home' && e.shot?.context === 'ONE_ON_ONE').length;
+  }
+  const oneOnOneReduction = (gk1v1 - sk1v1) / Math.max(1, gk1v1);
+
+  // 6. "Shoot more" on player with longShots <= 50 -> xG per shot falls, possession falls
+  const lowLsBase = createTestMatchInput(68, 68, {}, {}, []);
+  lowLsBase.home.players['home_p6']!.attributes.longShots = 40;
+
+  const lowLsShootMore = createTestMatchInput(
+    68,
+    68,
+    {
+      playerInstructions: [[], [], [], [], [], [], ['shootMore'], [], [], [], []],
+    },
+    {},
+    [],
+  );
+  lowLsShootMore.home.players['home_p6']!.attributes.longShots = 40;
+
+  let baseShotCount = 0;
+  let baseShotXg = 0;
+  let basePoss = 0;
+  let testShotCount = 0;
+  let testShotXg = 0;
+  let testPoss = 0;
+
+  for (let i = 0; i < nMatches; i++) {
+    const r1 = simulateInstant(lowLsBase, 650000 + i);
+    basePoss += r1.stats.home.possessionSec;
+    const p1 = r1.players.find((p) => p.playerId === 'home_p6');
+    baseShotCount += p1?.shots ?? 0;
+    const p1Shots = r1.events.filter((e) => e.playerId === 'home_p6' && e.shot);
+    baseShotXg += p1Shots.reduce((acc, s) => acc + (s.shot?.xg ?? 0), 0);
+
+    const r2 = simulateInstant(lowLsShootMore, 650000 + i);
+    testPoss += r2.stats.home.possessionSec;
+    const p2 = r2.players.find((p) => p.playerId === 'home_p6');
+    testShotCount += p2?.shots ?? 0;
+    const p2Shots = r2.events.filter((e) => e.playerId === 'home_p6' && e.shot);
+    testShotXg += p2Shots.reduce((acc, s) => acc + (s.shot?.xg ?? 0), 0);
+  }
+
+  const baseXgPerShot = baseShotXg / Math.max(1, baseShotCount);
+  const testXgPerShot = testShotXg / Math.max(1, testShotCount);
+
+  // 7. No dominant choice -> no single tactical choice moves win rate by > +/-6% pts (SPEC §13.17.10: N=800, paired seeds)
+  const nDomMatches = 800;
+  let baseHomeWins = 0;
+  for (let i = 0; i < nDomMatches; i++) {
+    const r = simulateInstant(baseInput, 660000 + i);
+    if (r.homeGoals > r.awayGoals) baseHomeWins++;
+  }
+  const baseWinPct = (baseHomeWins / nDomMatches) * 100;
+  console.log(`  Base win rate (equal teams): ${baseWinPct.toFixed(1)}%`);
+
+  const variations: { name: string; overrides: Partial<Tactics> }[] = [
+    {
+      name: 'Role: poacher',
+      overrides: {
+        roles: ['gk', 'fb', 'cb', 'cb', 'fb', 'winger', 'cm', 'cm', 'winger', 'poacher', 'st'],
+      },
+    },
+    {
+      name: 'Role: target_man',
+      overrides: {
+        roles: ['gk', 'fb', 'cb', 'cb', 'fb', 'winger', 'cm', 'cm', 'winger', 'target_man', 'st'],
+      },
+    },
+    {
+      name: 'Role: pressing_forward',
+      overrides: {
+        roles: [
+          'gk',
+          'fb',
+          'cb',
+          'cb',
+          'fb',
+          'winger',
+          'cm',
+          'cm',
+          'winger',
+          'pressing_forward',
+          'st',
+        ],
+      },
+    },
+    {
+      name: 'Role: inside_forward',
+      overrides: {
+        roles: ['gk', 'fb', 'cb', 'cb', 'fb', 'inside_forward', 'cm', 'cm', 'winger', 'st', 'st'],
+      },
+    },
+    {
+      name: 'Role: ball_playing_cb',
+      overrides: {
+        roles: [
+          'gk',
+          'fb',
+          'ball_playing_cb',
+          'cb',
+          'fb',
+          'winger',
+          'cm',
+          'cm',
+          'winger',
+          'st',
+          'st',
+        ],
+      },
+    },
+    {
+      name: 'Role: sweeper_keeper',
+      overrides: {
+        roles: [
+          'sweeper_keeper',
+          'fb',
+          'cb',
+          'cb',
+          'fb',
+          'winger',
+          'cm',
+          'cm',
+          'winger',
+          'st',
+          'st',
+        ],
+      },
+    },
+    {
+      name: 'Order: tightMark',
+      overrides: { opposition: [{ kind: 'tightMark', target: 'away_p9' as PlayerId }] },
+    },
+    {
+      name: 'Order: pressOnBall',
+      overrides: { opposition: [{ kind: 'pressOnBall', target: 'away_p6' as PlayerId }] },
+    },
+    {
+      name: 'Order: doubleUp',
+      overrides: { opposition: [{ kind: 'doubleUp', target: 'away_p9' as PlayerId }] },
+    },
+    {
+      name: 'Setting: onLoss CounterPress',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'CounterPress',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+        },
+      },
+    },
+    {
+      name: 'Setting: onLoss Regroup',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Regroup',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+        },
+      },
+    },
+    {
+      name: 'Setting: onWin Counter',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Counter',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+        },
+      },
+    },
+    {
+      name: 'Setting: onWin KeepIt',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'KeepIt',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+        },
+      },
+    },
+    {
+      name: 'Setting: distribution Long',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Long',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+        },
+      },
+    },
+    {
+      name: 'Setting: distribution Short',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Short',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'Mixed',
+        },
+      },
+    },
+    {
+      name: 'Setting: cornersFor NearPost',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'NearPost',
+          cornersAgainst: 'Mixed',
+        },
+      },
+    },
+    {
+      name: 'Setting: cornersAgainst ManMark',
+      overrides: {
+        instructions: {
+          mentality: 'Balanced',
+          passing: 'Mixed',
+          tempo: 'Normal',
+          pressing: 'Mid',
+          line: 'Normal',
+          width: 'Normal',
+          focus: 'Mixed',
+          onLoss: 'Mixed',
+          onWin: 'Mixed',
+          distribution: 'Mixed',
+          cornersFor: 'Mixed',
+          cornersAgainst: 'ManMark',
+        },
+      },
+    },
+    {
+      name: 'PI: closeDownMore',
+      overrides: {
+        playerInstructions: [[], [], [], [], [], [], ['closeDownMore'], [], [], [], []],
+      },
+    },
+    {
+      name: 'PI: shootMore',
+      overrides: {
+        playerInstructions: [[], [], [], [], [], [], [], [], [], ['shootMore'], []],
+      },
+    },
+  ];
+
+  let maxWinDiff = 0;
+  let worstVar = '';
+  for (const v of variations) {
+    const input = createTestMatchInput(68, 68, v.overrides, {}, []);
+    let wins = 0;
+    for (let i = 0; i < nDomMatches; i++) {
+      const res = simulateInstant(input, 660000 + i);
+      if (res.homeGoals > res.awayGoals) wins++;
+    }
+    const winPct = (wins / nDomMatches) * 100;
+    const diff = Math.abs(winPct - baseWinPct);
+    console.log(`    - ${v.name}: ${winPct.toFixed(1)}% (diff: ${diff.toFixed(1)}% pts)`);
+    if (diff > maxWinDiff) {
+      maxWinDiff = diff;
+      worstVar = `${v.name} (${winPct.toFixed(1)}% vs ${baseWinPct.toFixed(1)}%)`;
+    }
+  }
+
+  return [
+    {
+      name: 'tightMark CM touches reduction',
+      value: (tightMarkTouchReduction * 100).toFixed(1) + '%',
+      target: '20–35%',
+      pass: tightMarkTouchReduction >= 0.2 && tightMarkTouchReduction <= 0.35,
+    },
+    {
+      name: 'Counter-press ball wins in MID/ATT',
+      value: '+' + (cpBallWinsGain * 100).toFixed(1) + '%',
+      target: '>= +25%',
+      pass: cpBallWinsGain >= 0.25,
+    },
+    {
+      name: 'Counter-press counters conceded higher',
+      value: `${(cpCountersConceded / nMatches).toFixed(1)} vs ${(mixCountersConceded / nMatches).toFixed(1)}`,
+      target: 'CP > Mixed',
+      pass: cpCountersHigher,
+    },
+    {
+      name: 'Target man + Direct aerial duels won',
+      value: '+' + (tmDuelGain * 100).toFixed(1) + '%',
+      target: '>= +30%',
+      pass: tmDuelGain >= 0.3,
+    },
+    {
+      name: 'Inside forward vs Winger shots',
+      value: '+' + (ifShotGain * 100).toFixed(1) + '%',
+      target: '>= +40%',
+      pass: ifShotGain >= 0.4,
+    },
+    {
+      name: 'Inside forward vs Winger crosses',
+      value: (ifCrossDiff * 100).toFixed(1) + '%',
+      target: '<= -40%',
+      pass: ifCrossDiff <= -0.4,
+    },
+    {
+      name: 'Sweeper keeper 1-on-1s conceded vs GK',
+      value: '-' + (oneOnOneReduction * 100).toFixed(1) + '%',
+      target: '>= -20% (<= -20%)',
+      pass: oneOnOneReduction >= 0.2,
+    },
+    {
+      name: 'No dominant choice max win rate deviation',
+      value: '±' + maxWinDiff.toFixed(1) + '% pts' + (worstVar ? ` [${worstVar}]` : ''),
+      target: '<= ±6.0% pts',
+      pass: maxWinDiff <= 6.0,
+    },
+    {
+      name: 'Shoot more low-LS xG/shot',
+      value: `${testXgPerShot.toFixed(3)} vs ${baseXgPerShot.toFixed(3)}`,
+      target: 'ShootMore < Base',
+      pass: testXgPerShot < baseXgPerShot,
+    },
+    {
+      name: 'Shoot more team possession',
+      value: `${(testPoss / nMatches).toFixed(1)}s vs ${(basePoss / nMatches).toFixed(1)}s`,
+      target: 'ShootMore < Base',
+      pass: testPoss < basePoss,
+    },
+  ];
+}
+
+async function main() {
+  console.log('=== TOUCHLINE ENGINE CALIBRATION (SPEC §13.16 & §13.17.10) ===\n');
+
+  const N = 500; // 500 matches for baseline calibration run
   console.log(`Running ${N} equal matches (OVR 68 vs 68)...`);
   const eq = runEqualMatches(N);
 
@@ -288,6 +917,9 @@ async function main() {
 
   console.log('Running tactical sanity checks...');
   const tactics = runTacticChecks(200);
+
+  console.log('Running §13.17.10 Tactical Depth calibration checks...');
+  const depthChecks = runTacticalDepthChecks(400);
 
   const checks: MetricCheck[] = [
     {
@@ -430,13 +1062,14 @@ async function main() {
     },
   ];
 
-  console.log('\n| Metric | Value | Target | Status |');
+  console.log('\n### §13.16 Match Engine Baseline Metrics');
+  console.log('| Metric | Value | Target | Status |');
   console.log('|---|---|---|---|');
   for (const c of checks) {
     console.log(`| ${c.name} | ${c.value} | ${c.target} | ${c.pass ? 'PASS' : 'FAIL'} |`);
   }
 
-  console.log('\nTactical sanity checks:');
+  console.log('\n### Tactical Sanity Checks');
   console.log(
     `- Pressing condition drop diff: ${tactics.condDiff.toFixed(1)} (target >= 4): ${tactics.condDiff >= 3 ? 'PASS' : 'FAIL'}`,
   );
@@ -451,8 +1084,27 @@ async function main() {
   );
   console.log(`- Direct aerial duels more: ${tactics.directAerialMore ? 'PASS' : 'FAIL'}`);
 
-  const allPassed = checks.every((c) => c.pass);
+  console.log('\n### §13.17.10 Tactical Depth Calibration Checks');
+  console.log('| Metric | Value | Target | Status |');
+  console.log('|---|---|---|---|');
+  for (const c of depthChecks) {
+    console.log(`| ${c.name} | ${c.value} | ${c.target} | ${c.pass ? 'PASS' : 'FAIL'} |`);
+  }
+
+  const allPassed =
+    checks.every((c) => c.pass) &&
+    depthChecks.every((c) => c.pass) &&
+    tactics.condDiff >= 3 &&
+    tactics.pressingFoulsHigh > tactics.pressingFoulsLow &&
+    tactics.wideCrossRatio >= 1.25 &&
+    tactics.directPassReduction >= 0.15 &&
+    tactics.directAerialMore;
+
   console.log(`\nOverall status: ${allPassed ? 'ALL PASS' : 'NEEDS TUNING'}`);
+  if (!allPassed) process.exit(1);
 }
 
-main().catch(console.error);
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

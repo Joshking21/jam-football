@@ -1,5 +1,5 @@
 // Implements SPEC §13.8 Shots Resolution, xG, and Outcomes
-import { ShotContext, Player } from '../types';
+import { ShotContext, Player, RoleId } from '../types';
 import { z, sigmoid, logit, clamp } from '../math';
 import { Rng } from '../rng';
 import { K } from '@/config/balance';
@@ -32,6 +32,13 @@ export interface ShotParams {
   homeAdvantage: number; // +0.06 for home attacker
   defenderHomeAdvantage?: number; // +0.06 for home defender/keeper
   rng: Rng;
+
+  // Tactical Depth (§13.17)
+  attackerRole?: RoleId;
+  attackerFit?: number;
+  isSweeperKeeperOpponent?: boolean;
+  extraXgRefAdd?: number;
+  attackerCtxModifier?: number;
 }
 
 const SHOT_CONTEXT_DATA: Record<
@@ -162,11 +169,27 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
     homeAdvantage,
     defenderHomeAdvantage,
     rng,
+    attackerRole,
+    attackerFit = 1.0,
+    isSweeperKeeperOpponent = false,
+    extraXgRefAdd = 0,
+    attackerCtxModifier = 0,
   } = params;
   const data = SHOT_CONTEXT_DATA[context];
 
+  let xgRef = data.xgRef + extraXgRefAdd;
+  if (isSweeperKeeperOpponent && context === 'OUTSIDE_CENTRAL') {
+    xgRef += 0.02;
+  }
+
   const defAdv = defenderHomeAdvantage ?? 0;
-  const sFin = computeAttackerSkill(attacker, context) + homeAdvantage;
+  let sFin = computeAttackerSkill(attacker, context) + homeAdvantage;
+
+  // Poacher bonus (§13.17.2)
+  if (attackerRole === 'poacher' && (context === 'SIX_YARD' || context === 'BOX_CENTRAL')) {
+    sFin += 0.15 * (0.4 + 0.6 * attackerFit);
+  }
+
   const sGk = computeKeeperSkill(goalkeeper, context) + defAdv;
 
   let defCover = 0;
@@ -174,12 +197,9 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
     defCover = K.coefficients.shotCover * (z(defender.attributes.positioning) + defAdv);
   }
 
-  const ctx = trainingBonus + defCover;
+  const ctx = trainingBonus + defCover + attackerCtxModifier;
   const pGoalRaw = sigmoid(
-    logit(data.xgRef) +
-      K.coefficients.shotFinishing * sFin -
-      K.coefficients.shotGoalkeeper * sGk +
-      ctx,
+    logit(xgRef) + K.coefficients.shotFinishing * sFin - K.coefficients.shotGoalkeeper * sGk + ctx,
   );
 
   // 1. Block resolution
@@ -193,7 +213,7 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
     const outcome = roll < 0.45 ? 'BLOCK_CORNER' : roll < 0.65 ? 'BLOCK_RECYCLE' : 'BLOCK_CLEAR';
     return {
       outcome,
-      xg: data.xgRef,
+      xg: xgRef,
       onTarget: false,
       bodyPart: data.bodyPart,
       target: {
@@ -208,7 +228,7 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
   if (rng.chance(pGoalAdjusted)) {
     return {
       outcome: 'GOAL',
-      xg: data.xgRef,
+      xg: xgRef,
       onTarget: true,
       bodyPart: data.bodyPart,
       target: {
@@ -225,7 +245,7 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
     if (rng.chance(pCatch)) {
       return {
         outcome: 'SAVE_CATCH',
-        xg: data.xgRef,
+        xg: xgRef,
         onTarget: true,
         bodyPart: data.bodyPart,
         target: {
@@ -240,7 +260,7 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
       roll < 0.55 ? 'SAVE_PARRY_CORNER' : roll < 0.7 ? 'SAVE_PARRY_REBOUND' : 'SAVE_PARRY_CLEAR';
     return {
       outcome,
-      xg: data.xgRef,
+      xg: xgRef,
       onTarget: true,
       bodyPart: data.bodyPart,
       target: {
@@ -256,7 +276,7 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
     const isCrossbar = rng.chance(0.35);
     return {
       outcome,
-      xg: data.xgRef,
+      xg: xgRef,
       onTarget: false,
       bodyPart: data.bodyPart,
       target: isCrossbar
@@ -268,7 +288,7 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
   // Normal off-target miss
   return {
     outcome: 'MISS',
-    xg: data.xgRef,
+    xg: xgRef,
     onTarget: false,
     bodyPart: data.bodyPart,
     target: {

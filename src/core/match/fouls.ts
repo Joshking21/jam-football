@@ -1,5 +1,5 @@
 // Implements SPEC §12.6 Discipline and §13.8 Fouls / Restarts
-import { Personality, Attributes } from '../types';
+import { Personality, Attributes, RoleId, PlayerInstruction } from '../types';
 import { Rng } from '../rng';
 import { K } from '@/config/balance';
 import { isBox } from './frames';
@@ -65,4 +65,20 @@ export function determineFoulRestart(
 
   // Elsewhere
   return 'REGULAR_FK';
+}
+
+/**
+ * Tactical depth foul probability multiplier (SPEC §13.17)
+ */
+export function getFoulMultiplier(params: {
+  roleId?: RoleId;
+  isTightMarkMarker?: boolean;
+  playerInstructions?: PlayerInstruction[];
+}): number {
+  let mult = 1.0;
+  if (params.roleId === 'stopper') mult *= 1.2;
+  if (params.roleId === 'ball_winner') mult *= 1.5;
+  if (params.isTightMarkMarker) mult *= 1.2;
+  if (params.playerInstructions?.includes('stayOnFeet')) mult *= 0.5;
+  return mult;
 }

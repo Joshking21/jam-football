@@ -10,6 +10,7 @@ import {
   Tactics,
 } from '@/core/types';
 import { FORMATIONS } from '@/config/formations';
+import { getDefaultRoleForPos } from '@/config/roles';
 
 export function createMockAttributes(ovr: number): Attributes {
   return {
@@ -84,6 +85,7 @@ export function createMockTeamSheet(
   const defaultTactics: Tactics = {
     formation,
     lineup,
+    roles: fDef.slots.map((s) => getDefaultRoleForPos(s.position)),
     duties: fDef.slots.map((s) =>
       s.position === 'GK' || s.position === 'CB'
         ? 'Defend'
@@ -91,12 +93,15 @@ export function createMockTeamSheet(
           ? 'Attack'
           : 'Support',
     ),
+    playerInstructions: fDef.slots.map(() => []),
+    opposition: [],
     bench,
     captain: lineup[1] ?? null,
     takers: {
       penalty: lineup[9] ?? null,
       freeKick: lineup[7] ?? null,
       corner: lineup[5] ?? null,
+      longThrow: null,
     },
     instructions: {
       mentality: 'Balanced',
@@ -106,6 +111,11 @@ export function createMockTeamSheet(
       line: 'Normal',
       width: 'Normal',
       focus: 'Mixed',
+      onLoss: 'Mixed',
+      onWin: 'Mixed',
+      distribution: 'Mixed',
+      cornersFor: 'Mixed',
+      cornersAgainst: 'Mixed',
     },
     ...tacticsOverrides,
   };
@@ -126,6 +136,7 @@ export function createTestMatchInput(
   awayOvr: number = 68,
   homeTacticsOverrides: Partial<Tactics> = {},
   awayTacticsOverrides: Partial<Tactics> = {},
+  aiControls: Side[] = ['home', 'away'],
 ): MatchInput {
   return {
     fixtureId: 'f_test_001',
@@ -134,6 +145,6 @@ export function createTestMatchInput(
     isDerby: false,
     weather: 'Clear',
     userSide: null,
-    aiControls: ['home', 'away'],
+    aiControls,
   };
 }

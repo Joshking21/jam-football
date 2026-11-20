@@ -1,23 +1,52 @@
-// Implements SPEC §13.13 AI Manager (Lineup selection, captain/takers, in-match adjustments)
-import { Player, PlayerId, Formation, Tactics, Side, Duty, Position } from '../types';
+// Implements SPEC §13.13 AI Manager (Lineup selection, captain/takers, in-match adjustments) and §13.17.8
+import {
+  Player,
+  PlayerId,
+  Formation,
+  Tactics,
+  Side,
+  Duty,
+  Position,
+  RoleId,
+  PlayerInstruction,
+  OppOrder,
+  TeamInstructions,
+  Attributes,
+  Personality,
+} from '../types';
 import { FORMATIONS, FormationDef, FormationSlot } from '@/config/formations';
 import { ovrAt, getPrimaryOvr } from '../player/ratings';
 import { z } from '../math';
+import { computeRoleFit, getDefaultRoleForPos, getAvailableRolesForSlot } from '@/config/roles';
 
 export interface LineupSelectionResult {
   formation: Formation;
   lineup: (PlayerId | null)[]; // 11 slots
+  roles: RoleId[];
+  playerInstructions: PlayerInstruction[][];
+  opposition: OppOrder[];
   duties: Duty[];
   bench: PlayerId[];
   captain: PlayerId;
   penaltyTaker: PlayerId;
   freeKickTaker: PlayerId;
   cornerTaker: PlayerId;
+  longThrowTaker: PlayerId | null;
 }
 
-export interface PlayerSelectionCandidate extends Player {
+export interface PlayerSelectionCandidate {
+  id: PlayerId;
+  attributes: Attributes;
+  positions: { pos: Position; familiarity: number }[];
+  condition: number;
+  morale: number;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  personality?: Personality;
   isInjured?: boolean;
   isSuspended?: boolean;
+  [key: string]: any;
 }
 
 const SLOT_FILL_ORDER: string[] = [
@@ -48,6 +77,7 @@ export function pickBestLineup(
   players: PlayerSelectionCandidate[],
   clubStyleFormation: Formation,
   familiarities: Record<Formation, number>,
+  clubStyle?: Partial<TeamInstructions>,
 ): LineupSelectionResult {
   // 1. Formation selection:
   // If 2+ slots in club style formation would have fit < 0.8, choose the formation among its familiarity >= 60 with highest total
@@ -233,21 +263,158 @@ export function pickBestLineup(
   cornerPool.sort((a, b) => b.attributes.setPieces - a.attributes.setPieces);
   const cornerTaker = cornerPool[0]?.id ?? freeKickTaker;
 
+  // 7. Roles & Player Instructions (SPEC §13.17.8)
+  let ballPlayingCbAssigned = false;
+  const roles: RoleId[] = fDef.slots.map((slot) => {
+    const defaultRole = getDefaultRoleForPos(slot.position);
+    const pId = lineup[slot.slot];
+    const p = pId ? players.find((cand) => cand.id === pId) : null;
+    if (!p) return defaultRole;
+
+    const available = getAvailableRolesForSlot(slot.position);
+    let bestRole = defaultRole;
+    let bestFit = 0;
+
+    for (const r of available) {
+      const { fit } = computeRoleFit(r.id, p.attributes);
+      if (fit > bestFit) {
+        bestFit = fit;
+        bestRole = r.id;
+      }
+    }
+
+    let role = bestFit >= 0.6 ? bestRole : defaultRole;
+
+    // Club style overrides when fit >= 0.5 (§13.17.8)
+    if (clubStyle) {
+      if (slot.position === 'ST') {
+        if (
+          clubStyle.passing === 'Direct' &&
+          computeRoleFit('target_man', p.attributes).fit >= 0.5
+        ) {
+          role = 'target_man';
+        } else if (
+          clubStyle.pressing === 'High' &&
+          computeRoleFit('pressing_forward', p.attributes).fit >= 0.5
+        ) {
+          role = 'pressing_forward';
+        }
+      } else if (['LM', 'RM', 'LW', 'RW'].includes(slot.position)) {
+        if (clubStyle.width === 'Wide' && computeRoleFit('winger', p.attributes).fit >= 0.5) {
+          role = 'winger';
+        }
+      } else if (slot.position === 'CB' && !ballPlayingCbAssigned) {
+        if (
+          clubStyle.passing === 'Short' &&
+          computeRoleFit('ball_playing_cb', p.attributes).fit >= 0.5
+        ) {
+          role = 'ball_playing_cb';
+          ballPlayingCbAssigned = true;
+        }
+      } else if (slot.position === 'DM') {
+        if (
+          clubStyle.mentality === 'Defensive' &&
+          computeRoleFit('anchor', p.attributes).fit >= 0.5
+        ) {
+          role = 'anchor';
+        }
+      } else if (['LB', 'RB', 'LWB', 'RWB'].includes(slot.position)) {
+        if (
+          clubStyle.mentality === 'Defensive' &&
+          computeRoleFit('fb_defensive', p.attributes).fit >= 0.5
+        ) {
+          role = 'fb_defensive';
+        }
+      }
+    }
+
+    return role;
+  });
+
+  // Player Instructions (SPEC §13.17.8: AI uses at most one per player, only shootLess for low-longShots midfielders)
+  const playerInstructions: PlayerInstruction[][] = fDef.slots.map((slot) => {
+    const pId = lineup[slot.slot];
+    const p = pId ? players.find((cand) => cand.id === pId) : null;
+    if (!p) return [];
+    if (['DM', 'CM', 'AM'].includes(slot.position) && p.attributes.longShots <= 50) {
+      return ['shootLess'];
+    }
+    return [];
+  });
+
+  // Long throw taker (outfield player with strength >= 70)
+  const outfieldXi = xiPlayers.filter((p) => p.positions[0]?.pos !== 'GK');
+  const strongThrowers = outfieldXi.filter((p) => p.attributes.strength >= 70);
+  strongThrowers.sort((a, b) => b.attributes.strength - a.attributes.strength);
+  const longThrowTaker = strongThrowers[0]?.id ?? null;
+
+  const opposition: OppOrder[] = [];
+
   return {
     formation: chosenFormation,
     lineup,
+    roles,
+    playerInstructions,
+    opposition,
     duties,
     bench,
     captain,
     penaltyTaker,
     freeKickTaker,
     cornerTaker,
+    longThrowTaker,
   };
 }
 
 export interface InMatchAiDecision {
   instructionChanges?: Partial<Tactics['instructions']>;
   substitutions?: { outId: PlayerId; inId: PlayerId; slot: number }[];
+  oppositionChanges?: OppOrder[];
+  playerInstructionChanges?: { slot: number; instructions: PlayerInstruction[] }[];
+}
+
+export function determineAiOppositionOrders(params: {
+  ourReputation: number;
+  ourXi: PlayerSelectionCandidate[];
+  oppXi: PlayerSelectionCandidate[];
+}): OppOrder[] {
+  const { ourReputation, ourXi, oppXi } = params;
+  if (ourReputation < 3) return [];
+
+  const attackers = oppXi.filter((p) => {
+    const pos = p.positions[0]?.pos;
+    return pos === 'ST' || pos === 'LW' || pos === 'RW' || pos === 'AM';
+  });
+  if (attackers.length === 0) return [];
+  attackers.sort((a, b) => getPrimaryOvr(b) - getPrimaryOvr(a));
+  const bestAttacker = attackers[0]!;
+
+  const defenders = ourXi.filter((p) => {
+    const pos = p.positions[0]?.pos;
+    return pos === 'CB' || pos === 'LB' || pos === 'RB' || pos === 'DM';
+  });
+  if (defenders.length === 0) return [];
+  defenders.sort((a, b) => getPrimaryOvr(b) - getPrimaryOvr(a));
+  const bestDefender = defenders[0]!;
+
+  if (getPrimaryOvr(bestAttacker) >= getPrimaryOvr(bestDefender) + 5) {
+    return [{ kind: 'tightMark', target: bestAttacker.id }];
+  }
+  return [];
+}
+
+export function determineAiTransitions(baseInstructions: TeamInstructions): TeamInstructions {
+  const instructions = { ...baseInstructions };
+  if (instructions.pressing === 'High' && instructions.mentality === 'Attacking') {
+    instructions.onLoss = 'CounterPress';
+  } else if (instructions.mentality === 'Defensive') {
+    instructions.onLoss = 'Regroup';
+    instructions.onWin = 'Counter';
+  }
+  if (instructions.passing === 'Direct') {
+    instructions.distribution = 'Long';
+  }
+  return instructions;
 }
 
 export function evaluateInMatchAi(params: {
@@ -266,8 +433,12 @@ export function evaluateInMatchAi(params: {
       condition: number;
       rating: number;
       isRedCarded?: boolean;
+      yellowCards?: number;
+      goals?: number;
+      assists?: number;
     }
   >;
+  oppLineup?: (PlayerId | null)[];
 }): InMatchAiDecision {
   const {
     minute,
@@ -280,6 +451,7 @@ export function evaluateInMatchAi(params: {
     subsUsed,
     windowsUsed,
     players,
+    oppLineup,
   } = params;
 
   const decision: InMatchAiDecision = {};
@@ -351,6 +523,59 @@ export function evaluateInMatchAi(params: {
         ];
       }
     }
+  }
+
+  // Opposition orders: doubleUp on a user player with >= 2 goals + assists in match (once, max 1 doubleUp, max 3 orders)
+  if (
+    oppLineup &&
+    currentTactics.opposition.length < 3 &&
+    !currentTactics.opposition.some((o) => o.kind === 'doubleUp')
+  ) {
+    for (const oppId of oppLineup) {
+      if (!oppId) continue;
+      const p = players[oppId];
+      if (p && (p.goals ?? 0) + (p.assists ?? 0) >= 2) {
+        decision.oppositionChanges = [
+          ...currentTactics.opposition,
+          { kind: 'doubleUp', target: oppId },
+        ];
+        break;
+      }
+    }
+  }
+
+  // Player instructions:
+  // - stayOnFeet for players on a yellow after 60'
+  // - getForward when chasing a game at 75'+
+  const piChanges: { slot: number; instructions: PlayerInstruction[] }[] = [];
+  lineup.forEach((pId, slot) => {
+    if (!pId) return;
+    const p = players[pId];
+    if (!p) return;
+    const existing = currentTactics.playerInstructions?.[slot] ?? [];
+
+    if (
+      minute >= 60 &&
+      (p.yellowCards ?? 0) >= 1 &&
+      !existing.includes('stayOnFeet') &&
+      existing.length === 0
+    ) {
+      piChanges.push({ slot, instructions: ['stayOnFeet'] });
+    } else if (
+      minute >= 75 &&
+      goalDiff < 0 &&
+      !existing.includes('getForward') &&
+      existing.length === 0
+    ) {
+      const pos = p.positions[0]?.pos;
+      if (pos && ['CM', 'AM', 'LM', 'RM', 'LW', 'RW'].includes(pos)) {
+        piChanges.push({ slot, instructions: ['getForward'] });
+      }
+    }
+  });
+
+  if (piChanges.length > 0) {
+    decision.playerInstructionChanges = piChanges;
   }
 
   if (Object.keys(instructionChanges).length > 0) {

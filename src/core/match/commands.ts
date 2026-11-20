@@ -23,8 +23,8 @@ export function shouldApplyCommand(
   lastEventType: MatchEventType | null,
   isHalfTime: boolean,
 ): boolean {
-  if (cmd.kind === 'instructions' || cmd.kind === 'formation') {
-    // Instructions/formation take effect at first step starting at or after issuedAtT + 30
+  if (cmd.kind === 'instructions' || cmd.kind === 'formation' || cmd.kind === 'opposition') {
+    // Instructions/formation/opposition take effect at first step starting at or after issuedAtT + 30
     return currentT >= cmd.issuedAtT + 30;
   }
 

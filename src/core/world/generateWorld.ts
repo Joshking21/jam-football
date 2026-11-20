@@ -20,6 +20,7 @@ import { CLUBS_DATA } from './clubs.data';
 import { NATION_NAMES } from './names.data';
 import { FAMOUS_PLAYERS_AND_MANAGERS, FAMOUS_SURNAMES } from './blocklist.data';
 import { FORMATIONS, getInitialFormationFamiliarity } from '@/config/formations';
+import { getDefaultRoleForPos } from '@/config/roles';
 import { getPositionWeights, rawOvr, getPrimaryOvr } from '../player/ratings';
 import { valueOf, wageFor } from '../player/value';
 import { generateFixtures } from '../season/fixtures';
@@ -575,13 +576,16 @@ export function generateWorld(seed: number = WORLD_SEED): WorldSnapshot {
     const initialTactics: Tactics = {
       formation: styleFormation,
       lineup,
+      roles: formationDef.slots.map((s) => getDefaultRoleForPos(s.position)),
       duties: new Array(11).fill('Support'),
+      playerInstructions: Array.from({ length: 11 }, () => []),
       bench,
       captain: clubPlayers[0]?.id || null,
       takers: {
         penalty: clubPlayers[0]?.id || null,
         freeKick: clubPlayers[0]?.id || null,
         corner: clubPlayers[0]?.id || null,
+        longThrow: null,
       },
       instructions: {
         mentality: cData.style.mentality,
@@ -591,7 +595,13 @@ export function generateWorld(seed: number = WORLD_SEED): WorldSnapshot {
         line: cData.style.line,
         width: cData.style.width,
         focus: cData.style.focus,
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
       },
+      opposition: [],
     };
 
     const club: Club = {
@@ -606,7 +616,14 @@ export function generateWorld(seed: number = WORLD_SEED): WorldSnapshot {
       colors: cData.colors,
       kits: cData.kits,
       reputation: cData.reputation,
-      style: cData.style,
+      style: {
+        ...cData.style,
+        onLoss: 'Mixed',
+        onWin: 'Mixed',
+        distribution: 'Mixed',
+        cornersFor: 'Mixed',
+        cornersAgainst: 'Mixed',
+      },
       managerName: cData.managerName,
       rivals: cData.rivals,
       balance: cData.balance,

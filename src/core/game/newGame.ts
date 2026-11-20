@@ -3,6 +3,7 @@ import { GameState, ClubId } from '../types';
 import { SAVE_VERSION } from '@/config/constants';
 import worldSnapshot from '../world/world.snapshot.json';
 import { WorldSnapshot } from '../world/generateWorld';
+import { migrateTactics } from './migrations';
 
 export interface NewGameOptions {
   seed: number;
@@ -16,6 +17,23 @@ export function createNewGame(options: NewGameOptions): GameState {
 
   // Deep clone snapshot so mutations in gameplay do not touch snapshot
   const snapshot = JSON.parse(JSON.stringify(worldSnapshot)) as WorldSnapshot;
+
+  // Ensure all clubs have tactical depth migrated
+  for (const club of Object.values(snapshot.clubs)) {
+    if (club.tactics) {
+      club.tactics = migrateTactics(club.tactics);
+    }
+    if (club.style) {
+      club.style = {
+        ...club.style,
+        onLoss: club.style.onLoss ?? 'Mixed',
+        onWin: club.style.onWin ?? 'Mixed',
+        distribution: club.style.distribution ?? 'Mixed',
+        cornersFor: club.style.cornersFor ?? 'Mixed',
+        cornersAgainst: club.style.cornersAgainst ?? 'Mixed',
+      };
+    }
+  }
 
   if (!snapshot.clubs[userClubId]) {
     throw new Error(`Invalid club ID: ${userClubId}`);

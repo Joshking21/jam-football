@@ -1,0 +1,436 @@
+{
+  "roles": {
+    "gk": {
+      "name": "Goalkeeper",
+      "slots": ["GK"],
+      "description": "Stays on his line.",
+      "gives": "Reliable shot stopping on his line",
+      "costs": "Leaves space in behind the defensive line"
+    },
+    "sweeper_keeper": {
+      "name": "Sweeper keeper",
+      "slots": ["GK"],
+      "description": "Comes off his line to sweep behind the defence.",
+      "gives": "Sweeps through balls and cuts out one-on-ones early",
+      "costs": "Vulnerable to long-range chips; risk of fouls outside the box"
+    },
+    "cb": {
+      "name": "Centre-back",
+      "slots": ["CB"],
+      "description": "Defends his zone.",
+      "gives": "Disciplined zonal positioning",
+      "costs": "Less proactive in stepping out to challenge"
+    },
+    "stopper": {
+      "name": "Stopper",
+      "slots": ["CB"],
+      "description": "Steps out to win it early.",
+      "gives": "Wins tackles and headers early in front of the line",
+      "costs": "Leaves space behind if beaten; commits more fouls"
+    },
+    "covering_cb": {
+      "name": "Covering centre-back",
+      "slots": ["CB"],
+      "description": "Drops off and sweeps up behind.",
+      "gives": "Cuts out opponent through balls behind the line",
+      "costs": "Reduced tackle and press intensity"
+    },
+    "ball_playing_cb": {
+      "name": "Ball-playing centre-back",
+      "slots": ["CB"],
+      "description": "Brings it out and starts attacks.",
+      "gives": "Progressive passes and accurate long switches from deep",
+      "costs": "Vulnerable to high pressing turnovers in defensive third"
+    },
+    "fb": {
+      "name": "Full-back",
+      "slots": ["LB", "RB", "LWB", "RWB"],
+      "description": "Gets forward when it's on.",
+      "gives": "Balanced flank play in attack and defence",
+      "costs": "Neither locks down the wing nor overloads attack"
+    },
+    "fb_defensive": {
+      "name": "Defensive full-back",
+      "slots": ["LB", "RB", "LWB", "RWB"],
+      "description": "Stays home and guards the flank.",
+      "gives": "Flank lockdown; stifles opponent wide attacks",
+      "costs": "Offers little width or attacking support"
+    },
+    "fb_overlapping": {
+      "name": "Overlapping full-back",
+      "slots": ["LB", "RB", "LWB", "RWB"],
+      "description": "Bursts past the winger to cross.",
+      "gives": "Dangerous crosses from the byline and attacking overloads",
+      "costs": "Leaves space behind on opponent counters; higher fatigue"
+    },
+    "fb_inverted": {
+      "name": "Inverted full-back",
+      "slots": ["LB", "RB", "LWB", "RWB"],
+      "description": "Steps into midfield when we have it.",
+      "gives": "Central midfield overload and progressive passing options",
+      "costs": "Leaves flank exposed to direct counter-attacks; fewer crosses"
+    },
+    "dm": {
+      "name": "Holding midfielder",
+      "slots": ["DM"],
+      "description": "Shields the back line.",
+      "gives": "Positional protection in front of the centre-backs",
+      "costs": "Limited forward passing and through balls"
+    },
+    "anchor": {
+      "name": "Anchor",
+      "slots": ["DM"],
+      "description": "Never leaves the space in front of the defence.",
+      "gives": "Stops opponent central attacks dead",
+      "costs": "Rarely steps forward or contributes to progressive play"
+    },
+    "deep_playmaker": {
+      "name": "Deep playmaker",
+      "slots": ["DM", "CM"],
+      "description": "Dictates play from deep.",
+      "gives": "Demands the ball deep and hits pinpoint long switches",
+      "costs": "Turnovers can spark immediate opponent counters under high press"
+    },
+    "ball_winner": {
+      "name": "Ball-winner",
+      "slots": ["DM", "CM"],
+      "description": "Hunts the ball down.",
+      "gives": "Relentless pressing and aggressive tackles to regain possession",
+      "costs": "Commits more fouls and cards; drains stamina rapidly"
+    },
+    "cm": {
+      "name": "Central midfielder",
+      "slots": ["CM"],
+      "description": "Does a bit of everything.",
+      "gives": "Consistent two-way midfield balance",
+      "costs": "Lacks specialist cutting edge"
+    },
+    "box_to_box": {
+      "name": "Box-to-box",
+      "slots": ["CM"],
+      "description": "Covers every blade of grass.",
+      "gives": "High work-rate presence in both penalty boxes",
+      "costs": "Heavy fatigue drain over 90 minutes"
+    },
+    "playmaker": {
+      "name": "Playmaker",
+      "slots": ["CM", "AM"],
+      "description": "Gets on the ball and picks the pass.",
+      "gives": "Unlocks defences with incisive through balls and vision",
+      "costs": "Offers less physical and pressing resistance defensively"
+    },
+    "runner": {
+      "name": "Late runner",
+      "slots": ["CM"],
+      "description": "Arrives late in the box.",
+      "gives": "Surprise goal threat with late runs into the penalty area",
+      "costs": "Vacates midfield space for opponent counters"
+    },
+    "am": {
+      "name": "Number 10",
+      "slots": ["AM"],
+      "description": "Links midfield and attack.",
+      "gives": "Creative link between midfield and attack",
+      "costs": "Passive defensively out of possession"
+    },
+    "shadow_striker": {
+      "name": "Shadow striker",
+      "slots": ["AM"],
+      "description": "Plays off the striker and gets in the box.",
+      "gives": "Second striker presence with clinical shots in the box",
+      "costs": "Minimal tracking back or pressing support in midfield"
+    },
+    "wm": {
+      "name": "Wide midfielder",
+      "slots": ["LM", "RM"],
+      "description": "Works the flank both ways.",
+      "gives": "Solid work-rate up and down the touchline",
+      "costs": "Lacks dynamic 1v1 dribbling penetration"
+    },
+    "wm_defensive": {
+      "name": "Defensive winger",
+      "slots": ["LM", "RM", "LW", "RW"],
+      "description": "Tracks back to help his full-back.",
+      "gives": "Double cover on the flank against opposing wingers",
+      "costs": "Reduced attacking output and fewer take-ons"
+    },
+    "wide_playmaker": {
+      "name": "Wide playmaker",
+      "slots": ["LM", "RM"],
+      "description": "Drifts inside to make things happen.",
+      "gives": "Creative through balls and switches by floating inside",
+      "costs": "Surrenders natural width on the flank"
+    },
+    "wf": {
+      "name": "Wide forward",
+      "slots": ["LW", "RW"],
+      "description": "Attacks his flank.",
+      "gives": "Direct attacking threat in the final third",
+      "costs": "Minimal tracking back into midfield"
+    },
+    "winger": {
+      "name": "Winger",
+      "slots": ["LM", "RM", "LW", "RW"],
+      "description": "Hugs the line, beats his man, crosses.",
+      "gives": "Dangerous crosses and 1v1 take-ons on the byline",
+      "costs": "Rarely cuts inside to shoot at goal"
+    },
+    "inside_forward": {
+      "name": "Inside forward",
+      "slots": ["LM", "RM", "LW", "RW"],
+      "description": "Cuts inside to shoot.",
+      "gives": "Direct goal threat driving inside onto his stronger foot",
+      "costs": "Fewer crosses; requires overlapping full-back to maintain width"
+    },
+    "st": {
+      "name": "Striker",
+      "slots": ["ST"],
+      "description": "Leads the line.",
+      "gives": "Balanced focal point in attack",
+      "costs": "Lacks specialist aerial dominance or deep playmaking"
+    },
+    "target_man": {
+      "name": "Target man",
+      "slots": ["ST"],
+      "description": "Wins headers and holds it up.",
+      "gives": "Dominates aerial duels, holds up play, knocks balls down",
+      "costs": "Limited mobility on through balls; rarely dribbles"
+    },
+    "poacher": {
+      "name": "Poacher",
+      "slots": ["ST"],
+      "description": "Lives in the box.",
+      "gives": "Deadly finishing instincts in and around the six-yard box",
+      "costs": "Rarely touches the ball outside the penalty area; no pressing"
+    },
+    "pressing_forward": {
+      "name": "Pressing forward",
+      "slots": ["ST"],
+      "description": "Leads the press from the front.",
+      "gives": "Forces defensive errors and wins the ball high up the pitch",
+      "costs": "Higher fatigue drain; slightly reduced goal output"
+    },
+    "false_nine": {
+      "name": "False nine",
+      "slots": ["ST"],
+      "description": "Drops deep and drags defenders out.",
+      "gives": "Drags centre-backs out of position and slips through balls",
+      "costs": "Fewer bodies in the box to convert crosses"
+    },
+    "advanced_forward": {
+      "name": "Advanced forward",
+      "slots": ["ST"],
+      "description": "Runs in behind the defence.",
+      "gives": "Stretches defences on the shoulder and creates one-on-ones",
+      "costs": "Catches offside more frequently; contributes less to buildup"
+    }
+  },
+  "orders": {
+    "tightMark": {
+      "name": "Tight mark",
+      "wording": "Stay touch-tight on {player}. He'll see less of the ball, but his marker gets dragged about.",
+      "gives": "Drastically reduces target's touches; tight challenges",
+      "costs": "Leaves space behind marker; increases marker fouls"
+    },
+    "doubleUp": {
+      "name": "Double up",
+      "wording": "Two on {player} whenever he has it. It leaves space on the other side.",
+      "gives": "Smothers the target whenever he receives the ball",
+      "costs": "Leaves open space in the opposite flank"
+    },
+    "pressOnBall": {
+      "name": "Press on ball",
+      "wording": "Close {player} down the moment he gets it. If he beats the press, we're open.",
+      "gives": "Presses target relentlessly in his half; forces errors",
+      "costs": "If he beats the press, your defence is wide open"
+    },
+    "showInside": {
+      "name": "Show inside",
+      "wording": "Force {player} inside. Fewer crosses, more shots.",
+      "gives": "Prevents crosses and forces wide players into crowded central areas",
+      "costs": "Allows more shots from distance"
+    },
+    "showOutside": {
+      "name": "Show outside",
+      "wording": "Force {player} down the line. Fewer shots, more crosses.",
+      "gives": "Forces attackers wide away from the goalmouth",
+      "costs": "Concedes more crosses into your penalty area"
+    }
+  },
+  "instructions": {
+    "onLoss": {
+      "CounterPress": {
+        "name": "Counter-press",
+        "wording": "Win it back in seconds. Get it wrong and they're through.",
+        "gives": "Immediate regains in opponent's half after turnovers",
+        "costs": "Opponent breaks clear on a counter if press is bypassed; stamina drain"
+      },
+      "Regroup": {
+        "name": "Regroup",
+        "wording": "Get back into shape and let them have it.",
+        "gives": "Protects against counter-attacks by dropping into defensive shape",
+        "costs": "No early ball regains in opponent half; allows them clean buildup"
+      },
+      "Mixed": {
+        "name": "Mixed",
+        "wording": "Read the moment.",
+        "gives": "Balanced tactical decisions depending on match situation",
+        "costs": "No specialist transition gains"
+      }
+    },
+    "onWin": {
+      "Counter": {
+        "name": "Counter",
+        "wording": "Break at speed.",
+        "gives": "Fast counter-attacking breaks immediately after winning the ball",
+        "costs": "Rushed final passes when opponent defence is settled"
+      },
+      "KeepIt": {
+        "name": "Keep it",
+        "wording": "Calm down and keep the ball.",
+        "gives": "Calm retention and safe circulation after regaining possession",
+        "costs": "Sacrifices fast counter-attacking opportunities"
+      },
+      "Mixed": {
+        "name": "Mixed",
+        "wording": "Read the moment.",
+        "gives": "Balanced response to ball recovery",
+        "costs": "No specialist transition gains"
+      }
+    },
+    "distribution": {
+      "Short": {
+        "name": "Short",
+        "wording": "Play out from the back.",
+        "gives": "Safe ball retention starting from the centre-backs",
+        "costs": "High risk of defensive third turnovers against high pressing"
+      },
+      "Long": {
+        "name": "Long",
+        "wording": "Go long to the front men.",
+        "gives": "Direct balls to attacking aerial targets, bypassing opposition press",
+        "costs": "45% of deliveries are contested duels rather than clean retention"
+      },
+      "Wide": {
+        "name": "Wide",
+        "wording": "Find the full-backs.",
+        "gives": "Early progressive passes out to the flanks",
+        "costs": "Limits central passing angles on the first step"
+      },
+      "Mixed": {
+        "name": "Mixed",
+        "wording": "Keeper's choice.",
+        "gives": "Keeper judges the best option for each situation",
+        "costs": "No preset tactical pattern"
+      }
+    },
+    "cornersFor": {
+      "NearPost": {
+        "name": "Near post",
+        "wording": "Flick-ons at the near post.",
+        "gives": "Flick-ons at the front stick; limits keeper claims",
+        "costs": "Harder delivery angle"
+      },
+      "FarPost": {
+        "name": "Far post",
+        "wording": "Big men at the back stick.",
+        "gives": "Overloads the back stick with your strongest aerial threats",
+        "costs": "Goalkeeper has longer to claim the cross"
+      },
+      "Short": {
+        "name": "Short",
+        "wording": "Work it short and keep the ball.",
+        "gives": "Retains possession and creates better crossing angles",
+        "costs": "No immediate header on goal from the delivery"
+      },
+      "Mixed": {
+        "name": "Mixed",
+        "wording": "Taker's choice.",
+        "gives": "Taker picks target based on defensive setup",
+        "costs": "No coordinated set-piece routine"
+      }
+    },
+    "cornersAgainst": {
+      "Zonal": {
+        "name": "Zonal",
+        "wording": "Defend the space.",
+        "gives": "Protects key danger areas near the front post",
+        "costs": "Vulnerable to aerial mismatches at the back post"
+      },
+      "ManMark": {
+        "name": "Man-mark",
+        "wording": "Pick up a man each. Watch the wrestling.",
+        "gives": "Matches best header directly to the opponent's main threat",
+        "costs": "4% risk of conceding a penalty for holding/shirt-pulling"
+      },
+      "Mixed": {
+        "name": "Mixed",
+        "wording": "Bit of both.",
+        "gives": "Hybrid zonal and man-marking structure",
+        "costs": "No specialist set-piece advantage"
+      }
+    }
+  },
+  "playerInstructions": {
+    "shootMore": {
+      "wording": "Shoot more: try his luck from distance.",
+      "gives": "More long-range attempts",
+      "costs": "More low-xG shots; turnovers on blocked attempts"
+    },
+    "shootLess": {
+      "wording": "Shoot less: work a better chance.",
+      "gives": "More patient buildup in the final third",
+      "costs": "Fewer shots overall; risks being tackled while looking for a pass"
+    },
+    "dribbleMore": {
+      "wording": "Take players on.",
+      "gives": "More 1v1 take-on attempts",
+      "costs": "Failed dribbles surrender possession higher up the pitch"
+    },
+    "dribbleLess": {
+      "wording": "Move it on quickly.",
+      "gives": "Quick recycling and fewer dispossessions",
+      "costs": "Fewer solo chances created or fouls won"
+    },
+    "crossMore": {
+      "wording": "Get it in the box early.",
+      "gives": "More frequent early deliveries into the penalty box",
+      "costs": "Keeper claims more over-hit deliveries"
+    },
+    "crossLess": {
+      "wording": "Keep it on the floor.",
+      "gives": "Maintains ground passing in wide areas",
+      "costs": "Fewer aerial opportunities for strikers"
+    },
+    "getForward": {
+      "wording": "Get forward at every chance.",
+      "gives": "Additional attacking support in the opponent's third",
+      "costs": "Vacates defensive zone on opponent counters; stamina drain"
+    },
+    "holdPosition": {
+      "wording": "Hold your position.",
+      "gives": "Disciplined positional structure",
+      "costs": "Offers less dynamic support when attacking"
+    },
+    "stayWider": {
+      "wording": "Stay wide and stretch them.",
+      "gives": "Stretches opposition defence across the pitch",
+      "costs": "Fewer central bodies to control midfield recycling"
+    },
+    "closeDownMore": {
+      "wording": "Close down more.",
+      "gives": "Aggressive pressing on opposing ball-carriers",
+      "costs": "Higher stamina drain; opponent breaks free if pressing is beaten"
+    },
+    "stayOnFeet": {
+      "wording": "Stay on your feet.",
+      "gives": "Fewer fouls, cards, and penalties conceded",
+      "costs": "Reduced tackle strength when defending"
+    },
+    "longThrows": {
+      "wording": "Take the long throws.",
+      "gives": "Throw-ins in attacking third become dangerous box deliveries",
+      "costs": "Takes longer to set up; keeper claim chance slightly higher"
+    }
+  }
+}
