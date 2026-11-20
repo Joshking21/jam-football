@@ -91,3 +91,8 @@ Overall status: ALL PASS
 - Notes: Full playable season loop from New Game to SeasonEnd and Sacked. Design system reworked per §19 with On Air vs The Office worlds, dynamic club color theming, Spring physics solver, ScreenTransition, CountUp, FlipList, and Sidebar rundown order (Keys 1-9). Text match view connects to match worker with live clock, event feed, subs and tactics.
 - Open issues: M3 Task 0 (tactical depth engine pass per §13.17) up next.
 
+
+## 2026-11-20 · SPEC §20 saves (Claude, not a Gemini task)
+- Changed: docs/SPEC.md §20.1 (`navigator.storage.persist()` on first save; behaviour when IndexedDB is unavailable), §20.3 (autosave 1 s after any decision outside a match, debounced; save on `visibilitychange`/`pagehide`; no hitch)
+- Ran: nothing (docs only)
+- Notes: also new: design references in `docs/design/hub/` and `docs/design/tactics/` (each README lists SPEC differences that win). After M3 task 0, rework the M3 UI against them. Update `src/state/saves.ts` for §20 when convenient.

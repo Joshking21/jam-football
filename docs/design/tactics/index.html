@@ -1,0 +1,961 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Touchline Tactics Wall</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: the office. A warm desk under a lamp; a whiteboard (left, the dominant object) with magnets, a marker tray and the bench strip;
+   a clipboard (right) that a player's file slides over. Game tokens are SPEC §19.2 verbatim; --ref-* style only the reference bar. */
+:root{
+  --bg:#07090D; --surface:#0E1218; --surface-2:#151A22; --surface-3:#1C222C; --border:#2A313D;
+  --desk:#100E0C; --desk-2:#191613; --desk-border:#2E2924;
+  --paper:#EFEBE3; --paper-2:#E4DED2; --paper-ink:#1B1A17; --paper-dim:#5E574E; --paper-rule:#CFC6B6;
+  --board:#E9ECEA; --board-ink:#1E2A38; --marker-red:#C42B2B; --marker-blue:#1F4FBF; --marker-green:#1E7B3C;
+  --text:#F2F4F7; --text-dim:#A3ACBA; --text-faint:#7D8696;
+  --accent:#F2B705; --accent-ink:#0B1F3A; --accent-text:#F2B705; --band-1:#F2B705; --band-2:#0B1F3A;
+  --win:#18C77A; --draw:#A3ACBA; --loss:#FF4D5E; --warning:#FFB020; --danger:#FF4D5E;
+  --radius-s:2px; --radius-m:4px; --cut:10px;
+  --shadow-paper:0 1px 0 rgb(0 0 0 / .25), 0 10px 24px rgb(0 0 0 / .5);
+  --font-head:'Barlow Condensed','Arial Narrow',system-ui,sans-serif; --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --ease-snap:cubic-bezier(.2,.9,.1,1); --ease-out:cubic-bezier(.2,.8,.2,1);
+  --manila:#D9C9A3; --alu-1:#CDD2D6; --alu-2:#9AA1A8;
+  --fit-good:#1E7B3C; --fit-mid:#B7791F; --fit-bad:#C42B2B;
+  --ref-bg:#040608; --ref-text:#8E97A6; --ref-border:#1F252E;
+  --mag:44px;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--ref-bg);color:var(--text);font:400 14px/1.45 var(--font-body);display:flex;flex-direction:column;gap:10px;
+  padding-block:10px 12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,select{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit}
+:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
+.lucide{width:18px;height:18px;stroke-width:1.75;flex:none}
+
+/* reference bar */
+.ref{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;color:var(--ref-text);font-size:12px}
+.ref-t{font:600 13px/1 var(--font-head);letter-spacing:.1em;text-transform:uppercase;color:var(--text)}
+.ref-g{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sw-row{display:flex;gap:3px;flex-wrap:wrap}
+.sw{width:34px;height:22px;border-radius:2px;background:var(--c);color:var(--ci);font:700 11px/22px var(--font-head);letter-spacing:.04em;text-align:center;opacity:.5}
+.sw:hover,.sw[aria-pressed="true"]{opacity:1}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 1px var(--ref-bg),0 0 0 2px var(--c)}
+.ref-btn{border:1px solid var(--ref-border);border-radius:2px;padding:4px 10px;color:var(--text-dim)}
+.ref-btn:hover,.ref-btn[aria-pressed="true"]{color:var(--text);border-color:var(--text-faint)}
+.ref-hint{margin-left:auto}
+.ref-hint kbd{font:500 11px/1 var(--font-body);border:1px solid var(--ref-border);border-radius:2px;padding:2px 5px;color:var(--text-dim)}
+
+/* shell (office world) */
+.app{flex:1;min-height:640px;display:grid;grid-template-columns:232px minmax(0,1fr);grid-template-rows:64px minmax(0,1fr);grid-template-areas:"top top" "nav stage";
+  background:var(--bg);border:1px solid var(--border);position:relative;overflow:hidden;isolation:isolate}
+.top{grid-area:top;display:flex;align-items:center;gap:16px;padding:0 12px 0 16px;background:var(--surface);border-bottom:1px solid var(--border);min-width:0;z-index:3}
+.club{display:flex;align-items:center;gap:10px;width:216px;min-width:0;flex:none}
+.club-name{font:700 20px/1 var(--font-head);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status{flex:1;display:flex;justify-content:center;align-items:center;gap:12px;font:600 14px/1 var(--font-head);letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);white-space:nowrap;min-width:0}
+.status b{color:var(--text);font-weight:600}
+.status .sep{width:4px;height:4px;background:var(--text-faint);transform:rotate(45deg)}
+.btn-go{position:relative;isolation:isolate;height:44px;padding:0 12px 0 18px;margin-left:auto;display:inline-flex;align-items:center;gap:12px;color:var(--accent-ink);
+  font:700 19px/1 var(--font-head);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;flex:none}
+.btn-go::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--accent);clip-path:polygon(0 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%)}
+.btn-go:hover::before{background:color-mix(in srgb,var(--accent) 86%,#fff)}
+.btn-go[aria-disabled="true"]{color:var(--text-faint);cursor:not-allowed}
+.btn-go[aria-disabled="true"]::before{background:var(--surface-3)}
+.key{font:600 11px/1 var(--font-body);letter-spacing:0;text-transform:none;padding:3px 5px;border:1px solid color-mix(in srgb,currentColor 40%,transparent);border-radius:2px}
+.go-why{position:absolute;right:12px;top:58px;z-index:20;max-width:280px;padding:8px 10px;background:var(--surface-3);font-size:12px;color:var(--text);opacity:0;pointer-events:none;transition:opacity 180ms}
+.btn-go[aria-disabled="true"]:hover + .go-why,.btn-go[aria-disabled="true"]:focus-visible + .go-why{opacity:1}
+
+.nav{grid-area:nav;position:relative;background:var(--desk);border-right:1px solid var(--desk-border);padding:16px 8px;display:flex;flex-direction:column;gap:18px;overflow:hidden}
+.grp{display:flex;flex-direction:column}
+.grp-h{font:600 11px/1 var(--font-head);letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);padding:0 12px 8px}
+.it{display:flex;align-items:center;gap:12px;width:100%;height:36px;padding:0 12px;border-radius:var(--radius-s);color:var(--text-dim);font:500 14px/1 var(--font-body)}
+.it:hover{color:var(--text);background:var(--desk-2)}
+.it.on{height:64px;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;background:var(--accent);color:var(--accent-ink);
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%)}
+.it.on .bn{display:flex;align-items:center;gap:10px;font:700 22px/1 var(--font-head);text-transform:uppercase;letter-spacing:.02em}
+.it.on .bc{font:500 12px/1.2 var(--font-body);opacity:.8;padding-left:28px}
+.stage{grid-area:stage;position:relative;overflow:auto;min-width:0;container-type:inline-size;
+  background:radial-gradient(ellipse 60% 50% at 28% 0%,rgb(255 214 160 / .075),transparent 70%),var(--desk)}
+
+/* ---------- the desk ---------- */
+.desk{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,372px);gap:32px;padding:22px 32px 40px;align-items:start;min-height:100%}
+@container (max-width:920px){ .desk{grid-template-columns:minmax(0,1fr);padding:18px 18px 32px} .prop{display:none} }
+.wall{position:relative;z-index:1;min-width:0;display:flex;flex-direction:column}
+.tabs{display:flex;gap:4px;padding-left:18px;position:relative;z-index:1}
+.tab{height:34px;padding:0 16px;border-radius:4px 4px 0 0;background:var(--paper-2);color:var(--paper-dim);font:600 14px/34px var(--font-head);letter-spacing:.08em;text-transform:uppercase;
+  transform:translateY(4px);transition:transform 180ms var(--ease-out)}
+.tab:hover{transform:translateY(1px)}
+.tab[aria-selected="true"]{background:var(--paper);color:var(--paper-ink);transform:none}
+.tab .cnt{font:500 11px/1 var(--font-body);letter-spacing:0;text-transform:none;margin-left:6px;color:var(--paper-dim)}
+.frame{position:relative;padding:10px;border-radius:5px;background:linear-gradient(160deg,var(--alu-1),var(--alu-2));box-shadow:var(--shadow-paper)}
+.bd{position:relative;background:var(--board);border-radius:2px;aspect-ratio:1050/790;overflow:hidden;touch-action:none;
+  background-image:radial-gradient(ellipse 40% 30% at 70% 30%,rgb(30 42 56 / .035),transparent 70%),radial-gradient(ellipse 30% 22% at 22% 72%,rgb(30 42 56 / .03),transparent 70%)}
+.bd svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.pl{fill:none;stroke:var(--board-ink);stroke-opacity:.35;stroke-width:3;stroke-linecap:round}
+.ghost{fill:none;stroke:var(--board-ink);stroke-opacity:.045;stroke-width:26;stroke-linecap:round}
+.mk{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.mk.blue{stroke:var(--marker-blue)}.mk.red{stroke:var(--marker-red)}.mk.green{stroke:var(--marker-green)}.mk.ink{stroke:var(--board-ink)}
+.mk.faint{stroke-opacity:.38}
+.mk.dash{stroke-dasharray:14 12}
+.bt{font:600 22px/1 var(--font-head);letter-spacing:.08em;text-transform:uppercase}
+.bt.blue{fill:var(--marker-blue)}.bt.red{fill:var(--marker-red)}.bt.ink{fill:var(--board-ink);fill-opacity:.55}
+.mvg{transition:transform 520ms var(--ease-out)}
+.layer-opp{opacity:0;pointer-events:none;transition:opacity 220ms}
+.wall.opp .layer-opp{opacity:1;pointer-events:auto}
+.wall.opp .layer-us,.wall.opp .mag{opacity:0;pointer-events:none}
+.layer-us,.mag{transition:opacity 220ms}
+.opp-o{cursor:pointer}
+.opp-o:focus{outline:none}
+.opp-o:focus-visible .hit,.opp-o.sel .hit{stroke:var(--paper-ink);stroke-width:3;stroke-dasharray:6 6}
+.hit{fill:transparent;stroke:none}
+
+/* magnets */
+.mag{position:absolute;left:0;top:0;width:var(--mag);display:flex;flex-direction:column;align-items:center;gap:3px;touch-action:none;z-index:2;will-change:transform}
+.mag .disc{position:relative;width:var(--mag);height:var(--mag);border-radius:50%;background:var(--k1);border:2px solid var(--k2);color:var(--k2);display:grid;place-items:center;
+  font:700 calc(var(--mag) * .4)/1 var(--font-head);box-shadow:0 1px 0 rgb(0 0 0 / .25),0 2px 4px rgb(0 0 0 / .25);transition:transform 140ms var(--ease-out)}
+.mag .disc::after{content:"";position:absolute;inset:-2px;border-radius:50%;box-shadow:0 10px 18px rgb(0 0 0 / .35);opacity:0;transition:opacity 140ms}
+.mag.lift{z-index:10}
+.mag.lift .disc{transform:scale(1.08)}
+.mag.lift .disc::after{opacity:1}
+.mag .nm{font:600 13px/1 var(--font-head);letter-spacing:.02em;color:var(--board-ink);white-space:nowrap;max-width:84px;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.mag .ovr{position:absolute;right:-12px;top:-7px;min-width:24px;height:18px;padding:0 4px;border-radius:2px;background:var(--fit);color:#fff;font:700 12px/18px var(--font-head);text-align:center;font-variant-numeric:tabular-nums}
+.mag.bench{--mag:36px}.mag.bench .nm{font-size:12px;max-width:60px}
+.mag.hurt .disc{filter:saturate(.35)}
+.mag.hurt .disc::before{content:"";position:absolute;inset:6px;background:linear-gradient(var(--marker-red),var(--marker-red)) center/70% 4px no-repeat,linear-gradient(var(--marker-red),var(--marker-red)) center/4px 70% no-repeat}
+.mag .ring{position:absolute;left:50%;top:calc(var(--mag) / 2);width:calc(var(--mag) + 22px);height:calc(var(--mag) + 22px);transform:translate(-50%,-50%);pointer-events:none;overflow:visible}
+.mag:focus{outline:none}
+.mag:focus-visible .disc{outline:2px solid var(--paper-ink);outline-offset:4px}
+.mag.armed .disc{outline:2px dashed var(--marker-blue);outline-offset:5px}
+
+.tray{position:relative;height:34px;margin:0 30px;border-radius:0 0 6px 6px;background:linear-gradient(var(--alu-2),#80878E);box-shadow:0 6px 12px rgb(0 0 0 / .45)}
+.tray svg{position:absolute;left:18px;top:6px;height:22px;width:auto}
+.wall-foot{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:14px 4px 0;color:var(--text-dim);font-size:12px}
+.wall-foot b{font:600 12px/1 var(--font-head);letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+
+/* paper */
+.side{position:relative;z-index:1;min-width:0}
+.sheet{position:relative;background:var(--paper);color:var(--paper-ink);border-radius:3px;box-shadow:var(--shadow-paper);padding:24px 22px 22px}
+.sheet :focus-visible{outline-color:var(--paper-ink)}
+.clip{padding-top:40px}
+.clip::before{content:"";position:absolute;left:50%;top:-12px;width:132px;height:34px;transform:translateX(-50%);border-radius:5px 5px 8px 8px;
+  background:linear-gradient(#3A3F45,#24282D);box-shadow:0 2px 0 rgb(0 0 0 / .3),inset 0 1px 0 rgb(255 255 255 / .12)}
+.clip::after{content:"";position:absolute;left:50%;top:-2px;width:64px;height:8px;transform:translateX(-50%);border-radius:4px;background:#15181B}
+.s-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:8px;border-bottom:2px solid var(--paper-ink);
+  font:600 12px/1 var(--font-head);letter-spacing:.1em;text-transform:uppercase;color:var(--paper-dim)}
+.s-title{margin:12px 0 2px;font:700 30px/1 var(--font-head);text-transform:uppercase;letter-spacing:.02em}
+.form-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--paper-rule)}
+.sel-wrap{position:relative}
+.sel-wrap select{appearance:none;-webkit-appearance:none;width:100%;height:38px;padding:0 34px 0 10px;background:var(--paper-2);border:1px solid var(--paper-rule);border-radius:3px;color:var(--paper-ink);
+  font:700 20px/1 var(--font-head);letter-spacing:.04em;cursor:pointer}
+.sel-wrap::after{content:"";position:absolute;right:12px;top:50%;width:8px;height:8px;border-right:2px solid var(--paper-ink);border-bottom:2px solid var(--paper-ink);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.sel-wrap.sm select{height:30px;font:500 13px/1 var(--font-body);letter-spacing:0;padding-right:28px}
+.fam{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:96px}
+.fam .v{font:600 24px/1 var(--font-head);font-variant-numeric:tabular-nums}
+.fam .l{font:500 11px/1 var(--font-body);color:var(--paper-dim)}
+.fam .bar{width:96px;height:5px;background:var(--paper-rule);position:relative;overflow:hidden}
+.fam .bar i{position:absolute;inset:0;transform-origin:0 50%;background:var(--paper-ink);transition:transform 400ms var(--ease-out)}
+.presets{display:flex;flex-wrap:wrap;gap:6px;padding:12px 0 4px}
+.chip{height:28px;padding:0 10px;border:1px solid var(--paper-rule);border-radius:14px;font:500 12px/26px var(--font-body);color:var(--paper-ink);background:transparent}
+.chip:hover{background:var(--paper-2)}
+.chip:active{transform:translateY(1px)}
+.dividers{display:flex;gap:2px;margin:14px -22px 0;padding:0 14px;border-bottom:2px solid var(--paper-ink)}
+.dv{flex:1;height:30px;border-radius:3px 3px 0 0;background:var(--paper-2);color:var(--paper-dim);font:600 12px/30px var(--font-head);letter-spacing:.06em;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+.dv[aria-selected="true"]{background:var(--paper-ink);color:var(--paper)}
+.grpw{padding-top:4px;min-height:268px}
+.ins{padding:11px 0 10px;border-bottom:1px solid var(--paper-rule)}
+.ins-l{font:600 12px/1 var(--font-head);letter-spacing:.1em;text-transform:uppercase;color:var(--paper-dim);margin-bottom:8px}
+.seg{display:flex;flex-wrap:wrap;gap:2px 4px}
+.opt{position:relative;padding:5px 9px;font:500 14px/1.2 var(--font-body);color:var(--paper-dim);border-radius:3px}
+.opt:hover{color:var(--paper-ink);background:var(--paper-2)}
+.opt[aria-checked="true"]{color:var(--paper-ink);font-weight:600}
+.opt .ring{position:absolute;inset:-5px -8px;width:calc(100% + 16px);height:calc(100% + 10px);pointer-events:none;overflow:visible}
+.ring path{fill:none;stroke:var(--marker-blue);stroke-width:2.6;stroke-linecap:round}
+.ins-d{margin:8px 0 0;font-size:13px;line-height:1.45;color:var(--paper-dim);min-height:19px}
+.takers{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 12px;align-items:center;padding:12px 0 4px;font-size:13px}
+.takers label{color:var(--paper-dim)}
+.ready{display:flex;align-items:flex-start;gap:8px;margin-top:14px;padding-top:12px;border-top:2px solid var(--paper-ink);font:600 15px/1.3 var(--font-head);letter-spacing:.04em;text-transform:uppercase}
+.ready.ok{color:var(--marker-green)}.ready.bad{color:var(--marker-red)}
+.ready svg{flex:none;width:22px;height:22px;overflow:visible}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.pbtn{height:34px;padding:0 12px;display:inline-flex;align-items:center;gap:8px;border-radius:3px;font:500 13px/1 var(--font-body)}
+.pbtn.solid{background:var(--paper-ink);color:var(--paper)}
+.pbtn.solid:hover{background:#34322D}
+.pbtn.line{border:1px solid var(--paper-ink);color:var(--paper-ink)}
+.pbtn.line:hover{background:var(--paper-2)}
+.pbtn:active{transform:translateY(2px)}
+.pbtn .lucide{width:16px;height:16px}
+
+/* the player's file (slides over the clipboard) */
+.file{position:absolute;left:-10px;right:10px;top:26px;z-index:5;padding-top:30px}
+.file .tabm{position:absolute;left:18px;top:-26px;height:28px;padding:0 14px;border-radius:4px 4px 0 0;background:var(--manila);font:700 15px/28px var(--font-head);letter-spacing:.04em;text-transform:uppercase;color:var(--paper-ink)}
+.file .x{position:absolute;right:10px;top:10px;width:32px;height:32px;display:grid;place-items:center;border-radius:3px;color:var(--paper-dim)}
+.file .x:hover{background:var(--paper-2);color:var(--paper-ink)}
+.who{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:center;padding-bottom:12px;border-bottom:2px solid var(--paper-ink)}
+.who .disc{width:46px;height:46px;border-radius:50%;background:var(--k1);border:2px solid var(--k2);color:var(--k2);display:grid;place-items:center;font:700 19px/1 var(--font-head);grid-row:1/3}
+.who h2{margin:0;font:700 26px/1 var(--font-head);text-transform:uppercase;letter-spacing:.02em}
+.who .meta{font-size:12px;color:var(--paper-dim)}
+.who .o{grid-row:1/3;text-align:right;font:600 30px/1 var(--font-head);font-variant-numeric:tabular-nums}
+.who .o small{display:block;font:500 11px/1.3 var(--font-body);color:var(--paper-dim)}
+.sub-h{margin:14px 0 4px;font:600 12px/1 var(--font-head);letter-spacing:.1em;text-transform:uppercase;color:var(--paper-dim);display:flex;justify-content:space-between}
+.roles{display:flex;flex-direction:column}
+.role{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:9px 8px 9px 12px;border-bottom:1px solid var(--paper-rule);border-radius:2px}
+.role:hover{background:var(--paper-2)}
+.role .rn{font:600 15px/1.2 var(--font-body)}
+.role .st{font-size:13px;letter-spacing:1px;color:var(--paper-ink);white-space:nowrap}
+.role .st i{font-style:normal;color:var(--paper-rule)}
+.role .st.any{font:500 11px/1 var(--font-body);letter-spacing:0;color:var(--paper-dim)}
+.role .rd{grid-column:1/-1;font-size:13px;color:var(--paper-dim)}
+.role .gc{grid-column:1/-1;display:none;font-size:12.5px;line-height:1.45}
+.role[aria-checked="true"] .gc{display:block}
+.role[aria-checked="true"]::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:4px;border-radius:2px;background:var(--marker-blue)}
+.g{color:var(--marker-green)}.c{color:var(--marker-red)}
+.pis{display:flex;flex-direction:column}
+.pi{display:grid;grid-template-columns:22px minmax(0,1fr);gap:2px 10px;padding:8px 4px;border-bottom:1px solid var(--paper-rule);align-items:start}
+.pi .box{width:18px;height:18px;border:2px solid var(--paper-ink);border-radius:2px;margin-top:1px;position:relative}
+.pi .box svg{position:absolute;inset:-6px;width:30px;height:30px;overflow:visible}
+.pi .t{font-size:13.5px;line-height:1.35}
+.pi .why{grid-column:2;font-size:12px;color:var(--paper-dim)}
+.pi[aria-disabled="true"]{opacity:.5;cursor:not-allowed}
+.pi:not([aria-disabled="true"]):hover{background:var(--paper-2)}
+.order{display:flex;flex-direction:column;gap:3px;padding:10px 8px;border-bottom:1px solid var(--paper-rule);text-align:left;width:100%;border-radius:2px}
+.order:hover{background:var(--paper-2)}
+.order .on{font:600 14px/1.2 var(--font-body)}
+.order .w{font-size:13px;line-height:1.45}
+.order .cost{font-size:12px;color:var(--marker-red)}
+.order[aria-pressed="true"]{box-shadow:inset 4px 0 0 var(--marker-red)}
+.used{font:600 13px/1 var(--font-head);letter-spacing:.06em;text-transform:uppercase}
+.empty{display:flex;gap:12px;align-items:flex-start;padding:16px 0;color:var(--paper-dim);font-size:14px}
+.empty svg{flex:none}
+
+/* desk props (placeholders for fal F7 cut-outs) */
+.prop{position:absolute;pointer-events:none;z-index:0}
+.toast{position:absolute;right:18px;bottom:18px;z-index:70;max-width:300px;padding:12px 14px;background:var(--paper);color:var(--paper-ink);box-shadow:var(--shadow-paper);transform:rotate(-.8deg);font-size:13px}
+
+@media (max-width:1100px){
+  .app{grid-template-columns:72px minmax(0,1fr)}
+  .club{width:auto}
+  .grp-h{font-size:0;height:1px;padding:0;margin:0 14px 8px;background:var(--desk-border)}
+  .it{justify-content:center;padding:0;height:44px}.it .tx{display:none}
+  .it.on{height:56px;align-items:center}.it.on .bn span,.it.on .bc{display:none}
+}
+@media (max-width:860px){ .status{display:none} }
+@media (max-width:640px){
+  .app{grid-template-columns:56px minmax(0,1fr)} .nav{padding:12px 4px} .key,.ref-hint{display:none}
+  :root{--mag:34px} .mag .nm{font-size:11px;max-width:56px} .mag.bench{--mag:28px}
+}
+</style>
+
+<div class="ref" role="region" aria-label="Reference controls">
+  <span class="ref-t">Tactics reference</span>
+  <div class="ref-g"><span>Club</span><div class="sw-row" id="swatches"></div></div>
+  <div class="ref-g"><button class="ref-btn" id="rm" aria-pressed="false">Reduce motion</button><button class="ref-btn" id="replay">Replay settle</button></div>
+  <span class="ref-hint">Drag magnets to swap · <kbd>Enter</kbd> pick, <kbd>Enter</kbd> on another to swap · arrows move · <kbd>Esc</kbd> close</span>
+</div>
+
+<div class="app" id="app">
+  <header class="top">
+    <div class="club" id="clubId"></div>
+    <div class="status"><span>Matchday <b>8</b> of 18</span><i class="sep"></i><b>2nd</b><i class="sep"></i><span><b>14</b> pts</span><i class="sep"></i><span id="vsLine"></span></div>
+    <button class="btn-go" id="go"><span>Go to match</span><span class="key">Space</span></button><div class="go-why" id="goWhy" role="tooltip"></div>
+  </header>
+  <nav class="nav" id="nav" aria-label="Rundown"></nav>
+  <main class="stage" id="stage">
+    <div class="desk" id="desk">
+      <section class="wall" id="wall" aria-label="Tactics board">
+        <div class="tabs" role="tablist"><button class="tab" role="tab" id="tabUs" aria-selected="true">Our team</button><button class="tab" role="tab" id="tabOpp" aria-selected="false">Opposition<span class="cnt" id="oppCnt"></span></button></div>
+        <div class="frame"><div class="bd" id="bd"><svg id="svg" viewBox="0 0 1050 790"></svg></div></div>
+        <div class="tray" aria-hidden="true"><svg viewBox="0 0 260 22"><rect x="0" y="5" width="70" height="12" rx="3" fill="#E9ECEA"/><rect x="60" y="4" width="16" height="14" rx="3" fill="#C42B2B"/>
+          <rect x="86" y="5" width="70" height="12" rx="3" fill="#E9ECEA"/><rect x="146" y="4" width="16" height="14" rx="3" fill="#1F4FBF"/>
+          <rect x="172" y="3" width="72" height="16" rx="2" fill="#3A3F45"/><rect x="172" y="13" width="72" height="6" rx="1" fill="#6B5B4A"/></svg></div>
+        <div class="wall-foot" id="legend"></div>
+      </section>
+      <section class="side" id="side" aria-label="Instructions"></section>
+      <svg class="prop" id="props" aria-hidden="true"></svg>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+<script>
+(() => {
+'use strict';
+/* ================= data ================= */
+const CLUBS = {
+  c01:{name:'Port Calloway FC',town:'Port Calloway',code:'PCF',kit:['#0B1F3A','#F2B705'],th:['#F2B705','#0B1F3A','#F2B705','#F2B705','#0B1F3A'],st:['4-3-3','Attacking','Short','Normal','High','High','Wide']},
+  c02:{name:'Ironvale Athletic',town:'Ironvale',code:'IVA',kit:['#2B2B2B','#FF6A13'],th:['#FF6A13','#1A0A00','#FF7A2E','#FF6A13','#2B2B2B'],st:['4-4-2','Balanced','Direct','Fast','High','Normal','Normal']},
+  c03:{name:'Kestrel Bay FC',town:'Kestrel Bay',code:'KBF',kit:['#0E8C8C','#FFFFFF'],th:['#17A9A9','#03201F','#2BC2C2','#0E8C8C','#FFFFFF'],st:['4-2-3-1','Balanced','Short','Slow','Mid','Normal','Normal']},
+  c04:{name:'Saltmere Rovers',town:'Saltmere',code:'SAL',kit:['#6D1A36','#8FC5E8'],th:['#8FC5E8','#0D2233','#8FC5E8','#6D1A36','#8FC5E8'],st:['4-4-2','Balanced','Mixed','Normal','Mid','Normal','Wide']},
+  c05:{name:'Brightwater City',town:'Brightwater',code:'BWC',kit:['#4FA3E0','#FFFFFF'],th:['#4FA3E0','#04182A','#5DB0EA','#4FA3E0','#FFFFFF'],st:['4-3-3','Attacking','Short','Fast','High','High','Normal']},
+  c06:{name:'Northgate Albion',town:'Northgate',code:'NGA',kit:['#1E7B3C','#FFFFFF'],th:['#2FA457','#03200D','#3DBA67','#1E7B3C','#FFFFFF'],st:['4-1-4-1','Defensive','Mixed','Normal','Mid','Deep','Normal']},
+  c07:{name:'Ashcombe United',town:'Ashcombe',code:'ASU',kit:['#C8102E','#111111'],th:['#C8102E','#FFFFFF','#F0455D','#C8102E','#111111'],st:['3-5-2','Balanced','Direct','Normal','Mid','Normal','Wide']},
+  c08:{name:'Veldmoor Town',town:'Veldmoor',code:'VDT',kit:['#4B2A7B','#FFFFFF'],th:['#6A44A8','#FFFFFF','#B396E8','#4B2A7B','#FFFFFF'],st:['5-3-2','Defensive','Direct','Slow','Low','Deep','Narrow']},
+  c09:{name:'Lindenfield FC',town:'Lindenfield',code:'LIN',kit:['#FFD100','#111111'],th:['#FFD100','#111111','#FFD100','#FFD100','#111111'],st:['4-4-2','Balanced','Mixed','Normal','Mid','Normal','Normal']},
+  c10:{name:'Corvallen Wanderers',town:'Corvallen',code:'COR',kit:['#111111','#FFFFFF'],th:['#F3F6FB','#07090D','#F3F6FB','#F3F6FB','#111111'],st:['3-4-3','Attacking','Direct','Fast','High','High','Wide']},
+};
+/* slots: [position, x along the pitch (0 own goal → 1 their goal), y across (0 our left touchline → 1 our right)] */
+const BACK4 = [['LB',.25,.13],['CB',.2,.38],['CB',.2,.62],['RB',.25,.87]];
+const FORMS = {
+  '4-3-3':[['GK',.05,.5],...BACK4,['CM',.47,.27],['DM',.37,.5],['CM',.47,.73],['LW',.72,.15],['ST',.78,.5],['RW',.72,.85]],
+  '4-4-2':[['GK',.05,.5],...BACK4,['LM',.49,.13],['CM',.45,.38],['CM',.45,.62],['RM',.49,.87],['ST',.73,.38],['ST',.73,.62]],
+  '4-2-3-1':[['GK',.05,.5],...BACK4,['DM',.37,.37],['DM',.37,.63],['LW',.6,.15],['AM',.6,.5],['RW',.6,.85],['ST',.79,.5]],
+  '4-1-4-1':[['GK',.05,.5],...BACK4,['DM',.35,.5],['LM',.54,.12],['CM',.52,.37],['CM',.52,.63],['RM',.54,.88],['ST',.77,.5]],
+  '3-5-2':[['GK',.05,.5],['CB',.2,.25],['CB',.18,.5],['CB',.2,.75],['LWB',.44,.08],['CM',.47,.32],['DM',.37,.5],['CM',.47,.68],['RWB',.44,.92],['ST',.73,.38],['ST',.73,.62]],
+  '5-3-2':[['GK',.05,.5],['LWB',.28,.08],['CB',.2,.29],['CB',.18,.5],['CB',.2,.71],['RWB',.28,.92],['CM',.47,.26],['CM',.43,.5],['CM',.47,.74],['ST',.73,.38],['ST',.73,.62]],
+  '3-4-3':[['GK',.05,.5],['CB',.2,.25],['CB',.18,.5],['CB',.2,.75],['LM',.45,.1],['CM',.44,.37],['CM',.44,.63],['RM',.45,.9],['LW',.71,.17],['ST',.77,.5],['RW',.71,.83]],
+};
+const FAMIL = {'4-3-3':94,'4-2-3-1':72,'4-4-2':61,'4-1-4-1':58,'3-4-3':44,'3-5-2':40,'5-3-2':31};
+const REL = {LB:['LWB','RB'],RB:['RWB','LB'],LWB:['LB','LM'],RWB:['RB','RM'],CB:['DM'],DM:['CB','CM'],CM:['DM','AM'],AM:['CM','ST'],LM:['LW','LWB'],RM:['RW','RWB'],LW:['LM','ST'],RW:['RM','ST'],ST:['AM','LW','RW']};
+/* squad: name, number, natural positions, OVR, archetype, condition, flags */
+const SQUAD = [
+  ['Ruairi Doyle',1,['GK'],74,'gk',96],['Pim van Aalst',13,['GK'],66,'gk',100],['Kieran Achebe',2,['RB','RWB'],71,'fbA',91],['Sam Whitlock',3,['LB','LWB'],70,'fbD',88],
+  ['Lewis Fairclough',5,['CB'],73,'stop',68],['Ruben Achterberg',6,['CB'],75,'bpcb',93],['Dan Okoro',15,['CB'],68,'cov',97],['Finn Harland',22,['LB','LWB','LM'],64,'fbA',99],
+  ['Tom Varga',4,['DM','CM'],74,'anchor',84],['Rhys Calder',8,['CM'],76,'play',90],['Jonah Pryce',10,['CM','AM'],77,'runner',71],['Oskar Lind',16,['CM','DM'],67,'bw',95],
+  ['Kofi Mensah-Lowe',7,['RW','RM'],78,'inside',86],['Matías Ilori',11,['LW','LM'],75,'winger',73],['Eli Brandon',17,['RM','RW'],66,'winger',100],['Ade Bankole',9,['ST'],72,'target',94],
+  ['Noah Strand',19,['ST'],70,'pace',92],['Callum Teague',20,['AM','ST'],65,'f9',98],['Joel Marsh',18,['RB','CB'],63,'fbD',100],['Dara Quinn',14,['CB','DM'],70,'cov',40,'injured'],
+].map(([name, num, pos, ovr, arch, cond, flag], i) => ({ i, name, num, pos, ovr, arch, cond, injured: flag === 'injured', sur: name.split(' ').slice(-1)[0] }));
+const ATTRS = ['passing','decisions','composure','tackling','strength','heading','positioning','pace','crossing','stamina','firstTouch','workRate','dribbling','offTheBall','finishing','longShots','oneOnOnes'];
+const ARCH = {
+  gk:{oneOnOnes:4,decisions:0,composure:0,passing:-8},fbA:{crossing:4,pace:6,stamina:5,dribbling:0,tackling:-4,positioning:-4,workRate:2},fbD:{positioning:4,tackling:4,strength:1,crossing:-6,pace:-3},
+  stop:{tackling:5,strength:7,heading:7,positioning:0,pace:-8,passing:-10},bpcb:{passing:4,composure:4,decisions:2,tackling:0,heading:-1,positioning:0},cov:{positioning:4,pace:3,decisions:0,tackling:-2},
+  anchor:{positioning:6,tackling:4,decisions:2,passing:-2,workRate:0},play:{passing:8,decisions:6,firstTouch:5,composure:3,tackling:-10},runner:{offTheBall:7,finishing:2,stamina:6,workRate:2,passing:-1,firstTouch:0},
+  bw:{tackling:7,workRate:6,stamina:5,passing:-8},inside:{finishing:4,dribbling:6,longShots:4,pace:6,crossing:-8},winger:{crossing:6,dribbling:5,pace:8,finishing:-8},
+  target:{heading:9,strength:9,firstTouch:0,pace:-10,dribbling:-10,finishing:0},pace:{pace:9,offTheBall:6,finishing:2,heading:-8},f9:{passing:2,decisions:4,firstTouch:4,dribbling:2,finishing:-3},
+};
+/* roles: SPEC §13.17.2 (names, descriptions and key attributes exact; gain/cost lines are the UI summaries) */
+const ROLES = {
+  gk:{n:'Goalkeeper',d:'Stays on his line.'},
+  sweeper_keeper:{n:'Sweeper keeper',d:'Comes off his line to sweep behind the defence.',g:'Cuts out balls in behind and one-on-ones',c:'Exposed to shots from distance; can concede free kicks outside the box',k:{oneOnOnes:.4,decisions:.3,passing:.3},a:'sweep'},
+  cb:{n:'Centre-back',d:'Defends his zone.'},
+  stopper:{n:'Stopper',d:'Steps out to win it early.',g:'Wins tackles and headers early',c:'Space behind him if he’s beaten; more fouls',k:{tackling:.4,strength:.3,heading:.3},a:'step'},
+  covering_cb:{n:'Covering centre-back',d:'Drops off and sweeps up behind.',g:'Fewer balls in behind',c:'Softer in the tackle and the press',k:{positioning:.4,pace:.4,decisions:.2},a:'back'},
+  ball_playing_cb:{n:'Ball-playing centre-back',d:'Brings it out and starts attacks.',g:'Starts attacks from the back',c:'Against a high press, his mistakes happen in our box',k:{passing:.5,composure:.3,decisions:.2},a:'pass'},
+  fb:{n:'Full-back',d:'Gets forward when it’s on.'},
+  fb_defensive:{n:'Defensive full-back',d:'Stays home and guards the flank.',g:'Shuts down his flank',c:'Rarely crosses or overlaps',k:{positioning:.4,tackling:.4,strength:.2},a:'hold'},
+  fb_overlapping:{n:'Overlapping full-back',d:'Bursts past the winger to cross.',g:'More and better crosses from his side',c:'Space behind him on the counter; tires faster',k:{crossing:.4,pace:.3,stamina:.3},a:'overlap'},
+  fb_inverted:{n:'Inverted full-back',d:'Steps into midfield when we have it.',g:'An extra man in midfield',c:'Few crosses; his flank is open on the counter',k:{passing:.4,decisions:.3,firstTouch:.3},a:'inside'},
+  dm:{n:'Holding midfielder',d:'Shields the back line.'},
+  anchor:{n:'Anchor',d:'Never leaves the space in front of the defence.',g:'Protects the centre and keeps it simple',c:'Rarely plays forward',k:{positioning:.5,tackling:.3,decisions:.2},a:'hold'},
+  deep_playmaker:{n:'Deep playmaker',d:'Dictates play from deep.',g:'Switches and long passes from deep',c:'A high press turns his mistakes into counters',k:{passing:.5,decisions:.3,composure:.2},a:'pass'},
+  ball_winner:{n:'Ball-winner',d:'Hunts the ball down.',g:'Presses and tackles hard',c:'More fouls; tires faster',k:{tackling:.4,workRate:.3,stamina:.3},a:'press'},
+  cm:{n:'Central midfielder',d:'Does a bit of everything.'},
+  box_to_box:{n:'Box-to-box',d:'Covers every blade of grass.',g:'Presses, and supports both boxes',c:'Tires faster',k:{stamina:.4,workRate:.3,passing:.3},a:'both'},
+  playmaker:{n:'Playmaker',d:'Gets on the ball and picks the pass.',g:'On the ball more, plays through balls',c:'Doesn’t press or tackle much',k:{passing:.4,decisions:.3,firstTouch:.3},a:'pass'},
+  runner:{n:'Late runner',d:'Arrives late in the box.',g:'Late runs and shots in the box',c:'Leaves space in midfield',k:{offTheBall:.5,finishing:.3,stamina:.2},a:'box'},
+  am:{n:'Number 10',d:'Links midfield and attack.'},
+  shadow_striker:{n:'Shadow striker',d:'Plays off the striker and gets in the box.',g:'Gets in the box and shoots',c:'Doesn’t defend in midfield',k:{offTheBall:.4,finishing:.4,composure:.2},a:'box'},
+  wm:{n:'Wide midfielder',d:'Works the flank both ways.'},
+  wm_defensive:{n:'Defensive winger',d:'Tracks back to help his full-back.',g:'Helps his full-back',c:'Fewer crosses and dribbles',k:{workRate:.4,tackling:.3,stamina:.3},a:'track'},
+  wide_playmaker:{n:'Wide playmaker',d:'Drifts inside to make things happen.',g:'Through balls and switches from inside',c:'Few crosses',k:{passing:.4,decisions:.3,dribbling:.3},a:'drift'},
+  wf:{n:'Wide forward',d:'Attacks his flank.'},
+  winger:{n:'Winger',d:'Hugs the line, beats his man, crosses.',g:'Beats his man and crosses',c:'Rarely shoots',k:{crossing:.4,dribbling:.3,pace:.3},a:'hug'},
+  inside_forward:{n:'Inside forward',d:'Cuts inside to shoot.',g:'Cuts in and shoots',c:'Almost never crosses; needs a full-back to hold the width',k:{finishing:.3,dribbling:.3,longShots:.2,pace:.2},a:'cut'},
+  st:{n:'Striker',d:'Leads the line.'},
+  target_man:{n:'Target man',d:'Wins headers and holds it up.',g:'Wins headers and knocks them down',c:'Slow on runs in behind; rarely dribbles',k:{heading:.4,strength:.4,firstTouch:.2},a:'aerial'},
+  poacher:{n:'Poacher',d:'Lives in the box.',g:'Finishes chances in the box',c:'Doesn’t link play; our press is weaker',k:{finishing:.4,offTheBall:.4,composure:.2},a:'box'},
+  pressing_forward:{n:'Pressing forward',d:'Leads the press from the front.',g:'Presses their defenders into mistakes',c:'Tires faster; shoots less',k:{workRate:.4,stamina:.3,pace:.3},a:'press'},
+  false_nine:{n:'False nine',d:'Drops deep and drags defenders out.',g:'Creates for runners from deep',c:'Fewer bodies in the box for crosses',k:{passing:.3,decisions:.3,firstTouch:.2,dribbling:.2},a:'drop'},
+  advanced_forward:{n:'Advanced forward',d:'Runs in behind the defence.',g:'Runs in behind, more one-on-ones',c:'Caught offside more',k:{pace:.4,offTheBall:.4,finishing:.2},a:'run'},
+};
+const FBR = ['fb','fb_defensive','fb_overlapping','fb_inverted'];
+const SLOT_ROLES = {
+  GK:['gk','sweeper_keeper'],CB:['cb','stopper','covering_cb','ball_playing_cb'],LB:FBR,RB:FBR,LWB:FBR,RWB:FBR,
+  DM:['dm','anchor','deep_playmaker','ball_winner'],CM:['cm','box_to_box','deep_playmaker','ball_winner','playmaker','runner'],AM:['am','playmaker','shadow_striker'],
+  LM:['wm','wm_defensive','wide_playmaker','winger','inside_forward'],RM:['wm','wm_defensive','wide_playmaker','winger','inside_forward'],
+  LW:['wf','winger','inside_forward','wm_defensive'],RW:['wf','winger','inside_forward','wm_defensive'],
+  ST:['st','target_man','poacher','pressing_forward','false_nine','advanced_forward'],
+};
+/* player instructions: SPEC §13.17.11 wording exact */
+const PIS = {
+  shootMore:['Shoot more: try his luck from distance.','More shots from range','Low-chance shots give the ball away','shootLess'],
+  shootLess:['Shoot less: work a better chance.','Waits for a better chance','More passes in the final third to lose','shootMore'],
+  dribbleMore:['Take players on.','Beats men and wins fouls','Loses it higher up the pitch','dribbleLess'],
+  dribbleLess:['Move it on quickly.','Keeps the ball moving','Creates less on his own','dribbleMore'],
+  crossMore:['Get it in the box early.','More crosses','The keeper claims more of them','crossLess'],
+  crossLess:['Keep it on the floor.','More passes into feet','Fewer headers; easier to defend','crossMore'],
+  getForward:['Get forward at every chance.','An extra man in attack','His zone is empty on the counter; tires faster','holdPosition'],
+  holdPosition:['Hold your position.','Keeps the shape','Less support in attack','getForward'],
+  stayWider:['Stay wide and stretch them.','Stretches their back line','Fewer bodies in the middle'],
+  closeDownMore:['Close down more.','Presses harder','Tires faster; open when he’s beaten'],
+  stayOnFeet:['Stay on your feet.','Half the fouls and cards','Wins fewer tackles'],
+  longThrows:['Take the long throws.','Throw-ins in their third become crosses','Slower restarts; the keeper claims more'],
+};
+/* team instructions: SPEC §13.10, §13.17.4–5 wording exact */
+const INS = [
+  ['with','mentality','Mentality',[['Defensive','Keep men behind the ball.'],['Balanced','Pick the right moments.'],['Attacking','Commit players forward.']]],
+  ['with','passing','Passing',[['Short','Keep it on the floor, patient.'],['Mixed','Mix it up.'],['Direct','Get it forward quickly, go long.']]],
+  ['with','tempo','Tempo',[['Slow','Control the rhythm.'],['Normal','Natural pace.'],['Fast','Play at speed; more mistakes.']]],
+  ['with','width','Width',[['Narrow','Crowd the middle.'],['Normal','Balanced width.'],['Wide','Stretch the pitch, cross more.']]],
+  ['with','focus','Focus',[['Left','Attack through the left.'],['Centre','Attack through the middle.'],['Right','Attack through the right.'],['Mixed','No preference.']]],
+  ['without','pressing','Pressing',[['Low','Hold shape, save energy.'],['Mid','Press in midfield.'],['High','Hunt the ball high; tiring and risky.']]],
+  ['without','line','Defensive line',[['Deep','Protect the space behind.'],['Normal','Standard line.'],['High','Squeeze the pitch; vulnerable to balls in behind.']]],
+  ['trans','onLoss','When we lose it',[['Counter-press','Win it back in seconds. Get it wrong and they’re through.'],['Regroup','Get back into shape and let them have it.'],['Mixed','Read the moment.']]],
+  ['trans','onWin','When we win it',[['Counter','Break at speed.'],['Keep it','Calm down and keep the ball.'],['Mixed','Read the moment.']]],
+  ['trans','distribution','Goalkeeper',[['Short','Play out from the back.'],['Long','Go long to the front men.'],['Wide','Find the full-backs.'],['Mixed','Keeper’s choice.']]],
+  ['setp','cornersFor','Our corners',[['Near post','Flick-ons at the near post.'],['Far post','Big men at the back stick.'],['Short','Work it short and keep the ball.'],['Mixed','Taker’s choice.']]],
+  ['setp','cornersAgainst','Their corners',[['Zonal','Defend the space.'],['Man-mark','Pick up a man each. Watch the wrestling.'],['Mixed','Bit of both.']]],
+];
+const GROUPS = [['with','With ball'],['without','Without ball'],['trans','Transitions'],['setp','Set pieces']];
+const PRESETS = [['Park the bus',['Defensive','Direct','Slow','Low','Deep','Narrow','Centre']],['Control',['Balanced','Short','Slow','Mid','Normal','Normal','Mixed']],
+  ['Gegenpress',['Attacking','Short','Fast','High','High','Normal','Mixed']],['Counter',['Defensive','Direct','Fast','Low','Deep','Wide','Mixed']],['All-out attack',['Attacking','Mixed','Fast','High','High','Wide','Mixed']]];
+const PRESET_KEYS = ['mentality','passing','tempo','pressing','line','width','focus'];
+/* opposition orders: SPEC §13.17.3 wording exact */
+const ORDERS = {
+  tightMark:['Tight mark','Stay touch-tight on {player}. He’ll see less of the ball, but his marker gets dragged about.','Through balls into his marker’s space; the marker fouls more.','Tight'],
+  doubleUp:['Double up','Two on {player} whenever he has it. It leaves space on the other side.','Space on the other flank. Only one double-up per match.','×2'],
+  pressOnBall:['Press on the ball','Close {player} down the moment he gets it. If he beats the press, we’re open.','If he beats it, they break; our nearest man tires.','Press'],
+  showInside:['Show inside','Force {player} inside. Fewer crosses, more shots.','He shoots more.','In'],
+  showOutside:['Show outside','Force {player} down the line. Fewer shots, more crosses.','He crosses and dribbles more.','Out'],
+};
+const OPP_NAMES = ['Marek Stolz','Reece Okafor','Lukas Brenner','Sami Haddad','Owen Treharne','Nils Ekdahl','Callum Dunne','Jordi Pastor','Ivan Kolar','Ben Ashdown','Teo Marinho'];
+const WIDE = ['LB','RB','LWB','RWB','LM','RM','LW','RW'];
+
+/* ================= utils ================= */
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const hash = s => { let h = 2166136261; for (const ch of String(s)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+const rngOf = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const ic = n => `<i data-lucide="${n}" aria-hidden="true"></i>`;
+const paintIcons = () => { try { window.lucide && lucide.createIcons({ icons: lucide.icons }); } catch (e) { try { lucide.createIcons(); } catch (_) {} } };
+let reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const RM = () => reduce;
+const OUT = 'cubic-bezier(.2,.8,.2,1)', SNAP = 'cubic-bezier(.2,.9,.1,1)';
+const ATTR = SQUAD.map(p => { const r = rngOf(hash(p.name)), o = {}; for (const a of ATTRS) { const off = ARCH[p.arch][a]; o[a] = clamp(Math.round(p.ovr + (off === undefined ? -14 : off) + (r() - .5) * 6), 20, 95); } return o; });
+const isNeutral = id => !ROLES[id].k;
+const fitOf = (pi, rid) => { const r = ROLES[rid]; if (!r.k) return null; let s = 0; for (const k in r.k) s += r.k[k] * ATTR[pi][k]; return clamp((s - 50) / 30, 0, 1); };
+const famOf = (p, pos) => p.pos.includes(pos) ? 1 : (pos === 'GK' || p.pos.includes('GK')) ? .35 : (REL[pos] || []).some(q => p.pos.includes(q)) ? .9 : .72;
+const fitColour = f => f >= 1 ? 'var(--fit-good)' : f >= .8 ? 'var(--fit-mid)' : 'var(--fit-bad)';
+
+/* marker strokes (seeded wobble so they stay put between renders) */
+function wob(pts, seed, amp = 3) {
+  const r = rngOf(seed), p = pts.map(([x, y]) => [x + (r() - .5) * amp, y + (r() - .5) * amp]);
+  let d = `M${p[0][0].toFixed(1)} ${p[0][1].toFixed(1)}`;
+  for (let i = 1; i < p.length; i++) { const [x0, y0] = p[i - 1], [x1, y1] = p[i]; d += ` Q${((x0 + x1) / 2 + (r() - .5) * amp).toFixed(1)} ${((y0 + y1) / 2 + (r() - .5) * amp).toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)}`; }
+  return d;
+}
+function mCircle(cx, cy, rad, seed, amp = 1.4) { const r = rngOf(seed), s = r() * 6.28, pts = []; for (let i = 0; i <= 15; i++) { const a = s + i / 14 * 6.28 * 1.06, rr = rad * (1 + (r() - .5) * .09); pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); } return wob(pts, seed + 1, amp); }
+function mX(cx, cy, s, seed) { return wob([[cx - s, cy - s], [cx + s, cy + s]], seed, 2) + ' ' + wob([[cx + s, cy - s], [cx - s, cy + s]], seed + 2, 2); }
+function mArrow(x0, y0, x1, y1, bend = 0, head = 16) {
+  const mx = (x0 + x1) / 2 - (y1 - y0) * bend, my = (y0 + y1) / 2 + (x1 - x0) * bend, a = Math.atan2(y1 - my, x1 - mx);
+  const h = s => `${(x1 - head * Math.cos(a + s)).toFixed(1)} ${(y1 - head * Math.sin(a + s)).toFixed(1)}`;
+  return `M${x0.toFixed(1)} ${y0.toFixed(1)} Q${mx.toFixed(1)} ${my.toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)} M${h(-.5)} L${x1.toFixed(1)} ${y1.toFixed(1)} L${h(.5)}`;
+}
+const P = { x: 34, y: 24, w: 982, h: 620 };                    // pitch area inside the board (viewBox units)
+const BENCH_Y = 728, BENCH_X0 = 160, BENCH_DX = 86, TREAT_X = 966;
+const sp = (nx, ny) => [P.x + nx * P.w, P.y + ny * P.h];
+const path = (d, cls, draw = true) => `<path class="${cls}" d="${d}"${draw ? ' pathLength="1" data-draw' : ''}${draw && !cls.includes('dash') ? ' stroke-dasharray="1"' : ''}></path>`;
+function drawOn(root, base = 0, sel = '[data-draw]') {
+  $$(sel, root).forEach((p, i) => {
+    if (p.classList.contains('dash')) return;
+    if (RM()) { p.style.strokeDashoffset = '0'; return; }
+    p.style.strokeDashoffset = '1';
+    p.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], { duration: 320, delay: base + i * 60, easing: OUT, fill: 'forwards' }).finished.then(() => { p.style.strokeDashoffset = '0'; }, () => {});
+  });
+}
+function ringSVG(seed) {
+  const r = rngOf(seed), pts = [], s = -2.2 + r() * .4;
+  for (let i = 0; i <= 16; i++) { const a = s + i / 15 * 6.28 * 1.07, k = 1 + (r() - .5) * .07; pts.push([50 + Math.cos(a) * 48 * k, 20 + Math.sin(a) * 17 * k]); }
+  return `<svg class="ring" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path d="${wob(pts, seed + 3, .8)}" pathLength="1" stroke-dasharray="1" data-draw></path></svg>`;
+}
+
+/* ================= state ================= */
+let T;
+function clubXI() {
+  const xi = [0, 3, 5, 4, 2, 9, 8, 10, 13, 15, 12];       // 4-3-3: Doyle; Whitlock, Achterberg, Fairclough, Achebe; Calder, Varga, Pryce; Ilori, Bankole, Mensah-Lowe
+  return { xi, bench: [1, 6, 7, 11, 14, 16, 17, 18], treat: [19] };
+}
+/* club-style roles, the AI manager rules of SPEC §13.17.8: only when the player's fit ≥ 0.5 */
+function styleRoles(club, xi) {
+  const s = CLUBS[club].st, f = FORMS['4-3-3'];
+  let cbDone = false;
+  return f.map(([pos], i) => {
+    const pi = xi[i], ok = rid => fitOf(pi, rid) >= .5 ? rid : null;
+    let r = null;
+    if (pos === 'ST') r = (s[4] === 'High' && ok('pressing_forward')) || (s[2] === 'Direct' && ok('target_man'));
+    if (['LW', 'RW', 'LM', 'RM'].includes(pos) && s[6] === 'Wide') r = ok('winger');
+    if (pos === 'CB' && s[2] === 'Short' && !cbDone) { r = ok('ball_playing_cb'); cbDone = !!r; }
+    if (s[1] === 'Defensive') { if (pos === 'DM') r = ok('anchor'); if (['LB', 'RB'].includes(pos)) r = ok('fb_defensive'); }
+    return r || SLOT_ROLES[pos][0];
+  });
+}
+function newState(club) {
+  const s = CLUBS[club].st, opp = club === 'c07' ? 'c02' : 'c07', base = clubXI();
+  return {
+    club, opp, formation: '4-3-3', ...base,
+    roles: styleRoles(club, base.xi), pis: FORMS['4-3-3'].map(() => []),
+    ins: { mentality: s[1], passing: s[2], tempo: s[3], pressing: s[4], line: s[5], width: s[6], focus: 'Mixed', onLoss: 'Mixed', onWin: 'Mixed', distribution: 'Mixed', cornersFor: 'Mixed', cornersAgainst: 'Mixed' },
+    takers: { captain: 9, penalties: 12, freeKicks: 9, corners: 13, longThrows: 4 },
+    tab: 'us', group: 'with', sel: null, armed: null, orders: [], oppSel: null,
+  };
+}
+const slots = () => FORMS[T.formation];
+function locOf(pi) {
+  let i = T.xi.indexOf(pi); if (i >= 0) return { t: 'xi', i };
+  i = T.bench.indexOf(pi); if (i >= 0) return { t: 'bench', i };
+  i = T.treat.indexOf(pi); return { t: 'treat', i };
+}
+function setLoc(pi, loc) { (loc.t === 'xi' ? T.xi : loc.t === 'bench' ? T.bench : T.treat)[loc.i] = pi; }
+function posPx(loc) {
+  const bd = $('#bd'), k = bd.clientWidth / 1050;
+  let x, y;
+  if (loc.t === 'xi') [x, y] = sp(slots()[loc.i][1], slots()[loc.i][2]);
+  else if (loc.t === 'bench') { x = BENCH_X0 + loc.i * BENCH_DX; y = BENCH_Y; }
+  else { x = TREAT_X; y = BENCH_Y; }
+  return [x * k, y * k];
+}
+function validate() {
+  const gk = SQUAD[T.xi[0]], hurt = [...T.xi, ...T.bench].map(i => SQUAD[i]).find(p => p.injured);
+  if (!gk.pos.includes('GK')) return `${gk.sur} isn’t a keeper. Put a goalkeeper in goal.`;
+  if (T.xi.slice(1).some(i => SQUAD[i].pos.includes('GK'))) return 'A goalkeeper is playing outfield. Swap him back into goal.';
+  if (hurt) return `${hurt.name} is injured. Take him off the board.`;
+  return null;
+}
+
+/* ================= magnets: one spring per magnet (§19.7 stiffness 420, damping 34) ================= */
+const MAG = new Map();
+let raf = 0, last = 0;
+function magHTML(p) { const k = CLUBS[T.club].kit; return `<span class="disc" style="--k1:${k[0]};--k2:${k[1]}">${p.num}<span class="ovr"></span></span><span class="nm">${p.sur}</span>`; }
+function buildMagnets() {
+  $$('.mag', $('#bd')).forEach(m => m.remove()); MAG.clear();
+  for (const p of SQUAD) {
+    const el = document.createElement('button'); el.className = 'mag'; el.dataset.pi = p.i; el.innerHTML = magHTML(p);
+    $('#bd').appendChild(el); MAG.set(p.i, { el, x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0, drag: false });
+    bindDrag(el, p.i);
+  }
+  refreshMagnets(true);
+}
+function refreshMagnets(snap = false, stagger = false) {
+  const order = [...T.xi, ...T.bench, ...T.treat];
+  order.forEach((pi, n) => {
+    const m = MAG.get(pi), loc = locOf(pi), [x, y] = posPx(loc), p = SQUAD[pi];
+    m.el.classList.toggle('bench', loc.t !== 'xi'); m.el.classList.toggle('hurt', p.injured);
+    const ovr = $('.ovr', m.el);
+    if (loc.t === 'xi') { const f = famOf(p, slots()[loc.i][0]); ovr.hidden = false; ovr.textContent = Math.round(p.ovr * f); ovr.style.setProperty('--fit', fitColour(f)); }
+    else ovr.hidden = true;
+    const role = loc.t === 'xi' ? ROLES[T.roles[loc.i]].n : loc.t === 'bench' ? 'bench' : 'injured';
+    m.el.setAttribute('aria-label', `${p.num} ${p.name}, ${loc.t === 'xi' ? slots()[loc.i][0] + ', ' + role : role}`);
+    const set = () => { m.tx = x; m.ty = y; if (snap || RM()) { m.x = x; m.y = y; m.vx = m.vy = 0; } kick(); };
+    stagger && !RM() ? setTimeout(set, n * 22) : set();
+  });
+}
+function kick() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(loop); } }
+function loop(t) {
+  const dt = Math.min(.032, Math.max(0, (t - last) / 1000)); last = t; let moving = false;
+  for (const m of MAG.values()) {
+    for (let s = 0; s < 4; s++) { const h = dt / 4; m.vx += (-420 * (m.x - m.tx) - 34 * m.vx) * h; m.vy += (-420 * (m.y - m.ty) - 34 * m.vy) * h; m.x += m.vx * h; m.y += m.vy * h; }
+    const settled = Math.abs(m.vx) < 3 && Math.abs(m.vy) < 3 && Math.abs(m.x - m.tx) < .5 && Math.abs(m.y - m.ty) < .5;
+    if (settled && !m.drag) { m.x = m.tx; m.y = m.ty; m.vx = m.vy = 0; } else moving = true;
+    const half = m.el.querySelector('.disc').offsetWidth / 2;
+    m.el.style.transform = `translate(${(m.x - half).toFixed(1)}px,${(m.y - half).toFixed(1)}px)`;
+  }
+  raf = moving ? requestAnimationFrame(loop) : 0;
+}
+function bindDrag(el, pi) {
+  let sx, sy, ox, oy, dragging = false, id = null;
+  el.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || T.tab !== 'us') return;
+    const m = MAG.get(pi), r = $('#bd').getBoundingClientRect();
+    sx = e.clientX; sy = e.clientY; ox = e.clientX - r.left - m.x; oy = e.clientY - r.top - m.y; id = e.pointerId; dragging = false;
+    el.setPointerCapture(id);
+  });
+  el.addEventListener('pointermove', e => {
+    if (id !== e.pointerId) return;
+    if (!dragging && Math.hypot(e.clientX - sx, e.clientY - sy) > 5) { dragging = true; MAG.get(pi).drag = true; el.classList.add('lift'); }
+    if (!dragging) return;
+    const m = MAG.get(pi), r = $('#bd').getBoundingClientRect();
+    m.tx = clamp(e.clientX - r.left - ox, 0, r.width); m.ty = clamp(e.clientY - r.top - oy, 0, r.height); kick();
+  });
+  const end = e => {
+    if (id !== e.pointerId) return; id = null;
+    const m = MAG.get(pi);
+    if (!dragging) { selectPlayer(pi); return; }
+    m.drag = false; el.classList.remove('lift');
+    let best = null, bd = 1e9;
+    for (const [qi, q] of MAG) { if (qi === pi) continue; const d = Math.hypot(q.tx - m.x, q.ty - m.y); if (d < bd) { bd = d; best = qi; } }
+    const reach = el.querySelector('.disc').offsetWidth * .95;
+    if (best !== null && bd < reach) swapPlayers(pi, best); else refreshMagnets();
+    if (SQUAD[pi].injured || (best !== null && bd < reach && SQUAD[best].injured)) toast('Dara Quinn is injured. He stays in the treatment room until he’s fit.');
+  };
+  el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  el.addEventListener('click', e => { if (e.detail === 0) keyPick(pi); });
+}
+function keyPick(pi) {
+  if (T.armed === null) { T.armed = pi; MAG.get(pi).el.classList.add('armed'); selectPlayer(pi); }
+  else if (T.armed === pi) { MAG.get(pi).el.classList.remove('armed'); T.armed = null; }
+  else { const a = T.armed; MAG.get(a).el.classList.remove('armed'); T.armed = null; swapPlayers(a, pi); }
+}
+function swapPlayers(a, b) {
+  if (SQUAD[a].injured || SQUAD[b].injured) { refreshMagnets(); return; }
+  const la = locOf(a), lb = locOf(b); setLoc(a, lb); setLoc(b, la);
+  refreshMagnets(); drawUs(false); updateReady();
+  if (T.sel !== null) renderSide();
+}
+
+/* ================= the board ================= */
+function boardLines() {
+  const { x, y, w, h } = P, cy = y + h / 2, bw = h * .59, sb = h * .27, bx = w * .157, sx = w * .052;
+  return `<path class="ghost" d="M180 120 q160 -40 300 30 M640 520 q120 30 250 -40 M90 560 q60 -30 130 10"/>
+    <path class="pl" d="M${x} ${y}h${w}v${h}h${-w}z M${x + w / 2} ${y}v${h}
+      M${x} ${cy - bw / 2}h${bx}v${bw}h${-bx} M${x + w} ${cy - bw / 2}h${-bx}v${bw}h${bx}
+      M${x} ${cy - sb / 2}h${sx}v${sb}h${-sx} M${x + w} ${cy - sb / 2}h${-sx}v${sb}h${sx}"/>
+    <circle class="pl" cx="${x + w / 2}" cy="${cy}" r="${h * .135}"/><circle class="pl" cx="${x + w * .105}" cy="${cy}" r="2.5"/><circle class="pl" cx="${x + w * .895}" cy="${cy}" r="2.5"/>
+    <path class="pl" d="M${x + bx} ${cy - h * .11} a${h * .135} ${h * .135} 0 0 1 0 ${h * .22} M${x + w - bx} ${cy - h * .11} a${h * .135} ${h * .135} 0 0 0 0 ${h * .22}"/>
+    <path class="pl" d="M${x} ${y + h + 26}h${w}" style="stroke-dasharray:2 10"/>
+    <text class="bt ink" x="${x}" y="${BENCH_Y + 7}" style="font-size:18px">Bench</text><text class="bt ink" x="${TREAT_X - 50}" y="${y + h + 21}" style="font-size:18px">Injured</text>
+    <path class="pl" d="M${TREAT_X - 64} ${y + h + 34}v100" style="stroke-opacity:.18"/>`;
+}
+function roleMark(i, sel) {
+  const rid = T.roles[i], a = ROLES[rid].a; if (!a) return '';
+  const [pos, nx, ny] = slots()[i], [x, y] = sp(nx, ny), inDir = Math.abs(ny - .5) < .08 ? 0 : (ny < .5 ? 1 : -1);
+  const cls = 'mk blue' + (sel ? '' : ' faint'), r = 34, seed = 100 + i * 7;
+  const L = (dx, dy, bend = 0) => path(mArrow(x + r * Math.sign(dx || 1) * .9, y + dy * .15, x + dx, y + dy, bend), cls);
+  switch (a) {
+    case 'sweep': return L(110, 0);
+    case 'step': return L(80, 0);
+    case 'back': return path(mArrow(x - 30, y + 26, x - 90, y + 30, .1), cls);
+    case 'drop': return path(mArrow(x - 34, y, x - 150, y + 10, -.15), cls);
+    case 'track': return path(mArrow(x - 34, y, x - 170, y - inDir * 10, .08), cls);
+    case 'run': return path(mArrow(x + 36, y + 6, x + 160, y - 24, .12), cls + ' dash', false);
+    case 'overlap': return path(mArrow(x + 34, y - inDir * 26, x + 250, y - inDir * 30, -.12 * inDir), cls);
+    case 'inside': return L(60, inDir * 150, .1 * inDir);
+    case 'drift': return L(40, inDir * 120, .12 * inDir);
+    case 'cut': return path(mArrow(x + 34, y, x + 140, y + inDir * 150, -.18 * inDir), cls);
+    case 'hug': return path(mArrow(x + 34, y - inDir * 6, x + 180, y - inDir * 18), cls);
+    case 'box': { const [bx, by] = sp(.88, .5 + (ny - .5) * .25); return path(mArrow(x + 34, y, bx, by, .14), cls); }
+    case 'both': return path(mArrow(x + 30, y - 20, x + 120, y - 20), cls) + path(mArrow(x - 30, y + 20, x - 120, y + 20), cls);
+    case 'press': { const pts = []; for (let k = 0; k <= 5; k++) pts.push([x + 36 + k * 22, y + (k % 2 ? -16 : 16)]); return path(wob(pts, seed, 2), cls) + path(mArrow(x + 136, y + 16, x + 170, y, 0, 14), cls); }
+    case 'pass': return path(mArrow(x + 34, y + 10, x + 280, y + (inDir || 1) * 180, .1), cls + ' dash', false);
+    case 'hold': return path(mCircle(x, y, 56, seed, 3), cls);
+    case 'aerial': return path(mCircle(x, y, 54, seed, 3), cls) + path(mCircle(x, y, 70, seed + 9, 3), cls);
+  }
+  return '';
+}
+function teamMarks() {
+  const lineX = { Deep: .15, Normal: .23, High: .32 }[T.ins.line], pressX = { Low: .52, Mid: .64, High: .8 }[T.ins.pressing];
+  const v = (lbl, cls) => `${path(`M0 ${P.y + 18} L0 ${P.y + P.h - 18}`, cls + ' dash', false)}<text class="bt ${cls.includes('red') ? 'red' : 'blue'}" x="10" y="${P.y + 40}">${lbl}</text>`;
+  let s = `<g class="mvg" style="transform:translateX(${(P.x + lineX * P.w).toFixed(0)}px)">${v('Line', 'mk blue faint')}</g>`;
+  s += `<g class="mvg" style="transform:translateX(${(P.x + pressX * P.w).toFixed(0)}px)">${v('Press', 'mk blue faint')}</g>`;
+  const wx = P.x + .58 * P.w;
+  if (T.ins.width === 'Wide') s += path(mArrow(wx, P.y + 150, wx, P.y + 50), 'mk blue faint tm') + path(mArrow(wx, P.y + P.h - 150, wx, P.y + P.h - 50), 'mk blue faint tm');
+  if (T.ins.width === 'Narrow') s += path(mArrow(wx, P.y + 50, wx, P.y + 150), 'mk blue faint tm') + path(mArrow(wx, P.y + P.h - 50, wx, P.y + P.h - 150), 'mk blue faint tm');
+  const fy = { Left: .14, Centre: .5, Right: .86 }[T.ins.focus];
+  if (fy !== undefined) { const [ax, ay] = sp(.82, fy); s += path(mArrow(ax, ay, ax + 120, ay), 'mk blue tm') + `<text class="bt blue" x="${ax}" y="${ay - 22}">Focus</text>`; }
+  return s;
+}
+function drawUs(animate = true) {
+  const g = $('#lUs'); if (!g) return;
+  g.innerHTML = teamMarks() + slots().map((_, i) => roleMark(i, T.sel !== null && locOf(T.sel).t === 'xi' && locOf(T.sel).i === i)).join('');
+  if (animate) drawOn(g, 0); else $$('[data-draw]', g).forEach(p => p.style.strokeDashoffset = '0');
+}
+function oppXI() {
+  const o = CLUBS[T.opp], f = FORMS[o.st[0]];
+  return f.map(([pos, nx, ny], i) => ({ i, pos, nx: 1 - nx, ny: 1 - ny, name: OPP_NAMES[i], num: i === 0 ? 1 : [2, 3, 4, 5, 6, 8, 7, 10, 9, 11][i - 1] || i + 1 }));
+}
+function markerFor(t) { let best = 0, bd = 9; slots().forEach(([, nx, ny], i) => { if (i === 0) return; const d = Math.hypot(nx - t.nx, ny - t.ny); if (d < bd) { bd = d; best = i; } }); return best; }
+function drawOpp(animate = true) {
+  const g = $('#lOpp'), xi = oppXI(); let s = '';
+  slots().forEach(([, nx, ny], i) => { const [x, y] = sp(nx, ny); s += path(mX(x, y, 13, 300 + i), 'mk blue faint'); });
+  for (const o of T.orders) {
+    const t = xi[o.t], [tx, ty] = sp(t.nx, t.ny), [mx, my] = sp(...slots()[markerFor(t)].slice(1));
+    if (o.k === 'doubleUp') { const [m2x, m2y] = sp(Math.min(.95, t.nx - .08), t.ny + (t.ny < .5 ? .14 : -.14)); s += path(wob([[mx, my], [tx - 22, ty]], 400 + o.t, 3), 'mk red') + path(wob([[m2x, m2y], [tx - 16, ty + 18]], 410 + o.t, 3), 'mk red'); }
+    else if (o.k === 'showInside' || o.k === 'showOutside') { const dir = (o.k === 'showInside') === (t.ny < .5) ? 1 : -1; s += path(mArrow(tx - 26, ty, tx - 150, ty + dir * 120, -.25 * dir), 'mk red'); }
+    else s += path(o.k === 'pressOnBall' ? mArrow(mx + 16, my, tx - 30, ty, .1) : wob([[mx, my], [tx - 24, ty]], 420 + o.t, 3), 'mk red');
+    s += `<text class="bt red" x="${tx + 30}" y="${ty - 30}">${ORDERS[o.k][3]}</text>`;
+  }
+  xi.forEach(t => {
+    const [x, y] = sp(t.nx, t.ny), on = T.oppSel === t.i;
+    s += `<g class="opp-o${on ? ' sel' : ''}" data-o="${t.i}" tabindex="${T.tab === 'opp' ? 0 : -1}" role="button" aria-label="${t.num} ${t.name}, ${t.pos}">
+      <circle class="hit" cx="${x}" cy="${y}" r="36"/>${path(mCircle(x, y, 24, 500 + t.i, 2), 'mk red')}
+      <text class="bt red" x="${x}" y="${y + 8}" text-anchor="middle">${t.num}</text><text class="bt red" x="${x}" y="${y + 58}" text-anchor="middle" style="font-size:19px">${t.name.split(' ').slice(-1)[0]}</text></g>`;
+  });
+  g.innerHTML = s;
+  if (animate) drawOn(g, 0); else $$('[data-draw]', g).forEach(p => p.style.strokeDashoffset = '0');
+}
+function renderBoard() {
+  $('#svg').innerHTML = `<g>${boardLines()}</g><g class="layer-us" id="lUs"></g><g class="layer-opp" id="lOpp"></g>`;
+  drawUs(true); drawOpp(false);
+}
+
+/* ================= the clipboard and the player's file ================= */
+function insHTML([, key, label, opts]) {
+  const cur = T.ins[key], d = opts.find(o => o[0] === cur)[1];
+  return `<div class="ins" data-key="${key}"><div class="ins-l" id="l-${key}">${label}</div><div class="seg" role="radiogroup" aria-labelledby="l-${key}">
+    ${opts.map(([v]) => `<button class="opt" role="radio" aria-checked="${v === cur}" data-v="${v}">${v}${v === cur ? ringSVG(hash(key + v)) : ''}</button>`).join('')}</div><p class="ins-d">${d}</p></div>`;
+}
+function takersHTML() {
+  const xi = T.xi.map(i => SQUAD[i]), row = (k, label, list) => `<label for="tk-${k}">${label}</label><span class="sel-wrap sm"><select id="tk-${k}" data-tk="${k}">${list.map(p => `<option value="${p.i}"${p.i === T.takers[k] ? ' selected' : ''}>${p.name}</option>`).join('')}</select></span>`;
+  return `<div class="takers">${row('captain', 'Captain', xi)}${row('penalties', 'Penalties', xi)}${row('freeKicks', 'Free kicks', xi)}${row('corners', 'Corners', xi)}${row('longThrows', 'Long throws', xi.filter(p => ATTR[p.i].strength >= 70))}</div>`;
+}
+function clipHTML() {
+  const fam = FAMIL[T.formation];
+  return `<article class="sheet clip" data-rot="-0.5">
+    <div class="s-h"><span>${CLUBS[T.club].name}</span><span>v ${CLUBS[T.opp].town} · Sat</span></div>
+    <div class="form-row"><span><label class="ins-l" for="formSel" style="display:block;margin:0 0 6px">Formation</label><span class="sel-wrap"><select id="formSel">${Object.keys(FORMS).map(f => `<option${f === T.formation ? ' selected' : ''}>${f}</option>`).join('')}</select></span></span>
+      <span class="fam" title="How well the squad knows this shape"><span class="v">${fam}</span><span class="bar"><i style="transform:scaleX(${fam / 100})"></i></span><span class="l">Familiarity</span></span></div>
+    <div class="presets" aria-label="Presets">${PRESETS.map(([n]) => `<button class="chip" data-preset="${n}">${n}</button>`).join('')}</div>
+    <div class="dividers" role="tablist">${GROUPS.map(([g, n]) => `<button class="dv" role="tab" data-g="${g}" aria-selected="${g === T.group}">${n}</button>`).join('')}</div>
+    <div class="grpw">${INS.filter(x => x[0] === T.group).map(insHTML).join('')}${T.group === 'setp' ? takersHTML() : ''}</div>
+    <div class="ready" id="ready"></div>
+    <div class="acts"><button class="pbtn solid" data-act="best">${ic('wand-2')}Assistant picks best XI</button><button class="pbtn line" data-act="reset">${ic('rotate-ccw')}Reset to club style</button></div>
+  </article>`;
+}
+function stars(f) { const n = 1 + Math.round(4 * f); return `<span class="st" aria-label="${n} of 5 fit">${'★'.repeat(n)}<i>${'★'.repeat(5 - n)}</i></span>`; }
+function fileHTML(pi) {
+  const p = SQUAD[pi], loc = locOf(pi), k = CLUBS[T.club].kit;
+  const head = `<div class="who"><span class="disc" style="--k1:${k[0]};--k2:${k[1]}">${p.num}</span><h2>${p.name}</h2>
+    <span class="o">${loc.t === 'xi' ? Math.round(p.ovr * famOf(p, slots()[loc.i][0])) : p.ovr}<small>${loc.t === 'xi' ? 'at ' + slots()[loc.i][0] : 'OVR'}</small></span>
+    <span class="meta">${p.pos.join(' · ')} · Condition ${p.cond}%${p.injured ? ' · Injured' : ''}</span></div>`;
+  let body;
+  if (loc.t !== 'xi') {
+    body = `<div class="empty"><svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><path d="${mCircle(18, 18, 13, 9, .8)}" fill="none" stroke="var(--marker-blue)" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <span>${p.injured ? 'He’s in the treatment room. He can’t start or sit on the bench until he’s fit.' : 'On the bench. Drag him onto a starter to bring him in, and his role card opens here.'}</span></div>`;
+  } else {
+    const pos = slots()[loc.i][0], cur = T.roles[loc.i], mine = T.pis[loc.i];
+    const roles = SLOT_ROLES[pos].map(rid => { const r = ROLES[rid], f = fitOf(pi, rid);
+      return `<button class="role" role="radio" aria-checked="${rid === cur}" data-role="${rid}"><span class="rn">${r.n}</span>${f === null ? '<span class="st any">Any player</span>' : stars(f)}
+        <span class="rd">${r.d}</span>${r.g ? `<span class="gc"><span class="g">Gives you: ${r.g}.</span><br><span class="c">Costs you: ${r.c}.</span></span>` : '<span class="gc">No gains, no costs. The neutral choice.</span>'}</button>`; }).join('');
+    const pis = Object.keys(PIS).filter(id => id !== 'longThrows' || ATTR[pi].strength >= 70).map(id => {
+      const [w, g, c, clash] = PIS[id], on = mine.includes(id);
+      const why = on ? '' : clash && mine.includes(clash) ? `Clashes with “${PIS[clash][0].split(':')[0]}”.` : mine.length >= 2 ? 'Two instructions already. Remove one first.' : '';
+      return `<button class="pi" role="checkbox" aria-checked="${on}" data-pi="${id}"${why ? ' aria-disabled="true"' : ''}><span class="box">${on ? `<svg viewBox="0 0 30 30"><path d="M7 16 l6 6 l12 -15" fill="none" stroke="var(--marker-blue)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" data-draw/></svg>` : ''}</span>
+        <span class="t">${w}</span><span class="why">${why || `<span class="g">${g}</span> · <span class="c">${c}</span>`}</span></button>`; }).join('');
+    body = `<div class="sub-h"><span>Role at ${pos}</span><span>Fit</span></div><div class="roles" role="radiogroup" aria-label="Role">${roles}</div>
+      <div class="sub-h"><span>Instructions</span><span>${mine.length} of 2</span></div><div class="pis">${pis}</div>`;
+  }
+  return `<article class="sheet file" data-rot="0.7" role="dialog" aria-label="${p.name}"><span class="tabm">${p.sur}</span><button class="x" data-act="closefile" aria-label="Close the file">${ic('x')}</button>${head}${body}</article>`;
+}
+function ordersHTML() {
+  const xi = oppXI(), used = T.orders.length;
+  let body;
+  if (T.oppSel === null) {
+    body = `<div class="empty"><svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><path d="${mCircle(18, 18, 13, 5, .8)}" fill="none" stroke="var(--marker-red)" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <span>Click one of their players on the board to give an order about him. Up to three orders a match.</span></div>
+      ${T.orders.length ? `<ul style="list-style:none;margin:0;padding:0">${T.orders.map(o => `<li class="order" style="flex-direction:row;justify-content:space-between;align-items:center"><span><b>${ORDERS[o.k][0]}</b> · ${xi[o.t].name}</span><button class="pbtn line" data-rmorder="${o.t}">Remove</button></li>`).join('')}</ul>` : ''}`;
+  } else {
+    const t = xi[T.oppSel], cur = T.orders.find(o => o.t === t.i);
+    const keys = Object.keys(ORDERS).filter(k => (k !== 'showInside' && k !== 'showOutside') || WIDE.includes(t.pos)).filter(() => t.pos !== 'GK');
+    body = `<div class="who" style="grid-template-columns:auto minmax(0,1fr)"><span class="disc" style="--k1:#fff;--k2:var(--marker-red);color:var(--marker-red)">${t.num}</span><h2>${t.name}</h2><span class="meta">${CLUBS[T.opp].name} · ${t.pos}</span></div>
+      ${t.pos === 'GK' ? '<div class="empty"><span>No orders on the goalkeeper.</span></div>' : keys.map(k => { const full = used >= 3 && !cur, dbl = k === 'doubleUp' && T.orders.some(o => o.k === 'doubleUp' && o.t !== t.i);
+        return `<button class="order" data-order="${k}" aria-pressed="${cur && cur.k === k}"${full || dbl ? ' aria-disabled="true" style="opacity:.5"' : ''}><span class="on">${ORDERS[k][0]}</span><span class="w">${ORDERS[k][1].replace('{player}', t.name.split(' ').slice(-1)[0])}</span><span class="cost">Costs you: ${ORDERS[k][2]}</span>${full ? '<span class="cost">Three orders already. Remove one first.</span>' : dbl ? '<span class="cost">You already have a double-up.</span>' : ''}</button>`; }).join('')}
+      ${cur ? `<div class="acts"><button class="pbtn line" data-rmorder="${t.i}">Remove the order</button></div>` : ''}`;
+  }
+  return `<article class="sheet" data-rot="0.4"><div class="s-h"><span>Opposition · ${CLUBS[T.opp].name}</span><span class="used">${used} of 3 orders used</span></div>
+    <h2 class="s-title">${CLUBS[T.opp].st[0]} · ${CLUBS[T.opp].st[2]}</h2>${body}</article>`;
+}
+function renderSide(settleNew = true) {
+  const side = $('#side');
+  if (T.tab === 'opp') side.innerHTML = ordersHTML();
+  else side.innerHTML = clipHTML() + (T.sel !== null ? fileHTML(T.sel) : '');
+  paintIcons(); updateReady();
+  $$('.sheet', side).forEach(s => s.style.transform = `rotate(${s.dataset.rot}deg)`);
+  if (settleNew) settle(side);
+}
+function settle(root) {
+  $$('.sheet', root).forEach((s, i) => {
+    const rest = +s.dataset.rot; if (RM()) return;
+    const extra = s.classList.contains('file') ? 1.4 : -1.2, dx = s.classList.contains('file') ? 40 : 0;
+    let x = 1, v = 0, lastT = performance.now();
+    const step = t => { const dt = Math.min(.032, (t - lastT) / 1000); lastT = t; for (let k = 0; k < 4; k++) { const h = dt / 4; v += (-420 * x - 34 * v) * h; x += v * h; }
+      s.style.transform = `translate(${(dx * x).toFixed(1)}px,${(10 * x).toFixed(1)}px) rotate(${(rest + extra * x).toFixed(2)}deg)`;
+      if (Math.abs(x) > .002 || Math.abs(v) > .02) requestAnimationFrame(step); else s.style.transform = `rotate(${rest}deg)`; };
+    s.style.transform = `translate(${dx}px,10px) rotate(${rest + extra}deg)`;
+    setTimeout(() => requestAnimationFrame(t => { lastT = t; step(t); }), i * 50);
+  });
+}
+function updateReady() {
+  const why = validate(), r = $('#ready'), go = $('#go');
+  go.setAttribute('aria-disabled', String(!!why)); $('#goWhy').textContent = why || '';
+  if (!r) return;
+  r.className = 'ready ' + (why ? 'bad' : 'ok');
+  r.innerHTML = why
+    ? `<svg viewBox="0 0 22 22"><path d="M5 5 L17 17 M17 5 L5 17" fill="none" stroke="var(--marker-red)" stroke-width="3" stroke-linecap="round"/></svg><span>${why}</span>`
+    : `<svg viewBox="0 0 22 22"><path d="M3 12 l5 5 l11 -13" fill="none" stroke="var(--marker-green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Ready for Saturday</span>`;
+}
+
+/* ================= actions ================= */
+function selectPlayer(pi) {
+  if (T.tab !== 'us') return;
+  T.sel = T.sel === pi && T.armed === null ? null : pi;
+  $$('.mag .ring', $('#bd')).forEach(r => r.remove());
+  if (T.sel !== null) { const d = $('.disc', MAG.get(T.sel).el); d.insertAdjacentHTML('afterend', `<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><path d="${mCircle(50, 50, 42, T.sel * 13, 1.2)}" fill="none" stroke="var(--marker-blue)" stroke-width="3" stroke-linecap="round" pathLength="1" stroke-dasharray="1" data-draw/></svg>`); drawOn(MAG.get(T.sel).el); }
+  drawUs(false);
+  const side = $('#side'), file = $('.file', side);
+  if (T.sel === null) { if (file) closeFile(); return; }
+  if (file) file.remove();
+  side.insertAdjacentHTML('beforeend', fileHTML(T.sel)); paintIcons();
+  const f = $('.file', side); f.style.transform = `rotate(${f.dataset.rot}deg)`; settle({ querySelectorAll: () => [f] });
+  const g = $('#lUs'); $$('.mk:not(.faint)', g).forEach(p => drawOn({ querySelectorAll: () => [p] }));
+}
+function closeFile() {
+  const f = $('.file', $('#side')); T.sel = null; $$('.mag .ring', $('#bd')).forEach(r => r.remove()); drawUs(false);
+  if (!f) return;
+  if (RM()) { f.remove(); return; }
+  f.animate([{ transform: f.style.transform, opacity: 1 }, { transform: 'translate(48px,6px) rotate(1.6deg)', opacity: 0 }], { duration: 180, easing: 'cubic-bezier(.5,0,.8,.2)', fill: 'forwards' }).finished.then(() => f.remove(), () => f.remove());
+}
+function setIns(key, v) {
+  if (T.ins[key] === v) return; T.ins[key] = v;
+  const box = $(`.ins[data-key="${key}"]`);
+  if (box) {
+    $$('.opt', box).forEach(o => { const on = o.dataset.v === v; o.setAttribute('aria-checked', on); const r = $('.ring', o); if (r) r.remove(); if (on) { o.insertAdjacentHTML('beforeend', ringSVG(hash(key + v))); drawOn(o); } });
+    $('.ins-d', box).textContent = INS.find(x => x[1] === key)[3].find(o => o[0] === v)[1];
+  }
+  if (['line', 'pressing', 'width', 'focus'].includes(key)) {
+    const g = $('#lUs'), old = $$('.mvg', g).map(m => m.style.transform);
+    drawUs(false); const now = $$('.mvg', g);
+    if (!RM()) now.forEach((m, i) => { if (old[i] && old[i] !== m.style.transform) { const to = m.style.transform; m.style.transition = 'none'; m.style.transform = old[i]; m.getBoundingClientRect(); m.style.transition = ''; m.style.transform = to; } });
+    if (key === 'width' || key === 'focus') drawOn(g, 0, '.tm');
+  }
+}
+function setFormation(f) {
+  T.formation = f; T.roles = FORMS[f].map(([pos], i) => SLOT_ROLES[pos].includes(T.roles[i]) ? T.roles[i] : SLOT_ROLES[pos][0]); T.pis = FORMS[f].map((_, i) => T.pis[i] || []);
+  refreshMagnets(false, true); drawUs(true); drawOpp(false);
+  const fam = $('.fam'); if (fam) { $('.v', fam).textContent = FAMIL[f]; $('.bar i', fam).style.transform = `scaleX(${FAMIL[f] / 100})`; }
+  if (T.sel !== null) { const pi = T.sel; T.sel = null; selectPlayer(pi); }
+}
+function bestXI() {
+  const avail = SQUAD.filter(p => !p.injured).map(p => p.i), used = new Set(), xi = Array(11);
+  const ordr = ['GK', 'CB', 'LB', 'RB', 'LWB', 'RWB', 'DM', 'CM', 'AM', 'LM', 'RM', 'LW', 'RW', 'ST'];
+  const idx = slots().map((s, i) => i).sort((a, b) => ordr.indexOf(slots()[a][0]) - ordr.indexOf(slots()[b][0]));
+  for (const i of idx) {
+    const pos = slots()[i][0]; let best = null, bs = -1;
+    for (const pi of avail) { if (used.has(pi)) continue; const p = SQUAD[pi], sc = p.ovr * famOf(p, pos) * (.7 + .3 * p.cond / 100); if (sc > bs) { bs = sc; best = pi; } }
+    xi[i] = best; used.add(best);
+  }
+  const rest = avail.filter(pi => !used.has(pi)).sort((a, b) => SQUAD[b].ovr - SQUAD[a].ovr);
+  const gk = rest.find(pi => SQUAD[pi].pos.includes('GK')), bench = [gk, ...rest.filter(pi => pi !== gk)].filter(v => v !== undefined).slice(0, 8);
+  const left = rest.filter(pi => !bench.includes(pi));
+  T.xi = xi; T.bench = bench; T.treat = [19, ...left].slice(0, 1);
+  if (left.length) T.bench = T.bench.concat(left).slice(0, 9);
+  refreshMagnets(false, true); drawUs(false); updateReady(); toast('Theo picked the XI on form and fitness.');
+  if (T.sel !== null) { const pi = T.sel; T.sel = null; selectPlayer(pi); }
+}
+function resetClub() {
+  const keepTab = T.tab; T = newState(T.club); T.tab = keepTab;
+  refreshMagnets(false, true); renderBoard(); renderSide();
+}
+function toast(msg) {
+  $$('.toast').forEach(t => t.remove()); const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; $('#app').appendChild(t);
+  if (!RM()) t.animate([{ transform: 'translateY(8px) rotate(-.8deg)', opacity: 0 }, { transform: 'rotate(-.8deg)', opacity: 1 }], { duration: 180, easing: SNAP });
+  setTimeout(() => t.remove(), 3800);
+}
+function setTab(tab) {
+  if (T.tab === tab) return; T.tab = tab; closeFile(); T.oppSel = null;
+  $('#wall').classList.toggle('opp', tab === 'opp');
+  $('#tabUs').setAttribute('aria-selected', tab === 'us'); $('#tabOpp').setAttribute('aria-selected', tab === 'opp');
+  drawOpp(tab === 'opp'); if (tab === 'us') drawUs(true);
+  renderSide(); updateOppCount();
+}
+function updateOppCount() { $('#oppCnt').textContent = `${T.orders.length}/3`; }
+
+/* ================= props on the desk (placeholders for fal F7) ================= */
+function drawProps() {
+  const desk = $('#desk'), w = desk.clientWidth, h = desk.scrollHeight, svg = $('#props');
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`); svg.style.cssText = `left:0;top:0;width:${w}px;height:${h}px`;
+  const wall = $('#wall').getBoundingClientRect(), dr = desk.getBoundingClientRect(), side = $('#side').getBoundingClientRect();
+  const cone = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="34" rx="30" ry="9" fill="rgb(0 0 0 / .45)"/><ellipse cx="0" cy="30" rx="26" ry="8" fill="#B94A12"/>
+    <path d="M-20 30 L-4 -30 Q0 -34 4 -30 L20 30 Q0 38 -20 30z" fill="#E8641E"/><path d="M-13 4 L13 4 L15.5 12 L-15.5 12z" fill="#F4F1EA" opacity=".9"/><path d="M-20 30 L-4 -30 Q-2 -32 0 -32 L-6 30z" fill="rgb(255 255 255 / .12)"/></g>`;
+  const by = wall.bottom - dr.top + 54, cx = wall.left - dr.left;
+  let s = cone(cx + 26, by, 1) + cone(cx + 84, by + 12, .86);
+  const wx = side.left - dr.left + 26, wy = Math.min(h - 50, side.bottom - dr.top + 44);
+  s += `<g transform="translate(${wx} ${wy})"><path d="M30 6 C80 -30 150 -10 170 30" fill="none" stroke="#2A4E8C" stroke-width="3"/><ellipse cx="22" cy="14" rx="26" ry="8" fill="rgb(0 0 0 / .4)"/>
+    <rect x="0" y="0" width="38" height="16" rx="7" fill="#1B1C1E"/><circle cx="30" cy="8" r="9" fill="#232427"/><rect x="-10" y="3" width="14" height="10" rx="2" fill="#2E3034"/></g>`;
+  s += `<g transform="translate(${wx + 210} ${wy - 6})"><ellipse cx="0" cy="26" rx="30" ry="8" fill="rgb(0 0 0 / .4)"/><circle cx="0" cy="0" r="26" fill="#C9CCD0"/><circle cx="0" cy="0" r="21" fill="#F2F1EC"/>
+    <path d="M0 0 L0 -15" stroke="#C42B2B" stroke-width="2.5" stroke-linecap="round"/><path d="M0 0 L9 6" stroke="#1B1A17" stroke-width="2.5" stroke-linecap="round"/><rect x="-4" y="-34" width="8" height="9" rx="2" fill="#9AA1A8"/></g>`;
+  s += `<circle cx="${w - 60}" cy="42" r="34" fill="none" stroke="rgb(120 80 40 / .14)" stroke-width="5"/><circle cx="${w - 56}" cy="46" r="31" fill="none" stroke="rgb(120 80 40 / .07)" stroke-width="3"/>`;
+  svg.innerHTML = s;
+}
+
+/* ================= shell ================= */
+const PAGES = [['Hub','home','air'],['League','list-ordered','air'],['Fixtures','calendar-days','air'],['Squad','users','office'],['Tactics','clipboard-list','office'],['Training','dumbbell','office'],['Scouting','search','office'],['Club','landmark','office'],['Inbox','inbox','office']];
+function renderShell() {
+  const c = CLUBS[T.club];
+  $('#clubId').innerHTML = `<svg width="30" height="35" viewBox="0 0 40 46" aria-hidden="true"><path d="M3 3h34v19c0 11-7.5 17.5-17 20.5C10.5 39.5 3 33 3 22z" fill="${c.kit[0]}" stroke="${c.kit[1]}" stroke-width="2"/><text x="20" y="31" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-weight="700" font-size="11" fill="${c.kit[1]}">${c.code}</text></svg><span class="club-name">${c.name}</span>`;
+  $('#vsLine').textContent = `v ${CLUBS[T.opp].town}`;
+  $('#nav').innerHTML = [['On air', 'air'], ['The office', 'office']].map(([lbl, w]) => `<div class="grp"><div class="grp-h">${lbl}</div>${PAGES.filter(p => p[2] === w).map(([n, i]) => n === 'Tactics'
+    ? `<button class="it on" aria-current="page"><span class="bn">${ic(i)}<span>${n}</span></span><span class="bc">${T.formation} · ${T.ins.mentality}</span></button>`
+    : `<button class="it" data-nav="${n}">${ic(i)}<span class="tx">${n}</span></button>`).join('')}</div>`).join('');
+  paintIcons();
+}
+function applyTheme(id) {
+  const [a, ai, at, b1, b2] = CLUBS[id].th, st = document.documentElement.style;
+  st.setProperty('--accent', a); st.setProperty('--accent-ink', ai); st.setProperty('--accent-text', at); st.setProperty('--band-1', b1); st.setProperty('--band-2', b2);
+  $$('.sw').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === id)));
+}
+
+/* ================= events ================= */
+document.addEventListener('click', e => {
+  const t = e.target.closest('button, .opp-o'); if (!t) return;
+  if (t.classList.contains('sw')) return switchClub(t.dataset.id);
+  if (t.id === 'tabUs') return setTab('us');
+  if (t.id === 'tabOpp') return setTab('opp');
+  if (t.id === 'go') return t.getAttribute('aria-disabled') === 'true' ? toast($('#goWhy').textContent) : toast('Kick-off lives in the Hub reference.');
+  if (t.dataset.nav) return toast(`${t.dataset.nav} is in the Hub reference (docs/design/hub/).`);
+  if (t.classList.contains('opt')) return setIns(t.closest('.ins').dataset.key, t.dataset.v);
+  if (t.dataset.g) { T.group = t.dataset.g; const side = $('#side'), keep = T.sel; renderSide(false); if (keep !== null) { T.sel = keep; } return; }
+  if (t.dataset.preset) { const v = PRESETS.find(p => p[0] === t.dataset.preset)[1]; PRESET_KEYS.forEach((k, i) => setIns(k, v[i])); return; }
+  if (t.dataset.act === 'best') return bestXI();
+  if (t.dataset.act === 'reset') return resetClub();
+  if (t.dataset.act === 'closefile') return closeFile();
+  if (t.dataset.role) { const loc = locOf(T.sel); if (loc.t !== 'xi') return; T.roles[loc.i] = t.dataset.role; $$('.role', $('.file')).forEach(r => r.setAttribute('aria-checked', r.dataset.role === t.dataset.role)); drawUs(false); const g = $('#lUs'); $$('.mk:not(.faint)', g).forEach(p => drawOn({ querySelectorAll: () => [p] })); refreshMagnets(); return; }
+  if (t.dataset.pi && t.classList.contains('pi')) {
+    if (t.getAttribute('aria-disabled') === 'true') return;
+    const loc = locOf(T.sel), list = T.pis[loc.i], id = t.dataset.pi, i = list.indexOf(id);
+    i >= 0 ? list.splice(i, 1) : list.push(id);
+    const f = $('.file'); const y = f.scrollTop; f.outerHTML = fileHTML(T.sel); paintIcons(); const nf = $('.file'); nf.style.transform = `rotate(${nf.dataset.rot}deg)`; nf.scrollTop = y;
+    if (i < 0) drawOn($(`.pi[data-pi="${id}"]`, nf)); return;
+  }
+  if (t.classList.contains('opp-o')) { T.oppSel = +t.dataset.o; drawOpp(false); renderSide(false); const sh = $('#side .sheet'); settle({ querySelectorAll: () => [sh] }); return; }
+  if (t.dataset.order) {
+    if (t.getAttribute('aria-disabled') === 'true') return;
+    const tgt = T.oppSel, cur = T.orders.find(o => o.t === tgt);
+    if (cur && cur.k === t.dataset.order) T.orders = T.orders.filter(o => o !== cur); else if (cur) cur.k = t.dataset.order; else T.orders.push({ t: tgt, k: t.dataset.order });
+    drawOpp(false); const g = $('#lOpp'); $$('.mk.red', g).slice(-3).forEach(p => drawOn({ querySelectorAll: () => [p] }));
+    renderSide(false); updateOppCount(); return;
+  }
+  if (t.dataset.rmorder !== undefined) { T.orders = T.orders.filter(o => o.t !== +t.dataset.rmorder); drawOpp(false); renderSide(false); updateOppCount(); }
+});
+document.addEventListener('change', e => {
+  if (e.target.id === 'formSel') { setFormation(e.target.value); renderShell(); }
+  if (e.target.dataset.tk) T.takers[e.target.dataset.tk] = +e.target.value;
+});
+$('#bd').addEventListener('pointerdown', e => { if (e.target === $('#bd') || e.target.closest('svg#svg') && !e.target.closest('.opp-o')) { if (T.tab === 'us' && T.sel !== null) closeFile(); } });
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const a = document.activeElement;
+  if (e.key === 'Escape') { if (T.armed !== null) { MAG.get(T.armed).el.classList.remove('armed'); T.armed = null; } if (T.sel !== null) closeFile(); if (T.oppSel !== null) { T.oppSel = null; drawOpp(false); renderSide(false); } return; }
+  if (a && a.classList.contains('opp-o') && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); a.dispatchEvent(new MouseEvent('click', { bubbles: true })); return; }
+  if (a && a.classList.contains('mag') && e.key.startsWith('Arrow')) {
+    e.preventDefault();
+    const me = MAG.get(+a.dataset.pi), dir = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
+    let best = null, bs = 1e9;
+    for (const [qi, q] of MAG) { if (q === me) continue; const dx = q.tx - me.tx, dy = q.ty - me.ty, along = dx * dir[0] + dy * dir[1]; if (along <= 4) continue; const sc = along + 2.2 * Math.abs(dx * dir[1] - dy * dir[0]); if (sc < bs) { bs = sc; best = q; } }
+    best && best.el.focus(); return;
+  }
+  if (e.key === ' ' && (!a || a === document.body)) { e.preventDefault(); $('#go').click(); }
+});
+addEventListener('resize', () => { clearTimeout(window._rz); window._rz = setTimeout(() => { refreshMagnets(true); drawProps(); }, 120); });
+function renderLegend() {
+  $('#legend').innerHTML = `<b>At this slot</b><span><i class="dot" style="background:var(--fit-good)"></i>Natural position</span><span><i class="dot" style="background:var(--fit-mid)"></i>Can play there</span><span><i class="dot" style="background:var(--fit-bad)"></i>Out of position</span>
+    <b>Marker</b><span style="color:#8FA8E8">Blue: our roles and lines</span><span style="color:#E88F8F">Red: the opposition</span>`;
+}
+function switchClub(id) { applyTheme(id); renderLegend(); T = newState(id); $('#wall').classList.remove('opp'); $('#tabUs').setAttribute('aria-selected', 'true'); $('#tabOpp').setAttribute('aria-selected', 'false'); renderShell(); buildMagnets(); renderBoard(); renderSide(); updateOppCount(); requestAnimationFrame(drawProps); }
+
+/* reference bar */
+$('#swatches').innerHTML = Object.keys(CLUBS).map(id => `<button class="sw" data-id="${id}" style="--c:${CLUBS[id].th[0]};--ci:${CLUBS[id].th[1]}" aria-label="${CLUBS[id].name}" title="${CLUBS[id].name}">${CLUBS[id].code}</button>`).join('');
+const rmBtn = $('#rm'), syncRM = () => rmBtn.setAttribute('aria-pressed', String(reduce));
+rmBtn.addEventListener('click', () => { reduce = !reduce; syncRM(); });
+$('#replay').addEventListener('click', () => { refreshMagnets(true); MAG.forEach(m => { m.x += (Math.random() - .5) * 120; m.y -= 40 + Math.random() * 60; }); kick(); settle($('#side')); T.tab === 'us' ? drawUs(true) : drawOpp(true); });
+
+/* boot */
+syncRM(); switchClub('c01');
+if (!RM()) requestAnimationFrame(() => { MAG.forEach(m => { m.y -= 30 + Math.random() * 40; m.x += (Math.random() - .5) * 40; }); kick(); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { refreshMagnets(); drawProps(); });
+addEventListener('load', () => { paintIcons(); refreshMagnets(); drawProps(); });
+})();
+</script>
+</html>
