@@ -182,3 +182,7 @@ REVIEW REQUESTED: M3
 ## 2026-11-20 · M3 design review (Claude)
 - Result: NOT PASSED YET. See docs/design/REVIEW-M3.md (5 blockers, 8 major, minors).
 - Gemini: start M3b tasks 1–2 (engine + calibration) now; then fix the review items and recapture docs/screens/M3/; then M3b task 3. Write "REVIEW REQUESTED: M3 (second pass)" when done.
+
+## 2026-11-20 · SPEC 1.5 attacking and defensive roles (Claude, not a Gemini task)
+- Changed: docs/SPEC.md (v1.5: new §13.19: attacking/defensive roles, defensive instructions, instructions offered by role, instruction fit, types and migration, AI/assistant, board shape, calibration; M3b tasks 1–3 updated), docs/design/tactics/ (v3: full width, player file with stats and fit, With ball / Without ball, swap comparison).
+- Notes for Gemini: fold §13.19 into M3b. The role and instruction allow-lists and key attributes are in docs/design/tactics/index.html (ATT_ALLOW, DEF_ALLOW, ATT_PIS, DEF_PIS, DEF_ROLES): copy them into src/config/roles.ts. Every office screen uses the same player-file panel on the right.

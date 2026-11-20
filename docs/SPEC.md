@@ -1,6 +1,6 @@
 # TOUCHLINE (working title) — Complete Build Specification
 
-Version 1.4 · 20 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
+Version 1.5 · 20 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
 
@@ -1508,6 +1508,89 @@ In Half-Time and Full-Time, an **Analysis** panel (on air, telestrator marker st
 - Familiarity 40 everywhere vs 100: win rate between equal teams falls by 6–14 points.
 - The ±6-point "no dominant choice" rule of §13.17.10 covers every option in this section.
 
+### 13.19 Attacking and defensive roles (SPEC 1.5, approved by the user 20 Nov)
+Every player has **two roles**: an attacking role (what he does when we have the ball) and a defensive role (what he does when they have it). Instructions are split the same way and offered by role. This **replaces** the single role of §13.17.2 and the player-instruction rules of §13.17.11 / §13.18.9 where they differ. Same design rules: no free lunch, the first role in each list is neutral (zero modifiers), all numbers in `balance.ts` (`K.roles.*`, `K.droles.*`, `K.pi.*`), the UI matches `docs/design/tactics/`.
+
+#### 13.19.1 Attacking roles: the §13.17.2 table split by phase
+Rule for the split: an attacking role keeps only its **in-possession** modifiers (inv, recv, use, as A, as R) and its **transition** costs (what happens because of where he is when we lose the ball, e.g. the overlapping full-back's lane during an opponent Counter phase). Its **as D** and settled-defence team modifiers move to the defensive roles below.
+
+| Slot | Attacking roles (first = neutral) |
+|---|---|
+| GK | `gk` Goalkeeper · `bp_keeper` Ball-playing keeper (the old sweeper keeper's Short-distribution bonus; cost: against a High press his short passes ctx −0.2) |
+| CB | `cb` · `ball_playing_cb` |
+| FB/WB | `fb` · `fb_defensive` renamed **Stays home** "Stays back when we attack." (inv as before, use cross −0.3; gain now: opponent Counter-phase actions in his lane ctx −0.2) · `fb_overlapping` · `fb_inverted` |
+| DM | `dm` · `anchor` (keeps inv and recycle +0.3, costs progress/through −0.2; its team defence term moves to nothing, it was a defensive effect) · `deep_playmaker` |
+| CM | `cm` · `box_to_box` (inv MID→ATT 10%, fatigue × 1.06; its press bonus moves to the defensive Press role) · `deep_playmaker` · `playmaker` · `runner` |
+| AM | `am` · `playmaker` · `shadow_striker` |
+| LM/RM | `wm` · `wide_playmaker` · `winger` · `inside_forward` |
+| LW/RW | `wf` · `winger` · `inside_forward` |
+| ST | `st` · `target_man` · `poacher` · `false_nine` · `advanced_forward` |
+
+Moved out of the attacking lists: `stopper`, `covering_cb`, `sweeper_keeper` (defensive part), `ball_winner`, `wm_defensive`, `pressing_forward`. They become defensive roles below.
+Two attacking roles lose a cost that was defensive and get an in-possession cost instead: `playmaker`: his failed passes in MID start an opponent Counter phase with probability 0.3; `shadow_striker`: recv × 0.7 in MID (less involved in the build-up).
+
+#### 13.19.2 Defensive roles (new; key attributes in brackets give the fit, §13.17.1)
+| Slot | Role | UI description | Gain | Cost |
+|---|---|---|---|---|
+| GK | `gk_line` **Stay on the line** | "Guards his goal." | none | none |
+| GK | `gk_sweep` **Sweep behind** (oneOnOnes .5, decisions .5) | "Comes off his line to clear balls in behind." | opponent through balls ctx −0.3, their oneOnOne × 0.75 | opponent OUTSIDE_CENTRAL xG_ref +0.02; 3% of their through balls become a GK foul outside the box |
+| CB | `cb_hold` **Hold the line** | "Defends his zone with the back line." | none | none |
+| CB | `cb_step` **Step out** (tackling .4, strength .3, heading .3) | "Steps out to win it early." | as D: S_tkl +0.35, S_press +0.25, S_airD +0.2 | when beaten, the opponent's next step through ctx +0.3; fouls × 1.2 |
+| CB | `cb_cover` **Cover behind** (positioning .4, pace .4, decisions .2) | "Drops off and sweeps up behind." | team: opponent through balls ctx −0.25 | as D: S_tkl −0.15, S_press −0.2 |
+| FB/WB | `fb_track` **Track the winger** | "Stays with the man on his side." | none | none |
+| FB/WB | `fb_press` **Press high** (workRate .4, pace .3, tackling .3) | "Closes their winger down early, high up." | as D in his lane in MID: S_press +0.3 | when beaten in his lane, the opponent's next step through ctx +0.25 |
+| FB/WB | `fb_tuck` **Tuck in** (positioning .5, decisions .3, strength .2) | "Narrows to protect the middle." | opponent actions in our DEF Centre ctx −0.1 | opponent actions in his lane in our DEF ctx +0.15, their cross utility from his lane +0.2 |
+| DM | `dm_screen` **Screen the defence** | "Sits in front of the back line." | none | none |
+| DM | `dm_win` **Win it back** (tackling .4, workRate .3, stamina .3) | "Hunts the ball down." | as D: S_press +0.4, S_tkl +0.3 | fouls × 1.5, fatigue × 1.1 |
+| DM | `dm_drop` **Drop between the centre-backs** (positioning .5, heading .3, strength .2) | "Becomes a third centre-back." | opponent through balls ctx −0.2; their header duels in our box −0.05 | opponent actions in our MID Centre ctx +0.15 |
+| CM | `cm_hold` **Hold the zone** | "Keeps his place in the shape." | none | none |
+| CM | `cm_press` **Press** (workRate .4, stamina .3, tackling .3) | "Closes down whoever comes into his zone." | as D in MID: S_press +0.3 | fatigue × 1.08; when beaten, the opponent's next progress +0.2 |
+| CM | `cm_track` **Track runners** (stamina .4, workRate .3, positioning .3) | "Follows midfield runners into the box." | opponent late runs / through balls into our box from his side ctx −0.15 | fatigue × 1.05; opponent actions in our MID Centre ctx +0.1 |
+| AM | `am_screen` **Screen their midfield** | "Blocks passes into their midfield." | none | none |
+| AM | `am_press` **Press** (workRate .5, stamina .5) | "Closes down their holding midfielder." | as D on their DM/CM in their MID: S_press +0.3 | fatigue × 1.08; opponent progress past him +0.15 |
+| Wide | `w_track` **Track back** | "Comes back to help his full-back." | none | none |
+| Wide | `w_press` **Press their full-back** (workRate .4, pace .3, stamina .3) | "Closes their full-back down high." | as D on their FB in their DEF lane: S_press +0.3 | fatigue × 1.08; opponent actions in his lane in our DEF ctx +0.1 |
+| Wide | `w_high` **Stay high** (pace .5, offTheBall .5) | "Stays up the pitch as an outlet." | our Counter phase starts with probability +0.15 when we win it in DEF/MID; its first step through +0.2 | opponent actions in his lane in our DEF ctx +0.2 |
+| ST | `st_central` **Stay central** | "Waits between their centre-backs." | none | none |
+| ST | `st_press` **Press the defenders** (workRate .4, stamina .3, pace .3) | "Leads the press from the front." | team: our S_press +0.3 against their DEF third; their passes in their DEF third ctx −0.2 | fatigue × 1.15 |
+| ST | `st_shoulder` **Stay on the shoulder** (pace .5, offTheBall .5) | "Stays on the last defender, ready to run." | our long balls and through balls to him: S_run +0.2 | team: opponent recycle in their DEF ctx +0.2 (nobody presses them) |
+
+Fit works as §13.17.1: gains × `(0.4 + 0.6·fit)`, costs in full.
+
+#### 13.19.3 Instructions, split and offered by role
+- Each player: up to **2 attacking** instructions and up to **1 defensive** instruction.
+- **Attacking** = §13.17.11 + §13.18.9 except `closeDownMore` and `stayOnFeet` (they move to defensive).
+- **Defensive** (new set, max 1, effects in `K.pi.*`):
+
+| Instruction | UI wording (exact) | Gain | Cost | Clashes with |
+|---|---|---|---|---|
+| `closeDownMore` | "Close down more." | as D: S_press +0.3 | fatigue × 1.08; when beaten, the opponent's next progress +0.2 | standOff |
+| `standOff` | "Stand off him." | opponent through balls in his zone ctx −0.1 | his opponent's pass and dribble ctx +0.15 | closeDownMore |
+| `tackleHarder` | "Get stuck in." | as D: S_tkl +0.25 | fouls × 1.35, yellow chance × 1.2 | stayOnFeet |
+| `stayOnFeet` | "Stay on your feet." | fouls × 0.5 | as D: S_tkl −0.25 | tackleHarder |
+| `markTighter` | "Mark tighter." | recv × 0.85 for the opponent in his zone | through balls past him ctx +0.15 | none |
+| `trackRuns` | "Track runners all the way." | opponent S_run −0.2 on runs from his zone | fatigue × 1.05; opponent actions in his zone ctx +0.1 | none |
+
+- **Offered by role**: each attacking role and each defensive role lists which instructions it allows (the exact lists are the `ATT_ALLOW` and `DEF_ALLOW` tables in `docs/design/tactics/index.html`; copy them into `src/config/roles.ts`). Examples: an Inside forward can't take "Get to the byline"; a Target man can't take "Take players on"; "Stay high" and "Stay on the shoulder" take no defensive instruction. Changing a role drops instructions the new role doesn't allow.
+- **Instruction fit**: every instruction has key attributes (also in that file), and fit uses the §13.17.1 formula: gains × `(0.4 + 0.6·fit)`, costs in full. So "Shoot more" on a poor long-shooter gives few extra goals and the full cost.
+
+#### 13.19.4 Types (§8.4)
+`Tactics` and `TacticPlan`: `roles` becomes `attRoles: RoleId[]` + `defRoles: DefRoleId[]`; `playerInstructions` becomes `attInstructions: PlayerInstruction[][]` (each 0–2) + `defInstructions: DefInstruction[][]` (each 0–1). Save migration: old roles map to their attacking role where one exists (`stopper`→`cb` + `cb_step`, `covering_cb`→`cb` + `cb_cover`, `sweeper_keeper`→`gk` + `gk_sweep`, `ball_winner`→`cm`/`dm` + `cm_press`/`dm_win`, `wm_defensive`→`wm`/`wf` + `w_track`, `pressing_forward`→`st` + `st_press`); everything else gets the neutral defensive role.
+
+#### 13.19.5 AI managers and the assistant
+- AI (§13.17.8): Pressing High → ST `st_press`, one CM `cm_press`; Mentality Defensive → FBs Stays home, DM `dm_drop` if fit ≥ 0.5; Width Wide → wide players `winger`; on the counter (Defensive + onWin Counter) → one wide player `w_high`. Fit ≥ 0.5 as before.
+- Assistant (§13.17.9), re-pointed: "Put {player} on Step out" instead of the old stopper advice; in-match "They're getting in behind {player}. Tell him to stand off." when ≥ 2 through balls past him in 15 minutes.
+
+#### 13.19.6 The board (UI)
+The Tactics board has a **With ball / Without ball** switch. Without ball, the magnets slide (spring) into the defensive shape: each slot's x = `0.07 + (x − 0.05) × 0.62` plus the line offset (Deep −0.03, High +0.05), then per defensive role (Step out +0.04, Cover −0.03, Press high +0.10, Tuck in moves 30% toward the centre, Drop between the CBs x = 0.17, Press roles +0.06–0.08, Track runners −0.05, Track back −0.05, Stay high and Stay on the shoulder keep their attacking x). This is display only; the engine uses zones. Attacking marks show With ball; defensive role marks, the offside trap and "force them" show Without ball.
+
+#### 13.19.7 Calibration (add to §13.18.13; equal teams, 2,000 matches each)
+- `st_press` + `cm_press` vs neutral: ball wins in the opponent's DEF third ≥ +30%, our fatigue higher.
+- `w_high` on both wingers vs neutral: our Counter phases ≥ +20%, opponent attacks down those lanes ≥ +15%.
+- `dm_drop` vs neutral: opponent through balls completed ≤ −20%, opponent shots from outside the box ≥ +15%.
+- `cb_step` vs `cb_cover` (same player): his tackles won ≥ +20%, through balls conceded ≥ +20%.
+- All defaults neutral: §13.16 unchanged. The ±6-point rule covers every role and instruction here.
+
 
 ---
 
@@ -2075,9 +2158,9 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 **Accept:** every screen change uses the §19.7 transitions and holds 60 fps; reduce motion turns them into crossfades; a complete 18-matchday season can be played start to finish via the text match view; save/reload mid-season works; season end shows table and grade; screenshots saved and the M3 design review (§19.8) is passed.
 
 ### M3b — Depth pass 2 (SPEC 1.4; starts when M3 is accepted, about 3 days; Gemini is ahead of schedule)
-1. Engine: §13.18.1–13.18.11 (types §8.4, `K.d2.*`, the new `plan` command, AI and assistant additions, save migration with neutral defaults: Mixed / false / Never / 2 / None, plans copied from the current tactics, familiarity from §13.18.11 starting values).
-2. Unit tests per new option, then `npm run calibrate`: all §13.16 targets, every §13.17.10 check and every §13.18.13 check MUST pass. Paste the report into PROGRESS.md.
-3. Tactics screen: the new controls as shown in `docs/design/tactics/` (Claude extends that reference for 1.4 before this task starts; until then, put them on the clipboard dividers in the same style).
+1. Engine: §13.18.1–13.18.11 and §13.19 (attacking and defensive roles, instructions by role, instruction fit; types §8.4, `K.d2.*`, the new `plan` command, AI and assistant additions, save migration with neutral defaults: Mixed / false / Never / 2 / None, plans copied from the current tactics, familiarity from §13.18.11 starting values).
+2. Unit tests per new option, then `npm run calibrate`: all §13.16 targets, every §13.17.10 check, every §13.18.13 check and every §13.19.7 check MUST pass. Paste the report into PROGRESS.md.
+3. Tactics screen rebuilt to `docs/design/tactics/` (v3): full width, board left and the tall panel right, the With ball / Without ball switch, the player's file with stats, role attribute bars and instruction fit, the swap comparison while dragging. Other office screens follow the same pattern (see that README).
 **Accept:** calibration all pass; every new option changes the match in the direction its wording says (checked by the tests); old saves load.
 
 ### M4 — 3D match day (1–5 Dec)

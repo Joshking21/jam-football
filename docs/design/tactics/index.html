@@ -83,8 +83,8 @@ button{background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inh
   background:radial-gradient(ellipse 60% 50% at 28% 0%,rgb(255 214 160 / .075),transparent 70%),var(--desk)}
 
 /* ---------- the desk ---------- */
-.desk{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,372px);gap:32px;padding:22px 32px 40px;align-items:start;min-height:100%}
-@container (max-width:920px){ .desk{grid-template-columns:minmax(0,1fr);padding:18px 18px 32px} .prop{display:none} }
+.desk{position:relative;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(400px,1fr);gap:28px;padding:18px 24px 28px;align-items:start;min-height:100%}
+@container (max-width:980px){ .desk{grid-template-columns:minmax(0,1fr);padding:18px 18px 32px} .prop{display:none} .side{position:relative;top:auto;max-height:none;overflow:visible;margin:0;padding:0} }
 .wall{position:relative;z-index:1;min-width:0;display:flex;flex-direction:column}
 .tabs{display:flex;gap:4px;padding-left:18px;position:relative;z-index:1}
 .tab{height:34px;padding:0 16px;border-radius:4px 4px 0 0;background:var(--paper-2);color:var(--paper-dim);font:600 14px/34px var(--font-head);letter-spacing:.08em;text-transform:uppercase;
@@ -139,7 +139,7 @@ button{background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inh
 .dot{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:5px}
 
 /* paper */
-.side{position:relative;z-index:1;min-width:0}
+.side{position:sticky;top:0;z-index:1;min-width:0;max-height:calc(100vh - 120px);overflow:auto;padding:16px 14px 18px 4px;margin:-16px -14px 0 -4px;scrollbar-width:thin;scrollbar-color:var(--desk-border) transparent}
 .sheet{position:relative;background:var(--paper);color:var(--paper-ink);border-radius:3px;box-shadow:var(--shadow-paper);padding:24px 22px 22px}
 .sheet :focus-visible{outline-color:var(--paper-ink)}
 .clip{padding-top:40px}
@@ -175,6 +175,42 @@ button{background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inh
 .fbar i{position:absolute;inset:0;transform-origin:0 50%;background:var(--paper-ink);transition:transform 400ms var(--ease-out)}
 .fr.low .fl,.fr.low .fv{color:var(--marker-red)}.fr.low .fbar i{background:var(--marker-red)}
 .fnote{grid-column:1/-1;font-size:11px;line-height:1.35;color:var(--paper-dim);max-width:170px}
+.phase{margin-left:auto;margin-right:18px;display:flex;gap:2px;align-self:flex-end}
+.phase button{height:30px;padding:0 12px;border-radius:4px 4px 0 0;background:var(--desk-2);color:var(--text-dim);font:600 13px/30px var(--font-head);letter-spacing:.08em;text-transform:uppercase;transform:translateY(4px)}
+.phase button:hover{color:var(--text)}
+.phase button[aria-pressed="true"]{background:var(--marker-blue);color:#fff;transform:none}
+.wall.opp .phase{visibility:hidden}
+.phtabs{display:flex;gap:2px;margin:14px 0 2px;border-bottom:2px solid var(--paper-ink)}
+.phtabs button{flex:1;height:30px;border-radius:3px 3px 0 0;background:var(--paper-2);color:var(--paper-dim);font:600 12px/30px var(--font-head);letter-spacing:.08em;text-transform:uppercase}
+.phtabs button[aria-selected="true"]{background:var(--paper-ink);color:var(--paper)}
+.pchip{display:inline-block;padding:1px 5px;margin-right:3px;border:1px solid var(--paper-rule);border-radius:2px;font:600 11px/1.3 var(--font-head);letter-spacing:.04em;color:var(--paper-dim)}
+.pchip.on{background:var(--paper-ink);border-color:var(--paper-ink);color:var(--paper)}
+.vit{display:flex;flex-wrap:wrap;gap:6px 18px;padding:10px 0;border-bottom:1px solid var(--paper-rule);font-size:13px;align-items:center}
+.vit b{font:600 11px/1 var(--font-head);letter-spacing:.1em;text-transform:uppercase;color:var(--paper-dim);margin-right:8px}
+.cbar{display:inline-block;width:72px;height:5px;margin-right:6px;vertical-align:middle;background:var(--paper-rule);position:relative;overflow:hidden}
+.cbar i{position:absolute;inset:0;transform-origin:0 50%}
+.season{display:grid;grid-template-columns:repeat(4,auto) 1fr;gap:6px 16px;align-items:end;padding:10px 0;border-bottom:2px solid var(--paper-ink)}
+.season>span{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--paper-dim)}
+.season b{font:600 22px/1 var(--font-head);color:var(--paper-ink);font-variant-numeric:tabular-nums}
+.season .sp{align-items:flex-end}
+.spark{width:84px;height:26px;display:block}
+.attrs{display:grid;grid-template-columns:auto minmax(40px,1fr) 26px;gap:5px 10px;align-items:center;margin-top:8px;font-size:12px}
+.ar{display:contents}.an{color:var(--paper-dim)}
+.ab{height:5px;background:var(--paper-rule);position:relative;overflow:hidden}.ab i{position:absolute;inset:0;transform-origin:0 50%}
+.av{font:600 13px/1 var(--font-head);text-align:right;font-variant-numeric:tabular-nums}
+.ft{font-size:11.5px;white-space:nowrap}.ft.good{color:var(--marker-green)}.ft.ok{color:var(--fit-mid)}.ft.poor{color:var(--marker-red)}.ft.any{color:var(--paper-dim)}
+.ft .st{letter-spacing:1px;color:inherit}.ft .st i{font-style:normal;color:var(--paper-rule)}
+.role .attrs{grid-column:1/-1}
+.pi .ft{grid-column:2}
+.none{margin:8px 0;font-size:13px;color:var(--paper-dim)}
+.who .disc{grid-column:1;grid-row:1/3}.who h2{grid-column:2;grid-row:1}.who .meta{grid-column:2;grid-row:2}.who .o{grid-column:3;grid-row:1/3}
+.cmp-card{position:absolute;left:0;top:0;z-index:20;width:230px;padding:10px 12px 12px;background:var(--paper);color:var(--paper-ink);border-radius:3px;box-shadow:var(--shadow-paper);pointer-events:none;font-size:12px}
+.cmp-card .ch{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:baseline;padding-bottom:6px;margin-bottom:6px;border-bottom:2px solid var(--paper-ink)}
+.cmp-card .ch b{font:700 15px/1 var(--font-head);text-transform:uppercase}.cmp-card .ch b:last-child{text-align:right}
+.cmp-card .ch span{font-size:10.5px;color:var(--paper-dim);text-align:center}
+.cmp-card .cg{display:grid;grid-template-columns:1fr auto 1fr;gap:3px 8px;font-variant-numeric:tabular-nums}
+.cmp-card .cg span:nth-child(3n+1){text-align:left}.cmp-card .cg span:nth-child(3n){text-align:right}
+.cmp-card .cg .l{color:var(--paper-dim);text-align:center}.cmp-card .cg .w{font-weight:600;color:var(--marker-green)}
 .presets{display:flex;flex-wrap:wrap;gap:6px;padding:12px 0 4px}
 .chip{height:28px;padding:0 10px;border:1px solid var(--paper-rule);border-radius:14px;font:500 12px/26px var(--font-body);color:var(--paper-ink);background:transparent}
 .chip:hover{background:var(--paper-2)}
@@ -252,7 +288,7 @@ button{background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inh
 .prop{position:absolute;pointer-events:none;z-index:0}
 .toast{position:absolute;right:18px;bottom:18px;z-index:70;max-width:300px;padding:12px 14px;background:var(--paper);color:var(--paper-ink);box-shadow:var(--shadow-paper);transform:rotate(-.8deg);font-size:13px}
 
-@media (max-width:1100px){
+@media all{
   .app{grid-template-columns:72px minmax(0,1fr)}
   .club{width:auto}
   .grp-h{font-size:0;height:1px;padding:0;margin:0 14px 8px;background:var(--desk-border)}
@@ -283,7 +319,7 @@ button{background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inh
   <main class="stage" id="stage">
     <div class="desk" id="desk">
       <section class="wall" id="wall" aria-label="Tactics board">
-        <div class="tabs" role="tablist"><button class="tab" role="tab" id="tabUs" aria-selected="true">Our team</button><button class="tab" role="tab" id="tabOpp" aria-selected="false">Opposition<span class="cnt" id="oppCnt"></span></button></div>
+        <div class="tabs" role="tablist"><button class="tab" role="tab" id="tabUs" aria-selected="true">Our team</button><button class="tab" role="tab" id="tabOpp" aria-selected="false">Opposition<span class="cnt" id="oppCnt"></span></button><span class="phase" role="group" aria-label="Shape on the board"><button id="phWith" aria-pressed="true">With ball</button><button id="phWithout" aria-pressed="false">Without ball</button></span></div>
         <div class="frame"><div class="bd" id="bd"><svg id="svg" viewBox="0 0 1050 790"></svg></div></div>
         <div class="tray" aria-hidden="true"><svg viewBox="0 0 260 22"><rect x="0" y="5" width="70" height="12" rx="3" fill="#E9ECEA"/><rect x="60" y="4" width="16" height="14" rx="3" fill="#C42B2B"/>
           <rect x="86" y="5" width="70" height="12" rx="3" fill="#E9ECEA"/><rect x="146" y="4" width="16" height="14" rx="3" fill="#1F4FBF"/>
@@ -344,68 +380,123 @@ const ARCH = {
 };
 /* roles: SPEC §13.17.2 (names, descriptions and key attributes exact; gain/cost lines are the UI summaries) */
 const ROLES = {
-  gk:{n:'Goalkeeper',d:'Stays on his line.'},
-  sweeper_keeper:{n:'Sweeper keeper',d:'Comes off his line to sweep behind the defence.',g:'Cuts out balls in behind and one-on-ones',c:'Exposed to shots from distance; can concede free kicks outside the box',k:{oneOnOnes:.4,decisions:.3,passing:.3},a:'sweep'},
-  cb:{n:'Centre-back',d:'Defends his zone.'},
-  stopper:{n:'Stopper',d:'Steps out to win it early.',g:'Wins tackles and headers early',c:'Space behind him if he’s beaten; more fouls',k:{tackling:.4,strength:.3,heading:.3},a:'step'},
-  covering_cb:{n:'Covering centre-back',d:'Drops off and sweeps up behind.',g:'Fewer balls in behind',c:'Softer in the tackle and the press',k:{positioning:.4,pace:.4,decisions:.2},a:'back'},
-  ball_playing_cb:{n:'Ball-playing centre-back',d:'Brings it out and starts attacks.',g:'Starts attacks from the back',c:'Against a high press, his mistakes happen in our box',k:{passing:.5,composure:.3,decisions:.2},a:'pass'},
+  gk:{n:'Goalkeeper',d:'Keeps it simple with his feet.'},
+  bp_keeper:{n:'Ball-playing keeper',d:'Plays it short from the back.',g:'Short goal kicks and throws find a man more often',c:'Against a high press his mistakes happen in our box',k:{passing:.5,decisions:.3,composure:.2},a:'step'},
+  cb:{n:'Centre-back',d:'Plays it simple to the nearest man.'},
+  ball_playing_cb:{n:'Ball-playing centre-back',d:'Brings it out and starts attacks.',g:'Progressive passes and switches from deep',c:'Against a high press his mistakes happen in our box',k:{passing:.5,composure:.3,decisions:.2},a:'pass'},
   fb:{n:'Full-back',d:'Gets forward when it’s on.'},
-  fb_defensive:{n:'Defensive full-back',d:'Stays home and guards the flank.',g:'Shuts down his flank',c:'Rarely crosses or overlaps',k:{positioning:.4,tackling:.4,strength:.2},a:'hold'},
+  fb_defensive:{n:'Stays home',d:'Stays back when we attack.',g:'Already back when we lose it on his side',c:'Rarely crosses or overlaps',k:{positioning:.4,decisions:.3,stamina:.3},a:'hold'},
   fb_overlapping:{n:'Overlapping full-back',d:'Bursts past the winger to cross.',g:'More and better crosses from his side',c:'Space behind him on the counter; tires faster',k:{crossing:.4,pace:.3,stamina:.3},a:'overlap'},
   fb_inverted:{n:'Inverted full-back',d:'Steps into midfield when we have it.',g:'An extra man in midfield',c:'Few crosses; his flank is open on the counter',k:{passing:.4,decisions:.3,firstTouch:.3},a:'inside'},
-  dm:{n:'Holding midfielder',d:'Shields the back line.'},
-  anchor:{n:'Anchor',d:'Never leaves the space in front of the defence.',g:'Protects the centre and keeps it simple',c:'Rarely plays forward',k:{positioning:.5,tackling:.3,decisions:.2},a:'hold'},
+  dm:{n:'Holding midfielder',d:'Takes it off the defence and gives it on.'},
+  anchor:{n:'Anchor',d:'Keeps it simple in front of the defence.',g:'Safe, short passing that keeps the ball',c:'Rarely plays forward',k:{positioning:.5,passing:.3,decisions:.2},a:'hold'},
   deep_playmaker:{n:'Deep playmaker',d:'Dictates play from deep.',g:'Switches and long passes from deep',c:'A high press turns his mistakes into counters',k:{passing:.5,decisions:.3,composure:.2},a:'pass'},
-  ball_winner:{n:'Ball-winner',d:'Hunts the ball down.',g:'Presses and tackles hard',c:'More fouls; tires faster',k:{tackling:.4,workRate:.3,stamina:.3},a:'press'},
   cm:{n:'Central midfielder',d:'Does a bit of everything.'},
-  box_to_box:{n:'Box-to-box',d:'Covers every blade of grass.',g:'Presses, and supports both boxes',c:'Tires faster',k:{stamina:.4,workRate:.3,passing:.3},a:'both'},
-  playmaker:{n:'Playmaker',d:'Gets on the ball and picks the pass.',g:'On the ball more, plays through balls',c:'Doesn’t press or tackle much',k:{passing:.4,decisions:.3,firstTouch:.3},a:'pass'},
-  runner:{n:'Late runner',d:'Arrives late in the box.',g:'Late runs and shots in the box',c:'Leaves space in midfield',k:{offTheBall:.5,finishing:.3,stamina:.2},a:'box'},
+  box_to_box:{n:'Box-to-box',d:'Arrives in both boxes.',g:'Supports attacks and still gets back',c:'Tires faster',k:{stamina:.4,workRate:.3,passing:.3},a:'both'},
+  playmaker:{n:'Playmaker',d:'Gets on the ball and picks the pass.',g:'On the ball more, plays through balls',c:'Gives it away in dangerous places more often',k:{passing:.4,decisions:.3,firstTouch:.3},a:'pass'},
+  runner:{n:'Late runner',d:'Arrives late in the box.',g:'Late runs and shots in the box',c:'Leaves space in midfield when we lose it',k:{offTheBall:.5,finishing:.3,stamina:.2},a:'box'},
   am:{n:'Number 10',d:'Links midfield and attack.'},
-  shadow_striker:{n:'Shadow striker',d:'Plays off the striker and gets in the box.',g:'Gets in the box and shoots',c:'Doesn’t defend in midfield',k:{offTheBall:.4,finishing:.4,composure:.2},a:'box'},
-  wm:{n:'Wide midfielder',d:'Works the flank both ways.'},
-  wm_defensive:{n:'Defensive winger',d:'Tracks back to help his full-back.',g:'Helps his full-back',c:'Fewer crosses and dribbles',k:{workRate:.4,tackling:.3,stamina:.3},a:'track'},
+  shadow_striker:{n:'Shadow striker',d:'Plays off the striker and gets in the box.',g:'Gets in the box and shoots',c:'Less involved in the build-up',k:{offTheBall:.4,finishing:.4,composure:.2},a:'box'},
+  wm:{n:'Wide midfielder',d:'Works the flank.'},
   wide_playmaker:{n:'Wide playmaker',d:'Drifts inside to make things happen.',g:'Through balls and switches from inside',c:'Few crosses',k:{passing:.4,decisions:.3,dribbling:.3},a:'drift'},
   wf:{n:'Wide forward',d:'Attacks his flank.'},
   winger:{n:'Winger',d:'Hugs the line, beats his man, crosses.',g:'Beats his man and crosses',c:'Rarely shoots',k:{crossing:.4,dribbling:.3,pace:.3},a:'hug'},
   inside_forward:{n:'Inside forward',d:'Cuts inside to shoot.',g:'Cuts in and shoots',c:'Almost never crosses; needs a full-back to hold the width',k:{finishing:.3,dribbling:.3,longShots:.2,pace:.2},a:'cut'},
   st:{n:'Striker',d:'Leads the line.'},
   target_man:{n:'Target man',d:'Wins headers and holds it up.',g:'Wins headers and knocks them down',c:'Slow on runs in behind; rarely dribbles',k:{heading:.4,strength:.4,firstTouch:.2},a:'aerial'},
-  poacher:{n:'Poacher',d:'Lives in the box.',g:'Finishes chances in the box',c:'Doesn’t link play; our press is weaker',k:{finishing:.4,offTheBall:.4,composure:.2},a:'box'},
-  pressing_forward:{n:'Pressing forward',d:'Leads the press from the front.',g:'Presses their defenders into mistakes',c:'Tires faster; shoots less',k:{workRate:.4,stamina:.3,pace:.3},a:'press'},
+  poacher:{n:'Poacher',d:'Lives in the box.',g:'Finishes chances in the box',c:'Doesn’t link play',k:{finishing:.4,offTheBall:.4,composure:.2},a:'box'},
   false_nine:{n:'False nine',d:'Drops deep and drags defenders out.',g:'Creates for runners from deep',c:'Fewer bodies in the box for crosses',k:{passing:.3,decisions:.3,firstTouch:.2,dribbling:.2},a:'drop'},
   advanced_forward:{n:'Advanced forward',d:'Runs in behind the defence.',g:'Runs in behind, more one-on-ones',c:'Caught offside more',k:{pace:.4,offTheBall:.4,finishing:.2},a:'run'},
 };
-const FBR = ['fb','fb_defensive','fb_overlapping','fb_inverted'];
-const SLOT_ROLES = {
-  GK:['gk','sweeper_keeper'],CB:['cb','stopper','covering_cb','ball_playing_cb'],LB:FBR,RB:FBR,LWB:FBR,RWB:FBR,
-  DM:['dm','anchor','deep_playmaker','ball_winner'],CM:['cm','box_to_box','deep_playmaker','ball_winner','playmaker','runner'],AM:['am','playmaker','shadow_striker'],
-  LM:['wm','wm_defensive','wide_playmaker','winger','inside_forward'],RM:['wm','wm_defensive','wide_playmaker','winger','inside_forward'],
-  LW:['wf','winger','inside_forward','wm_defensive'],RW:['wf','winger','inside_forward','wm_defensive'],
-  ST:['st','target_man','poacher','pressing_forward','false_nine','advanced_forward'],
+/* defensive roles (SPEC §13.19.2): first in each list is the neutral default */
+const DEF_ROLES = {
+  gk_line:{n:'Stay on the line',d:'Guards his goal.'},
+  gk_sweep:{n:'Sweep behind',d:'Comes off his line to clear balls in behind.',g:'Cuts out through balls and one-on-ones',c:'Exposed to shots from distance; risks fouls outside the box',k:{oneOnOnes:.5,decisions:.5},a:'fwd'},
+  cb_hold:{n:'Hold the line',d:'Defends his zone with the back line.'},
+  cb_step:{n:'Step out',d:'Steps out to win it early.',g:'Wins tackles and headers early',c:'Space behind him if he’s beaten; more fouls',k:{tackling:.4,strength:.3,heading:.3},a:'fwd'},
+  cb_cover:{n:'Cover behind',d:'Drops off and sweeps up behind.',g:'Fewer balls in behind',c:'Softer in the tackle; gives the striker room to turn',k:{positioning:.4,pace:.4,decisions:.2},a:'back'},
+  fb_track:{n:'Track the winger',d:'Stays with the man on his side.'},
+  fb_press:{n:'Press high',d:'Closes their winger down early, high up.',g:'Wins it back high on his side',c:'Space behind him if the press is beaten',k:{workRate:.4,pace:.3,tackling:.3},a:'press'},
+  fb_tuck:{n:'Tuck in',d:'Narrows to protect the middle.',g:'Fewer chances through the middle',c:'Their winger has room; more crosses against us',k:{positioning:.5,decisions:.3,strength:.2},a:'in'},
+  dm_screen:{n:'Screen the defence',d:'Sits in front of the back line.'},
+  dm_win:{n:'Win it back',d:'Hunts the ball down.',g:'Presses and tackles hard',c:'More fouls; tires faster',k:{tackling:.4,workRate:.3,stamina:.3},a:'press'},
+  dm_drop:{n:'Drop between the centre-backs',d:'Becomes a third centre-back.',g:'Fewer through balls; stronger in the air',c:'Space in front of our defence',k:{positioning:.5,heading:.3,strength:.2},a:'hold'},
+  cm_hold:{n:'Hold the zone',d:'Keeps his place in the shape.'},
+  cm_press:{n:'Press',d:'Closes down whoever comes into his zone.',g:'Wins the ball higher',c:'Tires faster; open when he’s beaten',k:{workRate:.4,stamina:.3,tackling:.3},a:'press'},
+  cm_track:{n:'Track runners',d:'Follows midfield runners into the box.',g:'Late runners don’t get free in our box',c:'Tires faster; the middle can open up',k:{stamina:.4,workRate:.3,positioning:.3},a:'track'},
+  am_screen:{n:'Screen their midfield',d:'Blocks passes into their midfield.'},
+  am_press:{n:'Press',d:'Closes down their holding midfielder.',g:'Their build-up is rushed',c:'Tires faster; space behind him',k:{workRate:.5,stamina:.5},a:'press'},
+  w_track:{n:'Track back',d:'Comes back to help his full-back.'},
+  w_press:{n:'Press their full-back',d:'Closes their full-back down high.',g:'Their build-up down that side is rushed',c:'Tires faster; our full-back can be left two-on-one',k:{workRate:.4,pace:.3,stamina:.3},a:'press'},
+  w_high:{n:'Stay high',d:'Stays up the pitch as an outlet.',g:'Faster, better counter-attacks',c:'His full-back is left alone',k:{pace:.5,offTheBall:.5},a:'outlet'},
+  st_central:{n:'Stay central',d:'Waits between their centre-backs.'},
+  st_press:{n:'Press the defenders',d:'Leads the press from the front.',g:'Presses their defenders into mistakes',c:'Tires faster',k:{workRate:.4,stamina:.3,pace:.3},a:'press'},
+  st_shoulder:{n:'Stay on the shoulder',d:'Stays on the last defender, ready to run.',g:'Always ready for a ball in behind',c:'Their defenders have time on the ball',k:{pace:.5,offTheBall:.5},a:'shoulder'},
+};
+const FB_A = ['fb','fb_defensive','fb_overlapping','fb_inverted'], FB_D = ['fb_track','fb_press','fb_tuck'], W_D = ['w_track','w_press','w_high'];
+const ATT_SLOT = {
+  GK:['gk','bp_keeper'], CB:['cb','ball_playing_cb'], LB:FB_A, RB:FB_A, LWB:FB_A, RWB:FB_A,
+  DM:['dm','anchor','deep_playmaker'], CM:['cm','box_to_box','deep_playmaker','playmaker','runner'], AM:['am','playmaker','shadow_striker'],
+  LM:['wm','wide_playmaker','winger','inside_forward'], RM:['wm','wide_playmaker','winger','inside_forward'],
+  LW:['wf','winger','inside_forward'], RW:['wf','winger','inside_forward'], ST:['st','target_man','poacher','false_nine','advanced_forward'],
+};
+const DEF_SLOT = {
+  GK:['gk_line','gk_sweep'], CB:['cb_hold','cb_step','cb_cover'], LB:FB_D, RB:FB_D, LWB:FB_D, RWB:FB_D,
+  DM:['dm_screen','dm_win','dm_drop'], CM:['cm_hold','cm_press','cm_track'], AM:['am_screen','am_press'],
+  LM:W_D, RM:W_D, LW:W_D, RW:W_D, ST:['st_central','st_press','st_shoulder'],
 };
 /* player instructions: SPEC §13.17.11 wording exact */
-const PIS = {
-  shootMore:['Shoot more: try his luck from distance.','More shots from range','Low-chance shots give the ball away',['shootLess']],
-  shootLess:['Shoot less: work a better chance.','Waits for a better chance','More passes in the final third to lose',['shootMore']],
-  dribbleMore:['Take players on.','Beats men and wins fouls','Loses it higher up the pitch',['dribbleLess']],
-  dribbleLess:['Move it on quickly.','Keeps the ball moving','Creates less on his own',['dribbleMore']],
-  crossMore:['Get it in the box early.','More crosses','The keeper claims more of them',['crossLess']],
-  crossLess:['Keep it on the floor.','More passes into feet','Fewer headers; easier to defend',['crossMore','crossFromByline','crossFromDeep']],
-  crossFromByline:['Get to the byline before crossing.','Better crosses and cut-backs','No early crosses; slower attacks',['crossFromDeep','crossLess']],
-  crossFromDeep:['Cross early, from deep.','Gets it in before they’re set','Worse deliveries; the keeper claims more',['crossFromByline','crossLess']],
-  getForward:['Get forward at every chance.','An extra man in attack','His zone is empty on the counter; tires faster',['holdPosition']],
-  holdPosition:['Hold your position.','Keeps the shape','Less support in attack',['getForward','roam']],
-  roam:['Roam from position.','Turns up where they don’t expect him','Leaves gaps in his own zone',['holdPosition']],
-  stayWider:['Stay wide and stretch them.','Stretches their back line','Fewer bodies in the middle',['sitNarrower']],
-  sitNarrower:['Sit narrower.','More bodies in the middle','Fewer crosses; his flank is open',['stayWider']],
-  riskyPasses:['Try the killer pass.','More through balls','Gives the ball away more',['playSafe']],
-  playSafe:['Play it safe.','Keeps the ball','Fewer through balls',['riskyPasses']],
-  closeDownMore:['Close down more.','Presses harder','Tires faster; open when he’s beaten'],
-  stayOnFeet:['Stay on your feet.','Half the fouls and cards','Wins fewer tackles'],
-  longThrows:['Take the long throws.','Throw-ins in their third become crosses','Slower restarts; the keeper claims more'],
+const ATT_PIS = {
+  shootMore:{w:'Shoot more: try his luck from distance.',g:'More shots from range',c:'Low-chance shots give the ball away',x:['shootLess'],k:{longShots:.6,composure:.4}},
+  shootLess:{w:'Shoot less: work a better chance.',g:'Waits for a better chance',c:'More passes in the final third to lose',x:['shootMore'],k:{decisions:.6,passing:.4}},
+  dribbleMore:{w:'Take players on.',g:'Beats men and wins fouls',c:'Loses it higher up the pitch',x:['dribbleLess'],k:{dribbling:.6,pace:.2,firstTouch:.2}},
+  dribbleLess:{w:'Move it on quickly.',g:'Keeps the ball moving',c:'Creates less on his own',x:['dribbleMore'],k:{passing:.5,decisions:.5}},
+  crossMore:{w:'Get it in the box early.',g:'More crosses',c:'The keeper claims more of them',x:['crossLess'],k:{crossing:1}},
+  crossLess:{w:'Keep it on the floor.',g:'More passes into feet',c:'Fewer headers; easier to defend',x:['crossMore','crossFromByline','crossFromDeep'],k:{passing:.6,firstTouch:.4}},
+  crossFromByline:{w:'Get to the byline before crossing.',g:'Better crosses and cut-backs',c:'No early crosses; slower attacks',x:['crossFromDeep','crossLess'],k:{pace:.4,dribbling:.3,crossing:.3}},
+  crossFromDeep:{w:'Cross early, from deep.',g:'Gets it in before they’re set',c:'Worse deliveries; the keeper claims more',x:['crossFromByline','crossLess'],k:{crossing:.7,passing:.3}},
+  getForward:{w:'Get forward at every chance.',g:'An extra man in attack',c:'His zone is empty on the counter; tires faster',x:['holdPosition'],k:{stamina:.5,offTheBall:.5}},
+  holdPosition:{w:'Hold your position.',g:'Keeps the shape',c:'Less support in attack',x:['getForward','roam'],k:{positioning:.6,decisions:.4}},
+  roam:{w:'Roam from position.',g:'Turns up where they don’t expect him',c:'Leaves gaps in his own zone',x:['holdPosition'],k:{offTheBall:.4,decisions:.3,firstTouch:.3}},
+  stayWider:{w:'Stay wide and stretch them.',g:'Stretches their back line',c:'Fewer bodies in the middle',x:['sitNarrower'],k:{pace:.5,crossing:.5}},
+  sitNarrower:{w:'Sit narrower.',g:'More bodies in the middle',c:'Fewer crosses; his flank is open',x:['stayWider'],k:{passing:.5,positioning:.5}},
+  riskyPasses:{w:'Try the killer pass.',g:'More through balls',c:'Gives the ball away more',x:['playSafe'],k:{passing:.6,decisions:.4}},
+  playSafe:{w:'Play it safe.',g:'Keeps the ball',c:'Fewer through balls',x:['riskyPasses'],k:{composure:.5,passing:.5}},
+  longThrows:{w:'Take the long throws.',g:'Throw-ins in their third become crosses',c:'Slower restarts; the keeper claims more',k:{strength:1}},
 };
+const DEF_PIS = {
+  closeDownMore:{w:'Close down more.',g:'Presses harder',c:'Tires faster; open when he’s beaten',x:['standOff'],k:{workRate:.4,stamina:.3,pace:.3}},
+  standOff:{w:'Stand off him.',g:'Keeps his position; fewer balls in behind him',c:'The man in front has more time on the ball',x:['closeDownMore'],k:{positioning:.6,decisions:.4}},
+  tackleHarder:{w:'Get stuck in.',g:'Wins more tackles',c:'More fouls and cards',x:['stayOnFeet'],k:{tackling:.6,strength:.4}},
+  stayOnFeet:{w:'Stay on your feet.',g:'Half the fouls and cards',c:'Wins fewer tackles',x:['tackleHarder'],k:{positioning:.5,tackling:.5}},
+  markTighter:{w:'Mark tighter.',g:'His man sees less of the ball',c:'Gets turned and beaten in behind more',k:{positioning:.4,strength:.3,pace:.3}},
+  trackRuns:{w:'Track runners all the way.',g:'Follows runners into the box',c:'Tires faster; leaves his own zone empty',k:{stamina:.5,workRate:.3,pace:.2}},
+};
+/* which instructions each role offers (SPEC §13.19.3) */
+const PI_FB = ['crossMore','crossLess','crossFromByline','crossFromDeep','getForward','holdPosition','stayWider','sitNarrower','dribbleMore','longThrows'];
+const PI_MID = ['shootMore','shootLess','dribbleMore','dribbleLess','riskyPasses','playSafe','getForward','holdPosition','roam'];
+const PI_WIDE = ['shootMore','shootLess','dribbleMore','dribbleLess','crossMore','crossLess','crossFromByline','crossFromDeep','stayWider','sitNarrower','roam'];
+const PI_ST = ['shootMore','shootLess','dribbleMore','dribbleLess','roam','holdPosition','riskyPasses','playSafe'];
+const ATT_ALLOW = {
+  gk:['playSafe','riskyPasses'], bp_keeper:['playSafe','riskyPasses'], cb:['playSafe','riskyPasses','longThrows'], ball_playing_cb:['riskyPasses','getForward','longThrows'],
+  fb:PI_FB, fb_defensive:['crossFromDeep','crossLess','playSafe','sitNarrower','longThrows'], fb_overlapping:['crossMore','crossFromByline','crossFromDeep','dribbleMore','stayWider','longThrows'], fb_inverted:['playSafe','riskyPasses','shootLess','holdPosition','dribbleLess'],
+  dm:['playSafe','riskyPasses','shootLess','holdPosition'], anchor:['playSafe','shootLess'], deep_playmaker:['riskyPasses','playSafe','shootLess','holdPosition'],
+  cm:PI_MID, box_to_box:PI_MID, playmaker:['riskyPasses','shootMore','shootLess','dribbleMore','dribbleLess','roam'], runner:['shootMore','shootLess','dribbleMore','riskyPasses','roam'],
+  am:PI_MID, shadow_striker:['shootMore','shootLess','dribbleMore','dribbleLess','roam'],
+  wm:PI_WIDE, wf:PI_WIDE, wide_playmaker:['riskyPasses','playSafe','dribbleMore','sitNarrower','roam','crossFromDeep'], winger:['crossMore','crossFromByline','crossFromDeep','dribbleMore','dribbleLess','shootLess'], inside_forward:['shootMore','shootLess','dribbleMore','dribbleLess','sitNarrower','riskyPasses'],
+  st:PI_ST, target_man:['shootMore','shootLess','holdPosition','playSafe'], poacher:['shootMore','shootLess','dribbleLess','holdPosition'], false_nine:['riskyPasses','playSafe','dribbleMore','roam','shootLess'], advanced_forward:['shootMore','shootLess','dribbleMore','dribbleLess','roam'],
+};
+const DEF_ALL = Object.keys(DEF_PIS);
+const DEF_ALLOW = {
+  gk_line:[], gk_sweep:[], cb_hold:['standOff','tackleHarder','stayOnFeet','markTighter'], cb_step:['stayOnFeet','markTighter'], cb_cover:['standOff','stayOnFeet'],
+  fb_track:DEF_ALL, fb_press:['stayOnFeet','tackleHarder'], fb_tuck:['standOff','markTighter','stayOnFeet'],
+  dm_screen:['closeDownMore','standOff','tackleHarder','stayOnFeet','trackRuns'], dm_win:['stayOnFeet'], dm_drop:['standOff','markTighter','stayOnFeet'],
+  cm_hold:DEF_ALL, cm_press:['stayOnFeet','tackleHarder'], cm_track:['tackleHarder','stayOnFeet','markTighter'],
+  am_screen:['closeDownMore','standOff','trackRuns'], am_press:['stayOnFeet','tackleHarder'],
+  w_track:['closeDownMore','standOff','tackleHarder','stayOnFeet','trackRuns'], w_press:['stayOnFeet','tackleHarder'], w_high:[],
+  st_central:['closeDownMore','standOff'], st_press:['stayOnFeet','tackleHarder'], st_shoulder:[],
+};
+const allowedAtt = rid => ATT_ALLOW[rid] || [];
 /* team instructions: SPEC §13.10, §13.17.4–5 wording exact */
 const INS = [
   ['with','mentality','Mentality',[['Very defensive','Everyone behind the ball.'],['Defensive','Keep men behind the ball.'],['Balanced','Pick the right moments.'],['Attacking','Commit players forward.'],['Very attacking','Throw everything forward.']]],
@@ -458,8 +549,25 @@ let reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const RM = () => reduce;
 const OUT = 'cubic-bezier(.2,.8,.2,1)', SNAP = 'cubic-bezier(.2,.9,.1,1)';
 const ATTR = SQUAD.map(p => { const r = rngOf(hash(p.name)), o = {}; for (const a of ATTRS) { const off = ARCH[p.arch][a]; o[a] = clamp(Math.round(p.ovr + (off === undefined ? -14 : off) + (r() - .5) * 6), 20, 95); } return o; });
-const isNeutral = id => !ROLES[id].k;
-const fitOf = (pi, rid) => { const r = ROLES[rid]; if (!r.k) return null; let s = 0; for (const k in r.k) s += r.k[k] * ATTR[pi][k]; return clamp((s - 50) / 30, 0, 1); };
+const fitK = (pi, k) => { if (!k) return null; let s = 0; for (const a in k) s += k[a] * ATTR[pi][a]; return clamp((s - 50) / 30, 0, 1); };
+const ATTR_NAME = a => ({ firstTouch: 'First touch', offTheBall: 'Off the ball', workRate: 'Work rate', longShots: 'Long shots', oneOnOnes: 'One-on-ones' }[a] || a[0].toUpperCase() + a.slice(1));
+/* §19.4 attribute scale, darkened for paper */
+const attrColour = v => v < 40 ? '#C42B2B' : v < 55 ? '#C8641A' : v < 65 ? '#B38A06' : v < 75 ? '#5E8F26' : v < 85 ? '#1E7B3C' : '#0B7A73';
+const attrRow = (a, v) => `<span class="ar"><span class="an">${ATTR_NAME(a)}</span><span class="ab"><i style="transform:scaleX(${v / 100});background:${attrColour(v)}"></i></span><span class="av">${v}</span></span>`;
+function fitTag(pi, k) {
+  const f = fitK(pi, k); if (f === null) return '<span class="ft any">Any player</span>';
+  const n = 1 + Math.round(4 * f), ks = Object.keys(k).sort((a, b) => ATTR[pi][b] - ATTR[pi][a]), a = n >= 3 ? ks[0] : ks[ks.length - 1];
+  return `<span class="ft ${n >= 4 ? 'good' : n === 3 ? 'ok' : 'poor'}"><span class="st" aria-label="${n} of 5">${'★'.repeat(n)}<i>${'★'.repeat(5 - n)}</i></span> ${n >= 4 ? 'Good fit' : n === 3 ? 'OK fit' : 'Poor fit'} · ${ATTR_NAME(a).toLowerCase()} ${ATTR[pi][a]}</span>`;
+}
+const AGE = SQUAD.map(p => 19 + hash(p.name + 'age') % 15);
+const MORALE = SQUAD.map(p => p.sur === 'Bankole' ? 'Unhappy' : ['Good', 'Good', 'Happy', 'Content'][hash(p.name + 'm') % 4]);
+const STATS = SQUAD.map(p => {
+  const r = rngOf(hash(p.name + 's')), starter = [0, 3, 5, 4, 2, 9, 8, 10, 13, 15, 12].includes(p.i);
+  const apps = p.injured ? 4 : starter ? 7 : 1 + Math.floor(r() * 4), lvl = p.pos[0] === 'ST' ? 3 : ['LW', 'RW', 'AM'].includes(p.pos[0]) ? 2 : ['CM', 'LM', 'RM'].includes(p.pos[0]) ? 1 : 0;
+  const goals = Math.floor(r() * (lvl * 1.5 + .6)), assists = Math.floor(r() * (lvl + 1.2)), base = 6.2 + (p.ovr - 64) * .06 + r() * .4;
+  const last = Array.from({ length: 5 }, () => +(base + (r() - .5) * 1.4).toFixed(1));
+  return { apps, goals, assists, avg: last.reduce((a, b) => a + b, 0) / 5, last };
+});
 const famOf = (p, pos) => p.pos.includes(pos) ? 1 : (pos === 'GK' || p.pos.includes('GK')) ? .35 : (REL[pos] || []).some(q => p.pos.includes(q)) ? .9 : .72;
 const fitColour = f => f >= 1 ? 'var(--fit-good)' : f >= .8 ? 'var(--fit-mid)' : 'var(--fit-bad)';
 
@@ -501,25 +609,28 @@ function clubXI() {
   const xi = [0, 3, 5, 4, 2, 9, 8, 10, 13, 15, 12];       // 4-3-3: Doyle; Whitlock, Achterberg, Fairclough, Achebe; Calder, Varga, Pryce; Ilori, Bankole, Mensah-Lowe
   return { xi, bench: [1, 6, 7, 11, 14, 16, 17, 18], treat: [19] };
 }
-/* club-style roles, the AI manager rules of SPEC §13.17.8: only when the player's fit ≥ 0.5 */
+/* club-style roles, the AI manager rules of SPEC §13.17.8 / §13.19.5: only when the player's fit >= 0.5 */
 function styleRoles(club, xi) {
-  const s = CLUBS[club].st, f = FORMS['4-3-3'];
-  let cbDone = false;
-  return f.map(([pos], i) => {
-    const pi = xi[i], ok = rid => fitOf(pi, rid) >= .5 ? rid : null;
-    let r = null;
-    if (pos === 'ST') r = (s[4] === 'High' && ok('pressing_forward')) || (s[2] === 'Direct' && ok('target_man'));
-    if (['LW', 'RW', 'LM', 'RM'].includes(pos) && s[6] === 'Wide') r = ok('winger');
-    if (pos === 'CB' && s[2] === 'Short' && !cbDone) { r = ok('ball_playing_cb'); cbDone = !!r; }
-    if (s[1] === 'Defensive') { if (pos === 'DM') r = ok('anchor'); if (['LB', 'RB'].includes(pos)) r = ok('fb_defensive'); }
-    return r || SLOT_ROLES[pos][0];
+  const s = CLUBS[club].st; let cbDone = false, pressDone = false;
+  const att = [], def = [];
+  FORMS['4-3-3'].forEach(([pos], i) => {
+    const pi = xi[i], okA = rid => fitK(pi, ROLES[rid].k) >= .5 ? rid : null, okD = rid => fitK(pi, DEF_ROLES[rid].k) >= .5 ? rid : null;
+    let a = null, d = null;
+    if (['LW', 'RW', 'LM', 'RM'].includes(pos) && s[6] === 'Wide') a = okA('winger');
+    if (pos === 'CB' && s[2] === 'Short' && !cbDone) { a = okA('ball_playing_cb'); cbDone = !!a; }
+    if (pos === 'ST' && s[2] === 'Direct') a = okA('target_man');
+    if (pos === 'ST' && s[4] === 'High') d = okD('st_press');
+    if (pos === 'CM' && s[4] === 'High' && !pressDone) { d = okD('cm_press'); pressDone = !!d; }
+    if (s[1] === 'Defensive') { if (pos === 'DM') a = okA('anchor'); if (['LB', 'RB'].includes(pos)) a = okA('fb_defensive'); }
+    att.push(a || ATT_SLOT[pos][0]); def.push(d || DEF_SLOT[pos][0]);
   });
+  return { att, def };
 }
 function newState(club) {
   const s = CLUBS[club].st, opp = club === 'c07' ? 'c02' : 'c07', base = clubXI();
   const st = {
     club, opp, formation: '4-3-3', ...base,
-    roles: styleRoles(club, base.xi), pis: FORMS['4-3-3'].map(() => []),
+    ...styleRoles(club, base.xi), attPI: FORMS['4-3-3'].map(() => []), defPI: FORMS['4-3-3'].map(() => []), phase: 'with',
     ins: { mentality: s[1], passing: s[2], tempo: s[3], pressing: s[4], line: s[5], width: s[6], focus: 'Mixed', finalThird: 'Mixed', crossStyle: 'Mixed',
       offsideTrap: 'Off', tackling: 'Mixed', forceOpp: 'Mixed', onLoss: 'Mixed', onWin: 'Mixed', distribution: 'Mixed', timeWasting: 'Never',
       cornersFor: 'Mixed', cornerSwing: 'Mixed', menBack: 'Two', freeKicks: 'Mixed', cornersAgainst: 'Mixed', postMen: 'None' },
@@ -531,11 +642,12 @@ function newState(club) {
 }
 /* Plans A/B/C (§13.18.10): club style, plus two ready-made alternatives the user can change */
 function makePlans(st) {
-  const neutral = f => FORMS[f].map(([pos]) => SLOT_ROLES[pos][0]), none = f => FORMS[f].map(() => []);
+  const A = f => FORMS[f].map(([pos]) => ATT_SLOT[pos][0]), D = f => FORMS[f].map(([pos]) => DEF_SLOT[pos][0]), none = f => FORMS[f].map(() => []);
+  const plan = (name, formation, ins, att, def) => ({ name, formation, ins, att: att || A(formation), def: def || D(formation), attPI: none(formation), defPI: none(formation) });
   return [
-    { name: 'Club style', formation: st.formation, roles: [...st.roles], pis: st.pis.map(a => [...a]), ins: { ...st.ins } },
-    { name: 'Chasing a game', formation: '4-2-3-1', roles: neutral('4-2-3-1'), pis: none('4-2-3-1'), ins: { ...st.ins, mentality: 'Very attacking', passing: 'Direct', tempo: 'Fast', pressing: 'High', line: 'High', width: 'Wide', finalThird: 'Shoot on sight', crossStyle: 'Whipped', onLoss: 'Counter-press' } },
-    { name: 'Protect a lead', formation: '4-1-4-1', roles: neutral('4-1-4-1'), pis: none('4-1-4-1'), ins: { ...st.ins, mentality: 'Defensive', passing: 'Short', tempo: 'Slow', pressing: 'Low', line: 'Deep', width: 'Narrow', onWin: 'Keep it', timeWasting: 'When ahead late', menBack: 'Three', postMen: 'Both posts' } },
+    { name: 'Club style', formation: st.formation, att: [...st.att], def: [...st.def], attPI: st.attPI.map(a => [...a]), defPI: st.defPI.map(a => [...a]), ins: { ...st.ins } },
+    plan('Chasing a game', '4-2-3-1', { ...st.ins, mentality: 'Very attacking', passing: 'Direct', tempo: 'Fast', pressing: 'High', line: 'High', width: 'Wide', finalThird: 'Shoot on sight', crossStyle: 'Whipped', onLoss: 'Counter-press' }),
+    plan('Protect a lead', '4-1-4-1', { ...st.ins, mentality: 'Defensive', passing: 'Short', tempo: 'Slow', pressing: 'Low', line: 'Deep', width: 'Narrow', onWin: 'Keep it', timeWasting: 'When ahead late', menBack: 'Three', postMen: 'Both posts' }),
   ];
 }
 /* familiarity per area (§13.18.11): club style 90, one step away 65, others 45; formations 90 / same back line 65 / others 40 */
@@ -554,13 +666,38 @@ function famHTML() {
 function renderFam() { const b = $('#famBox'); if (b) b.innerHTML = famHTML(); }
 function switchPlan(n) {
   if (n === T.active) return;
-  T.plans[T.active] = { ...T.plans[T.active], formation: T.formation, roles: [...T.roles], pis: T.pis.map(a => [...a]), ins: { ...T.ins } };
+  T.plans[T.active] = { ...T.plans[T.active], formation: T.formation, att: [...T.att], def: [...T.def], attPI: T.attPI.map(a => [...a]), defPI: T.defPI.map(a => [...a]), ins: { ...T.ins } };
   T.active = n; const p = T.plans[n], keep = T.sel;
-  T.ins = { ...p.ins }; T.roles = [...p.roles]; T.pis = p.pis.map(a => [...a]); T.formation = p.formation; T.sel = null;
+  Object.assign(T, { ins: { ...p.ins }, att: [...p.att], def: [...p.def], attPI: p.attPI.map(a => [...a]), defPI: p.defPI.map(a => [...a]), formation: p.formation, sel: null });
   $$('.mag .ring', $('#bd')).forEach(r => r.remove());
   refreshMagnets(false, true); drawUs(true); drawOpp(false); renderShell(); renderSide(false);
   const sh = $('#side .clip'); if (sh) settle({ querySelectorAll: () => [sh] });
   if (keep !== null && locOf(keep).t === 'xi') selectPlayer(keep);
+}
+/* where a slot's magnet sits: the attacking shape, or the defensive shape derived from it (SPEC §13.19.6) */
+function slotXY(i) {
+  const [pos, x, y] = slots()[i];
+  if (T.phase === 'with') return [x, y];
+  if (pos === 'GK') return [T.def[i] === 'gk_sweep' ? .1 : .05, y];
+  let dx = .07 + (x - .05) * .62 + { Deep: -.03, Normal: 0, High: .05 }[T.ins.line], dy = y;
+  switch (T.def[i]) {
+    case 'cb_step': dx += .04; break; case 'cb_cover': dx -= .03; break;
+    case 'fb_press': dx += .1; break; case 'fb_tuck': dy = y + (.5 - y) * .3; break;
+    case 'dm_drop': dx = .17; break; case 'dm_win': case 'cm_press': case 'am_press': dx += .06; break;
+    case 'cm_track': dx -= .05; break; case 'w_track': dx -= .05; dy = y + (y - .5) * .08; break; case 'w_press': dx += .08; break;
+    case 'w_high': dx = x - .04; break; case 'st_press': dx += .08; break; case 'st_shoulder': dx = x - .02; break;
+  }
+  return [clamp(dx, .04, .95), dy];
+}
+function setPhase(ph) {
+  if (T.phase === ph) return; T.phase = ph;
+  $('#phWith').setAttribute('aria-pressed', String(ph === 'with')); $('#phWithout').setAttribute('aria-pressed', String(ph === 'without'));
+  refreshMagnets(false, true); drawUs(true); rerenderFile();
+}
+function rerenderFile() {
+  const f = $('.file'); if (!f || T.sel === null) return;
+  const side = $('#side'), y = side.scrollTop; f.outerHTML = fileHTML(T.sel); paintIcons();
+  const nf = $('.file'); nf.style.transform = `rotate(${nf.dataset.rot}deg)`; side.scrollTop = y;
 }
 const slots = () => FORMS[T.formation];
 function locOf(pi) {
@@ -572,7 +709,7 @@ function setLoc(pi, loc) { (loc.t === 'xi' ? T.xi : loc.t === 'bench' ? T.bench 
 function posPx(loc) {
   const bd = $('#bd'), k = bd.clientWidth / 1050;
   let x, y;
-  if (loc.t === 'xi') [x, y] = sp(slots()[loc.i][1], slots()[loc.i][2]);
+  if (loc.t === 'xi') [x, y] = sp(...slotXY(loc.i));
   else if (loc.t === 'bench') { x = BENCH_X0 + loc.i * BENCH_DX; y = BENCH_Y; }
   else { x = TREAT_X; y = BENCH_Y; }
   return [x * k, y * k];
@@ -591,6 +728,7 @@ let raf = 0, last = 0;
 function magHTML(p) { const k = CLUBS[T.club].kit; return `<span class="disc" style="--k1:${k[0]};--k2:${k[1]}">${p.num}<span class="ovr"></span></span><span class="nm">${p.sur}</span>`; }
 function buildMagnets() {
   $$('.mag', $('#bd')).forEach(m => m.remove()); MAG.clear();
+  if (!$('#cmp')) { const c = document.createElement('div'); c.className = 'cmp-card'; c.id = 'cmp'; c.hidden = true; c.setAttribute('aria-hidden', 'true'); $('#bd').appendChild(c); }
   for (const p of SQUAD) {
     const el = document.createElement('button'); el.className = 'mag'; el.dataset.pi = p.i; el.innerHTML = magHTML(p);
     $('#bd').appendChild(el); MAG.set(p.i, { el, x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0, drag: false });
@@ -606,7 +744,7 @@ function refreshMagnets(snap = false, stagger = false) {
     const ovr = $('.ovr', m.el);
     if (loc.t === 'xi') { const f = famOf(p, slots()[loc.i][0]); ovr.hidden = false; ovr.textContent = Math.round(p.ovr * f); ovr.style.setProperty('--fit', fitColour(f)); }
     else ovr.hidden = true;
-    const role = loc.t === 'xi' ? ROLES[T.roles[loc.i]].n : loc.t === 'bench' ? 'bench' : 'injured';
+    const role = loc.t === 'xi' ? ROLES[T.att[loc.i]].n + ' / ' + DEF_ROLES[T.def[loc.i]].n : loc.t === 'bench' ? 'bench' : 'injured';
     m.el.setAttribute('aria-label', `${p.num} ${p.name}, ${loc.t === 'xi' ? slots()[loc.i][0] + ', ' + role : role}`);
     const set = () => { m.tx = x; m.ty = y; if (snap || RM()) { m.x = x; m.y = y; m.vx = m.vy = 0; } kick(); };
     stagger && !RM() ? setTimeout(set, n * 22) : set();
@@ -637,13 +775,13 @@ function bindDrag(el, pi) {
     if (!dragging && Math.hypot(e.clientX - sx, e.clientY - sy) > 5) { dragging = true; MAG.get(pi).drag = true; el.classList.add('lift'); }
     if (!dragging) return;
     const m = MAG.get(pi), r = $('#bd').getBoundingClientRect();
-    m.tx = clamp(e.clientX - r.left - ox, 0, r.width); m.ty = clamp(e.clientY - r.top - oy, 0, r.height); kick();
+    m.tx = clamp(e.clientX - r.left - ox, 0, r.width); m.ty = clamp(e.clientY - r.top - oy, 0, r.height); kick(); showCompare(pi);
   });
   const end = e => {
     if (id !== e.pointerId) return; id = null;
     const m = MAG.get(pi);
     if (!dragging) { selectPlayer(pi); return; }
-    m.drag = false; el.classList.remove('lift');
+    m.drag = false; el.classList.remove('lift'); hideCompare();
     let best = null, bd = 1e9;
     for (const [qi, q] of MAG) { if (qi === pi) continue; const d = Math.hypot(q.tx - m.x, q.ty - m.y); if (d < bd) { bd = d; best = qi; } }
     const reach = el.querySelector('.disc').offsetWidth * .95;
@@ -653,6 +791,24 @@ function bindDrag(el, pi) {
   el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
   el.addEventListener('click', e => { if (e.detail === 0) keyPick(pi); });
 }
+function showCompare(pi) {
+  const m = MAG.get(pi), reach = m.el.querySelector('.disc').offsetWidth * 1.1, card = $('#cmp'); let best = null, bd = 1e9;
+  for (const [qi, q] of MAG) { if (qi === pi) continue; const d = Math.hypot(q.tx - m.x, q.ty - m.y); if (d < bd) { bd = d; best = qi; } }
+  if (best === null || bd >= reach || SQUAD[best].injured || SQUAD[pi].injured) { card.hidden = true; return; }
+  if (card.dataset.k !== pi + '-' + best) {
+    card.dataset.k = pi + '-' + best;
+    const la = locOf(pi), lb = locOf(best), A = SQUAD[pi], B = SQUAD[best];
+    const slotI = lb.t === 'xi' ? lb.i : la.t === 'xi' ? la.i : -1, pos = slotI >= 0 ? slots()[slotI][0] : B.pos[0];
+    const role = slotI >= 0 ? T.att[slotI] : null, keys = role && ROLES[role].k ? Object.keys(ROLES[role].k) : ['pace', 'passing', 'decisions'];
+    const row = (lbl, a, b, fmt = v => v) => `<span class="${a > b ? 'w' : ''}">${fmt(a)}</span><span class="l">${lbl}</span><span class="${b > a ? 'w' : ''}">${fmt(b)}</span>`;
+    card.innerHTML = `<div class="ch"><b>${A.sur}</b><span>at ${pos}${role ? ' · ' + ROLES[role].n : ''}</span><b>${B.sur}</b></div><div class="cg">
+      ${row('OVR here', Math.round(A.ovr * famOf(A, pos)), Math.round(B.ovr * famOf(B, pos)))}${row('Condition', A.cond, B.cond, v => v + '%')}${keys.map(a => row(ATTR_NAME(a), ATTR[pi][a], ATTR[best][a])).join('')}</div>`;
+  }
+  const q = MAG.get(best), W = $('#bd').clientWidth, H = $('#bd').clientHeight, cw = 230;
+  const x = q.tx + 34 + cw > W ? q.tx - 34 - cw : q.tx + 34, y = clamp(q.ty - 50, 6, H - 160);
+  card.style.transform = `translate(${x.toFixed(0)}px,${y.toFixed(0)}px)`; card.hidden = false;
+}
+function hideCompare() { const c = $('#cmp'); if (c) { c.hidden = true; c.dataset.k = ''; } }
 function keyPick(pi) {
   if (T.armed === null) { T.armed = pi; MAG.get(pi).el.classList.add('armed'); selectPlayer(pi); }
   else if (T.armed === pi) { MAG.get(pi).el.classList.remove('armed'); T.armed = null; }
@@ -678,17 +834,15 @@ function boardLines() {
     <text class="bt ink" x="${x}" y="${BENCH_Y + 7}" style="font-size:18px">Bench</text><text class="bt ink" x="${TREAT_X - 50}" y="${y + h + 21}" style="font-size:18px">Injured</text>
     <path class="pl" d="M${TREAT_X - 64} ${y + h + 34}v100" style="stroke-opacity:.18"/>`;
 }
-function roleMark(i, sel) {
-  const rid = T.roles[i], a = ROLES[rid].a; if (!a) return '';
-  const [pos, nx, ny] = slots()[i], [x, y] = sp(nx, ny), inDir = Math.abs(ny - .5) < .08 ? 0 : (ny < .5 ? 1 : -1);
+function roleMark(i, sel) { return T.phase === 'with' ? attMark(i, sel) : defMark(i, sel); }
+function attMark(i, sel) {
+  const a = ROLES[T.att[i]].a; if (!a) return '';
+  const [, nx, ny] = slots()[i], [x, y] = sp(nx, ny), inDir = Math.abs(ny - .5) < .08 ? 0 : (ny < .5 ? 1 : -1);
   const cls = 'mk blue' + (sel ? '' : ' faint'), r = 34, seed = 100 + i * 7;
   const L = (dx, dy, bend = 0) => path(mArrow(x + r * Math.sign(dx || 1) * .9, y + dy * .15, x + dx, y + dy, bend), cls);
   switch (a) {
-    case 'sweep': return L(110, 0);
     case 'step': return L(80, 0);
-    case 'back': return path(mArrow(x - 30, y + 26, x - 90, y + 30, .1), cls);
     case 'drop': return path(mArrow(x - 34, y, x - 150, y + 10, -.15), cls);
-    case 'track': return path(mArrow(x - 34, y, x - 170, y - inDir * 10, .08), cls);
     case 'run': return path(mArrow(x + 36, y + 6, x + 160, y - 24, .12), cls + ' dash', false);
     case 'overlap': return path(mArrow(x + 34, y - inDir * 26, x + 250, y - inDir * 30, -.12 * inDir), cls);
     case 'inside': return L(60, inDir * 150, .1 * inDir);
@@ -697,26 +851,42 @@ function roleMark(i, sel) {
     case 'hug': return path(mArrow(x + 34, y - inDir * 6, x + 180, y - inDir * 18), cls);
     case 'box': { const [bx, by] = sp(.88, .5 + (ny - .5) * .25); return path(mArrow(x + 34, y, bx, by, .14), cls); }
     case 'both': return path(mArrow(x + 30, y - 20, x + 120, y - 20), cls) + path(mArrow(x - 30, y + 20, x - 120, y + 20), cls);
-    case 'press': { const pts = []; for (let k = 0; k <= 5; k++) pts.push([x + 36 + k * 22, y + (k % 2 ? -16 : 16)]); return path(wob(pts, seed, 2), cls) + path(mArrow(x + 136, y + 16, x + 170, y, 0, 14), cls); }
     case 'pass': return path(mArrow(x + 34, y + 10, x + 280, y + (inDir || 1) * 180, .1), cls + ' dash', false);
     case 'hold': return path(mCircle(x, y, 56, seed, 3), cls);
     case 'aerial': return path(mCircle(x, y, 54, seed, 3), cls) + path(mCircle(x, y, 70, seed + 9, 3), cls);
   }
   return '';
 }
+function defMark(i, sel) {
+  const a = DEF_ROLES[T.def[i]].a; if (!a) return '';
+  const [nx, ny] = slotXY(i), [x, y] = sp(nx, ny), inDir = Math.abs(ny - .5) < .08 ? 0 : (ny < .5 ? 1 : -1);
+  const cls = 'mk blue' + (sel ? '' : ' faint'), seed = 900 + i * 7;
+  switch (a) {
+    case 'fwd': return path(mArrow(x + 34, y, x + 110, y), cls);
+    case 'back': return path(mArrow(x - 30, y + 20, x - 100, y + 26, .1), cls);
+    case 'press': { const pts = []; for (let k = 0; k <= 5; k++) pts.push([x + 36 + k * 22, y + (k % 2 ? -16 : 16)]); return path(wob(pts, seed, 2), cls) + path(mArrow(x + 136, y + 16, x + 170, y, 0, 14), cls); }
+    case 'in': return path(mArrow(x + 6, y + inDir * 34, x + 20, y + inDir * 130, .1 * inDir), cls);
+    case 'track': return path(mArrow(x - 34, y, x - 170, y + (inDir || 1) * 60, .15), cls + ' dash', false);
+    case 'outlet': return path(mCircle(x, y, 54, seed, 3), cls) + `<text class="bt blue" x="${x - 34}" y="${y - 64}" style="font-size:18px">Outlet</text>`;
+    case 'shoulder': return path(mArrow(x + 34, y, x + 150, y - 10, .05), cls + ' dash', false);
+    case 'hold': return path(mCircle(x, y, 56, seed, 3), cls);
+  }
+  return '';
+}
 function teamMarks() {
   const lineX = { Deep: .15, Normal: .23, High: .32 }[T.ins.line], pressX = { Low: .52, Mid: .64, High: .8 }[T.ins.pressing];
   const v = (lbl, cls) => `${path(`M0 ${P.y + 18} L0 ${P.y + P.h - 18}`, cls + ' dash', false)}<text class="bt ${cls.includes('red') ? 'red' : 'blue'}" x="10" y="${P.y + 40}">${lbl}</text>`;
-  const trap = T.ins.offsideTrap === 'On' ? path(wob(Array.from({ length: 14 }, (_, k) => [k % 2 ? 9 : -9, P.y + 70 + k * 38]), 77, 1), 'mk blue tm k-offsideTrap') : '';
+  const trap = T.phase === 'without' && T.ins.offsideTrap === 'On' ? path(wob(Array.from({ length: 14 }, (_, k) => [k % 2 ? 9 : -9, P.y + 70 + k * 38]), 77, 1), 'mk blue tm k-offsideTrap') : '';
   let s = `<g class="mvg" style="transform:translateX(${(P.x + lineX * P.w).toFixed(0)}px)">${v(T.ins.offsideTrap === 'On' ? 'Line · trap' : 'Line', 'mk blue faint')}${trap}</g>`;
   s += `<g class="mvg" style="transform:translateX(${(P.x + pressX * P.w).toFixed(0)}px)">${v('Press', 'mk blue faint')}</g>`;
   const wx = P.x + .58 * P.w;
   const fo = T.ins.forceOpp;
-  if (fo !== 'Mixed') for (const dir of [1, -1]) { const y0 = dir > 0 ? .1 : .9; const [x1, y1] = sp(.36, y0), [x2, y2] = fo === 'Inside' ? sp(.22, y0 + dir * .22) : sp(.17, y0 - dir * .02); s += path(mArrow(x1, y1, x2, y2, fo === 'Inside' ? -.25 * dir : 0), 'mk blue faint tm k-forceOpp'); }
-  if (fo !== 'Mixed') s += `<text class="bt blue" x="${sp(.24, .045)[0]}" y="${sp(.24, .045)[1]}" style="font-size:18px">Show ${fo.toLowerCase()}</text>`;
-  if (T.ins.crossStyle !== 'Mixed') { const [cx0, cy0] = sp(.9, .08), [cx1, cy1] = sp(.95, .44), bend = { Low: .02, Whipped: .22, Floated: .45 }[T.ins.crossStyle]; s += path(mArrow(cx0, cy0, cx1, cy1, -bend), 'mk blue tm k-crossStyle') + `<text class="bt blue" x="${cx0 - 160}" y="${cy0 + 6}" style="font-size:18px">${T.ins.crossStyle} cross</text>`; }
-  if (T.ins.finalThird === 'Shoot on sight') { const [a0, b0] = sp(.8, .6); s += path(mArrow(a0, b0, P.x + P.w - 6, P.y + P.h * .52, .05), 'mk blue tm k-finalThird') + `<text class="bt blue" x="${a0 - 40}" y="${b0 + 34}" style="font-size:18px">Shoot on sight</text>`; }
-  if (T.ins.finalThird === 'Work it into the box') { const pts = [sp(.78, .62), sp(.85, .56), sp(.86, .66), sp(.93, .55)]; for (let k = 0; k < 3; k++) s += path(mArrow(pts[k][0], pts[k][1], pts[k + 1][0], pts[k + 1][1], 0, 11), 'mk blue tm k-finalThird'); s += `<text class="bt blue" x="${pts[0][0] - 40}" y="${pts[0][1] + 40}" style="font-size:18px">Work it in</text>`; }
+  const W = T.phase === 'with';
+  if (!W && fo !== 'Mixed') for (const dir of [1, -1]) { const y0 = dir > 0 ? .1 : .9; const [x1, y1] = sp(.36, y0), [x2, y2] = fo === 'Inside' ? sp(.22, y0 + dir * .22) : sp(.17, y0 - dir * .02); s += path(mArrow(x1, y1, x2, y2, fo === 'Inside' ? -.25 * dir : 0), 'mk blue faint tm k-forceOpp'); }
+  if (!W && fo !== 'Mixed') s += `<text class="bt blue" x="${sp(.24, .045)[0]}" y="${sp(.24, .045)[1]}" style="font-size:18px">Show ${fo.toLowerCase()}</text>`;
+  if (W && T.ins.crossStyle !== 'Mixed') { const [cx0, cy0] = sp(.9, .08), [cx1, cy1] = sp(.95, .44), bend = { Low: .02, Whipped: .22, Floated: .45 }[T.ins.crossStyle]; s += path(mArrow(cx0, cy0, cx1, cy1, -bend), 'mk blue tm k-crossStyle') + `<text class="bt blue" x="${cx0 - 160}" y="${cy0 + 6}" style="font-size:18px">${T.ins.crossStyle} cross</text>`; }
+  if (W && T.ins.finalThird === 'Shoot on sight') { const [a0, b0] = sp(.8, .6); s += path(mArrow(a0, b0, P.x + P.w - 6, P.y + P.h * .52, .05), 'mk blue tm k-finalThird') + `<text class="bt blue" x="${a0 - 40}" y="${b0 + 34}" style="font-size:18px">Shoot on sight</text>`; }
+  if (W && T.ins.finalThird === 'Work it into the box') { const pts = [sp(.78, .62), sp(.85, .56), sp(.86, .66), sp(.93, .55)]; for (let k = 0; k < 3; k++) s += path(mArrow(pts[k][0], pts[k][1], pts[k + 1][0], pts[k + 1][1], 0, 11), 'mk blue tm k-finalThird'); s += `<text class="bt blue" x="${pts[0][0] - 40}" y="${pts[0][1] + 40}" style="font-size:18px">Work it in</text>`; }
   if (T.group === 'setp') {
     const n = { One: 1, Two: 2, Three: 3 }[T.ins.menBack];
     for (let k = 0; k < n; k++) { const [x, y] = sp(.44, .5 + (k - (n - 1) / 2) * .16); s += path(mX(x, y, 13, 600 + k), 'mk blue tm k-menBack'); }
@@ -724,10 +894,10 @@ function teamMarks() {
     const pm = T.ins.postMen, gy = P.h * .054;
     if (pm !== 'None') for (const py of pm === 'Both posts' ? [-1, 1] : [-1]) s += path(mX(P.x + 14, P.y + P.h / 2 + py * gy, 8, 640 + py), 'mk red tm k-postMen');
   }
-  if (T.ins.width === 'Wide') s += path(mArrow(wx, P.y + 150, wx, P.y + 50), 'mk blue faint tm') + path(mArrow(wx, P.y + P.h - 150, wx, P.y + P.h - 50), 'mk blue faint tm');
-  if (T.ins.width === 'Narrow') s += path(mArrow(wx, P.y + 50, wx, P.y + 150), 'mk blue faint tm') + path(mArrow(wx, P.y + P.h - 50, wx, P.y + P.h - 150), 'mk blue faint tm');
+  if (W && T.ins.width === 'Wide') s += path(mArrow(wx, P.y + 150, wx, P.y + 50), 'mk blue faint tm') + path(mArrow(wx, P.y + P.h - 150, wx, P.y + P.h - 50), 'mk blue faint tm');
+  if (W && T.ins.width === 'Narrow') s += path(mArrow(wx, P.y + 50, wx, P.y + 150), 'mk blue faint tm') + path(mArrow(wx, P.y + P.h - 50, wx, P.y + P.h - 150), 'mk blue faint tm');
   const fy = { Left: .14, Centre: .5, Right: .86 }[T.ins.focus];
-  if (fy !== undefined) { const [ax, ay] = sp(.82, fy); s += path(mArrow(ax, ay, ax + 120, ay), 'mk blue tm') + `<text class="bt blue" x="${ax}" y="${ay - 22}">Focus</text>`; }
+  if (W && fy !== undefined) { const [ax, ay] = sp(.82, fy); s += path(mArrow(ax, ay, ax + 120, ay), 'mk blue tm') + `<text class="bt blue" x="${ax}" y="${ay - 22}">Focus</text>`; }
   return s;
 }
 function drawUs(animate = true) {
@@ -789,28 +959,37 @@ function clipHTML() {
 }
 function stars(f) { const n = 1 + Math.round(4 * f); return `<span class="st" aria-label="${n} of 5 fit">${'★'.repeat(n)}<i>${'★'.repeat(5 - n)}</i></span>`; }
 function fileHTML(pi) {
-  const p = SQUAD[pi], loc = locOf(pi), k = CLUBS[T.club].kit;
+  const p = SQUAD[pi], loc = locOf(pi), k = CLUBS[T.club].kit, st = STATS[pi];
+  const pos = loc.t === 'xi' ? slots()[loc.i][0] : null, ovr = pos ? Math.round(p.ovr * famOf(p, pos)) : p.ovr;
+  const rc = v => v < 6 ? 'var(--marker-red)' : v < 7 ? 'var(--paper-ink)' : v < 8 ? 'var(--marker-green)' : '#B7791F';
+  const yv = v => (22 - (v - 5.5) / 3 * 18).toFixed(1);
+  const spark = `<svg class="spark" viewBox="0 0 84 26" role="img" aria-label="Last five ratings: ${st.last.join(', ')}"><polyline points="${st.last.map((v, i) => `${4 + i * 19},${yv(v)}`).join(' ')}" fill="none" stroke="var(--paper-ink)" stroke-width="1.6"/>${st.last.map((v, i) => `<circle cx="${4 + i * 19}" cy="${yv(v)}" r="2.8" fill="${rc(v)}"/>`).join('')}</svg>`;
   const head = `<div class="who"><span class="disc" style="--k1:${k[0]};--k2:${k[1]}">${p.num}</span><h2>${p.name}</h2>
-    <span class="o">${loc.t === 'xi' ? Math.round(p.ovr * famOf(p, slots()[loc.i][0])) : p.ovr}<small>${loc.t === 'xi' ? 'at ' + slots()[loc.i][0] : 'OVR'}</small></span>
-    <span class="meta">${p.pos.join(' · ')} · Condition ${p.cond}%${p.injured ? ' · Injured' : ''}</span></div>`;
+    <span class="o">${ovr}<small>${pos ? 'at ' + pos : 'OVR'}</small></span>
+    <span class="meta">${p.pos.map(q => `<span class="pchip${q === pos ? ' on' : ''}">${q}</span>`).join('')} Age ${AGE[pi]}</span></div>
+    <div class="vit"><span><b>Condition</b><span class="cbar"><i style="transform:scaleX(${p.cond / 100});background:${p.cond < 75 ? 'var(--fit-mid)' : 'var(--fit-good)'}"></i></span>${p.cond}%</span><span><b>Morale</b>${MORALE[pi]}</span>${p.injured ? '<span class="c"><b>Injured</b>2 weeks</span>' : ''}</div>
+    <div class="season"><span><b>${st.apps}</b>Apps</span><span><b>${st.goals}</b>Goals</span><span><b>${st.assists}</b>Assists</span><span><b style="color:${rc(st.avg)}">${st.avg.toFixed(2)}</b>Avg rating</span><span class="sp">${spark}<small>Last 5</small></span></div>`;
   let body;
   if (loc.t !== 'xi') {
-    body = `<div class="empty"><svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><path d="${mCircle(18, 18, 13, 9, .8)}" fill="none" stroke="var(--marker-blue)" stroke-width="2.4" stroke-linecap="round"/></svg>
-      <span>${p.injured ? 'He’s in the treatment room. He can’t start or sit on the bench until he’s fit.' : 'On the bench. Drag him onto a starter to bring him in, and his role card opens here.'}</span></div>`;
+    const keys = Object.entries(ATTR[pi]).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    body = `<div class="empty"><span>${p.injured ? 'He’s in the treatment room. He can’t start or sit on the bench until he’s fit.' : 'On the bench. Drag him onto a starter to bring him in; his roles and instructions open here.'}</span></div>
+      <div class="sub-h"><span>Best attributes</span></div><div class="attrs">${keys.map(([a, v]) => attrRow(a, v)).join('')}</div>`;
   } else {
-    const pos = slots()[loc.i][0], cur = T.roles[loc.i], mine = T.pis[loc.i];
-    const roles = SLOT_ROLES[pos].map(rid => { const r = ROLES[rid], f = fitOf(pi, rid);
-      return `<button class="role" role="radio" aria-checked="${rid === cur}" data-role="${rid}"><span class="rn">${r.n}</span>${f === null ? '<span class="st any">Any player</span>' : stars(f)}
-        <span class="rd">${r.d}</span>${r.g ? `<span class="gc"><span class="g">Gives you: ${r.g}.</span><br><span class="c">Costs you: ${r.c}.</span></span>` : '<span class="gc">No gains, no costs. The neutral choice.</span>'}</button>`; }).join('');
-    const pis = Object.keys(PIS).filter(id => id !== 'longThrows' || ATTR[pi].strength >= 70).map(id => {
-      const [w, g, c, clash = []] = PIS[id], on = mine.includes(id), hit = clash.find(x => mine.includes(x));
-      const why = on ? '' : hit ? `Clashes with “${PIS[hit][0].split(':')[0].replace(/\.$/, '')}”.` : mine.length >= 2 ? 'Two instructions already. Remove one first.' : '';
-      return `<button class="pi" role="checkbox" aria-checked="${on}" data-pi="${id}"${why ? ' aria-disabled="true"' : ''}><span class="box">${on ? `<svg viewBox="0 0 30 30"><path d="M7 16 l6 6 l12 -15" fill="none" stroke="var(--marker-blue)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" data-draw/></svg>` : ''}</span>
-        <span class="t">${w}</span><span class="why">${why || `<span class="g">${g}</span> · <span class="c">${c}</span>`}</span></button>`; }).join('');
-    body = `<div class="sub-h"><span>Role at ${pos}</span><span>Fit</span></div><div class="roles" role="radiogroup" aria-label="Role">${roles}</div>
-      <div class="sub-h"><span>Instructions</span><span>${mine.length} of 2</span></div><div class="pis">${pis}</div>`;
+    const i = loc.i, ph = T.phase, W = ph === 'with', list = W ? ATT_SLOT[pos] : DEF_SLOT[pos], cur = W ? T.att[i] : T.def[i], TBL = W ? ROLES : DEF_ROLES;
+    const roles = list.map(rid => { const r = TBL[rid], on = rid === cur;
+      return `<button class="role" role="radio" aria-checked="${on}" data-${W ? 'arole' : 'drole'}="${rid}"><span class="rn">${r.n}</span>${fitTag(pi, r.k)}<span class="rd">${r.d}</span>${on ? `<span class="gc">${r.g ? `<span class="g">Gives you: ${r.g}.</span><br><span class="c">Costs you: ${r.c}.</span>` : 'No gains, no costs. The neutral choice.'}</span>${r.k ? `<span class="attrs">${Object.keys(r.k).map(a => attrRow(a, ATTR[pi][a])).join('')}</span>` : ''}` : ''}</button>`; }).join('');
+    const SRC = W ? ATT_PIS : DEF_PIS, max = W ? 2 : 1, mine = (W ? T.attPI : T.defPI)[i];
+    const allowed = (W ? allowedAtt(cur) : DEF_ALLOW[cur] || []).filter(id => id !== 'longThrows' || ATTR[pi].strength >= 70);
+    const tick = `<svg viewBox="0 0 30 30"><path d="M7 16 l6 6 l12 -15" fill="none" stroke="var(--marker-blue)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" data-draw/></svg>`;
+    const pis = allowed.length ? allowed.map(id => { const d = SRC[id], on = mine.includes(id), hit = (d.x || []).find(x => mine.includes(x));
+      const why = on ? '' : hit ? `Clashes with “${SRC[hit].w.split(':')[0].replace(/\.$/, '')}”.` : mine.length >= max ? (max === 1 ? 'One instruction already. Remove it first.' : 'Two instructions already. Remove one first.') : '';
+      return `<button class="pi" role="checkbox" aria-checked="${on}" data-instr="${id}"${why ? ' aria-disabled="true"' : ''}><span class="box">${on ? tick : ''}</span><span class="t">${d.w}</span>${fitTag(pi, d.k)}<span class="why">${why || `<span class="g">${d.g}</span> · <span class="c">${d.c}</span>`}</span></button>`; }).join('')
+      : '<p class="none">This role has no instructions. Its job is fixed.</p>';
+    body = `<div class="phtabs" role="tablist" aria-label="Phase"><button role="tab" data-ph="with" aria-selected="${W}">With the ball</button><button role="tab" data-ph="without" aria-selected="${!W}">Without the ball</button></div>
+      <div class="sub-h"><span>${W ? 'Attacking' : 'Defensive'} role at ${pos}</span><span>Fit</span></div><div class="roles" role="radiogroup" aria-label="${W ? 'Attacking' : 'Defensive'} role">${roles}</div>
+      <div class="sub-h"><span>${W ? 'Attacking' : 'Defensive'} instructions</span><span>${mine.length} of ${max}</span></div><div class="pis">${pis}</div>`;
   }
-  return `<article class="sheet file" data-rot="0.7" role="dialog" aria-label="${p.name}"><span class="tabm">${p.sur}</span><button class="x" data-act="closefile" aria-label="Close the file">${ic('x')}</button>${head}${body}</article>`;
+  return `<article class="sheet file" data-rot="0.5" role="dialog" aria-label="${p.name}"><span class="tabm">${p.sur}</span><button class="x" data-act="closefile" aria-label="Close the file">${ic('x')}</button>${head}${body}</article>`;
 }
 function ordersHTML() {
   const xi = oppXI(), used = T.orders.length;
@@ -896,9 +1075,12 @@ function setIns(key, v) {
   }
 }
 function setFormation(f) {
-  T.formation = f; T.roles = FORMS[f].map(([pos], i) => SLOT_ROLES[pos].includes(T.roles[i]) ? T.roles[i] : SLOT_ROLES[pos][0]); T.pis = FORMS[f].map((_, i) => T.pis[i] || []);
-  refreshMagnets(false, true); drawUs(true); drawOpp(false);
-  renderFam();
+  T.formation = f;
+  T.att = FORMS[f].map(([pos], i) => ATT_SLOT[pos].includes(T.att[i]) ? T.att[i] : ATT_SLOT[pos][0]);
+  T.def = FORMS[f].map(([pos], i) => DEF_SLOT[pos].includes(T.def[i]) ? T.def[i] : DEF_SLOT[pos][0]);
+  T.attPI = FORMS[f].map((_, i) => (T.attPI[i] || []).filter(id => allowedAtt(T.att[i]).includes(id)));
+  T.defPI = FORMS[f].map((_, i) => (T.defPI[i] || []).filter(id => (DEF_ALLOW[T.def[i]] || []).includes(id)));
+  refreshMagnets(false, true); drawUs(true); drawOpp(false); renderFam();
   if (T.sel !== null) { const pi = T.sel; T.sel = null; selectPlayer(pi); }
 }
 function bestXI() {
@@ -977,6 +1159,8 @@ document.addEventListener('click', e => {
   if (t.classList.contains('sw')) return switchClub(t.dataset.id);
   if (t.id === 'tabUs') return setTab('us');
   if (t.id === 'tabOpp') return setTab('opp');
+  if (t.id === 'phWith') return setPhase('with');
+  if (t.id === 'phWithout') return setPhase('without');
   if (t.id === 'go') return t.getAttribute('aria-disabled') === 'true' ? toast($('#goWhy').textContent) : toast('Kick-off lives in the Hub reference.');
   if (t.dataset.nav) return toast(`${t.dataset.nav} is in the Hub reference (docs/design/hub/).`);
   if (t.classList.contains('opt')) return setIns(t.closest('.ins').dataset.key, t.dataset.v);
@@ -986,13 +1170,18 @@ document.addEventListener('click', e => {
   if (t.dataset.act === 'best') return bestXI();
   if (t.dataset.act === 'reset') return resetClub();
   if (t.dataset.act === 'closefile') return closeFile();
-  if (t.dataset.role) { const loc = locOf(T.sel); if (loc.t !== 'xi') return; T.roles[loc.i] = t.dataset.role; $$('.role', $('.file')).forEach(r => r.setAttribute('aria-checked', r.dataset.role === t.dataset.role)); drawUs(false); const g = $('#lUs'); $$('.mk:not(.faint)', g).forEach(p => drawOn({ querySelectorAll: () => [p] })); refreshMagnets(); return; }
-  if (t.dataset.pi && t.classList.contains('pi')) {
+  if (t.dataset.ph) return setPhase(t.dataset.ph);
+  if (t.dataset.arole || t.dataset.drole) {
+    const loc = locOf(T.sel); if (loc.t !== 'xi') return;
+    if (t.dataset.arole) { T.att[loc.i] = t.dataset.arole; T.attPI[loc.i] = T.attPI[loc.i].filter(id => allowedAtt(T.att[loc.i]).includes(id)); }
+    else { T.def[loc.i] = t.dataset.drole; T.defPI[loc.i] = T.defPI[loc.i].filter(id => (DEF_ALLOW[T.def[loc.i]] || []).includes(id)); }
+    rerenderFile(); refreshMagnets(); drawUs(false); $$('.mk:not(.faint)', $('#lUs')).forEach(q => drawOn({ querySelectorAll: () => [q] })); return;
+  }
+  if (t.dataset.instr) {
     if (t.getAttribute('aria-disabled') === 'true') return;
-    const loc = locOf(T.sel), list = T.pis[loc.i], id = t.dataset.pi, i = list.indexOf(id);
+    const loc = locOf(T.sel), list = (T.phase === 'with' ? T.attPI : T.defPI)[loc.i], id = t.dataset.instr, i = list.indexOf(id);
     i >= 0 ? list.splice(i, 1) : list.push(id);
-    const f = $('.file'); const y = f.scrollTop; f.outerHTML = fileHTML(T.sel); paintIcons(); const nf = $('.file'); nf.style.transform = `rotate(${nf.dataset.rot}deg)`; nf.scrollTop = y;
-    if (i < 0) drawOn($(`.pi[data-pi="${id}"]`, nf)); return;
+    rerenderFile(); if (i < 0) drawOn($(`.pi[data-instr="${id}"]`, $('.file'))); return;
   }
   if (t.classList.contains('opp-o')) { T.oppSel = +t.dataset.o; drawOpp(false); renderSide(false); const sh = $('#side .sheet'); settle({ querySelectorAll: () => [sh] }); return; }
   if (t.dataset.order) {
@@ -1026,7 +1215,7 @@ document.addEventListener('keydown', e => {
 addEventListener('resize', () => { clearTimeout(window._rz); window._rz = setTimeout(() => { refreshMagnets(true); drawProps(); }, 120); });
 function renderLegend() {
   $('#legend').innerHTML = `<b>At this slot</b><span><i class="dot" style="background:var(--fit-good)"></i>Natural position</span><span><i class="dot" style="background:var(--fit-mid)"></i>Can play there</span><span><i class="dot" style="background:var(--fit-bad)"></i>Out of position</span>
-    <b>Marker</b><span style="color:#8FA8E8">Blue: our roles and lines</span><span style="color:#E88F8F">Red: the opposition</span>`;
+    <b>Marker</b><span style="color:#8FA8E8">Blue: our roles and lines (With ball / Without ball shows each shape)</span><span style="color:#E88F8F">Red: the opposition</span>`;
 }
 function switchClub(id) { applyTheme(id); renderLegend(); T = newState(id); $('#wall').classList.remove('opp'); $('#tabUs').setAttribute('aria-selected', 'true'); $('#tabOpp').setAttribute('aria-selected', 'false'); renderShell(); buildMagnets(); renderBoard(); renderSide(); updateOppCount(); requestAnimationFrame(drawProps); }
 
@@ -1038,6 +1227,8 @@ $('#replay').addEventListener('click', () => { refreshMagnets(true); MAG.forEach
 
 /* boot */
 syncRM(); switchClub('c01');
+/* screenshot shortcuts: #file opens Calder's file, #without shows the defensive shape */
+if (/file|without/.test(location.hash)) requestAnimationFrame(() => { if (location.hash.includes('without')) setPhase('without'); if (location.hash.includes('file')) selectPlayer(9); });
 if (!RM()) requestAnimationFrame(() => { MAG.forEach(m => { m.y -= 30 + Math.random() * 40; m.x += (Math.random() - .5) * 40; }); kick(); });
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { refreshMagnets(); drawProps(); });
 addEventListener('load', () => { paintIcons(); refreshMagnets(); drawProps(); });

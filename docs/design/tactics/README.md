@@ -1,5 +1,9 @@
 # Tactics reference
 
+> **v3 (20 Nov):** full-width work mode (sidebar as icons, board left, tall panel right), attacking and defensive roles (SPEC §13.19), instructions offered by role with fit stars and the deciding attribute, the player's file with condition, morale, season stats and last-5 ratings, a With ball / Without ball switch that slides the magnets into the defensive shape, and a comparison card while dragging one player over another. Open `index.html#file` or `#file-without` to land on Calder's file.
+>
+> **The same pattern applies to every office screen** (Squad, Training, Scouting, Club, Inbox): the main object large on the left (the table, the clipboard, the ledger), and on the right a tall panel that becomes the selected player's file with the same header, stats and attribute bars. One player file component, used everywhere.
+
 `index.html` is an animated, clickable reference for the Tactics screen (SPEC §11.8, §13.10, §13.17). Open it in a browser. Build the real screen to match how it looks and moves. Where this file and the SPEC differ, this file wins on layout and look; the SPEC still wins on rules and numbers.
 
 The bar above the game frame is reference only: club themes, reduce motion, replay the settle.
