@@ -1,5 +1,10 @@
 # AI test batch
 
+> **Budget plan (20 Nov, the user's call): $1 total.** The jam's free fal and ElevenLabs entrant offers are all claimed; Meshy Pro for $1 (1,000 credits plus API keys) is still open.
+> - **fal: on hold, no spend.** Replacements: captain walk-in = Meshy player model with its walk clip, rendered and halftoned in-game; news photos = frames from the actual match printed as newsprint; portraits = procedural programme-print faces from player data; crests = drawn by code; stadium and title images = our own 3D scene, graded. If money turns up later, spend it on one fal showcase piece (the title loop F8 or captain clip F6).
+> - **Meshy: $1 Pro.** M1 first. Budget the 1,000 credits: player model and rig first, then ball, goal, floodlight, one stand; props only if credits remain.
+> - **ElevenLabs: free plan** (about 10k characters a month). Priority: player names (about 3.5k characters), then key commentary lines (goal, save, full time), then Theo's stingers. Check the free plan's terms for attribution and use before shipping. Captions cover any line without audio.
+
 One list of everything we try with the sponsor AIs before making any full set. Owner: Claude (runs the tools). The user approves each result or sends it back.
 
 **How it works**
