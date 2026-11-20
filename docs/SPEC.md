@@ -4,7 +4,7 @@ Version 1.6 · 20 November 2026 · Target: OpenGame Game Jam #1 (entries close *
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
 
-**Changes in 1.6 (20 Nov):** the sidebar is gone: navigation moves into the top bar as tabs (§11.0, §19.6). Office work screens fit the window with no page scroll. Tactics becomes three columns around a vertical board: the player's file (who he is) on the left, his orders (what he's told) on the right (§11.8, layout in `docs/design/tactics/README.md` "v4 layout"). New component RadarChart: the player's shape against what his role needs (§19.5).
+**Changes in 1.6 (20 Nov):** the sidebar is gone: navigation moves into the top bar as tabs (§11.0, §19.6) on **every** screen, on air and office alike, like Football Manager. Office work screens fit the window with no page scroll. Tactics becomes three columns around a vertical board: the player's file (who he is) on the left, his orders (what he's told) on the right (§11.8, layout in `docs/design/tactics/README.md` "v4 layout"). New component RadarChart: the player's shape against what his role needs (§19.5).
 
 **Changes in 1.3 (19 Nov):** new §13.17 Tactical depth: player roles with fit (replace duties), opposition orders, transition and goalkeeper-distribution settings, corner routines, player instructions, key battles, AI and assistant rules, extra calibration checks including "no dominant choice". Tactical depth now outranks visual polish when time is short. Related edits: §8.4 types, §11.8, §13.5, §13.8, §13.12, §15.4, M3 task 0.
 
@@ -234,7 +234,7 @@ jam-football/
 │     ├─ styles/ tokens.css  global.css
 │     ├─ components/  (Button, Card, Tabs, Table, Modal, Toast, Tooltip, Badge, AttrBar, OvrBadge,
 │     │               Crest, Portrait, KitIcon, PitchBoard, Sparkline, StatCompare, Meter,
-│     │               ProgressSteps, KeyHint, ContinueButton, Sidebar, TopBar, EmptyState, ConfirmDialog,
+│     │               ProgressSteps, KeyHint, ContinueButton, TopBar (with NavTabs; no Sidebar since v1.6), EmptyState, ConfirmDialog,
 │     │               Panel, Sheet, Stamp, Magnet, Ticker, ScreenTransition, CountUp, FlipList)
 │     ├─ motion/      spring.ts  flip.ts  transitions.ts   (§19.7)
 │     └─ screens/     (one folder per screen in §11)
@@ -1901,7 +1901,7 @@ The game is a television broadcast about your club, plus the rooms behind it. Th
   --ease-snap: cubic-bezier(.2,.9,.1,1); --ease-out: cubic-bezier(.2,.8,.2,1); --ease-in: cubic-bezier(.5,0,.8,.2);
 }
 ```
-- `--accent` fills (Continue button, active sidebar block, selected states); `--accent-ink` is text on it; `--accent-text` is accent-coloured text, icons and the focus ring on dark surfaces. `--band-1`/`--band-2` are the two stripe colours used in wipes and header stripes.
+- `--accent` fills (Continue button, active tab block in the top bar, selected states); `--accent-ink` is text on it; `--accent-text` is accent-coloured text, icons and the focus ring on dark surfaces. `--band-1`/`--band-2` are the two stripe colours used in wipes and header stripes.
 - On paper and whiteboard surfaces, text is always `--paper-ink`/`--board-ink`; club colours appear there only as stripes, stamps and magnets.
 - Dark only. `body { background: var(--bg); color: var(--text); }`. Office screens set their content area to `--desk`.
 
@@ -1976,7 +1976,7 @@ Motion explains change and gives the game weight. On-air motion is fast, precise
 3. **Office → office: across the desk.** The old screen slides 32 px out and fades (`--dur-fast`), the new one slides in from the other side; its sheets settle from `translateY(10px)` and ±1.2° extra rotation to their resting rotation through the spring.
 4. **Modals.** On air: the graphic panel wipes in from the left edge (`--dur-med`). Office: the file opens from the row that was clicked (scale from that row's rectangle, `--dur-med`), then its sheets fan out one by one (50 ms apart).
 
-**Spring** (`src/ui/motion/spring.ts`, no libraries, §4): stiffness 420, damping 34, mass 1; stops when velocity < 0.01 and distance < 0.5 px. Used by Magnets, sheets and the sidebar block.
+**Spring** (`src/ui/motion/spring.ts`, no libraries, §4): stiffness 420, damping 34, mass 1; stops when velocity < 0.01 and distance < 0.5 px. Used by Magnets, sheets and the top-bar tab block.
 
 **CountUp**: when a number changes (points, balance, a meter), it counts from the old to the new value in `--dur-count` with `--ease-out`, tabular numerals. It runs on the first view after the change, never on every revisit.
 
@@ -1991,7 +1991,7 @@ Motion explains change and gives the game weight. On-air motion is fast, precise
 
 **Sound hooks** (effects channel, §17.3; a missing file is simply silent): wipe `sfx/ui_whoosh.mp3`; camera cut `sfx/ui_cut.mp3`; CountUp `sfx/ui_tick.mp3` (at most 12 ticks per second, quiet); magnet drop `sfx/ui_clack.mp3`; sheet or memo `sfx/ui_paper.mp3`; stamp `sfx/ui_stamp.mp3`.
 
-**Performance (MUST):** animate only `transform` and `opacity`; never animate `box-shadow`, `filter`, `backdrop-filter`, width/height/top/left or other layout properties (the wipe bands are skewed divs moved with `transform`, the sidebar block uses FLIP). Set `will-change` only while an animation runs. FlipList measures in one read pass, then writes in one pass. The ticker is one translated strip, not a timer per item. Every screen transition finishes in under 500 ms. Menus hold 60 fps on the target laptop, and the browser profiler shows no task over 50 ms during a transition.
+**Performance (MUST):** animate only `transform` and `opacity`; never animate `box-shadow`, `filter`, `backdrop-filter`, width/height/top/left or other layout properties (the wipe bands are skewed divs moved with `transform`, the top-bar tab block uses FLIP). Set `will-change` only while an animation runs. FlipList measures in one read pass, then writes in one pass. The ticker is one translated strip, not a timer per item. Every screen transition finishes in under 500 ms. Menus hold 60 fps on the target laptop, and the browser profiler shows no task over 50 ms during a transition.
 
 **Reduce motion** (setting or system preference): wipes, cuts and slides become a 150 ms crossfade; no springs (objects appear at rest); CountUp jumps straight to the value; FlipList highlights the rows without moving them; the ticker shows one item at a time, changing every 6 s with a fade; stamps appear without scaling.
 
@@ -2164,7 +2164,7 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 ### M3 — Playable season loop, text-first (27 Nov – 1 Dec)
 0. **Tactical depth engine pass (§13.17), before anything else in M3**: new types (§8.4), `src/config/roles.ts`, role/instruction/order/transition/set-piece hooks in involvement, utilities and resolution, the new commands, AI defaults (§13.17.8), assistant rules (§13.17.9), save migration (duties → neutral roles, new fields → Mixed), unit tests per modifier kind, then re-run `npm run calibrate`: all §13.16 targets plus every §13.17.10 check MUST pass. Paste the report into PROGRESS.md.
 1. Store actions for every phase (§10) and `advance.ts`.
-2. **Wait gate:** do not start this task until Claude's animated references for the Hub and Tactics exist in `docs/design/` (check for `docs/design/hub/` and `docs/design/tactics/`). If they are missing when you reach it, write `BLOCKED: waiting for design references` in PROGRESS.md and continue with task 1 and any non-visual work in task 3 (store wiring, data selectors), then stop. Then rework the M0 shell to the §19 design system (v1.2): new `tokens.css`, `clubThemes.ts` applied at runtime, the sidebar rundown (§19.6), Ticker, ScreenTransition, CountUp, FlipList, Panel, Sheet, Stamp, Magnet, `src/ui/motion/spring.ts`, reduce-motion handling. Every screen below is built in its world (on air or office, §19.1).
+2. **Wait gate:** do not start this task until Claude's animated references for the Hub and Tactics exist in `docs/design/` (check for `docs/design/hub/` and `docs/design/tactics/`). If they are missing when you reach it, write `BLOCKED: waiting for design references` in PROGRESS.md and continue with task 1 and any non-visual work in task 3 (store wiring, data selectors), then stop. Then rework the M0 shell to the §19 design system (v1.2): new `tokens.css`, `clubThemes.ts` applied at runtime, the top bar with navigation tabs (§19.6, v1.6; there is no sidebar), Ticker, ScreenTransition, CountUp, FlipList, Panel, Sheet, Stamp, Magnet, `src/ui/motion/spring.ts`, reduce-motion handling. Every screen below is built in its world (on air or office, §19.1).
 3. Screens: New Game (§11.3), Board Meeting, Hub, Squad, Player Profile, Tactics (PitchBoard with drag/swap and keyboard), League, Fixtures, Club (finances/board basic), Inbox, Week Summary, Season End (basic), Sacked.
 4. A temporary **text match view**: event feed with clock and score, speed control, subs/tactics overlays working through the worker with commands.
 5. Autosave and Continue from title.

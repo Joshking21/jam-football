@@ -2,7 +2,7 @@
 
 > **v4 layout (20 Nov, SPEC 1.6): build this.** No new mock-up was made. `index.html` (v3) is still the reference for how every object looks and moves (magnets, paper, marker, fit stars, attribute bars, dividers, the file's contents). The **v4 layout** section below says where those objects now sit, and it wins over v3 wherever they differ.
 >
-> **v3 (20 Nov):** full-width work mode (sidebar as icons, board left, tall panel right), attacking and defensive roles (SPEC §13.19), instructions offered by role with fit stars and the deciding attribute, the player's file with condition, morale, season stats and last-5 ratings, a With ball / Without ball switch that slides the magnets into the defensive shape, and a comparison card while dragging one player over another. Open `index.html#file` or `#file-without` to land on Calder's file.
+> **v3 (20 Nov):** full-width work mode (board left, tall panel right; the sidebar it shows is replaced by top-bar tabs in v4), attacking and defensive roles (SPEC §13.19), instructions offered by role with fit stars and the deciding attribute, the player's file with condition, morale, season stats and last-5 ratings, a With ball / Without ball switch that slides the magnets into the defensive shape, and a comparison card while dragging one player over another. Open `index.html#file` or `#file-without` to land on Calder's file.
 >
 > **The same pattern applies to every office screen** (Squad, Training, Scouting, Club, Inbox): the main object large on the left (the table, the clipboard, the ledger), and on the right a tall panel that becomes the selected player's file with the same header, stats and attribute bars. One player file component, used everywhere.
 
