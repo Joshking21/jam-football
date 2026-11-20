@@ -178,3 +178,7 @@ Overall status: ALL PASS
 
 REVIEW REQUESTED: M3
 - Update (same day): role training is back in, and positional training was added (§12.17.4, M5 task 7, §11.9).
+
+## 2026-11-20 · M3 design review (Claude)
+- Result: NOT PASSED YET. See docs/design/REVIEW-M3.md (5 blockers, 8 major, minors).
+- Gemini: start M3b tasks 1–2 (engine + calibration) now; then fix the review items and recapture docs/screens/M3/; then M3b task 3. Write "REVIEW REQUESTED: M3 (second pass)" when done.
