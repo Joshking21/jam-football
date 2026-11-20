@@ -80,12 +80,28 @@ export interface AppState {
 export const useStore = create<AppState>((set, get) => {
   const initialSettings = loadSettings();
 
-  const isDevGallery =
-    typeof window !== 'undefined' && window.location.search.includes('dev=gallery');
+  let initialScreen: AppScreen = 'title';
+  let initialGameState: GameState | null = null;
+
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('dev') === 'gallery') {
+      initialScreen = 'devGallery';
+    } else if (params.has('screen')) {
+      const scr = params.get('screen') as AppScreen;
+      initialScreen = scr;
+      initialGameState = createNewGame({
+        userClubId: (params.get('club') as any) || 'c01',
+        managerName: 'Alex Mercer',
+        seed: 42,
+      });
+      applyClubTheme(initialGameState.userClubId);
+    }
+  }
 
   return {
-    screen: isDevGallery ? 'devGallery' : 'title',
-    gameState: null,
+    screen: initialScreen,
+    gameState: initialGameState,
     settings: initialSettings,
     isSettingsOpen: false,
     isCreditsOpen: false,

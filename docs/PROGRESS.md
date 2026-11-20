@@ -163,4 +163,18 @@ Overall status: ALL PASS
 - Changed: docs/SPEC.md (v1.4: §8.4 types, new §12.17 club depth (staff, match prep, rest days, dressing room, injury risk), new §13.18 tactics depth (5-step mentality, final third, crosses, offside trap, tackling, force them, time-wasting, extended set pieces, 6 player instructions, Plans A/B/C, familiarity per area, match analysis, calibration checks), new milestone M3b, M4 task 5, M5 task 7, §24)
 - Ran: nothing (docs only)
 - Notes: after M3 task 0 is finished and M3 is accepted, do M3b. Calibration for 13.18 runs with familiarity 100. Claude will extend docs/design/tactics/ for the new controls.
+
+## 2026-11-20 · M3 Playable season loop complete
+- Changed: src/ui/screens/TacticsScreen.tsx, src/ui/screens/HubScreen.tsx, src/ui/styles/global.css, src/state/store.ts, src/state/saves.ts, scripts/capture-m3-screens.ts, docs/screens/M3/*.png
+- Ran:
+  - npm run check: format:check PASS, typecheck PASS, vitest run (17 test files, 80 tests passed) PASS, vite build PASS
+  - npx tsx scripts/capture-m3-screens.ts: 51 screenshots captured across all 17 screens at 1280×720, 1920×1080, and 2560×1440
+- Notes:
+  - Whiteboard tactics screen reworked to horizontal layout per docs/design/tactics/README.md with Our team and Opposition tabs, 4 clipboard divider tabs (With ball, Without ball, Transitions, Set pieces), interactive player file with role fit/description/gives-costs and player instructions.
+  - Hub screen updated with full 10-row league table and single primary button per docs/design/hub/README.md.
+  - Sidebar collapse breakpoint adjusted to 1100px so full rundown displays at 1280x720.
+  - Save system updated with navigator.storage.persist(), isIndexedDbAvailable(), and debounced autosave outside matches per SPEC §20.
+  - Screenshots captured at 1280x720, 1920x1080, and 2560x1440 into docs/screens/M3/.
+
+REVIEW REQUESTED: M3
 - Update (same day): role training is back in, and positional training was added (§12.17.4, M5 task 7, §11.9).
