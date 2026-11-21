@@ -38,4 +38,5 @@ export interface Match3DContext {
   weather: WeatherType;
   timeSlot?: TimeSlot;
   quality?: QualityPreset;
+  choreographer?: any;
 }

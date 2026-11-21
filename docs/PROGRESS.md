@@ -474,4 +474,19 @@ REVIEW REQUESTED: M3 (second pass)
     - `lights.ts`: Night/Evening/Afternoon lighting with hemisphere ambient, spotlights, starfield, atmospheric haze, and rain particle system.
     - `MatchScene.ts`: Master Three.js scene orchestrator with window resize handling, visibility change auto-pause, and exhaustive resource disposal.
 
+## 2026-11-21 · M4.2 Choreographer, steering and ball flight
+- Changed: src/render3d/choreographer.ts, src/render3d/MatchScene.ts, src/render3d/types.ts, tests/render3d/choreographer.test.ts
+- Ran:
+  - `npm run check`: format:check PASS, typecheck PASS, vitest run (21 test files, 115 tests passed in 17.97s) PASS, vite build PASS
+- Notes:
+  - Implemented SPEC §14.3 Choreographer & Steering:
+    - Formation anchor mapping from FORMATIONS (team's own attacking frame converted to absolute pitch coordinates).
+    - Team shape transform in possession (x = anchor.x * 0.85 + bx * 0.35 + 6 * mentality, width scale 1.1/1.2/0.95, GK clamp).
+    - Team shape transform out of possession (x = anchor.x * 0.7 + bx * 0.3 clamped to lineBase, width scale 0.8/0.7, y shift 25% to ball).
+    - Event overrides: actor steers to ball; receiver runs to target position; primary defender intercepts; goalkeeper dives on shots; kick animation triggers on shots/passes.
+    - Ball trajectories: linear with ease-out for ground passes, parabolic flight arc (3.5–11m apex) for crosses/long balls, direct fast trajectory for shots with goal net settling, and foot bounce for dribbles.
+    - Steering physics: max speed based on player pace attribute (5.5 + 3.5 * pace / 99 m/s), 6 m/s² acceleration, 0.6m arrival radius, 1.2m separation repulsion, facing angle.
+    - Integrated with MatchScene animation loop and visual player limb animation triggers.
+    - 5 unit tests in `tests/render3d/choreographer.test.ts` covering anchor init, shape compaction/expansion, ball arc physics, steering/actions, and player separation.
+
 

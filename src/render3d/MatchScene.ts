@@ -9,7 +9,9 @@ import { createBall, BallBundle } from './ball';
 import { createPlayers, PlayersBundle } from './players';
 import { createCameras, CameraBundle } from './cameras';
 import { createLights, LightsBundle } from './lights';
+import { Choreographer, PlayerPaceMap } from './choreographer';
 import { RENDER_CONFIG } from '../config/balance';
+import { MatchEvent } from '../core/types';
 
 export class MatchScene {
   public renderer: THREE.WebGLRenderer;
@@ -22,6 +24,7 @@ export class MatchScene {
   public ball: BallBundle;
   public players: PlayersBundle;
   public lights: LightsBundle;
+  public choreographer: Choreographer;
 
   private container: HTMLElement;
   private animFrameId: number | null = null;
@@ -29,6 +32,11 @@ export class MatchScene {
   private isDisposed = false;
   private isPaused = false;
   private quality: QualityPreset;
+
+  private currentPt = 0;
+  private currentEvent: MatchEvent | null = null;
+  private currentHalf: 1 | 2 = 1;
+  private lastTriggeredGoalSeq = -1;
 
   constructor(ctx: Match3DContext) {
     this.container = ctx.container;
@@ -95,7 +103,48 @@ export class MatchScene {
     );
     this.scene.add(this.players.group);
 
-    // 10. Lighting & Atmosphere
+    // 10. Choreographer initialization
+    if (ctx.choreographer) {
+      this.choreographer = ctx.choreographer;
+    } else {
+      const paces: PlayerPaceMap = {};
+      [...ctx.homePlayers, ...ctx.awayPlayers].forEach((p) => {
+        paces[p.id] = p.attributes.pace;
+      });
+
+      const homeLineup =
+        (ctx.homeClub.tactics.lineup.filter(Boolean) as string[]).length === 11
+          ? (ctx.homeClub.tactics.lineup as string[])
+          : ctx.homeClub.squad.slice(0, 11);
+      const awayLineup =
+        (ctx.awayClub.tactics.lineup.filter(Boolean) as string[]).length === 11
+          ? (ctx.awayClub.tactics.lineup as string[])
+          : ctx.awayClub.squad.slice(0, 11);
+
+      this.choreographer = new Choreographer(
+        {
+          formation: ctx.homeClub.tactics.formation,
+          mentality: ctx.homeClub.tactics.instructions.mentality,
+          passing: ctx.homeClub.tactics.instructions.passing,
+          pressing: ctx.homeClub.tactics.instructions.pressing,
+          width: ctx.homeClub.tactics.instructions.width,
+          line: ctx.homeClub.tactics.instructions.line,
+          lineup: homeLineup,
+        },
+        {
+          formation: ctx.awayClub.tactics.formation,
+          mentality: ctx.awayClub.tactics.instructions.mentality,
+          passing: ctx.awayClub.tactics.instructions.passing,
+          pressing: ctx.awayClub.tactics.instructions.pressing,
+          width: ctx.awayClub.tactics.instructions.width,
+          line: ctx.awayClub.tactics.instructions.line,
+          lineup: awayLineup,
+        },
+        paces,
+      );
+    }
+
+    // 11. Lighting & Atmosphere
     this.lights = createLights(
       timeSlot,
       ctx.weather,
@@ -107,7 +156,7 @@ export class MatchScene {
       this.scene.fog = this.lights.fog;
     }
 
-    // 11. Event listeners
+    // 12. Event listeners
     window.addEventListener('resize', this.onWindowResize);
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     window.addEventListener('keydown', this.onKeyDown);
@@ -125,6 +174,27 @@ export class MatchScene {
     if (this.isPaused) return;
 
     const delta = Math.min(0.08, this.clock.getDelta());
+
+    // Update choreographer physics, steering and ball flight
+    this.choreographer.update(delta, this.currentPt, this.currentEvent, this.currentHalf);
+
+    // Update 3D ball
+    const bPos = this.choreographer.ballPos;
+    this.ball.setPosition(bPos.x, bPos.y, bPos.z);
+    this.ball.updateRotation(this.choreographer.ballVelocity, delta);
+
+    // Update 3D player figures from steering states
+    this.players.allPlayers.forEach((visual, pid) => {
+      const state = this.choreographer.getPlayerState(pid);
+      if (state) {
+        visual.group.position.copy(state.currentPos);
+        visual.group.rotation.y = state.facingAngle;
+        visual.currentSpeed = state.speed;
+        visual.isKicking = state.isKicking;
+        visual.isTackling = state.isTackling;
+        visual.isDiving = state.isDiving;
+      }
+    });
 
     // Update scene dynamic parts
     this.goals.update(delta);
@@ -160,6 +230,17 @@ export class MatchScene {
       this.cameras.cycleMode();
     }
   };
+
+  public updatePlayback(pt: number, event: MatchEvent | null, half: 1 | 2) {
+    this.currentPt = pt;
+    this.currentEvent = event;
+    this.currentHalf = half;
+
+    if (event && event.type === 'GOAL' && event.seq !== this.lastTriggeredGoalSeq) {
+      this.lastTriggeredGoalSeq = event.seq;
+      this.triggerGoalEvent(event.side);
+    }
+  }
 
   public setCameraMode(mode: CameraMode) {
     this.cameras.setMode(mode);
