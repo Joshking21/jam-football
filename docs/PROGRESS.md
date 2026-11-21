@@ -458,4 +458,20 @@ Overall status: ALL PASS
 
 REVIEW REQUESTED: M3 (second pass)
 
+## 2026-11-21 · M4.1 3D scene skeleton and procedural fallbacks
+- Changed: src/config/balance.ts, src/render3d/types.ts, src/render3d/canvasHelper.ts, src/render3d/pitch.ts, src/render3d/goals.ts, src/render3d/stadium.ts, src/render3d/crowd.ts, src/render3d/ball.ts, src/render3d/players.ts, src/render3d/cameras.ts, src/render3d/lights.ts, src/render3d/MatchScene.ts, tests/render3d/render3d.test.ts
+- Ran:
+  - `npm run check`: format:check PASS, typecheck PASS, vitest run (20 test files, 110 tests passed) PASS, vite build PASS
+- Notes:
+  - Implemented SPEC §14 3D match scene skeleton and complete procedural fallbacks:
+    - `pitch.ts`: 115×78m pitch plane with 12 mowing stripes texture and crisp FIFA line markings (penalty area, 6-yard, penalty spot and arc, center circle, corner arcs).
+    - `goals.ts`: 3D goal posts, crossbar, and net with vertex ripple animation physics on goal.
+    - `stadium.ts`: 4 grandstands with home club colored seating, roof canopies, 4 corner floodlight towers at (±62, ±42), and perimeter advertising ring with fictional sponsors.
+    - `crowd.ts`: InstancedMesh spectator crowds in stands with 65% home, 15% away, and neutral color distribution with idle bobbing and goal celebration waves.
+    - `ball.ts`: 0.11m radius match ball with swirl pattern texture and height-adaptive ground shadow decal.
+    - `players.ts`: 22 procedural player figures with club kit patterns (stripes, hoops, halves, sash, solid), numbers on back, 6 skin tones, and procedural limb swing (sprint, run, idle, kick, tackle, GK dive).
+    - `cameras.ts`: Broadcast camera with ball damping (0.08) and dynamic FOV zoom in box, Tactical overhead, Player follow cam, and Free OrbitControls.
+    - `lights.ts`: Night/Evening/Afternoon lighting with hemisphere ambient, spotlights, starfield, atmospheric haze, and rain particle system.
+    - `MatchScene.ts`: Master Three.js scene orchestrator with window resize handling, visibility change auto-pause, and exhaustive resource disposal.
+
 
