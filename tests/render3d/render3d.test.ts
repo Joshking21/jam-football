@@ -7,6 +7,8 @@ import { createStadium } from '../../src/render3d/stadium';
 import { createCrowd } from '../../src/render3d/crowd';
 import { createBall } from '../../src/render3d/ball';
 import { createPlayers } from '../../src/render3d/players';
+import { createFloodlightBeams } from '../../src/render3d/beams';
+import { loadModelAsset } from '../../src/render3d/modelLoader';
 import { Club, Player } from '../../src/core/types';
 import worldSnapshot from '../../src/core/world/world.snapshot.json';
 
@@ -151,5 +153,22 @@ describe('3D Match Day - Procedural Fallbacks (SPEC §14, §23 M4.1)', () => {
     expect(p1.group.rotation.z).toBeGreaterThan(1.0);
 
     playersBundle.dispose();
+  });
+
+  it('creates volumetric floodlight beams with glare sprites', () => {
+    const towerPositions = [
+      new THREE.Vector3(62, 45, 42),
+      new THREE.Vector3(-62, 45, 42),
+      new THREE.Vector3(-62, 45, -42),
+      new THREE.Vector3(62, 45, -42),
+    ];
+    const beams = createFloodlightBeams(towerPositions, 'dry');
+    expect(beams.group.children.length).toBe(8); // 4 cones + 4 sprites
+    beams.dispose();
+  });
+
+  it('safely resolves to null for unregistered GLTF models', async () => {
+    const model = await loadModelAsset('models/missing_model.glb');
+    expect(model).toBeNull();
   });
 });

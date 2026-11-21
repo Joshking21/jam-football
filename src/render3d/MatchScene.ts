@@ -10,6 +10,9 @@ import { createPlayers, PlayersBundle } from './players';
 import { createCameras, CameraBundle } from './cameras';
 import { createLights, LightsBundle } from './lights';
 import { Choreographer, PlayerPaceMap } from './choreographer';
+import { createPostPipeline, PostPipeline } from './post';
+import { createStadiumEnvironment, StadiumEnvironment } from './environment';
+import { createFloodlightBeams, FloodlightBeams } from './beams';
 import { RENDER_CONFIG } from '../config/balance';
 import { MatchEvent } from '../core/types';
 
@@ -25,6 +28,10 @@ export class MatchScene {
   public players: PlayersBundle;
   public lights: LightsBundle;
   public choreographer: Choreographer;
+
+  private postPipeline: PostPipeline | null = null;
+  private environment: StadiumEnvironment | null = null;
+  private beams: FloodlightBeams | null = null;
 
   private container: HTMLElement;
   private animFrameId: number | null = null;
@@ -156,7 +163,45 @@ export class MatchScene {
       this.scene.fog = this.lights.fog;
     }
 
-    // 12. Event listeners
+    // 12. Realism Pass: Volumetric Floodlight Beams (§14.10)
+    if (this.quality !== 'Low' && (timeSlot === 'night' || timeSlot === 'evening')) {
+      try {
+        this.beams = createFloodlightBeams(this.stadium.floodlightPositions, ctx.weather);
+        this.scene.add(this.beams.group);
+      } catch (e) {
+        console.warn('Floodlight beams creation skipped:', e);
+      }
+    }
+
+    // 13. Realism Pass: Stadium PMREM Environment Map (§14.10)
+    try {
+      this.environment = createStadiumEnvironment(
+        this.renderer,
+        timeSlot,
+        this.stadium.floodlightPositions,
+      );
+      this.scene.environment = this.environment.envMap.texture;
+    } catch (e) {
+      console.warn('Stadium environment creation skipped:', e);
+    }
+
+    // 14. Realism Pass: Post-Processing Pipeline (§14.10)
+    const width = this.container.clientWidth || 1280;
+    const height = this.container.clientHeight || 720;
+    try {
+      this.postPipeline = createPostPipeline(
+        this.renderer,
+        this.scene,
+        this.cameras.camera,
+        width,
+        height,
+        this.quality,
+      );
+    } catch (e) {
+      console.warn('Post pipeline creation skipped:', e);
+    }
+
+    // 15. Event listeners
     window.addEventListener('resize', this.onWindowResize);
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     window.addEventListener('keydown', this.onKeyDown);
@@ -206,8 +251,12 @@ export class MatchScene {
     const ballPos = this.ball.getPosition();
     this.cameras.update(delta, ballPos);
 
-    // Render frame
-    this.renderer.render(this.scene, this.cameras.camera);
+    // Render frame (via Post-processing composer or standard renderer)
+    if (this.postPipeline) {
+      this.postPipeline.render();
+    } else {
+      this.renderer.render(this.scene, this.cameras.camera);
+    }
   };
 
   private onWindowResize = () => {
@@ -216,6 +265,7 @@ export class MatchScene {
     const height = this.container.clientHeight;
     this.cameras.handleResize(width, height);
     this.renderer.setSize(width, height);
+    this.postPipeline?.setSize(width, height);
   };
 
   private onVisibilityChange = () => {
@@ -279,6 +329,9 @@ export class MatchScene {
     this.players.dispose();
     this.cameras.dispose();
     this.lights.dispose();
+    this.beams?.dispose();
+    this.environment?.dispose();
+    this.postPipeline?.dispose();
 
     // Clean up Three.js scene
     this.scene.traverse((obj) => {

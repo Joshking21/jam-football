@@ -490,3 +490,31 @@ REVIEW REQUESTED: M3 (second pass)
     - 5 unit tests in `tests/render3d/choreographer.test.ts` covering anchor init, shape compaction/expansion, ball arc physics, steering/actions, and player separation.
 
 
+## 2026-11-21 · M4 3D match day presentation, HUD, model loader, and realism pass complete
+- Changed: src/App.tsx, src/core/match/highlights.ts, src/render3d/beams.ts, src/render3d/environment.ts, src/render3d/modelLoader.ts, src/render3d/post.ts, src/render3d/MatchScene.ts, src/ui/screens/MatchScreen.tsx, src/ui/screens/Match/ScoreboardBug.tsx, src/ui/screens/Match/MatchControls.tsx, src/ui/screens/Match/CommentaryStrip.tsx, src/ui/screens/Match/LiveStatsDrawer.tsx, src/ui/screens/Match/AssistantDrawer.tsx, src/ui/screens/Match/QuickSubsModal.tsx, src/ui/screens/Match/GoalBanner.tsx, src/ui/screens/Match/HalfTimeModal.tsx, src/ui/screens/Match/FullTimeModal.tsx, src/ui/screens/Match/RadarOverlay.tsx, src/ui/screens/Match/playback.ts, scripts/capture-m4-screens.ts, tests/core/match/highlights.test.ts, tests/ui/match/playback.test.ts, tests/render3d/render3d.test.ts, docs/screens/M4/*
+- Ran:
+  - `npm run check`:
+    - `prettier --check .` PASS
+    - `tsc --noEmit` PASS
+    - `vitest run`: 23 test files passed (126 tests passed in 23.88s) PASS
+    - `vite build`: main chunk 1,081 kB / three.js chunk 489 kB, built in 20.01s PASS
+  - `npx tsx scripts/capture-m4-screens.ts`: 51 screenshots captured across all 17 screens at 1280×720, 1920×1080, and 2560×1440. All 51 files verified > 20,000 bytes with zero blank/single-color failures.
+- Notes:
+  - Implemented SPEC §14 3D match day presentation, HUD overlays, model loader, and post-processing:
+    - M4.3 Playback Modes & Highlights: pure highlight window extractor `extractHighlights` (goals -25s to +6s, shots, cards, penalties, kickoff, whistle moments); presentation clock controller `MatchPlayback` with Key (1.25x / 60x gaps with max 3.5s real time), Extended (1.5x / 40x gaps), Full (2x/4x/8x), and slow-mo 0.6x goal replays with letterboxing; 2D mini-pitch radar overlay for fast-forward gaps with moving ball and pulse indicator.
+    - M4.4 Cameras & Goal Replays: Broadcast camera with ball damping (0.08) and dynamic FOV zoom in box, Tactical overhead, Player follow cam, Free OrbitControls, goal camera swing.
+    - M4.5 Broadcast HUD & Overlays:
+      - Scoreboard bug with animated score digit pulse (scale 1->1.4->1 over 600ms), team crests, clock (MM:SS), stoppage time (+N), and red card pips.
+      - Top-right controls for play/pause, speed modes (Key/Ext/Full), camera cycling, instant result, drawers toggle, fullscreen.
+      - Commentary caption strip with 4s auto-fade and voice indicator.
+      - Left drawer with live possession bar, shots, xG, corners, fouls, cards, and rolling 5-minute xG momentum chart.
+      - Right drawer with assistant advice cards (one-click Apply) and "Around the League" ticker.
+      - Quick subs modal (S key) showing on-pitch vs bench players with condition, tactical fitness, and ratings.
+      - Skewed 2.5s goal banner in scoring club colors and replay letterbox overlay with corner badge.
+      - Half-time stats overview, dressing room team talk (6 tones with focus boosts), quick subs/tactics access, second half resume.
+      - Full-time scoreboard, MOTM callout, 2D pitch shot map with xG-scaled dots, chance origin breakdown (§13.18.12).
+    - M4.6 Model Loader: GLTF/GLB loader with MeshoptDecoder, asset registry fallback, and SkeletonUtils cloning.
+    - M4.7 Realism Pass: Volumetric floodlight cones with length fade and glare sprites; PMREM stadium environment map generator; post-processing pipeline with EffectComposer, RenderPass, GTAOPass, UnrealBloomPass (0.55 strength, 1.0 threshold), custom GradePass, and OutputPass.
+    - Automated screenshot capture saved all 51 screenshots across 17 screens at 1280×720, 1920×1080, and 2560×1440 into `docs/screens/M4/`.
+
+REVIEW REQUESTED: M4

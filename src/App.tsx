@@ -15,6 +15,7 @@ import { FixturesScreen } from './ui/screens/FixturesScreen';
 import { ClubScreen } from './ui/screens/ClubScreen';
 import { InboxScreen } from './ui/screens/InboxScreen';
 import { PreMatchScreen } from './ui/screens/PreMatchScreen';
+import { MatchScreen } from './ui/screens/MatchScreen';
 import { TextMatchScreen } from './ui/screens/TextMatchScreen';
 import { PostMatchScreen } from './ui/screens/PostMatchScreen';
 import { WeekSummaryScreen } from './ui/screens/WeekSummaryScreen';
@@ -113,7 +114,7 @@ export const App: React.FC = () => {
   if (screen === 'match') {
     return (
       <>
-        <TextMatchScreen />
+        <MatchScreen />
         <SettingsModal />
         <CreditsModal />
         <Toast />
