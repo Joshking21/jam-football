@@ -637,14 +637,14 @@ describe('Tactical Depth Engine Pass (SPEC §13.17, M3.0)', () => {
       const migrated = migrateTactics(legacyTactics);
 
       expect(migrated.roles).toBeDefined();
-      expect(migrated.roles.length).toBe(11);
-      expect(migrated.roles[0]).toBe('gk');
-      expect(migrated.roles[1]).toBe('fb');
-      expect(migrated.roles[2]).toBe('cb');
-      expect(migrated.roles[9]).toBe('st');
+      expect(migrated.roles!.length).toBe(11);
+      expect(migrated.roles![0]).toBe('gk');
+      expect(migrated.roles![1]).toBe('fb');
+      expect(migrated.roles![2]).toBe('cb');
+      expect(migrated.roles![9]).toBe('st');
 
       expect(migrated.playerInstructions).toBeDefined();
-      expect(migrated.playerInstructions.length).toBe(11);
+      expect(migrated.playerInstructions!.length).toBe(11);
       expect(migrated.opposition).toEqual([]);
       expect(migrated.takers.longThrow).toBeNull();
 

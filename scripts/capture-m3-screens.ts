@@ -93,6 +93,12 @@ async function main() {
         process.stdout.write(`Capturing ${fileName}... `);
         try {
           await captureScreenshot(url, filePath, res.width, res.height);
+          const stat = fs.statSync(filePath);
+          if (stat.size < 20000) {
+            throw new Error(
+              `Screenshot is too small (${stat.size} bytes) - screen appears empty or solid color`,
+            );
+          }
           console.log('OK');
         } catch (err: any) {
           console.log(`FAILED: ${err.message}`);

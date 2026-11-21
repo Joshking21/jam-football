@@ -208,20 +208,22 @@ export const TitleScreen: React.FC = () => {
             Credits
           </Button>
 
-          {/* Dev-only quick jump button */}
-          <div style={{ marginTop: '16px', textAlign: 'center' }}>
-            <button
-              onClick={() => setScreen('devGallery')}
-              style={{
-                fontSize: '12px',
-                color: 'var(--text-faint)',
-                textDecoration: 'underline',
-                cursor: 'pointer',
-              }}
-            >
-              Dev Asset Gallery (?dev=gallery)
-            </button>
-          </div>
+          {/* Dev-only quick jump button (hidden in production builds, REVIEW Minor) */}
+          {(import.meta as any).env?.DEV && (
+            <div style={{ marginTop: '16px', textAlign: 'center' }}>
+              <button
+                onClick={() => setScreen('devGallery')}
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--text-faint)',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                }}
+              >
+                Dev Asset Gallery (?dev=gallery)
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

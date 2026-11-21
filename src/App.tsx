@@ -24,7 +24,6 @@ import { PlayerProfileModal } from './ui/screens/PlayerProfileModal';
 import { SettingsModal } from './ui/screens/SettingsModal';
 import { CreditsModal } from './ui/screens/CreditsModal';
 import { TopBar } from './ui/components/TopBar';
-import { Sidebar } from './ui/components/Sidebar';
 import { Toast } from './ui/components/Toast';
 import { ScreenTransition, getScreenWorld } from './ui/components/ScreenTransition';
 import { applySettingsToDom } from './state/settings';
@@ -146,13 +145,10 @@ export const App: React.FC = () => {
 
   const currentWorld = getScreenWorld(screen);
 
-  // 2. Management screens shell (TopBar + Sidebar + ScreenTransition + Content)
+  // 2. Management screens shell (TopBar tabs + ScreenTransition + Content)
   return (
     <div className={`app-shell ${currentWorld}`}>
       <TopBar />
-      <div className={`app-shell-sidebar ${currentWorld === 'office' ? 'office' : ''}`}>
-        <Sidebar />
-      </div>
 
       <main className={`app-shell-main ${currentWorld === 'office' ? 'office' : ''}`}>
         <ScreenTransition currentScreen={screen}>

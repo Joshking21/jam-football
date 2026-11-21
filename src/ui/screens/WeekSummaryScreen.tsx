@@ -114,76 +114,100 @@ export const WeekSummaryScreen: React.FC = () => {
                   gap: '8px',
                 }}
               >
-                {roundFixtures.map((fix) => {
-                  const home = gameState.clubs[fix.homeId];
-                  const away = gameState.clubs[fix.awayId];
-                  if (!home || !away) return null;
-                  const isUser = home.id === userClub.id || away.id === userClub.id;
-
-                  return (
-                    <div
-                      key={fix.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '8px 12px',
-                        backgroundColor: isUser ? 'var(--surface-3)' : 'var(--surface-2)',
-                        borderRadius: 'var(--radius-s)',
-                        borderLeft: isUser ? '3px solid var(--accent)' : '3px solid transparent',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          flex: 1,
-                          justifyContent: 'flex-end',
-                        }}
-                      >
-                        <span style={{ fontWeight: 600, fontSize: '13px' }}>{home.shortName}</span>
-                        <Crest
-                          clubId={home.id}
-                          code={home.code}
-                          primaryColor={home.colors.primary}
-                          secondaryColor={home.colors.secondary}
-                          size={18}
-                        />
-                      </div>
-
-                      <div
-                        className="stat-number tabular-nums"
-                        style={{
-                          padding: '0 16px',
-                          fontWeight: 700,
-                          fontSize: '15px',
-                        }}
-                      >
-                        {fix.result?.homeGoals} - {fix.result?.awayGoals}
-                      </div>
-
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          flex: 1,
-                          justifyContent: 'flex-start',
-                        }}
-                      >
-                        <Crest
-                          clubId={away.id}
-                          code={away.code}
-                          primaryColor={away.colors.primary}
-                          secondaryColor={away.colors.secondary}
-                          size={18}
-                        />
-                        <span style={{ fontWeight: 600, fontSize: '13px' }}>{away.shortName}</span>
-                      </div>
+                {roundFixtures.length === 0 ? (
+                  <div
+                    style={{
+                      padding: '32px 16px',
+                      textAlign: 'center',
+                      color: 'var(--text-dim)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <Calendar size={28} style={{ opacity: 0.4 }} />
+                    <div style={{ fontSize: '14px', fontWeight: 600 }}>No results recorded yet</div>
+                    <div style={{ fontSize: '12px' }}>
+                      Matchday {completedMatchday} fixtures have not kicked off.
                     </div>
-                  );
-                })}
+                  </div>
+                ) : (
+                  roundFixtures.map((fix) => {
+                    const home = gameState.clubs[fix.homeId];
+                    const away = gameState.clubs[fix.awayId];
+                    if (!home || !away) return null;
+                    const isUser = home.id === userClub.id || away.id === userClub.id;
+
+                    return (
+                      <div
+                        key={fix.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '8px 12px',
+                          backgroundColor: isUser ? 'var(--surface-3)' : 'var(--surface-2)',
+                          borderRadius: 'var(--radius-s)',
+                          borderLeft: isUser ? '3px solid var(--accent)' : '3px solid transparent',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            flex: 1,
+                            justifyContent: 'flex-end',
+                          }}
+                        >
+                          <span style={{ fontWeight: 600, fontSize: '13px' }}>
+                            {home.shortName}
+                          </span>
+                          <Crest
+                            clubId={home.id}
+                            code={home.code}
+                            primaryColor={home.colors.primary}
+                            secondaryColor={home.colors.secondary}
+                            size={18}
+                          />
+                        </div>
+
+                        <div
+                          className="stat-number tabular-nums"
+                          style={{
+                            padding: '0 16px',
+                            fontWeight: 700,
+                            fontSize: '15px',
+                          }}
+                        >
+                          {fix.result?.homeGoals} - {fix.result?.awayGoals}
+                        </div>
+
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            flex: 1,
+                            justifyContent: 'flex-start',
+                          }}
+                        >
+                          <Crest
+                            clubId={away.id}
+                            code={away.code}
+                            primaryColor={away.colors.primary}
+                            secondaryColor={away.colors.secondary}
+                            size={18}
+                          />
+                          <span style={{ fontWeight: 600, fontSize: '13px' }}>
+                            {away.shortName}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </Panel>
 

@@ -22,6 +22,7 @@ export function createEmptyTeamStats(): TeamMatchStats {
     countersStarted: 0,
     countersConceded: 0,
     ballWinsMidAtt: 0,
+    ballWinsOppDefThird: 0,
   };
 }
 
@@ -51,5 +52,6 @@ export function createPlayerMatchLine(
     injured: false,
     conditionEnd: initialCondition,
     aerialDuelsWon: 0,
+    throughBallsConceded: 0,
   };
 }

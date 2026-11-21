@@ -7,6 +7,7 @@ import { Sheet } from '../components/Sheet';
 import { Button } from '../components/Button';
 import { Player } from '../../core/types';
 import { formatMoney } from '../../core/math';
+import { getPrimaryOvr } from '../../core/player/ratings';
 import { ArrowLeftRight, Search, Binoculars, DollarSign } from 'lucide-react';
 
 export const TransfersScreen: React.FC = () => {
@@ -14,6 +15,8 @@ export const TransfersScreen: React.FC = () => {
   const openPlayerProfile = useStore((state) => state.openPlayerProfile);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [clubFilter, setClubFilter] = useState<string>('all');
+  const [posFilter, setPosFilter] = useState<'ALL' | 'GK' | 'DEF' | 'MID' | 'ATT'>('ALL');
 
   if (!gameState) return null;
 
@@ -22,14 +25,31 @@ export const TransfersScreen: React.FC = () => {
 
   const isWindowOpen = gameState.phase === 'TransferWindow';
 
-  // Filter other clubs players
-  const otherPlayers = Object.values(gameState.players).filter((p) => p.clubId !== userClub.id);
-
-  const filteredPlayers = otherPlayers.filter((p) => {
-    if (!searchQuery.trim()) return true;
-    const name = `${p.firstName} ${p.lastName}`.toLowerCase();
-    return name.includes(searchQuery.toLowerCase());
+  // Filter other clubs players & free agents (§12.12)
+  const otherPlayers = Object.values(gameState.players).filter((p) => {
+    if (p.clubId === userClub.id) return false;
+    if (clubFilter === 'free_agents') return p.clubId === null;
+    if (clubFilter !== 'all') return p.clubId === clubFilter;
+    return true;
   });
+
+  const filteredPlayers = otherPlayers
+    .filter((p) => {
+      if (posFilter !== 'ALL') {
+        const prim = p.positions[0]?.pos;
+        if (posFilter === 'GK' && prim !== 'GK') return false;
+        if (posFilter === 'DEF' && (!prim || !['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(prim)))
+          return false;
+        if (posFilter === 'MID' && (!prim || !['DM', 'CM', 'AM', 'LM', 'RM'].includes(prim)))
+          return false;
+        if (posFilter === 'ATT' && (!prim || !['CF', 'ST', 'LW', 'RW'].includes(prim)))
+          return false;
+      }
+      if (!searchQuery.trim()) return true;
+      const name = `${p.firstName} ${p.lastName}`.toLowerCase();
+      return name.includes(searchQuery.toLowerCase());
+    })
+    .sort((a, b) => getPrimaryOvr(b) - getPrimaryOvr(a));
 
   return (
     <div className="app-content-area office-surface" style={{ height: '100%' }}>
@@ -92,34 +112,86 @@ export const TransfersScreen: React.FC = () => {
               </div>
             </div>
 
-            {/* Search Input */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                backgroundColor: 'var(--paper-2)',
-                border: '1px solid var(--paper-rule)',
-                borderRadius: '4px',
-                padding: '8px 12px',
-                maxWidth: '360px',
-              }}
-            >
-              <Search size={16} color="var(--paper-dim)" />
-              <input
-                type="text"
-                placeholder="Search scouting network..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+            {/* Search & Filters */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <div
                 style={{
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  color: 'var(--paper-ink)',
-                  fontSize: '14px',
-                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backgroundColor: 'var(--paper-2)',
+                  border: '1px solid var(--paper-rule)',
+                  borderRadius: '4px',
+                  padding: '8px 12px',
+                  minWidth: '260px',
                 }}
-              />
+              >
+                <Search size={16} color="var(--paper-dim)" />
+                <input
+                  type="text"
+                  placeholder="Search player name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    color: 'var(--paper-ink)',
+                    fontSize: '14px',
+                    width: '100%',
+                  }}
+                />
+              </div>
+
+              {/* Club Filter */}
+              <select
+                value={clubFilter}
+                onChange={(e) => setClubFilter(e.target.value)}
+                style={{
+                  backgroundColor: 'var(--paper-2)',
+                  color: 'var(--paper-ink)',
+                  border: '1px solid var(--paper-rule)',
+                  borderRadius: '4px',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  fontFamily: 'var(--font-sans)',
+                  outline: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="all">All Clubs</option>
+                <option value="free_agents">Free Agents</option>
+                {Object.values(gameState.clubs)
+                  .filter((c) => c.id !== userClub.id)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </select>
+
+              {/* Position Filter */}
+              <select
+                value={posFilter}
+                onChange={(e) => setPosFilter(e.target.value as any)}
+                style={{
+                  backgroundColor: 'var(--paper-2)',
+                  color: 'var(--paper-ink)',
+                  border: '1px solid var(--paper-rule)',
+                  borderRadius: '4px',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  fontFamily: 'var(--font-sans)',
+                  outline: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="ALL">All Positions</option>
+                <option value="GK">Goalkeepers</option>
+                <option value="DEF">Defenders</option>
+                <option value="MID">Midfielders</option>
+                <option value="ATT">Attackers</option>
+              </select>
             </div>
 
             {/* Players List Table */}

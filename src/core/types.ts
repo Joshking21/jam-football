@@ -153,7 +153,41 @@ export type Width = 'Narrow' | 'Normal' | 'Wide';
 export type Focus = 'Left' | 'Centre' | 'Right' | 'Mixed';
 export type Duty = 'Defend' | 'Support' | 'Attack';
 
-export type RoleId = string; // ids from src/config/roles.ts (§13.17.2)
+export type RoleId = string; // attacking role ids from src/config/roles.ts (§13.17.2 & §13.19.1)
+
+// SPEC 1.5 additions (§13.19)
+export type DefRoleId =
+  | 'gk_line'
+  | 'gk_sweep'
+  | 'cb_hold'
+  | 'cb_step'
+  | 'cb_cover'
+  | 'fb_track'
+  | 'fb_press'
+  | 'fb_tuck'
+  | 'dm_screen'
+  | 'dm_win'
+  | 'dm_drop'
+  | 'cm_hold'
+  | 'cm_press'
+  | 'cm_track'
+  | 'am_screen'
+  | 'am_press'
+  | 'w_track'
+  | 'w_press'
+  | 'w_high'
+  | 'st_central'
+  | 'st_press'
+  | 'st_shoulder';
+
+export type DefInstruction =
+  | 'closeDownMore'
+  | 'standOff'
+  | 'tackleHarder'
+  | 'stayOnFeet'
+  | 'markTighter'
+  | 'trackRuns'; // SPEC §13.19.3
+
 export type OnLoss = 'CounterPress' | 'Regroup' | 'Mixed';
 export type OnWin = 'Counter' | 'KeepIt' | 'Mixed';
 export type Distribution = 'Short' | 'Long' | 'Wide' | 'Mixed';
@@ -223,11 +257,15 @@ export interface OppOrder {
 } // §13.17.3
 
 export interface TacticPlan {
-  // §13.18.10: Plan A/B/C
+  // §13.18.10 & §13.19.4: Plan A/B/C
   name: string;
   formation: Formation;
-  roles: RoleId[];
-  playerInstructions: PlayerInstruction[][];
+  roles?: RoleId[]; // legacy fallback
+  attRoles?: RoleId[]; // length 11 (§13.19.4)
+  defRoles?: DefRoleId[]; // length 11 (§13.19.4)
+  playerInstructions?: PlayerInstruction[][]; // legacy fallback
+  attInstructions?: PlayerInstruction[][]; // length 11, each 0–2 (§13.19.4)
+  defInstructions?: DefInstruction[][]; // length 11, each 0–1 (§13.19.4)
   instructions: TeamInstructions;
 }
 
@@ -241,9 +279,13 @@ export interface Familiarity {
 export interface Tactics {
   formation: Formation;
   lineup: (PlayerId | null)[]; // length 11, index = slot index in formations.ts
-  roles: RoleId[]; // length 11, replaces the old duties (§13.17.2)
+  roles?: RoleId[]; // legacy fallback (§13.17.2)
+  attRoles?: RoleId[]; // length 11, attacking roles (§13.19.4)
+  defRoles?: DefRoleId[]; // length 11, defensive roles (§13.19.4)
   duties?: Duty[]; // legacy fallback
-  playerInstructions: PlayerInstruction[][]; // length 11, each 0–2
+  playerInstructions?: PlayerInstruction[][]; // legacy fallback
+  attInstructions?: PlayerInstruction[][]; // length 11, each 0–2 (§13.19.4)
+  defInstructions?: DefInstruction[][]; // length 11, each 0–1 (§13.19.4)
   bench: PlayerId[]; // 0–9
   captain: PlayerId | null;
   takers: {
@@ -601,6 +643,7 @@ export interface TeamMatchStats {
   countersConceded?: number;
   countersConcededAfterCorner?: number;
   ballWinsMidAtt?: number;
+  ballWinsOppDefThird?: number;
 }
 
 export interface PlayerMatchLine {
@@ -624,6 +667,7 @@ export interface PlayerMatchLine {
   injured: boolean;
   conditionEnd: number;
   aerialDuelsWon?: number;
+  throughBallsConceded?: number;
 }
 
 export interface MatchResult {
@@ -643,6 +687,8 @@ export type MatchCommand =
       side: Side;
       instructions: TeamInstructions;
       playerInstructions?: PlayerInstruction[][];
+      attInstructions?: PlayerInstruction[][];
+      defInstructions?: DefInstruction[][];
       issuedAtT: number;
     }
   | {
@@ -650,8 +696,12 @@ export type MatchCommand =
       side: Side;
       formation: Formation;
       lineup: (PlayerId | null)[];
-      roles: RoleId[];
-      playerInstructions: PlayerInstruction[][];
+      roles?: RoleId[];
+      attRoles?: RoleId[];
+      defRoles?: DefRoleId[];
+      playerInstructions?: PlayerInstruction[][];
+      attInstructions?: PlayerInstruction[][];
+      defInstructions?: DefInstruction[][];
       duties?: Duty[];
       issuedAtT: number;
     }

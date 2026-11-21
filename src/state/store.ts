@@ -96,6 +96,35 @@ export const useStore = create<AppState>((set, get) => {
         seed: 42,
       });
       applyClubTheme(initialGameState.userClubId);
+
+      if (scr === 'match') {
+        const firstFix = initialGameState.fixtures[0];
+        if (firstFix) initialGameState.pendingMatch = { fixtureId: firstFix.id };
+      } else if (scr === 'seasonEnd') {
+        const playerIds = Object.keys(initialGameState.players) as PlayerId[];
+        initialGameState.matchday = 18;
+        initialGameState.awards = {
+          playerOfTheSeason: playerIds[0]!,
+          goldenBoot: playerIds[1]!,
+          playmaker: playerIds[2]!,
+          goldenGlove: playerIds[3]!,
+          youngPlayer: playerIds[4]!,
+          managerOfTheSeason: initialGameState.userClubId,
+          teamOfTheSeason: playerIds.slice(0, 11),
+        };
+      } else if (scr === 'weekSummary') {
+        initialGameState.matchday = 1;
+        for (const f of initialGameState.fixtures.filter((fix) => fix.matchday === 1)) {
+          f.result = {
+            homeGoals: 2,
+            awayGoals: 1,
+            scorers: [],
+            attendance: 18000,
+            motm: Object.keys(initialGameState.players)[0] as PlayerId,
+            stats: {} as any,
+          };
+        }
+      }
     }
   }
 
@@ -242,8 +271,10 @@ export const useStore = create<AppState>((set, get) => {
           const targetPlan = updated.plans[partial.activePlan];
           if (targetPlan) {
             updated.formation = targetPlan.formation;
-            updated.roles = [...targetPlan.roles];
-            updated.playerInstructions = targetPlan.playerInstructions.map((arr) => [...arr]);
+            updated.roles = [...(targetPlan.roles ?? [])];
+            updated.playerInstructions = (targetPlan.playerInstructions ?? []).map((arr) => [
+              ...arr,
+            ]);
             updated.instructions = { ...targetPlan.instructions };
           }
         } else {
@@ -252,8 +283,8 @@ export const useStore = create<AppState>((set, get) => {
             updated.plans[activeIdx] = {
               name: updated.plans[activeIdx]!.name,
               formation: updated.formation,
-              roles: [...updated.roles],
-              playerInstructions: updated.playerInstructions.map((arr) => [...arr]),
+              roles: [...(updated.roles ?? [])],
+              playerInstructions: (updated.playerInstructions ?? []).map((arr) => [...arr]),
               instructions: { ...updated.instructions },
             };
           }

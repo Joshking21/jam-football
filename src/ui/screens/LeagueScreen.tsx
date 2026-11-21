@@ -349,28 +349,34 @@ export const LeagueScreen: React.FC = () => {
                             {row.pts}
                           </td>
                           <td style={{ padding: '12px' }}>
-                            <div style={{ display: 'flex', gap: '4px' }}>
-                              {row.form.map((res, i) => (
-                                <span
-                                  key={i}
-                                  style={{
-                                    width: '18px',
-                                    height: '18px',
-                                    borderRadius: '2px',
-                                    backgroundColor: getFormDotColor(res),
-                                    color: '#000000',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '10px',
-                                    fontWeight: 700,
-                                    fontFamily: 'var(--font-head)',
-                                  }}
-                                >
-                                  {res}
-                                </span>
-                              ))}
-                            </div>
+                            {row.form.length === 0 ? (
+                              <span style={{ color: 'var(--text-faint)', fontSize: '14px' }}>
+                                —
+                              </span>
+                            ) : (
+                              <div style={{ display: 'flex', gap: '4px' }}>
+                                {row.form.map((res, i) => (
+                                  <span
+                                    key={i}
+                                    style={{
+                                      width: '18px',
+                                      height: '18px',
+                                      borderRadius: '2px',
+                                      backgroundColor: getFormDotColor(res),
+                                      color: '#000000',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      fontSize: '10px',
+                                      fontWeight: 700,
+                                      fontFamily: 'var(--font-head)',
+                                    }}
+                                  >
+                                    {res}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                           </td>
                         </tr>
                       );

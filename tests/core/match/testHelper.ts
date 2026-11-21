@@ -133,8 +133,8 @@ export function createMockTeamSheet(
   const planBase = {
     name: 'Plan A',
     formation: defaultTactics.formation,
-    roles: [...defaultTactics.roles],
-    playerInstructions: defaultTactics.playerInstructions.map((p) => [...p]),
+    roles: [...(defaultTactics.roles ?? [])],
+    playerInstructions: (defaultTactics.playerInstructions ?? []).map((p) => [...p]),
     instructions: { ...defaultTactics.instructions },
   };
   defaultTactics.plans = [

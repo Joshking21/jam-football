@@ -193,7 +193,7 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
   if (isSweeperKeeperOpponent && context === 'OUTSIDE_CENTRAL') {
     xgRef += 0.02;
   }
-  if (shootOnSight) {
+  if (shootOnSight && (context === 'OUTSIDE_CENTRAL' || context === 'OUTSIDE_WIDE')) {
     xgRef *= K.d2.finalThird.shootOnSight.xGMult;
   }
   if (workIntoBox && (context === 'SIX_YARD' || context === 'BOX_CENTRAL')) {

@@ -15,7 +15,9 @@ import {
   TeamInstructions,
   Injury,
   RoleId,
+  DefRoleId,
   PlayerInstruction,
+  DefInstruction,
   OppOrder,
 } from '../types';
 import { RngState } from '../rng';
@@ -41,7 +43,11 @@ export interface LiveTeamState {
   formation: Formation;
   lineup: (PlayerId | null)[]; // 11 slots
   roles: RoleId[];
+  attRoles?: RoleId[];
+  defRoles?: DefRoleId[];
   playerInstructions: PlayerInstruction[][];
+  attInstructions?: PlayerInstruction[][];
+  defInstructions?: DefInstruction[][];
   opposition: OppOrder[];
   duties: Duty[];
   bench: PlayerId[];

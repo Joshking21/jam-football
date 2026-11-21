@@ -135,7 +135,7 @@ export const K = {
   // Fouls and cards
   fouls: {
     failedDribbleChance: 0.25,
-    boxDribbleFoulChance: 0.05,
+    boxDribbleFoulChance: 0.08,
     lostAerialDuelChance: 0.1,
     pressingHazard: {
       High: 0.05,
@@ -146,14 +146,14 @@ export const K = {
     directRedPerFoul: 0.002,
   },
   // Home advantage z-boost (SPEC §13.4)
-  homeAdvantage: 0.08,
+  homeAdvantage: 0.11,
   // Base action utilities by zone (SPEC §13.6 and tuning)
   utilities: {
     inBox: {
       recycle: 0.9,
       progress: 1.4,
       dribble: 1.05,
-      shot: 0.9,
+      shot: 0.88,
     },
     def: {
       recycle: 1.4,
@@ -187,7 +187,7 @@ export const K = {
       switch: 0.6,
       dribble: 0.85,
       through: 0.55,
-      shot: 0.15,
+      shot: 0.14,
     },
     attWide: {
       recycle: 1.2,
@@ -343,9 +343,9 @@ export const K = {
       pressDefThirdMult: 0.9,
     },
     pressingForward: {
-      teamDefThirdPress: 0.3,
-      oppDefPassCtx: -0.2,
-      fatigueMult: 1.15,
+      teamDefThirdPress: 0.2,
+      oppDefPassCtx: -0.15,
+      fatigueMult: 1.18,
       use_shot: -0.1,
     },
     falseNine: {
@@ -369,7 +369,7 @@ export const K = {
     tightMark: {
       recvMult: 0.55,
       markerPressTklAdd: 0.3,
-      oppThroughIntoZoneCtx: 0.2,
+      oppThroughIntoZoneCtx: 0.14,
       markerFoulsMult: 1.2,
     },
     doubleUp: {
@@ -408,11 +408,14 @@ export const K = {
     },
     regroup: {
       firstStepRecycle: 0.3,
-      nextStepsPassCtx: 0.1,
+      nextStepsPassCtx: 0.22,
     },
     counter: {
       bonusTriggerChance: 0.22,
       executionCtx: -0.25,
+      baselineTurnoverCounterChance: 0.08,
+      attackingTurnoverCounterAdd: 0.05,
+      veryAttackingTurnoverCounterAdd: 0.07,
     },
     keepIt: {
       firstStepsRecycle: 0.2,
@@ -492,30 +495,31 @@ export const K = {
     },
     finalThird: {
       workIntoBox: {
-        shotUtilOutsideBox: -0.25,
+        shotUtilOutsideBox: -0.2,
         attProgressUtil: 0.2,
         attDribbleUtil: 0.1,
         attInBoxPassUtil: 0.2,
         attPassCtx: 0.0,
-        inBoxXGMult: 1.15,
+        inBoxXGMult: 1.18,
       },
       shootOnSight: {
-        shotUtilOutsideBox: 0.4,
-        midCentreShotUtil: 0.2,
-        shotUtilInBox: 0.2,
-        xGMult: 0.78,
+        shotUtilOutsideBox: 0.24,
+        midCentreShotUtil: 0.12,
+        shotUtilInBox: 0.08,
+        xGMult: 0.74,
         blockedShotDefPossessionChance: 0.65,
       },
     },
     crossStyle: {
       low: {
-        groundChanceRatio: 0.6,
+        groundChanceRatio: 0.35,
         groundBoxCentralRatio: 0.7,
         groundPaceWeight: 0.5,
         groundOffTheBallWeight: 0.5,
         gkClaimAdd: -0.04,
-        blockChance: 0.16,
+        blockChance: 0.04,
         blockCornerRatio: 0.4,
+        headerShotRatio: 0.85,
       },
       whipped: {
         headerXGRef: 0.13,
@@ -526,22 +530,23 @@ export const K = {
         deliveryCtx: 0.15,
         headerSkillMult: 1.3,
         gkClaimAdd: 0.04,
+        headerShotRatio: 0.6,
       },
     },
     offsideTrap: {
-      failedThroughOffsideProbAdd: 0.2,
+      failedThroughOffsideProbAdd: 0.12,
       failedThroughOffsideCap: 0.7,
-      oppLongBallAttOffsideChance: 0.1,
-      beatenTrapOneOnOneAdd: 0.08,
+      oppLongBallAttOffsideChance: 0.06,
+      beatenTrapOneOnOneAdd: 0.07,
     },
     tackling: {
       getStuckIn: {
         sTklAdd: 0.25,
-        foulsMult: 1.35,
+        foulsMult: 1.25,
         yellowPerFoulMult: 1.2,
       },
       stayOnFeet: {
-        foulsMult: 0.6,
+        foulsMult: 0.85,
         sTklAdd: -0.2,
       },
     },
@@ -584,18 +589,18 @@ export const K = {
       menBack: {
         1: {
           headerTargetWeightMult: 1.15,
-          headerDuelAdd: 0.15,
-          clearanceCounterChance: 0.5,
+          headerDuelAdd: 0.22,
+          clearanceCounterChance: 0.28,
         },
         2: {
           headerTargetWeightMult: 1.0,
           headerDuelAdd: 0.0,
-          clearanceCounterChance: 0.0,
+          clearanceCounterChance: 0.18,
         },
         3: {
           headerTargetWeightMult: 0.85,
-          headerDuelAdd: -0.15,
-          clearanceCounterChance: 0.0,
+          headerDuelAdd: -0.22,
+          clearanceCounterChance: 0.12,
         },
       },
       postMen: {
@@ -649,8 +654,8 @@ export const K = {
     },
     familiarity: {
       threshold: 70,
-      divisor: 400,
-      maxPenalty: -0.25,
+      divisor: 500,
+      maxPenalty: -0.16,
       weeklyMatchGain: 6,
       tacticalTrainingGain: 6,
       weeklyDecay: 2,
@@ -659,6 +664,119 @@ export const K = {
       startingClose: 65,
       startingOther: 45,
       startingFormationOther: 40,
+    },
+  },
+  // SPEC 1.5 Attacking and Defensive Roles (SPEC §13.19)
+  droles: {
+    gk_line: {},
+    gk_sweep: {
+      oppThroughBallsCtx: -0.3,
+      oppOneOnOneMult: 0.75,
+      oppOutsideCentralXGRefAdd: 0.04,
+      oppThroughFoulChance: 0.04,
+    },
+    cb_hold: {},
+    cb_step: {
+      asD_tkl: 0.35,
+      asD_press: 0.25,
+      asD_airD: 0.2,
+      beatenNextStepThroughCtx: 0.3,
+      foulsMult: 1.2,
+    },
+    cb_cover: {
+      teamOppThroughBallsCtx: -0.25,
+      asD_tkl: -0.15,
+      asD_press: -0.2,
+    },
+    fb_track: {},
+    fb_press: {
+      asD_midLanePress: 0.3,
+      beatenNextStepThroughCtx: 0.25,
+    },
+    fb_tuck: {
+      oppDefCentreCtx: -0.1,
+      oppDefLaneCtx: 0.15,
+      oppLaneCrossUtil: 0.2,
+    },
+    dm_screen: {},
+    dm_win: {
+      asD_press: 0.4,
+      asD_tkl: 0.3,
+      foulsMult: 1.5,
+      fatigueMult: 1.1,
+    },
+    dm_drop: {
+      oppThroughBallsCtx: -0.65,
+      oppBoxHeaderDuel: -0.05,
+      oppMidCentreCtx: 0.15,
+      oppAttCentreShotUtil: 0.14,
+    },
+    cm_hold: {},
+    cm_press: {
+      asD_midPress: 0.3,
+      fatigueMult: 1.08,
+      beatenNextStepProgress: 0.2,
+    },
+    cm_track: {
+      oppBoxThroughRunCtx: -0.15,
+      fatigueMult: 1.05,
+      oppMidCentreCtx: 0.1,
+    },
+    am_screen: {},
+    am_press: {
+      asD_oppHoldingPress: 0.3,
+      fatigueMult: 1.08,
+      oppProgressPastHim: 0.15,
+    },
+    w_track: {},
+    w_press: {
+      asD_oppFbPress: 0.3,
+      fatigueMult: 1.08,
+      oppDefLaneCtx: 0.1,
+    },
+    w_high: {
+      counterTriggerBonus: 0.016,
+      firstStepThrough: 0.2,
+      oppDefLaneCtx: 0.2,
+    },
+    st_central: {},
+    st_press: {
+      teamOppDefPress: 0.48,
+      oppDefPassCtx: -0.3,
+      fatigueMult: 1.15,
+    },
+    st_shoulder: {
+      asR_longThroughRun: 0.2,
+      oppDefRecycleCtx: 0.2,
+    },
+  },
+  dpi: {
+    closeDownMore: {
+      asD_press: 0.3,
+      fatigueMult: 1.08,
+      oppNextStepProgress: 0.2,
+    },
+    standOff: {
+      oppThroughBallsInZoneCtx: -0.1,
+      oppPassDribbleCtx: 0.15,
+    },
+    tackleHarder: {
+      asD_tkl: 0.25,
+      foulsMult: 1.35,
+      yellowChanceMult: 1.2,
+    },
+    stayOnFeet: {
+      foulsMult: 0.5,
+      asD_tkl: -0.25,
+    },
+    markTighter: {
+      oppRecvMult: 0.85,
+      oppThroughPastHimCtx: 0.15,
+    },
+    trackRuns: {
+      oppRunMinus: -0.2,
+      fatigueMult: 1.05,
+      oppZoneActionsCtx: 0.1,
     },
   },
 };
@@ -670,4 +788,6 @@ export const K = {
   setp: K.setp,
   pi: K.pi,
   d2: K.d2,
+  droles: K.droles,
+  dpi: K.dpi,
 };

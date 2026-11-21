@@ -38,63 +38,80 @@ export const ClubScreen: React.FC = () => {
           margin: '0 auto',
         }}
       >
-        {/* Header with Club Crest & Tab Buttons */}
+        {/* Header with Club Crest & Tab Buttons (High contrast text on dark desk, paper index tabs) */}
         <div
           style={{
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-end',
             justifyContent: 'space-between',
-            borderBottom: '2px solid var(--paper-rule)',
-            paddingBottom: '16px',
+            borderBottom: '2px solid var(--desk-border)',
+            paddingBottom: '0',
+            gap: '16px',
+            flexWrap: 'wrap',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingBottom: '12px' }}
+          >
             <Crest
               clubId={userClub.id}
               code={userClub.code}
               primaryColor={userClub.colors.primary}
               secondaryColor={userClub.colors.secondary}
-              size={48}
+              size={52}
             />
             <div>
               <h1
                 style={{
-                  fontSize: '28px',
+                  fontSize: '32px',
                   fontFamily: 'var(--font-head)',
-                  color: 'var(--paper-ink)',
+                  color: 'var(--text)',
                   margin: 0,
+                  letterSpacing: '0.04em',
                 }}
               >
                 {userClub.name.toUpperCase()} CLUB OVERVIEW
               </h1>
               <div
                 className="broadcast-label"
-                style={{ color: 'var(--paper-dim)', marginTop: '2px' }}
+                style={{ color: 'var(--text-dim)', marginTop: '4px', fontSize: '13px' }}
               >
                 Founded {userClub.founded} · {userClub.city}
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '6px' }}>
-            {(['FINANCES', 'BOARD', 'FANS', 'STADIUM'] as ClubTab[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className="broadcast-label"
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '3px',
-                  backgroundColor: activeTab === tab ? 'var(--paper-ink)' : 'var(--paper-2)',
-                  color: activeTab === tab ? 'var(--paper)' : 'var(--paper-ink)',
-                  border: '1px solid var(--paper-rule)',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                }}
-              >
-                {tab}
-              </button>
-            ))}
+          {/* Paper index tabs like clipboard dividers */}
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-end' }}>
+            {(['FINANCES', 'BOARD', 'FANS', 'STADIUM'] as ClubTab[]).map((tab) => {
+              const isActive = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className="broadcast-label"
+                  style={{
+                    padding: '10px 18px 8px',
+                    borderRadius: '6px 6px 0 0',
+                    backgroundColor: isActive ? 'var(--paper)' : 'var(--desk-2)',
+                    color: isActive ? 'var(--paper-ink)' : 'var(--text-dim)',
+                    border: isActive
+                      ? '1px solid var(--paper-rule)'
+                      : '1px solid var(--desk-border)',
+                    borderBottom: isActive ? '2px solid var(--paper)' : 'none',
+                    marginBottom: isActive ? '-2px' : '0',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    boxShadow: isActive ? '0 -2px 6px rgba(0,0,0,0.25)' : 'none',
+                    transition: 'background-color 150ms ease, color 150ms ease',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {tab}
+                </button>
+              );
+            })}
           </div>
         </div>
 

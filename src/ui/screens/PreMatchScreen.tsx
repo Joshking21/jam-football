@@ -8,7 +8,18 @@ import { Button } from '../components/Button';
 import { Crest } from '../components/Crest';
 import { TacticsScreen } from './TacticsScreen';
 import { Ticker } from '../components/Ticker';
-import { Check, Shield, AlertTriangle, ChevronRight, Zap } from 'lucide-react';
+import { TelestratorPitch } from '../components/TelestratorPitch';
+import {
+  Check,
+  Shield,
+  AlertTriangle,
+  ChevronRight,
+  Zap,
+  Cloud,
+  CloudRain,
+  Sun,
+  Award,
+} from 'lucide-react';
 
 type PreMatchStep = 1 | 2 | 3;
 
@@ -155,128 +166,259 @@ export const PreMatchScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Step 1: Opponent Report */}
+          {/* Step 1: Opponent Report (Dominant Broadcast Panel, Telestrator Pitch, Key Battles) */}
           {currentStep === 1 && (
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: '1.2fr 1fr',
                 gap: '24px',
+                alignItems: 'start',
               }}
             >
-              <Panel dominant title={`OPPONENT SCOUTING: ${oppClub.name.toUpperCase()}`}>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '20px',
-                    marginBottom: '20px',
-                  }}
-                >
-                  <Crest
-                    clubId={oppClub.id}
-                    code={oppClub.code}
-                    primaryColor={oppClub.colors.primary}
-                    secondaryColor={oppClub.colors.secondary}
-                    size={64}
-                  />
-                  <div>
-                    <h2
+              {/* Left Column: Dominant Telestrator Pitch Diagram & Identified Pattern */}
+              <Panel dominant title={`BROADCAST SCOUTING REPORT · ${oppClub.name.toUpperCase()}`}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      borderBottom: '1px solid var(--border)',
+                      paddingBottom: '14px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <Crest
+                        clubId={oppClub.id}
+                        code={oppClub.code}
+                        primaryColor={oppClub.colors.primary}
+                        secondaryColor={oppClub.colors.secondary}
+                        size={56}
+                      />
+                      <div>
+                        <h2
+                          style={{
+                            fontSize: '28px',
+                            fontFamily: 'var(--font-head)',
+                            margin: 0,
+                            letterSpacing: '0.02em',
+                          }}
+                        >
+                          {oppClub.name}
+                        </h2>
+                        <div style={{ color: 'var(--text-dim)', fontSize: '13px' }}>
+                          Manager: {oppClub.managerName} · Shape: {oppClub.style.formation} ·{' '}
+                          {oppClub.style.passing} Passing
+                        </div>
+                      </div>
+                    </div>
+                    <div
                       style={{
-                        fontSize: '24px',
+                        padding: '6px 12px',
+                        backgroundColor: 'var(--surface-3)',
+                        borderRadius: 'var(--radius-s)',
                         fontFamily: 'var(--font-head)',
-                        margin: 0,
+                        fontWeight: 700,
+                        fontSize: '13px',
+                        color: 'var(--accent-text)',
                       }}
                     >
-                      {oppClub.name}
-                    </h2>
-                    <div style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-                      Manager: {oppClub.managerName} · Primary Formation: {oppClub.style.formation}
+                      {isHome ? 'OPPONENT AT OUR GROUND' : 'AWAY FIXTURE'}
                     </div>
                   </div>
-                </div>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                    fontSize: '14px',
-                    lineHeight: '1.5',
-                  }}
-                >
-                  <div
-                    style={{
-                      backgroundColor: 'var(--surface-2)',
-                      padding: '12px 16px',
-                      borderRadius: 'var(--radius-s)',
-                      border: '1px solid var(--border)',
-                    }}
-                  >
-                    <strong style={{ color: 'var(--accent-text)' }}>Tactical Style:</strong>{' '}
-                    {oppClub.name} typically set up in a {oppClub.style.formation} with{' '}
-                    {oppClub.style.mentality.toLowerCase()} mentality,{' '}
-                    {oppClub.style.passing.toLowerCase()} passing, and{' '}
-                    {oppClub.style.pressing.toLowerCase()} pressing.
-                  </div>
+                  {/* Telestrator Pitch Graphic */}
+                  <TelestratorPitch oppClub={oppClub} />
 
                   <div
                     style={{
                       backgroundColor: 'var(--surface-2)',
-                      padding: '12px 16px',
+                      padding: '12px 14px',
                       borderRadius: 'var(--radius-s)',
                       border: '1px solid var(--border)',
+                      fontSize: '13px',
+                      lineHeight: '1.5',
+                      color: 'var(--text-dim)',
                     }}
                   >
-                    <strong style={{ color: 'var(--warning)' }}>Identified Weakness:</strong> Their
-                    backline can be exposed against swift transitions and direct balls through the
-                    channels.
+                    <strong style={{ color: 'var(--text)' }}>Tactical Pattern:</strong>{' '}
+                    {oppClub.name} build in a {oppClub.style.formation} attacking formation. They
+                    look to exploit {oppClub.style.width.toLowerCase()} width with{' '}
+                    {oppClub.style.passing.toLowerCase()} service towards their advanced forward
+                    line.
                   </div>
-                </div>
-
-                <div
-                  style={{
-                    marginTop: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    borderTop: '1px solid var(--border)',
-                    paddingTop: '16px',
-                  }}
-                >
-                  <Button
-                    variant="secondary"
-                    size="m"
-                    icon={<Zap size={16} />}
-                    onClick={handleApplySuggestedApproach}
-                  >
-                    Apply Suggested Counter-Tactic
-                  </Button>
-                  <Button variant="primary" size="m" onClick={() => setCurrentStep(2)}>
-                    To Team Selection <ChevronRight size={16} />
-                  </Button>
                 </div>
               </Panel>
 
-              {/* Match Factors */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '16px',
-                }}
-              >
-                <Panel title="MATCH CONDITIONS">
-                  <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
-                    <div>
-                      <strong>Venue:</strong>{' '}
-                      {isHome ? userClub.stadium.name : oppClub.stadium.name}
+              {/* Right Column: Key Battles, Assistant Advice & Match Conditions */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <Panel title="KEY BATTLE & TACTICAL ADVICE">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {/* Key Battle breakdown */}
+                    <div
+                      style={{
+                        backgroundColor: 'var(--surface-2)',
+                        padding: '14px',
+                        borderRadius: 'var(--radius-s)',
+                        border: '1px solid var(--border)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
+                      }}
+                    >
+                      <div
+                        className="broadcast-label"
+                        style={{
+                          color: 'var(--accent-text)',
+                          fontSize: '11px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        <Award size={14} /> DECISIVE MATCHUP
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          fontSize: '14px',
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 700 }}>{userClub.name} Defence</div>
+                          <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+                            Central Backline
+                          </div>
+                        </div>
+                        <div
+                          className="broadcast-label"
+                          style={{
+                            fontSize: '14px',
+                            fontWeight: 700,
+                            color: 'var(--text-faint)',
+                          }}
+                        >
+                          VS
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: 700 }}>{oppClub.name} Attack</div>
+                          <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+                            Centre Forward
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        style={{ fontSize: '12px', color: 'var(--text-dim)', lineHeight: '1.4' }}
+                      >
+                        Winning early second balls and cutting out the delivery lanes will
+                        neutralise their offensive momentum.
+                      </div>
                     </div>
-                    <div>
-                      <strong>Weather:</strong> {nextFix?.weather ?? 'Clear'}
+
+                    {/* Assistant Advice Card */}
+                    <div
+                      style={{
+                        backgroundColor: 'rgba(255, 91, 53, 0.08)',
+                        border: '1px solid rgba(255, 91, 53, 0.25)',
+                        padding: '12px 14px',
+                        borderRadius: 'var(--radius-s)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                      }}
+                    >
+                      <div
+                        className="broadcast-label"
+                        style={{ color: 'var(--accent-text)', fontSize: '11px' }}
+                      >
+                        THEO VANCE · ASSISTANT MANAGER
+                      </div>
+                      <div style={{ fontSize: '13px', lineHeight: '1.45', color: 'var(--text)' }}>
+                        "We should remain balanced and compact in the middle third. Countering their
+                        style with mid-block pressure will force turnovers."
+                      </div>
                     </div>
-                    <div>
-                      <strong>Kickoff:</strong> {nextFix?.kickoff ?? 'Night'}
+
+                    {/* Match Factors */}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: '10px',
+                        backgroundColor: 'var(--surface-2)',
+                        padding: '10px',
+                        borderRadius: 'var(--radius-s)',
+                        border: '1px solid var(--border)',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div>
+                        <div
+                          className="broadcast-label"
+                          style={{ fontSize: '10px', color: 'var(--text-faint)' }}
+                        >
+                          VENUE
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            marginTop: '2px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {isHome ? userClub.stadium.name : oppClub.stadium.name}
+                        </div>
+                      </div>
+                      <div>
+                        <div
+                          className="broadcast-label"
+                          style={{ fontSize: '10px', color: 'var(--text-faint)' }}
+                        >
+                          WEATHER
+                        </div>
+                        <div style={{ fontSize: '12px', fontWeight: 600, marginTop: '2px' }}>
+                          {nextFix?.weather ?? 'Clear'}
+                        </div>
+                      </div>
+                      <div>
+                        <div
+                          className="broadcast-label"
+                          style={{ fontSize: '10px', color: 'var(--text-faint)' }}
+                        >
+                          KICKOFF
+                        </div>
+                        <div style={{ fontSize: '12px', fontWeight: 600, marginTop: '2px' }}>
+                          {nextFix?.kickoff ?? 'Night'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
+                        marginTop: '4px',
+                      }}
+                    >
+                      <Button
+                        variant="secondary"
+                        size="m"
+                        icon={<Zap size={16} />}
+                        onClick={handleApplySuggestedApproach}
+                      >
+                        Apply Counter-Tactic
+                      </Button>
+                      <Button variant="primary" size="l" onClick={() => setCurrentStep(2)}>
+                        Proceed to Team Selection (Step 2) <ChevronRight size={18} />
+                      </Button>
                     </div>
                   </div>
                 </Panel>

@@ -221,10 +221,10 @@ describe('Tactical Depth Pass 2 (SPEC §13.18, M3b)', () => {
 
   describe('13.18.4: Offside Trap', () => {
     it('adds beaten 1v1 bonus and failed through ball offside boost', () => {
-      expect(K.d2.offsideTrap.beatenTrapOneOnOneAdd).toBe(0.08);
-      expect(K.d2.offsideTrap.failedThroughOffsideProbAdd).toBe(0.2);
+      expect(K.d2.offsideTrap.beatenTrapOneOnOneAdd).toBe(0.07);
+      expect(K.d2.offsideTrap.failedThroughOffsideProbAdd).toBe(0.12);
       expect(K.d2.offsideTrap.failedThroughOffsideCap).toBe(0.7);
-      expect(K.d2.offsideTrap.oppLongBallAttOffsideChance).toBe(0.1);
+      expect(K.d2.offsideTrap.oppLongBallAttOffsideChance).toBe(0.06);
     });
   });
 
@@ -238,8 +238,8 @@ describe('Tactical Depth Pass 2 (SPEC §13.18, M3b)', () => {
         roleId: 'cb',
         teamTackling: 'StayOnFeet',
       });
-      expect(stuckInMult).toBe(1.35);
-      expect(stayOnFeetMult).toBe(0.6);
+      expect(stuckInMult).toBe(1.25);
+      expect(stayOnFeetMult).toBe(0.85);
 
       // Player PI stayOnFeet overrides team tackling
       const overrideMult = getFoulMultiplier({

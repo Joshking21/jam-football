@@ -51,9 +51,10 @@ export function generateFixtures(
     firstHalf.push(getBergerMatches(r, clubIds));
   }
 
-  // Second half: mirrored round order with inverted venues
-  // This guarantees no club has more than 2 consecutive home or away matches across all 18 matchdays
-  const secondHalfOrder = [8, 7, 6, 5, 4, 3, 2, 1, 0];
+  // Second half: round order with inverted venues
+  // Ensures no club plays the same opponent in consecutive rounds (e.g. MD9 and MD10)
+  // and guarantees no club has more than 2 consecutive home or away matches across all 18 matchdays
+  const secondHalfOrder = [0, 8, 1, 2, 3, 4, 5, 6, 7];
   const secondHalf: Array<Array<[ClubId, ClubId]>> = secondHalfOrder.map((rIdx) =>
     firstHalf[rIdx]!.map(([h, a]) => [a, h] as [ClubId, ClubId]),
   );

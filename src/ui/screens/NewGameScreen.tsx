@@ -147,122 +147,159 @@ export const NewGameScreen: React.FC = () => {
             gap: '24px',
           }}
         >
-          {/* Carousel Selector Bar */}
+          {/* Club Crest Carousel Selector Row (REVIEW M7) */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '12px',
-              padding: '8px 0',
+              gap: '16px',
+              padding: '12px 0',
+              backgroundColor: 'var(--surface-2)',
+              borderRadius: 'var(--radius-m)',
+              border: '1px solid var(--border)',
             }}
           >
             <button
               onClick={() =>
                 setSelectedClubIndex((prev) => (prev === 0 ? clubs.length - 1 : prev - 1))
               }
-              aria-label="Previous club"
+              aria-label="Previous club (Left Arrow)"
               style={{
-                width: '40px',
-                height: '40px',
+                width: '44px',
+                height: '44px',
                 borderRadius: 'var(--radius-m)',
-                backgroundColor: 'var(--surface-2)',
+                backgroundColor: 'var(--surface-3)',
                 border: '1px solid var(--border)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'var(--text)',
+                cursor: 'pointer',
+                transition: 'background var(--dur-fast)',
               }}
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={22} />
             </button>
 
+            {/* Crests Row */}
             <div
               style={{
                 display: 'flex',
-                gap: '8px',
+                alignItems: 'center',
+                gap: '16px',
                 overflowX: 'auto',
-                padding: '4px',
+                padding: '6px 8px',
               }}
             >
-              {clubs.map((c, idx) => (
-                <button
-                  key={c.id}
-                  onClick={() => setSelectedClubIndex(idx)}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: 'var(--radius-s)',
-                    backgroundColor: idx === selectedClubIndex ? 'var(--accent)' : 'var(--surface)',
-                    color: idx === selectedClubIndex ? 'var(--accent-ink)' : 'var(--text-dim)',
-                    border: `1px solid ${idx === selectedClubIndex ? 'var(--accent)' : 'var(--border)'}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontWeight: 700,
-                    fontFamily: 'var(--font-head)',
-                    fontSize: '14px',
-                    transition: 'all var(--dur-fast)',
-                  }}
-                >
-                  <Crest
-                    clubId={c.id}
-                    code={c.code}
-                    primaryColor={c.colors.primary}
-                    secondaryColor={c.colors.secondary}
-                    size={20}
-                  />
-                  {c.shortName}
-                </button>
-              ))}
+              {clubs.map((c, idx) => {
+                const isSelected = idx === selectedClubIndex;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setSelectedClubIndex(idx)}
+                    title={c.name}
+                    style={{
+                      padding: isSelected ? '6px' : '4px',
+                      borderRadius: 'var(--radius-s)',
+                      backgroundColor: isSelected ? 'var(--surface-3)' : 'transparent',
+                      border: isSelected ? '2px solid var(--accent)' : '2px solid transparent',
+                      transform: isSelected ? 'scale(1.15)' : 'scale(1)',
+                      opacity: isSelected ? 1 : 0.55,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all var(--dur-fast)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Crest
+                      clubId={c.id}
+                      code={c.code}
+                      primaryColor={c.colors.primary}
+                      secondaryColor={c.colors.secondary}
+                      size={isSelected ? 44 : 32}
+                    />
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-head)',
+                        fontWeight: 700,
+                        color: isSelected ? 'var(--accent-text)' : 'var(--text-faint)',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      {c.code}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             <button
               onClick={() =>
                 setSelectedClubIndex((prev) => (prev === clubs.length - 1 ? 0 : prev + 1))
               }
-              aria-label="Next club"
+              aria-label="Next club (Right Arrow)"
               style={{
-                width: '40px',
-                height: '40px',
+                width: '44px',
+                height: '44px',
                 borderRadius: 'var(--radius-m)',
-                backgroundColor: 'var(--surface-2)',
+                backgroundColor: 'var(--surface-3)',
                 border: '1px solid var(--border)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'var(--text)',
+                cursor: 'pointer',
+                transition: 'background var(--dur-fast)',
               }}
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={22} />
             </button>
           </div>
 
-          {/* Club Details Grid: Left Card & Right Squad Preview */}
+          {/* Big Broadcast Card for Selected Club (REVIEW M7) */}
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
+              gridTemplateColumns: '1.2fr 1fr',
               gap: '24px',
             }}
           >
-            {/* Left Card: Club Information */}
+            {/* Left Card: Dominant Broadcast Card */}
             <div
               style={{
                 backgroundColor: 'var(--surface)',
                 border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-m)',
-                padding: '24px',
+                padding: '28px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '20px',
+                gap: '24px',
                 boxShadow: 'var(--shadow-1)',
+                position: 'relative',
+                overflow: 'hidden',
               }}
             >
+              {/* Skewed Accent stripe on top */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
+                  background: `linear-gradient(90deg, ${currentClub.colors.primary} 0 65%, ${currentClub.colors.secondary} 65% 100%)`,
+                }}
+              />
+
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '20px',
+                  gap: '24px',
                   borderBottom: '1px solid var(--border)',
                   paddingBottom: '20px',
                 }}
@@ -272,20 +309,45 @@ export const NewGameScreen: React.FC = () => {
                   code={currentClub.code}
                   primaryColor={currentClub.colors.primary}
                   secondaryColor={currentClub.colors.secondary}
-                  size={64}
+                  size={84}
                 />
                 <div>
                   <h2
                     style={{
-                      fontSize: '32px',
+                      fontSize: '38px',
                       fontFamily: 'var(--font-head)',
                       margin: 0,
+                      letterSpacing: '0.02em',
+                      lineHeight: 1,
                     }}
                   >
                     {currentClub.name}
                   </h2>
-                  <div style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-                    {currentClub.nickname} · Founded {currentClub.founded} · {currentClub.city}
+                  <div
+                    style={{
+                      color: 'var(--text-dim)',
+                      fontSize: '14px',
+                      marginTop: '6px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        padding: '2px 8px',
+                        backgroundColor: 'var(--surface-3)',
+                        borderRadius: '2px',
+                        color: 'var(--accent-text)',
+                        fontWeight: 600,
+                        fontSize: '12px',
+                      }}
+                    >
+                      {currentClub.nickname}
+                    </span>
+                    <span>Founded {currentClub.founded}</span>
+                    <span>·</span>
+                    <span>{currentClub.city}</span>
                   </div>
                 </div>
               </div>
@@ -299,8 +361,11 @@ export const NewGameScreen: React.FC = () => {
                 }}
               >
                 <div>
-                  <div className="broadcast-label" style={{ color: 'var(--text-dim)' }}>
-                    Reputation
+                  <div
+                    className="broadcast-label"
+                    style={{ color: 'var(--text-dim)', fontSize: '11px' }}
+                  >
+                    Reputation & Difficulty
                   </div>
                   <div
                     style={{
@@ -313,50 +378,43 @@ export const NewGameScreen: React.FC = () => {
                     {[1, 2, 3, 4, 5].map((s) => (
                       <Star
                         key={s}
-                        size={16}
+                        size={18}
                         fill={s <= currentClub.reputation ? 'var(--gold)' : 'transparent'}
                         color={s <= currentClub.reputation ? 'var(--gold)' : 'var(--text-faint)'}
                       />
                     ))}
-                    <span
-                      style={{
-                        marginLeft: '8px',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        color: 'var(--text-dim)',
-                      }}
-                    >
-                      ({REPUTATION_DIFFICULTY[currentClub.reputation]} difficulty)
+                    <span style={{ fontSize: '13px', marginLeft: '6px', color: 'var(--text-dim)' }}>
+                      ({REPUTATION_DIFFICULTY[currentClub.reputation]} Difficulty)
                     </span>
                   </div>
                 </div>
 
                 <div>
-                  <div className="broadcast-label" style={{ color: 'var(--text-dim)' }}>
-                    Stadium
-                  </div>
                   <div
-                    style={{
-                      fontSize: '15px',
-                      fontWeight: 600,
-                      marginTop: '4px',
-                    }}
+                    className="broadcast-label"
+                    style={{ color: 'var(--text-dim)', fontSize: '11px' }}
                   >
+                    Stadium & Capacity
+                  </div>
+                  <div style={{ fontSize: '16px', fontWeight: 600, marginTop: '4px' }}>
                     {currentClub.stadium.name}
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--text-faint)' }}>
-                    {currentClub.stadium.capacity.toLocaleString()} capacity
+                    {currentClub.stadium.capacity.toLocaleString()} seats
                   </div>
                 </div>
 
                 <div>
-                  <div className="broadcast-label" style={{ color: 'var(--text-dim)' }}>
+                  <div
+                    className="broadcast-label"
+                    style={{ color: 'var(--text-dim)', fontSize: '11px' }}
+                  >
                     Board Expectation
                   </div>
                   <div
                     style={{
                       fontSize: '15px',
-                      fontWeight: 600,
+                      fontWeight: 700,
                       marginTop: '4px',
                       color: 'var(--accent-text)',
                     }}
@@ -366,21 +424,20 @@ export const NewGameScreen: React.FC = () => {
                 </div>
 
                 <div>
-                  <div className="broadcast-label" style={{ color: 'var(--text-dim)' }}>
-                    Transfer Budget
+                  <div
+                    className="broadcast-label"
+                    style={{ color: 'var(--text-dim)', fontSize: '11px' }}
+                  >
+                    Initial Transfer Budget
                   </div>
                   <div
-                    className="stat-number"
-                    style={{
-                      fontSize: '16px',
-                      fontWeight: 700,
-                      marginTop: '4px',
-                    }}
+                    className="stat-number tabular-nums"
+                    style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px' }}
                   >
                     {formatMoney(currentClub.transferBudget)}
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--text-faint)' }}>
-                    Wage bill: {formatMoney(currentClub.wageBudget)}/wk
+                    Wage cap: {formatMoney(currentClub.wageBudget)}/wk
                   </div>
                 </div>
               </div>

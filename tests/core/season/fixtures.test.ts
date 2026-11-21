@@ -46,6 +46,24 @@ describe('Fixtures generator', () => {
     }
   });
 
+  it('no club plays the same opponent in consecutive matchdays (SPEC §10.3 / REVIEW B5)', () => {
+    for (const clubId of clubIds) {
+      for (let md = 1; md < 18; md++) {
+        const m1 = fixtures.find(
+          (f) => f.matchday === md && (f.homeId === clubId || f.awayId === clubId),
+        )!;
+        const opp1 = m1.homeId === clubId ? m1.awayId : m1.homeId;
+
+        const m2 = fixtures.find(
+          (f) => f.matchday === md + 1 && (f.homeId === clubId || f.awayId === clubId),
+        )!;
+        const opp2 = m2.homeId === clubId ? m2.awayId : m2.homeId;
+
+        expect(opp1).not.toBe(opp2);
+      }
+    }
+  });
+
   it('no club has more than 2 consecutive home or away matches (SPEC §10.3)', () => {
     for (const clubId of clubIds) {
       let homeStreak = 0;

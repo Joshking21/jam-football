@@ -1,5 +1,12 @@
 // Implements SPEC §13.6 Candidate Actions and Action Selection via Softmax & §13.17 Tactical Depth
-import { TeamInstructions, RoleId, PlayerInstruction, OppOrder, ForceOpp } from '../types';
+import {
+  TeamInstructions,
+  RoleId,
+  DefRoleId,
+  PlayerInstruction,
+  OppOrder,
+  ForceOpp,
+} from '../types';
 import { Third, Lane, isInBox } from './frames';
 import { Rng } from '../rng';
 import { K } from '@/config/balance';
@@ -40,6 +47,9 @@ export interface ActionSelectionContext {
   opponentPressingHigh?: boolean;
   defendingTeamForceOpp?: ForceOpp;
   isLeadingLateTimeWasting?: boolean;
+  defendingDefRoles?: DefRoleId[];
+  defendingLaneDefRole?: DefRoleId;
+  isPressBeaten?: boolean;
 }
 
 export function getLegalCandidateActions(
@@ -108,7 +118,7 @@ export function selectAction(
     const mult = K.d2.mentality.veryStepMultiplier;
     if (utilities.progress !== undefined) utilities.progress += 0.3 * mult;
     if (utilities.through !== undefined) utilities.through += 0.2 * mult;
-    if (utilities.shot !== undefined) utilities.shot += 0.2 * mult;
+    if (utilities.shot !== undefined) utilities.shot += 0.18 * mult;
     if (utilities.recycle !== undefined) utilities.recycle -= 0.3 * mult;
   }
 
@@ -239,7 +249,7 @@ export function selectAction(
         if (inBox && utilities.shot !== undefined) utilities.shot += 0.3 * gainScale;
         break;
       case 'pressing_forward':
-        if (utilities.shot !== undefined) utilities.shot -= 0.1;
+        if (utilities.shot !== undefined) utilities.shot -= 0.15;
         break;
       case 'false_nine':
         if (utilities.through !== undefined) utilities.through += 0.4 * gainScale;
@@ -294,14 +304,54 @@ export function selectAction(
     }
   }
 
+  // Tactical Depth: Defensive Roles Impact on Attacker Actions (§13.19.2)
+  if (ctx.defendingDefRoles && ctx.defendingDefRoles.length > 0) {
+    if (ctx.defendingDefRoles.includes('dm_drop')) {
+      if (third === 'ATT' && !inBox) {
+        utilities.shot = (utilities.shot ?? 0) + (K.droles.dm_drop.oppAttCentreShotUtil ?? 0.14);
+      }
+    }
+    if (ctx.defendingDefRoles.includes('st_shoulder') && third === 'DEF') {
+      if (utilities.recycle !== undefined) {
+        utilities.recycle += K.droles.st_shoulder.oppDefRecycleCtx ?? 0.2;
+      }
+    }
+    if (ctx.defendingDefRoles.includes('w_high')) {
+      if (third === 'MID' && lane === 'Centre') {
+        if (utilities.switch !== undefined) utilities.switch += 0.45;
+      }
+      if (lane !== 'Centre') {
+        if (utilities.progress !== undefined) utilities.progress += 0.25;
+        if (utilities.dribble !== undefined) utilities.dribble += 0.2;
+      }
+    }
+  }
+
+  if (ctx.isPressBeaten && utilities.progress !== undefined) {
+    utilities.progress += 0.2;
+  }
+
+  if (ctx.defendingLaneDefRole === 'fb_tuck' && lane !== 'Centre') {
+    if (utilities.cross !== undefined) {
+      utilities.cross += K.droles.fb_tuck.oppLaneCrossUtil ?? 0.2;
+    }
+  }
+
+  if (ctx.defendingLaneDefRole === 'w_high' && lane !== 'Centre') {
+    if (utilities.progress !== undefined) utilities.progress += 0.35;
+    if (utilities.through !== undefined) utilities.through += 0.3;
+    if (utilities.cross !== undefined) utilities.cross += 0.25;
+  }
+
   // Tactical Depth: Time-Wasting (SPEC §13.18.7)
   if (ctx.isLeadingLateTimeWasting) {
     if (utilities.recycle !== undefined) utilities.recycle += K.d2.timeWasting.recycleUtilAdd;
   }
 
   // Tactical Depth: Transitions & Distribution (§13.17.4)
-  if (ctx.isStepAfterRegroupWin && utilities.recycle !== undefined) {
-    utilities.recycle += 0.3;
+  if (ctx.isStepAfterRegroupWin) {
+    if (utilities.recycle !== undefined) utilities.recycle += 0.3;
+    if (utilities.progress !== undefined) utilities.progress += 0.2;
   }
   if (ctx.isStepsAfterKeepItWin && utilities.recycle !== undefined) {
     utilities.recycle += K.trans.keepIt.firstStepsRecycle;
@@ -313,10 +363,11 @@ export function selectAction(
   // Tactical Depth: Player Instructions (§13.17.11 & §13.18.9)
   if (ctx.holderPIs && ctx.holderPIs.length > 0) {
     if (ctx.holderPIs.includes('shootMore')) {
-      if (utilities.shot !== undefined) utilities.shot += 0.35;
+      if (utilities.shot !== undefined) utilities.shot += 0.25;
       else if ((third === 'MID' && lane === 'Centre') || (third === 'ATT' && lane !== 'Centre')) {
-        utilities.shot = 0.35;
+        utilities.shot = 0.25;
       }
+      if (utilities.recycle !== undefined) utilities.recycle -= 0.25;
     }
     if (ctx.holderPIs.includes('shootLess')) {
       if (!inBox && utilities.shot !== undefined) utilities.shot -= 0.35;
