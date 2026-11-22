@@ -4,7 +4,7 @@ Version 1.7 · 22 November 2026 · Target: OpenGame Game Jam #1 (entries close *
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
 
-**Changes in 1.7 (22 Nov):** the game becomes a club you live in. Every screen sits in a room of one 3D club building (office, boardroom, dressing room, tunnel, training ground, press room). The coach walks between rooms, and the player can look around each room with the mouse (§11.25). People share one rig and have painted face layers whose mouths move with their voices (§14.11). Players knock on the office door for conversations, Theo the assistant is a visible person, and the match gets touchline cuts of the coach and bench (§14.11). The coach is voiced (§17.4), and every room has its own sound (§17.5). New content file `club.json` (§16.9), asset contracts (§18.2, §18.3, §18.6), budgets (§21), and milestone **M6b** (§23). Depth still comes first: rooms frame the screens and never replace them. **Training in detail** (§12.18, M5 task 8): a planned week of sessions, personal plans, one-to-ones, training ratings and progress. **Set pieces in detail** (§13.20, M5 task 9): player jobs, routines, takers by foot, free kicks by area, defending corners and free kicks. **Touchline shouts, match plans and player traits** (§13.21–13.23, M5 task 10). A separate shape without the ball is listed in §24 as one of the last items. **Tactics returns to the sideways board** (v3 look, "v5 layout", §11.8); the v1.6 vertical three-column layout is withdrawn. Proposal record: `docs/design/SPEC-1.7-PROPOSAL.md`.
+**Changes in 1.7 (22 Nov):** the game becomes a club you live in. Every screen sits in a room of one 3D club building (office, boardroom, dressing room, tunnel, training ground, press room). The coach walks between rooms, and the player can look around each room with the mouse (§11.25). People share one rig and have painted face layers whose mouths move with their voices (§14.11). Players knock on the office door for conversations, Theo the assistant is a visible person, and the match gets touchline cuts of the coach and bench (§14.11). The coach is voiced (§17.4), and every room has its own sound (§17.5). New content file `club.json` (§16.9), asset contracts (§18.2, §18.3, §18.6), budgets (§21), and milestone **M6b** (§23). Depth still comes first: rooms frame the screens and never replace them. **Training in detail** (§12.18, M5 task 8): a planned week of sessions, personal plans, one-to-ones, training ratings and progress. **Set pieces in detail** (§13.20, M5 task 9): player jobs, routines, takers by foot, free kicks by area, defending corners and free kicks. **Touchline shouts, match plans and player traits** (§13.21–13.23, M5 task 10). **Injury and discipline decisions** (§12.19–12.20, M5 task 11): knocks, rushing players back, warm-up scares, and incidents (late, sent off, press, bust-ups) with fines, drops and warnings. Referees, contract talks and matchday atmosphere are in §24 as real-life extras, if time allows. A separate shape without the ball is listed in §24 as one of the last items. **Tactics returns to the sideways board** (v3 look, "v5 layout", §11.8); the v1.6 vertical three-column layout is withdrawn. Proposal record: `docs/design/SPEC-1.7-PROPOSAL.md`.
 
 **Changes in 1.6 (20 Nov):** the sidebar is gone: navigation moves into the top bar as tabs (§11.0, §19.6) on **every** screen, on air and office alike, like Football Manager. Office work screens fit the window with no page scroll. Tactics becomes three columns around a vertical board: the player's file (who he is) on the left, his orders (what he's told) on the right (§11.8, layout in `docs/design/tactics/README.md` "v4 layout"). New component RadarChart: the player's shape against what his role needs (§19.5).
 
@@ -1200,6 +1200,82 @@ Once per week the coach takes **one player** for a personal session on the train
 - **Default-week check:** the default week, Normal intensity and default player plans reproduce the M5.1 development numbers within ±3% over a 2,000-season-week sample.
 - **No-dominant-choice check:** no template beats the Balanced week on total OVR growth by more than 15% without paying for it in injuries or condition.
 - **Unit tests:** every session's growth list, sharpness, `weekLoad`, workload, extra sessions, mentoring, one-to-one effects and costs, training ratings, and the new conversation trigger.
+
+### 12.19 Injury decisions (v1.7, approved by the user 22 Nov; `core/player/injuries.ts`)
+The physio (staff, §12.17.1) brings the manager real calls to make. All decisions are scenes (§11.25.5), with the physio speaking (`club.json`, speaker `physio`, voiced; `person.glb`). Until M6b they show as a choice card on the current screen. All numbers go in `K.inj.*`. AI clubs always take the cautious option.
+
+#### 12.19.1 Knocks in a match
+- **What a knock is:** a separate event from §12.5 injuries, with hazard `0.6 × λ` (§12.5) and event `KNOCK`. The player goes down, and play stops at the next dead ball.
+- **The physio's read:** "He can carry on. About {pct}%." `pct` = 70–90, higher with better physio stars.
+- **Choices:**
+
+  | Choice | Effect |
+  |---|---|
+  | **Take him off** | substitution at that dead ball; no layoff, condition −10 |
+  | **Let him carry on** | his skill scores −0.3 while on the pitch; his §12.5 injury hazard ×4 for the rest of the match. If he gets injured, the severity rolls one level up (Minor → Moderate, Moderate → Major) |
+  | **Carry on until half-time** | only offered in the first half. Carry-on rules until 45', then he's replaced at half-time without using a window |
+
+- **Deciding:** live playback pauses on the choice. In Instant result, or if no subs remain, the default from the setting **"Knocks": Ask me (default) / Always take off / Play on if under 15' left** applies; when asking isn't possible, Ask me uses Always take off. The decision is a match command (`{ kind: 'knock'; side; playerId; decision; issuedAtT }`) with the usual rewind rules (§13.12), so it stays deterministic.
+- **In 3D:** the player sits on the grass, the physio jogs on (`person.glb`), and there's a touchline cut of the coach waiting.
+
+#### 12.19.2 Rushing a player back
+- **When it's offered:** a player with `matchdaysOut = 1` (one week from fit). At WeekSummary the physio knocks: "He's close. We could risk him this week."
+- **Choices:**
+  - **Wait** (default): normal recovery (§12.5).
+  - **Risk him:** he's available this matchday with condition 70 and a **"Not fully fit"** chip. For his next 2 matches: §12.5 hazard ×3 (× physio factor `1.2 − 0.08·stars`), and skill scores −0.1. If he breaks down, the same injury kind returns at `ceil(original matchdaysOut × 1.5)`, with an inbox memo and fans −1.
+- Theo comments when it's a derby or a top-3 opponent: "Big one. Your call, gaffer."
+
+#### 12.19.3 Warm-up scare
+- **When:** before each match, one starter has a "tight" muscle with chance 3% (×2 if his fatigue > 50, ×0.7 with a 4–5★ physio). It is a speaking beat in the dressing room before the team talk, then a choice.
+- **Choices:**
+  - **Start him:** his §12.5 hazard ×2.5 this match, skill −0.1.
+  - **Leave him out:** the best bench player for the slot (§13.13 rule) starts; he goes to the bench, or stands down if the bench is full.
+- Instant result uses Leave him out.
+
+#### 12.19.4 What shows up
+- An injury log on the player's file: kind, matchdays out, re-injuries, and whether he was rushed.
+- The squad injury-risk chip (§12.17.6) adds "rushed back" and "carried a knock" as reasons for 2 weeks.
+- Week Summary lists the decisions and how they turned out ("Risked Calder: came through 90 minutes").
+- **Calibration:** with Ask me answered cautiously, §13.16 targets and the season's injury count stay within ±10%. Knocks add ≤ 0.3 forced subs per team per match.
+- **Tests:** every choice's effect, the severity step-up, the re-injury length, the warm-up chance, the deterministic knock command, and the Instant defaults.
+
+### 12.20 Discipline decisions (v1.7, approved by the user 22 Nov; `core/people/incidents.ts`; bans stay in `core/player/discipline.ts`)
+Incidents the manager must deal with. Each is a scene (§11.25.5): the player is called to the office (or knocks), there are speaking beats, then the choice card. Theo may add one line of advice. Until M6b, it's a choice card on the current screen. All numbers go in `K.disc.*`. AI clubs don't simulate this.
+
+#### 12.20.1 Incidents
+| Incident | When | Chance |
+|---|---|---|
+| **Late for training** | WeekSummary, per player | 1.5% base; Relaxed ×2, Professional ×0.2, morale < 30 ×2, Extra sessions ×0.5 |
+| **Sent off** | after a match with our direct red or second yellow | always (one per red) |
+| **Mouthing off in the press** | WeekSummary, a player with morale < 30 and a broken promise or an "unhappy" conversation in the last 4 weeks | 30%; a back-page headline is generated (§16.6) |
+| **Training-ground bust-up** | WeekSummary when cohesion (§12.17.5) < 45; two players, at least one Temperamental | 10%; the incident involves both |
+
+At most one new incident per week (priority: sent off, bust-up, press, late). An incident must be dealt with before Continue (the Continue rule of §10.1).
+
+#### 12.20.2 Choices and effects
+Morale numbers are scaled by personality: Professional ×0.5 on negatives, Temperamental ×1.5, Leader ×0.8. Fines go to the club's balance.
+
+| Choice | Player | Dressing room | Other |
+|---|---|---|---|
+| **Fine him** (a week's wages; two for a repeat within 8 weeks) | morale −8 | cohesion +2 if the offence was clear (late, sent off, bust-up) | a repeat fine of a Temperamental player: 30% he asks to be transfer listed |
+| **Drop him** for the next match | morale −6, unavailable for selection | cohesion +1 | — |
+| **Warn him** | morale −2 | — | his chance of the same incident ×1.5 for 4 weeks |
+| **Let it go** | no change | leaders' morale −3, cohesion −2 | his chance of the same incident ×2 for 4 weeks |
+| *Press only:* **Answer him in public** | morale −10; 40% he asks to leave | — | fans +2 |
+| *Press only:* **Talk privately** | opens his §12.9 conversation now (with its own replies and effects) | — | — |
+| *Bust-up only:* **Side with the senior player** | the younger player's morale −8, the senior's +3 | — | — |
+| *Bust-up only:* **Team meeting** (both fined half a week) | both −3 | cohesion +3 | — |
+
+- **Consistency:** the game keeps a 6-week record of offences and punishments. If two players commit the same kind of offence and get different punishment levels (Let it go < Warn < Fine or Drop), cohesion −4 and a memo: "The lads think there's one rule for him and another for them." Leaders are exempt from nothing.
+- **Records:** a discipline record shows in the player's file. The inbox keeps each incident and its outcome, and the news covers fines of Star players.
+- **Tests:** incident chances, the one-per-week priority, each choice's effects, the personality scaling, the consistency rule, the fine to the balance, and the Continue block.
+
+#### 12.20.3 Content (`club.json` additions)
+- **Physio:** knock reads, rush-back offers, warm-up scares, outcomes. ≥ 3 lines each, voiced.
+- **Incidents:** the opener, per kind, ≥ 3 each.
+- **Coach lines** for every choice, voiced, `nameSlot` allowed.
+- **Player replies** per choice × personality group (calm, hot-headed): ≥ 2 each.
+- **Theo's advice** per incident: ≥ 2 each.
 
 ---
 
@@ -2686,6 +2762,7 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 8. **Training in detail (§12.18, v1.7):** the planned week and session library, templates, Theo's week, personal plans (workload, extra sessions, mentoring), one-to-one sessions (screen flow now, the 3D scene in M6b), training ratings and the new conversation trigger, progress arrows and the OVR line, overload memos, `training.json`, the Training screen (§11.9 v1.7) as a 2D screen until M6b frames it. Run the §12.18.12 checks. §12.18.11 (coaches per area) only after M7 is on track.
 9. **Set pieces in detail (§13.20, v1.7):** corner jobs and routines (Rotate, predictability, sharpness from training), takers and swing from the foot, free kicks by area, defending corners and free kicks, set-piece mode on the whiteboard, 3D placement, analysis, AI and assistant rules. Run the §13.20.10 checks.
 10. **Touchline shouts, match plans and player traits (§13.21–13.23, v1.7):** the shout command and HUD wheel, the match-plan sheet and engine rules with "Ask me first", traits in the data, world gen, engine, clashes, learning in training, and UI. The touchline cut for shouts comes in M6b. Re-run the §13.16 and §13.18.13 calibration with traits on.
+11. **Injury and discipline decisions (§12.19–12.20, v1.7):** knocks with the KNOCK event and command, rushing players back, warm-up scares, the Knocks setting, the injury log; discipline incidents, choices, the consistency rule, records; `club.json` physio and incident lines. Build them as choice cards on the current screens now; M6b turns them into talk scenes (§11.25.5).
 **Accept:** every system visibly changes something the player can see within a season; transfer window rounds behave per the tests; content files meet minimum counts.
 
 ### M6 — Assistant and audio (8–10 Dec)
@@ -2746,6 +2823,11 @@ Team-talk reactions, players at the door and room sound stay.
 ## 24. Out of scope (do not build) and stretch goals
 
 Out of scope for the jam build: online multiplayer, accounts, real-time "day/week" persistent modes, loans, youth academy intake, cups, staff hiring beyond §12.17.1, stadium upgrades, editor, mobile/touch, and the SPEC-1.4 Tier C items (a free-draw set-piece designer; the job-based one is §13.20; contract clauses, social groups).
+
+**Real-life extras (v1.7, approved by the user 22 Nov; only if time allows, after M6b is accepted and M7 is on track, in this order; write each as a short SPEC addition before starting):**
+1. **Referees with a personality:** a named referee per match, with strictness (lenient / normal / strict: yellow chance per foul ×0.8 / ×1 / ×1.25, penalty-for-box-foul chance ±10%) and an advantage habit. Shown in the Pre-Match report ("Strict: 4.6 yellows a game"), and the assistant factors it in ("Strict ref. Easy on the tackles.").
+2. **Real contract talks:** renewals and signings become a negotiation scene (§11.25.5) with the player's agent. Wage, years, a role promise and a signing bonus are proposed and countered over up to 3 rounds, with a walk-away point from the player's personality, ambition and the club's reputation. It replaces the single-line renewal in §12.9 and the Contract dialog in §11.10.
+3. **Matchday atmosphere:** crowd density follows the real attendance (§12.10), with away fans in their colours in one corner. A full-time handshake with the other manager (a touchline cut), and before derbies, the rival manager's jibes in the pre-match press (`press.json` context `RIVAL_QUOTE`).
 
 **Separate shape without the ball (v1.7, approved by the user 22 Nov as one of the last items):** start only when M5, M6, M6b and the club life extras below are done and M7 is on track. A plan can have a second formation for defending (for example, attack in 4-3-3 and defend in 4-4-2). The engine uses the defending formation's anchors and involvement when out of possession (§13.5, §14.3 out-of-possession shape), with defensive roles per its slots (§13.19.2). Familiarity is tracked for each formation pair. The switch costs a transition-shape penalty for the first 6 s after a turnover (their Counter ctx +0.05). Write the full rules as a SPEC addition before starting; a Claude design review is needed for the board's two-shape view.
 
