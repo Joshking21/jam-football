@@ -99,6 +99,8 @@ export function createNewGame(options: NewGameOptions): GameState {
     conversationsHistory: [],
     tutorial: { step: 1, done: !tutorialEnabled },
     pendingMatch: null,
+    pendingPress: null,
+    activePressCondition: null,
     awards: null,
     score: 0,
     counters: { news: 1, inbox: 2, offer: 0 },

@@ -5,21 +5,27 @@ import { useStore } from '../../state/store';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { Crest } from '../components/Crest';
+import { Portrait } from '../components/Portrait';
 import { Ticker } from '../components/Ticker';
-import { Award, ArrowRight, TrendingUp } from 'lucide-react';
+import { Award, ArrowRight, TrendingUp, MessageSquare, Radio } from 'lucide-react';
 import {
   TalkTone,
   getFullTimeTalkContext,
   predictTalkReaction,
   TALKS_DATA,
 } from '../../core/player/talks';
+import { PressAnswerResult } from '../../core/game/press';
 
 export const PostMatchScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
   const advanceGame = useStore((state) => state.advanceGame);
   const performTeamTalk = useStore((state) => state.performTeamTalk);
+  const answerPressQuestion = useStore((state) => state.answerPressQuestion);
+  const skipPressConference = useStore((state) => state.skipPressConference);
+  const showToast = useStore((state) => state.showToast);
 
   const [postMatchTalk, setPostMatchTalk] = useState<TalkTone>('Praise');
+  const [pressResult, setPressResult] = useState<PressAnswerResult | null>(null);
 
   if (!gameState) return null;
 
@@ -290,6 +296,211 @@ export const PostMatchScreen: React.FC = () => {
               </div>
             </div>
           </Panel>
+
+          {/* Post-Match Press Conference (§12.6, §16.2) */}
+          {(gameState.pendingPress || pressResult) && (
+            <Panel dominant title="MEDIA SUITE · POST-MATCH PRESS CONFERENCE">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {gameState.pendingPress && (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <Portrait
+                        assetPath={gameState.pendingPress.journalist.portrait}
+                        initials={gameState.pendingPress.journalist.initials}
+                        size={52}
+                      />
+                      <div>
+                        <div
+                          style={{
+                            fontSize: '18px',
+                            fontWeight: 700,
+                            fontFamily: 'var(--font-head)',
+                          }}
+                        >
+                          {gameState.pendingPress.journalist.name}
+                        </div>
+                        <div
+                          className="broadcast-label"
+                          style={{ color: 'var(--accent-text)', fontSize: '12px' }}
+                        >
+                          {gameState.pendingPress.journalist.outlet}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: '16px 20px',
+                        backgroundColor: 'var(--surface-2)',
+                        borderLeft: '4px solid var(--accent)',
+                        borderRadius: 'var(--radius-s)',
+                        fontSize: '15px',
+                        fontWeight: 600,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      "{gameState.pendingPress.question.text}"
+                    </div>
+
+                    {!pressResult ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div
+                          className="broadcast-label"
+                          style={{ fontSize: '11px', color: 'var(--text-dim)' }}
+                        >
+                          SELECT MANAGER RESPONSE:
+                        </div>
+                        {gameState.pendingPress.question.answers.map((ans) => (
+                          <button
+                            key={ans.id}
+                            onClick={() => {
+                              const res = answerPressQuestion(ans.id);
+                              if (res) {
+                                setPressResult(res);
+                                showToast(
+                                  `Press (${ans.tone}): Statement delivered to media`,
+                                  'success',
+                                );
+                              }
+                            }}
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '6px',
+                              padding: '14px 18px',
+                              backgroundColor: 'var(--surface-2)',
+                              border: '1px solid var(--border)',
+                              borderRadius: 'var(--radius-m)',
+                              textAlign: 'left',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.15s, border-color 0.15s',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = 'var(--surface-3)';
+                              e.currentTarget.style.borderColor = 'var(--accent)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'var(--surface-2)';
+                              e.currentTarget.style.borderColor = 'var(--border)';
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  textTransform: 'uppercase',
+                                  padding: '2px 8px',
+                                  backgroundColor: 'var(--accent-dim, rgba(242,183,5,0.15))',
+                                  color: 'var(--accent-text)',
+                                  borderRadius: 'var(--radius-xs)',
+                                }}
+                              >
+                                {ans.tone}
+                              </span>
+                              <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+                                {ans.effects.fans
+                                  ? `Fans ${ans.effects.fans > 0 ? '+' : ''}${ans.effects.fans} `
+                                  : ''}
+                                {ans.effects.board
+                                  ? `Board ${ans.effects.board > 0 ? '+' : ''}${ans.effects.board} `
+                                  : ''}
+                                {ans.effects.squadMorale
+                                  ? `Squad ${ans.effects.squadMorale > 0 ? '+' : ''}${ans.effects.squadMorale}`
+                                  : ''}
+                                {ans.effects.conditionalRisk
+                                  ? ` · ${ans.effects.conditionalRisk}`
+                                  : ''}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '14px', color: 'var(--text)' }}>
+                              "{ans.text}"
+                            </div>
+                          </button>
+                        ))}
+                        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                          <button
+                            onClick={() => {
+                              skipPressConference();
+                              showToast('Concluded press briefing with no comment', 'info');
+                            }}
+                            className="broadcast-label"
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--text-dim)',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              padding: '4px 0',
+                            }}
+                          >
+                            Walk out / No comment
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </>
+                )}
+
+                {pressResult && (
+                  <div
+                    style={{
+                      padding: '14px 18px',
+                      backgroundColor: 'var(--surface-2)',
+                      border: '1px solid var(--accent)',
+                      borderRadius: 'var(--radius-m)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          padding: '2px 8px',
+                          backgroundColor: 'var(--accent)',
+                          color: 'var(--accent-ink)',
+                          borderRadius: 'var(--radius-xs)',
+                        }}
+                      >
+                        {pressResult.tone}
+                      </span>
+                      <span style={{ fontSize: '12px', color: 'var(--win)', fontWeight: 600 }}>
+                        Statement Delivered
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '14px',
+                        fontStyle: 'italic',
+                        color: 'var(--text)',
+                      }}
+                    >
+                      "{pressResult.managerSpeech}"
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>
+                      Impact:{' '}
+                      {pressResult.fansDelta !== 0 &&
+                        `Fans ${pressResult.fansDelta > 0 ? '+' : ''}${pressResult.fansDelta} · `}
+                      {pressResult.boardDelta !== 0 &&
+                        `Board ${pressResult.boardDelta > 0 ? '+' : ''}${pressResult.boardDelta} · `}
+                      {pressResult.squadMoraleDelta !== 0 &&
+                        `Squad ${pressResult.squadMoraleDelta > 0 ? '+' : ''}${pressResult.squadMoraleDelta}`}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Panel>
+          )}
 
           {/* Continue button */}
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

@@ -1,0 +1,2221 @@
+{
+  "journalists": [
+    {
+      "id": "journo_1",
+      "name": "Priya Natarajan",
+      "outlet": "Meridian Sport",
+      "portrait": "images/people/journalist_1.webp",
+      "initials": "PN"
+    },
+    {
+      "id": "journo_2",
+      "name": "Joe Kettering",
+      "outlet": "The Saltmere Echo",
+      "portrait": "images/people/journalist_2.webp",
+      "initials": "JK"
+    },
+    {
+      "id": "journo_3",
+      "name": "Femi Adebayo-Clarke",
+      "outlet": "Coastline Radio",
+      "portrait": "images/people/journalist_3.webp",
+      "initials": "FA"
+    }
+  ],
+  "questions": [
+    {
+      "id": "pre_derby_01",
+      "context": ["PRE_DERBY"],
+      "text": "Big one against {opponent} this weekend. What does this derby mean to you and the supporters?",
+      "voText": "Big one against the rivals this weekend. What does this derby mean to you and the supporters?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Confident",
+          "text": "We are going there to win. The supporters deserve local bragging rights, and we will deliver.",
+          "voText": "We are going there to win. The supporters deserve local bragging rights, and we will deliver.",
+          "effects": {
+            "fans": 3,
+            "board": 1,
+            "squadMorale": 2,
+            "conditionalRisk": "If we lose, fans -3 extra",
+            "nextMatchCondition": {
+              "type": "lose",
+              "fansDelta": -3,
+              "boardDelta": -1
+            }
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Diplomatic",
+          "text": "It is three points like any other fixture, but we respect the passion and history behind it.",
+          "voText": "It is three points like any other fixture, but we respect the passion and history behind it.",
+          "effects": {
+            "fans": 0,
+            "board": 1,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Combative",
+          "text": "They have been talking in the papers all week. We intend to do our talking on the pitch.",
+          "voText": "They have been talking in the papers all week. We intend to do our talking on the pitch.",
+          "effects": {
+            "fans": 4,
+            "board": -1,
+            "squadMorale": 3,
+            "conditionalRisk": "If we lose, board -2 extra",
+            "nextMatchCondition": {
+              "type": "lose",
+              "fansDelta": -2,
+              "boardDelta": -2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "pre_derby_02",
+      "context": ["PRE_DERBY"],
+      "text": "Derby atmospheres can boil over quickly. How do you plan to keep your squad's discipline in check against {opponent}?",
+      "voText": "Derby atmospheres can boil over quickly. How do you plan to keep your squad's discipline in check?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Controlled",
+          "text": "Cold heads, warm hearts. We must play the match, not the occasion.",
+          "voText": "Cold heads, warm hearts. We must play the match, not the occasion.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Passionate",
+          "text": "I do not want them subdued. I want full-blooded commitment on every tackle from the first whistle.",
+          "voText": "I do not want them subdued. I want full-blooded commitment on every tackle from the first whistle.",
+          "effects": {
+            "fans": 3,
+            "board": 0,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Deflective",
+          "text": "That is for the referee to handle. My only focus is on our tactical execution.",
+          "voText": "That is for the referee to handle. My only focus is on our tactical execution.",
+          "effects": {
+            "fans": -1,
+            "board": 1,
+            "squadMorale": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "pre_derby_03",
+      "context": ["PRE_DERBY"],
+      "text": "The fans are treating this clash with {opponent} as the defining match of the campaign. Do you feel that pressure?",
+      "voText": "The fans are treating this clash as the defining match of the campaign. Do you feel that pressure?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Embracing",
+          "text": "Pressure is a privilege at this club. We embrace the expectations and want to make the town proud.",
+          "voText": "Pressure is a privilege at this club. We embrace the expectations and want to make the town proud.",
+          "effects": {
+            "fans": 3,
+            "board": 1,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Pragmatic",
+          "text": "It is an emotional week for the terraces, but the league table is decided over 18 matches, not one.",
+          "voText": "It is an emotional week for the terraces, but the league table is decided over 18 matches, not one.",
+          "effects": {
+            "fans": -2,
+            "board": 2,
+            "squadMorale": 0
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Confident",
+          "text": "The only pressure is on {opponent}. They know what happens when we click into top gear.",
+          "voText": "The only pressure is on them. They know what happens when we click into top gear.",
+          "effects": {
+            "fans": 4,
+            "board": 0,
+            "squadMorale": 2,
+            "nextMatchCondition": {
+              "type": "lose",
+              "fansDelta": -4,
+              "boardDelta": -1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "pre_derby_04",
+      "context": ["PRE_DERBY"],
+      "text": "{opponent} have set up defensively in recent derbies. Will you take the initiative and attack them from the off?",
+      "voText": "The opposition have set up defensively in recent derbies. Will you take the initiative and attack them?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Attacking",
+          "text": "We are at home on our own patch. We will dictate the tempo and pin them back.",
+          "voText": "We will dictate the tempo and pin them back from the very start.",
+          "effects": {
+            "fans": 3,
+            "board": 1,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Patient",
+          "text": "Derbies are won in the final half hour. We will be measured, probe for openings, and punish errors.",
+          "voText": "Derbies are won in the final half hour. We will be measured and punish errors.",
+          "effects": {
+            "fans": 0,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Dismissive",
+          "text": "Let them park whatever they like. We have the quality to break down any low block.",
+          "voText": "Let them park whatever they like. We have the quality to break down any low block.",
+          "effects": {
+            "fans": 2,
+            "board": 0,
+            "squadMorale": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_win_01",
+      "context": ["POST_WIN"],
+      "text": "Three points in the bag today after a hard-fought contest with {opponent}. What pleased you most about that performance?",
+      "voText": "Three points in the bag today after a hard-fought contest. What pleased you most about that performance?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Praising",
+          "text": "The collective work rate. Every single lad put his body on the line for the badge today.",
+          "voText": "The collective work rate. Every single lad put his body on the line today.",
+          "effects": {
+            "fans": 2,
+            "board": 1,
+            "squadMorale": 3
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Grounded",
+          "text": "We got the result, which matters most, but there are still details in possession we need to sharpen.",
+          "voText": "We got the result, but there are still details in possession we need to sharpen.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 0
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Enthusiastic",
+          "text": "That was pure football at times. When we move the ball with that speed, few teams in this division can live with us.",
+          "voText": "That was pure football at times. When we move the ball with that speed, few can live with us.",
+          "effects": {
+            "fans": 3,
+            "board": 1,
+            "squadMorale": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_win_02",
+      "context": ["POST_WIN"],
+      "text": "Your defensive unit held firm when {opponent} pushed late on. How vital was that resilience?",
+      "voText": "Your defensive unit held firm when the opposition pushed late on. How vital was that resilience?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Praising",
+          "text": "Immensely proud. A clean sheet builds the bedrock of any successful campaign.",
+          "voText": "Immensely proud. A clean sheet builds the bedrock of any successful campaign.",
+          "effects": {
+            "fans": 2,
+            "board": 2,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Calm",
+          "text": "That is standard expectation at this level. You have to suffer together to see matches out.",
+          "voText": "That is standard expectation at this level. You have to suffer together to see matches out.",
+          "effects": {
+            "fans": 1,
+            "board": 1,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Demanding",
+          "text": "We dropped too deep for my liking in the final ten minutes. We must learn to kill games with the ball.",
+          "voText": "We dropped too deep for my liking. We must learn to kill games with the ball.",
+          "effects": {
+            "fans": 0,
+            "board": 1,
+            "squadMorale": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_win_03",
+      "context": ["POST_WIN"],
+      "text": "The supporters were in fine voice today celebrating that win. How much energy did the touchline draw from them?",
+      "voText": "The supporters were in fine voice today celebrating that win. How much energy did the touchline draw from them?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Appreciative",
+          "text": "They were our twelfth man out there. That victory belongs to everyone in the stands.",
+          "voText": "They were our twelfth man out there. That victory belongs to everyone in the stands.",
+          "effects": {
+            "fans": 4,
+            "board": 1,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Professional",
+          "text": "Great backing, but the players generated that momentum with their intensity right from kickoff.",
+          "voText": "Great backing, but the players generated that momentum with their intensity.",
+          "effects": {
+            "fans": 1,
+            "board": 1,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Focused",
+          "text": "It was wonderful noise, but we cannot get carried away. Next weekend is another test entirely.",
+          "voText": "It was wonderful noise, but we cannot get carried away. Next week is another test.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_win_04",
+      "context": ["POST_WIN"],
+      "text": "Tactically, your second-half adjustments seemed to unlock the match against {opponent}. Was that the plan all along?",
+      "voText": "Tactically, your second-half adjustments seemed to unlock the match. Was that the plan all along?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Tactical",
+          "text": "We noticed their full-backs cheating forward, so we exploited the space behind into the channels.",
+          "voText": "We noticed space behind their full-backs, so we exploited the channels.",
+          "effects": {
+            "fans": 2,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Modest",
+          "text": "Managers can sketch diagrams all day, but it was the boys executing the passes under pressure.",
+          "voText": "It was the boys executing the passes under pressure that won it.",
+          "effects": {
+            "fans": 1,
+            "board": 1,
+            "squadMorale": 3
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Bold",
+          "text": "We prepared specifically for their shape throughout training. Complete credit to the analysis team.",
+          "voText": "We prepared specifically for their shape. Complete credit to the preparation.",
+          "effects": {
+            "fans": 1,
+            "board": 3,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_big_win_01",
+      "context": ["POST_BIG_WIN"],
+      "text": "An emphatic {score} victory! That was as comprehensive a dismantling of {opponent} as we have seen all season. Are you in dreamland?",
+      "voText": "An emphatic victory! That was as comprehensive a dismantling as we have seen all season. Are you in dreamland?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Exuberant",
+          "text": "Everything we touched turned to gold. That is the benchmark for what this squad is truly capable of.",
+          "voText": "Everything we touched turned to gold. That is the benchmark for what this squad is capable of.",
+          "effects": {
+            "fans": 4,
+            "board": 2,
+            "squadMorale": 4
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Guarded",
+          "text": "It is three points, no more and no less. We will enjoy tonight, but come Monday our feet are planted firmly on the turf.",
+          "voText": "It is three points, no more and no less. Come Monday our feet are firmly on the turf.",
+          "effects": {
+            "fans": 1,
+            "board": 3,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Ambitious",
+          "text": "This sends a loud message across the Meridian League. We are not here just to take part.",
+          "voText": "This sends a loud message across the league. We are not here just to take part.",
+          "effects": {
+            "fans": 5,
+            "board": 1,
+            "squadMorale": 3,
+            "nextMatchCondition": {
+              "type": "lose",
+              "fansDelta": -2,
+              "boardDelta": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_big_win_02",
+      "context": ["POST_BIG_WIN"],
+      "text": "Scoring for fun today! What clicked so devastatingly in the final third against {opponent}?",
+      "voText": "Scoring for fun today! What clicked so devastatingly in the final third?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Praising",
+          "text": "Ruthless finishing. We created high-value chances and punished every single mistake they made.",
+          "voText": "Ruthless finishing. We created high-value chances and punished their mistakes.",
+          "effects": {
+            "fans": 3,
+            "board": 2,
+            "squadMorale": 3
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Analytical",
+          "text": "Our spacing between the lines was exceptional. We pulled their centre-backs out of comfort zones.",
+          "voText": "Our spacing between the lines was exceptional and pulled them out of shape.",
+          "effects": {
+            "fans": 2,
+            "board": 2,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Demanding",
+          "text": "Could have had six or seven if we were truly clinical. But I cannot complain after a display like that.",
+          "voText": "Could have had six or seven if truly clinical. But I cannot complain after that.",
+          "effects": {
+            "fans": 2,
+            "board": 1,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_big_win_03",
+      "context": ["POST_BIG_WIN"],
+      "text": "The goal difference column just received a massive injection. Could that prove decisive come matchday 18?",
+      "voText": "The goal difference column just received a massive injection. Could that prove decisive late in the season?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Realistic",
+          "text": "It is worth an extra point at the end of the year, absolutely. Every goal matters in this dogfight.",
+          "voText": "It is worth an extra point at the end of the year, absolutely. Every goal matters.",
+          "effects": {
+            "fans": 2,
+            "board": 2,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Focused",
+          "text": "I do not look at goal difference right now. I look at points on the board and how we perform next week.",
+          "voText": "I do not look at goal difference right now. I look at points on the board.",
+          "effects": {
+            "fans": 0,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Inspiring",
+          "text": "When we attack with that swagger, nobody can withstand us. We want this club feared.",
+          "voText": "When we attack with that swagger, nobody can withstand us. We want this club feared.",
+          "effects": {
+            "fans": 4,
+            "board": 1,
+            "squadMorale": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_big_win_04",
+      "context": ["POST_BIG_WIN"],
+      "text": "You were able to take key men off early and manage workloads after blowing {opponent} away. How valuable is that squad management?",
+      "voText": "You were able to rotate early and manage workloads after that scoreline. How valuable is that?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Sensible",
+          "text": "Vital. The calendar is gruelling and keeping the legs fresh will pay dividends over the winter.",
+          "voText": "Vital. The calendar is gruelling and keeping the legs fresh will pay dividends.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Squad-first",
+          "text": "The players who came off the bench maintained the exact same intensity. We have real competition for places.",
+          "voText": "The players who came off the bench maintained the exact same intensity. Great squad depth.",
+          "effects": {
+            "fans": 2,
+            "board": 2,
+            "squadMorale": 3
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Ruthless",
+          "text": "I told the substitutes they had twenty minutes to show me why they should start next match.",
+          "voText": "I told the substitutes they had twenty minutes to show why they should start.",
+          "effects": {
+            "fans": 2,
+            "board": 1,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_draw_01",
+      "context": ["POST_DRAW"],
+      "text": "Honours even after a tight {score} stalemate against {opponent}. Is that a point gained or two points dropped?",
+      "voText": "Honours even after a tight stalemate today. Is that a point gained or two points dropped?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Frustrated",
+          "text": "Two points dropped, without question. We had the openings to kill the game and lacked composure.",
+          "voText": "Two points dropped, without question. We had openings to kill the game and lacked composure.",
+          "effects": {
+            "fans": -1,
+            "board": 0,
+            "squadMorale": -1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Pragmatic",
+          "text": "A point gained. When you cannot win, you ensure you do not lose. That keeps the tally moving.",
+          "voText": "A point gained. When you cannot win, you ensure you do not lose.",
+          "effects": {
+            "fans": 1,
+            "board": 1,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Fair",
+          "text": "A draw was a fair reflection of the ninety minutes. Both teams cancelled each other out tactically.",
+          "voText": "A draw was a fair reflection. Both teams cancelled each other out tactically.",
+          "effects": {
+            "fans": 0,
+            "board": 1,
+            "squadMorale": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_draw_02",
+      "context": ["POST_DRAW"],
+      "text": "{opponent} broke your rhythm with repeated fouls in midfield today. Did the referee allow too much to go unpunished?",
+      "voText": "The opposition broke your rhythm with repeated fouls in midfield. Did the referee allow too much?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Combative",
+          "text": "It was cynical stoppage of play. If officials do not protect technical players, the standard suffers.",
+          "voText": "It was cynical stoppage of play. Officials have to protect technical players.",
+          "effects": {
+            "fans": 2,
+            "board": -1,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Diplomatic",
+          "text": "Referees have a thankless job. We should have moved the ball quicker to avoid those challenges.",
+          "voText": "Referees have a thankless job. We should have moved the ball quicker.",
+          "effects": {
+            "fans": -1,
+            "board": 2,
+            "squadMorale": 0
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Resilient",
+          "text": "This is men's football. If teams want to turn it into an arm-wrestle, we have to stand up to it.",
+          "voText": "This is men's football. If teams want to make it an arm-wrestle, we stand up to it.",
+          "effects": {
+            "fans": 1,
+            "board": 1,
+            "squadMorale": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_draw_03",
+      "context": ["POST_DRAW"],
+      "text": "Chances were at a premium at both ends today. Did you feel your forward line lacked incisiveness?",
+      "voText": "Chances were at a premium at both ends today. Did you feel your forward line lacked incisiveness?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Protective",
+          "text": "Our strikers worked tirelessly off the ball. The final delivery into the box simply was not there.",
+          "voText": "Our strikers worked tirelessly off the ball. The final delivery was not there.",
+          "effects": {
+            "fans": 0,
+            "board": 0,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Critical",
+          "text": "We were toothless in the final third. We need more bravery in taking defenders on one-versus-one.",
+          "voText": "We were toothless in the final third. We need more bravery in taking defenders on.",
+          "effects": {
+            "fans": 1,
+            "board": 0,
+            "squadMorale": -2
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Measured",
+          "text": "Credit to their defensive structure. They gave away virtually nothing in the danger areas.",
+          "voText": "Credit to their defensive structure. They gave away virtually nothing.",
+          "effects": {
+            "fans": -1,
+            "board": 1,
+            "squadMorale": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_draw_04",
+      "context": ["POST_DRAW"],
+      "text": "You made late substitutions trying to snatch all three points. Did you ever consider shutting up shop to protect the draw?",
+      "voText": "You made late substitutions trying to snatch a win. Did you ever consider shutting up shop?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Bold",
+          "text": "I manage to win football matches, not to preserve points. We will always roll the dice if there is time.",
+          "voText": "I manage to win football matches, not preserve points. We will always roll the dice.",
+          "effects": {
+            "fans": 3,
+            "board": 0,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Pragmatic",
+          "text": "We wanted to inject fresh legs without destabilising our balance at the back. It was a calculated risk.",
+          "voText": "We wanted fresh legs without destabilising our balance at the back.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Honest",
+          "text": "In hindsight, maybe we got caught between two minds in stoppage time. We will review the tape.",
+          "voText": "In hindsight, maybe we got caught between two minds. We will review the tape.",
+          "effects": {
+            "fans": -1,
+            "board": 1,
+            "squadMorale": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_loss_01",
+      "context": ["POST_LOSS"],
+      "text": "A bitter pill to swallow today as {opponent} walk away with the points. Where did it slip away from your side?",
+      "voText": "A bitter pill to swallow today as the opposition walk away with the points. Where did it slip away?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Accountable",
+          "text": "That is on me. My tactical setup in the first half gave them too much initiative in central areas.",
+          "voText": "That is on me. My tactical setup in the first half gave them too much initiative.",
+          "effects": {
+            "fans": 1,
+            "board": -1,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Critical",
+          "text": "Individual mistakes cost us dearly. At this level, if you switch off for five seconds you get punished.",
+          "voText": "Individual mistakes cost us dearly. Switch off for five seconds and you get punished.",
+          "effects": {
+            "fans": 1,
+            "board": 0,
+            "squadMorale": -3
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Defiant",
+          "text": "Fine margins decided it. We struck the woodwork and their goalkeeper had the game of his life.",
+          "voText": "Fine margins decided it. We struck the woodwork and their goalkeeper was inspired.",
+          "effects": {
+            "fans": -1,
+            "board": 0,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_loss_02",
+      "context": ["POST_LOSS"],
+      "text": "The supporters made their displeasure heard on the final whistle. Do you understand their frustration?",
+      "voText": "The supporters made their displeasure heard on the final whistle. Do you understand their frustration?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Empathetic",
+          "text": "One hundred percent. They pay good money to watch this team, and that was nowhere near acceptable.",
+          "voText": "One hundred percent. They pay good money, and that was nowhere near acceptable.",
+          "effects": {
+            "fans": 3,
+            "board": 0,
+            "squadMorale": -1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Protective",
+          "text": "Jeering the players will not help their confidence. Direct the boos at me, not the lads on the pitch.",
+          "voText": "Jeering will not help. Direct the frustration at me, not the lads on the pitch.",
+          "effects": {
+            "fans": -1,
+            "board": 0,
+            "squadMorale": 3
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Resolute",
+          "text": "Fans react emotionally in the moment. Our job is to stay analytical, work hard on the training ground, and fix it.",
+          "voText": "Fans react emotionally. Our job is to stay analytical, work hard, and fix it.",
+          "effects": {
+            "fans": 0,
+            "board": 2,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_loss_03",
+      "context": ["POST_LOSS"],
+      "text": "Your team conceded from a set piece again today against {opponent}. Is that becoming a psychological blind spot?",
+      "voText": "Your team conceded from a set piece again today. Is that becoming a psychological blind spot?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Frustrated",
+          "text": "We drill set pieces for hours every week. Conceding soft goals like that is unacceptable.",
+          "voText": "We drill set pieces for hours. Conceding soft goals like that is unacceptable.",
+          "effects": {
+            "fans": 1,
+            "board": 0,
+            "squadMorale": -2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Calm",
+          "text": "It was a fantastic delivery and somebody lost their runner. It happens, but we will correct the marking scheme.",
+          "voText": "It was a fantastic delivery and somebody lost a runner. We will correct the marking.",
+          "effects": {
+            "fans": 0,
+            "board": 1,
+            "squadMorale": 0
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Combative",
+          "text": "There was a blatant block on our goalkeeper that the referee chose to ignore.",
+          "voText": "There was a blatant block on our goalkeeper that the referee chose to ignore.",
+          "effects": {
+            "fans": 2,
+            "board": -1,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_loss_04",
+      "context": ["POST_LOSS"],
+      "text": "How do you pick this dressing room up before next week's crucial fixture?",
+      "voText": "How do you pick this dressing room up before next week's crucial fixture?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Constructive",
+          "text": "We do not dwell on misery. We dissect the video honestly, identify the lapses, and put it right.",
+          "voText": "We do not dwell on misery. We dissect the video honestly and put it right.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Demanding",
+          "text": "Some of them need a rude awakening. Shirts are not handed out as birthrights at {club}.",
+          "voText": "Some of them need a rude awakening. Starting shirts must be earned.",
+          "effects": {
+            "fans": 2,
+            "board": 0,
+            "squadMorale": -3
+          }
+        },
+        {
+          "id": "c",
+          "tone": "United",
+          "text": "We stay together. You learn more about your squad in moments of adversity than in comfortable wins.",
+          "voText": "We stay together. You learn more about your squad in adversity than in comfortable wins.",
+          "effects": {
+            "fans": 1,
+            "board": 1,
+            "squadMorale": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_big_loss_01",
+      "context": ["POST_BIG_LOSS"],
+      "text": "A dreadful afternoon for {club}, soundly beaten {score} by {opponent}. How do you explain a collapse of that magnitude?",
+      "voText": "A dreadful afternoon, soundly beaten by the opposition. How do you explain a collapse of that magnitude?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Furious",
+          "text": "Shambolic. Complete lack of backbone and leadership out there. Heads dropped and we capitulated.",
+          "voText": "Shambolic. Complete lack of backbone and leadership out there. We capitulated.",
+          "effects": {
+            "fans": 3,
+            "board": -1,
+            "squadMorale": -4
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Apologetic",
+          "text": "I can only apologise to the travelling fans. That was humiliating and does not represent what we stand for.",
+          "voText": "I can only apologise to the supporters. That was humiliating and nowhere near good enough.",
+          "effects": {
+            "fans": 2,
+            "board": -2,
+            "squadMorale": -1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Analytical",
+          "text": "When the second goal went in, our structural discipline evaporated. We chased shadows.",
+          "voText": "When the second goal went in, our structural discipline evaporated.",
+          "effects": {
+            "fans": -1,
+            "board": 1,
+            "squadMorale": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_big_loss_02",
+      "context": ["POST_BIG_LOSS"],
+      "text": "Questions are inevitably going to be asked about your future following a scoreline like that. Do you still retain the board's backing?",
+      "voText": "Questions are inevitably going to be asked following that scoreline. Do you still retain the board's backing?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Defiant",
+          "text": "One horrific ninety minutes does not wipe away the project we are building. I know how to fix this.",
+          "voText": "One horrific ninety minutes does not wipe away our project. I know how to fix this.",
+          "effects": {
+            "fans": -1,
+            "board": 1,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Realistic",
+          "text": "That is in the board's hands. All I can do is work every waking hour to turn this tide.",
+          "voText": "That is in the board's hands. All I can do is work every waking hour to turn this tide.",
+          "effects": {
+            "fans": 0,
+            "board": 0,
+            "squadMorale": 0
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Aggressive",
+          "text": "You journalists love writing obituaries after one heavy defeat. Judge us at the end of the season.",
+          "voText": "You love writing obituaries after one heavy defeat. Judge us at the end of the season.",
+          "effects": {
+            "fans": 2,
+            "board": -2,
+            "squadMorale": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_big_loss_03",
+      "context": ["POST_BIG_LOSS"],
+      "text": "Several senior figures looked visibly shell-shocked in the second half. Will there be wholesale changes to the lineup?",
+      "voText": "Several senior figures looked shell-shocked today. Will there be wholesale changes to the lineup?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Ruthless",
+          "text": "Nobody is untouchable. If senior players will not lead by example, younger lads will take their places.",
+          "voText": "Nobody is untouchable. If senior players will not lead, younger lads will play.",
+          "effects": {
+            "fans": 3,
+            "board": 0,
+            "squadMorale": -3
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Measured",
+          "text": "Knee-jerk reactions solve nothing. We must look at fatigue, tactical balance, and select the right profile.",
+          "voText": "Knee-jerk reactions solve nothing. We must look at tactical balance and select the right profile.",
+          "effects": {
+            "fans": -1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Supportive",
+          "text": "These same players have won us matches before. I back them to respond with pride next week.",
+          "voText": "These same players have won us matches before. I back them to respond with pride.",
+          "effects": {
+            "fans": -2,
+            "board": 0,
+            "squadMorale": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_big_loss_04",
+      "context": ["POST_BIG_LOSS"],
+      "text": "The defending was called 'schoolboy' on national broadcast commentary. Does that stinging criticism hurt?",
+      "voText": "The defending was called schoolboy on live broadcast commentary. Does that stinging criticism hurt?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Candid",
+          "text": "They were right. In fact, schoolboys might have defended set pieces with more desire than we did today.",
+          "voText": "They were right. Schoolboys might have defended set pieces with more desire.",
+          "effects": {
+            "fans": 2,
+            "board": -1,
+            "squadMorale": -3
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Dismissive",
+          "text": "Pundits sit in warm studios with slow-motion replays. I could not care less what they say.",
+          "voText": "Pundits sit in warm studios with slow-motion replays. I could not care less what they say.",
+          "effects": {
+            "fans": 1,
+            "board": 0,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Focused",
+          "text": "Words do not matter now. Only our reaction on the training pitch and the pitch next week counts.",
+          "voText": "Words do not matter now. Only our reaction on the pitch counts.",
+          "effects": {
+            "fans": 1,
+            "board": 1,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_upset_win_01",
+      "context": ["POST_UPSET_WIN"],
+      "text": "You tore up the script today! Beating heavy favourites {opponent} when nobody gave you a prayer. How did you pull it off?",
+      "voText": "You tore up the script today! Beating heavy favourites when nobody gave you a prayer. How did you pull it off?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Tactical",
+          "text": "We neutralized their key playmakers and hit them on the break with surgical precision.",
+          "voText": "We neutralized their key playmakers and hit them on the break with precision.",
+          "effects": {
+            "fans": 3,
+            "board": 3,
+            "squadMorale": 3
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Inspiring",
+          "text": "Heart, desire, and belief. Reputation does not win football matches\u2014sweat on the grass does.",
+          "voText": "Heart, desire, and belief. Reputation does not win matches\u2014sweat on the grass does.",
+          "effects": {
+            "fans": 5,
+            "board": 2,
+            "squadMorale": 4
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Humble",
+          "text": "A massive achievement for our club, but we must stay humble and remember who we are.",
+          "voText": "A massive achievement for our club, but we must stay humble and remember who we are.",
+          "effects": {
+            "fans": 2,
+            "board": 2,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_upset_win_02",
+      "context": ["POST_UPSET_WIN"],
+      "text": "{opponent} had vastly superior resources and squad valuation. Does this victory prove that money cannot buy chemistry?",
+      "voText": "The opposition had vastly superior resources. Does this victory prove money cannot buy chemistry?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Passionate",
+          "text": "Football is about soul and brotherhood. You cannot buy dressing room unity in a transfer window.",
+          "voText": "Football is about soul and brotherhood. You cannot buy unity in a transfer window.",
+          "effects": {
+            "fans": 4,
+            "board": 2,
+            "squadMorale": 3
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Diplomatic",
+          "text": "They are a top club with great players, but over ninety minutes in our stadium, anything can happen.",
+          "voText": "They are a top club, but over ninety minutes in our stadium, anything can happen.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Cheeky",
+          "text": "I hope their accountant enjoyed our goals as much as the home supporters did.",
+          "voText": "I hope their boardroom enjoyed our goals as much as the home supporters did.",
+          "effects": {
+            "fans": 4,
+            "board": 0,
+            "squadMorale": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_upset_win_03",
+      "context": ["POST_UPSET_WIN"],
+      "text": "Can this result be the catalyst that transforms your entire season from survival to something greater?",
+      "voText": "Can this result be the catalyst that transforms your entire season into something greater?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Ambitious",
+          "text": "Why not? If we can beat {opponent}, we can beat anyone in the Meridian League on our day.",
+          "voText": "Why not? If we can beat them, we can beat anyone in the league on our day.",
+          "effects": {
+            "fans": 4,
+            "board": 1,
+            "squadMorale": 3,
+            "nextMatchCondition": {
+              "type": "lose",
+              "fansDelta": -2,
+              "boardDelta": 0
+            }
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Grounded",
+          "text": "Only if we back it up next week against less glamorous opposition. That is the real test of character.",
+          "voText": "Only if we back it up next week against less glamorous opposition. That is the test.",
+          "effects": {
+            "fans": 1,
+            "board": 3,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Proud",
+          "text": "Let us savour tonight first. Nights like this are why people fall in love with {club}.",
+          "voText": "Let us savour tonight first. Nights like this are why people fall in love with our club.",
+          "effects": {
+            "fans": 3,
+            "board": 1,
+            "squadMorale": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "post_upset_win_04",
+      "context": ["POST_UPSET_WIN"],
+      "text": "The away dugout seemed stunned at the final whistle. Did you catch any words with their manager?",
+      "voText": "The away dugout seemed stunned at the final whistle. Did you catch any words with their manager?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Respectful",
+          "text": "A brief handshake. He was courteous and acknowledged we deserved the points on the day.",
+          "voText": "A brief handshake. He was courteous and acknowledged we deserved the points.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Combative",
+          "text": "He seemed more interested in complaining about the grass length than crediting my team.",
+          "voText": "He seemed more interested in complaining about the pitch than crediting my team.",
+          "effects": {
+            "fans": 3,
+            "board": -1,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Dismissive",
+          "text": "I was celebrating with our supporters. That is who matters to me.",
+          "voText": "I was celebrating with our supporters. That is who matters to me.",
+          "effects": {
+            "fans": 3,
+            "board": 0,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "streak_win_01",
+      "context": ["STREAK_WIN"],
+      "text": "Three wins on the spin now for {club}! Momentum is building at a rapid rate. Can anyone stop you right now?",
+      "voText": "Three wins on the spin now! Momentum is building at a rapid rate. Can anyone stop you right now?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Confident",
+          "text": "When we get rolling like this, confidence becomes infectious. We want four, five, six.",
+          "voText": "When we get rolling like this, confidence is infectious. We want more.",
+          "effects": {
+            "fans": 3,
+            "board": 2,
+            "squadMorale": 3,
+            "nextMatchCondition": {
+              "type": "lose",
+              "fansDelta": -2,
+              "boardDelta": 0
+            }
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Cautionary",
+          "text": "Complacency is our greatest enemy. The moment you think you have cracked it, football bites you.",
+          "voText": "Complacency is our greatest enemy. The moment you think you cracked it, football bites you.",
+          "effects": {
+            "fans": 1,
+            "board": 3,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Praising",
+          "text": "All credit to the players' conditioning and focus. They have bought into our philosophy completely.",
+          "voText": "All credit to the players' conditioning and focus. They bought into our philosophy completely.",
+          "effects": {
+            "fans": 2,
+            "board": 2,
+            "squadMorale": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "streak_win_02",
+      "context": ["STREAK_WIN"],
+      "text": "Talk among the fans is already turning to promotion and silverware. Are you having to dampen expectations?",
+      "voText": "Talk among the fans is turning to promotion and silverware. Are you dampening expectations?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Permissive",
+          "text": "Let the fans dream! They have endured lean times here. Inside the building we remain laser-focused.",
+          "voText": "Let the fans dream! Inside the building we remain laser-focused.",
+          "effects": {
+            "fans": 4,
+            "board": 1,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Pragmatic",
+          "text": "Nothing is won in the autumn. We have not even crossed the halfway mark of the season yet.",
+          "voText": "Nothing is won early on. We have not crossed the halfway mark of the season yet.",
+          "effects": {
+            "fans": -1,
+            "board": 2,
+            "squadMorale": 0
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Ambitious",
+          "text": "We did not come here to make up the numbers. If we are in the hunt, we will go for the throat.",
+          "voText": "We did not come here to make up the numbers. We want to contend for honours.",
+          "effects": {
+            "fans": 3,
+            "board": 1,
+            "squadMorale": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "streak_win_03",
+      "context": ["STREAK_WIN"],
+      "text": "Your squad appears noticeably fitter than opponents in the closing fifteen minutes of matches during this run. Is that intentional?",
+      "voText": "Your squad appears noticeably fitter in the closing stages during this run. Is that intentional?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Proud",
+          "text": "The sports science and conditioning staff deserve immense plaudits. We overpower sides late on.",
+          "voText": "The sports science staff deserve immense plaudits. We overpower sides late on.",
+          "effects": {
+            "fans": 2,
+            "board": 3,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Tactical",
+          "text": "It is about efficiency of movement. We let the ball do the running instead of chasing headless chickens.",
+          "voText": "It is about efficiency of movement. We let the ball do the work.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Demanding",
+          "text": "If you cannot run for ninety minutes at full tilt in my team, you do not play. Simple as that.",
+          "voText": "If you cannot run for ninety minutes at full tilt in my team, you do not play.",
+          "effects": {
+            "fans": 2,
+            "board": 1,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "streak_win_04",
+      "context": ["STREAK_WIN"],
+      "text": "Winning breeds winning, but it also paints a target on your back. Expecting teams to sit ten men behind the ball now?",
+      "voText": "Winning paints a target on your back. Expecting teams to sit ten men behind the ball now?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Prepared",
+          "text": "We have worked tirelessly on attacking variations and positional interchanges against low blocks.",
+          "voText": "We have worked on attacking variations and positional interchanges against low blocks.",
+          "effects": {
+            "fans": 2,
+            "board": 2,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Challenging",
+          "text": "Let them come and try it. We relish the responsibility of breaking down parked buses.",
+          "voText": "Let them come and try it. We relish the responsibility of breaking down parked buses.",
+          "effects": {
+            "fans": 3,
+            "board": 1,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Respectful",
+          "text": "Every manager in this league is tactically shrewd. We will have to earn every single yard.",
+          "voText": "Every manager in this league is tactically shrewd. We have to earn every single yard.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "streak_loss_01",
+      "context": ["STREAK_LOSS"],
+      "text": "Three straight defeats now for {club}. The rot has well and truly set in. How do you stop this slide?",
+      "voText": "Three straight defeats now. The slump has well and truly set in. How do you stop this slide?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Determined",
+          "text": "Hard work on the grass. Back to basics: clean sheets, tracking runners, winning second balls.",
+          "voText": "Hard work on the grass. Back to basics: clean sheets, tracking runners, winning second balls.",
+          "effects": {
+            "fans": 2,
+            "board": 1,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Frustrated",
+          "text": "Some players need to look in the mirror. If they cannot handle the heat, they will be out of the squad.",
+          "voText": "Some players need to look in the mirror. If they cannot handle the heat, they will be out.",
+          "effects": {
+            "fans": 1,
+            "board": -1,
+            "squadMorale": -3
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Calm",
+          "text": "We cannot panic. Every team hits a bump in this league. Our underlying metrics are still competitive.",
+          "voText": "We cannot panic. Every team hits a bump. Our underlying metrics are still competitive.",
+          "effects": {
+            "fans": -2,
+            "board": 2,
+            "squadMorale": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "streak_loss_02",
+      "context": ["STREAK_LOSS"],
+      "text": "There are audible murmurs of discontent in the stands and on social media. Are you beginning to feel the heat?",
+      "voText": "There are murmurs of discontent in the stands. Are you beginning to feel the heat?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Thick-skinned",
+          "text": "I knew what I signed up for. Football management is not a popularity contest; results silence critics.",
+          "voText": "I knew what I signed up for. Football management is not a popularity contest.",
+          "effects": {
+            "fans": 1,
+            "board": 1,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Sympathetic",
+          "text": "I understand the fans' pain. Nobody hurts more after three defeats than me and the players.",
+          "voText": "I understand the fans' pain. Nobody hurts more after three defeats than the dressing room.",
+          "effects": {
+            "fans": 3,
+            "board": 0,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Combative",
+          "text": "Social media noise is irrelevant to what happens inside the training ground walls.",
+          "voText": "Social media noise is irrelevant to what happens inside the training ground walls.",
+          "effects": {
+            "fans": -2,
+            "board": 1,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "streak_loss_03",
+      "context": ["STREAK_LOSS"],
+      "text": "Confidence looks completely shattered across the pitch. Are you considering radical tactical surgery?",
+      "voText": "Confidence looks shattered across the pitch. Are you considering radical tactical surgery?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Adaptive",
+          "text": "We have to be pragmatic. Perhaps a more solid defensive block until we restore our self-belief.",
+          "voText": "We have to be pragmatic. Perhaps a more solid defensive block until we restore belief.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Stubborn",
+          "text": "I believe in our system. Tearing up the playbook after three matches would be cowardly.",
+          "voText": "I believe in our system. Tearing up the playbook after three matches would be cowardly.",
+          "effects": {
+            "fans": -1,
+            "board": 0,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Psychological",
+          "text": "It is not tactical; it is between the ears. We need brave leaders to demand the ball under pressure.",
+          "voText": "It is not tactical; it is between the ears. We need brave leaders on the pitch.",
+          "effects": {
+            "fans": 1,
+            "board": 0,
+            "squadMorale": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "streak_loss_04",
+      "context": ["STREAK_LOSS"],
+      "text": "A losing streak can derail a whole season if not arrested quickly. Is next weekend virtually a cup final?",
+      "voText": "A losing streak can derail a season if not arrested quickly. Is next weekend virtually a cup final?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Urgent",
+          "text": "Yes. We need points, by hook or by crook. Pretty football goes out the window.",
+          "voText": "Yes. We need points, by hook or by crook. Pretty football goes out the window.",
+          "effects": {
+            "fans": 3,
+            "board": 0,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Steadying",
+          "text": "Every game carries three points. Calling it a cup final only injects unnecessary anxiety into young players.",
+          "voText": "Every game carries three points. Calling it a cup final only injects unnecessary anxiety.",
+          "effects": {
+            "fans": -1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Challenging",
+          "text": "It is a cup final for their places in this squad. Let us see who stands up to be counted.",
+          "voText": "It is a cup final for their places in this squad. Let us see who stands up.",
+          "effects": {
+            "fans": 2,
+            "board": 0,
+            "squadMorale": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": "player_praise_01",
+      "context": ["PLAYER_PRAISE"],
+      "text": "What a masterclass from {player} today! Player of the Match and running the show from start to finish. How good was he?",
+      "voText": "What a masterclass from your star performer today! Player of the Match. How good was he?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Lavish",
+          "text": "World class. When he plays with that freedom, there is not a defender in the division who can touch him.",
+          "voText": "World class. When he plays with that freedom, no defender can touch him.",
+          "effects": {
+            "fans": 3,
+            "board": 1,
+            "squadMorale": 1,
+            "playerMorale": 5
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Team-first",
+          "text": "Outstanding individual brilliance, but enabled by the defensive midfield doing the dirty work behind him.",
+          "voText": "Outstanding individual brilliance, but enabled by the team doing the dirty work behind him.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 3,
+            "playerMorale": 2
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Demanding",
+          "text": "He has that quality in his boots. Now my job is to ensure he delivers that every single week, not just occasionally.",
+          "voText": "He has that quality. Now my job is to ensure he delivers that every single week.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1,
+            "playerMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "player_praise_02",
+      "context": ["PLAYER_PRAISE"],
+      "text": "{player}'s match-winning contribution will surely catch the eye of scouts from higher tiers. Worried about bids in the window?",
+      "voText": "That match-winning contribution will catch the eye of scouts. Worried about bids in the window?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Firm",
+          "text": "He is not for sale at any price. We are building a long-term project around him here.",
+          "voText": "He is not for sale at any price. We are building a long-term project around him.",
+          "effects": {
+            "fans": 4,
+            "board": -1,
+            "squadMorale": 2,
+            "playerMorale": 3
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Pragmatic",
+          "text": "If big clubs come knocking, every player has a valuation, but it would take astronomical money.",
+          "voText": "If big clubs come knocking, every player has a valuation, but it would take huge money.",
+          "effects": {
+            "fans": -2,
+            "board": 3,
+            "squadMorale": 0,
+            "playerMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Flattering",
+          "text": "It proves we are improving players at {club}. He loves playing here and his head will not be turned.",
+          "voText": "It proves we improve players here. He loves playing here and his head will not be turned.",
+          "effects": {
+            "fans": 2,
+            "board": 2,
+            "squadMorale": 1,
+            "playerMorale": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "player_praise_03",
+      "context": ["PLAYER_PRAISE"],
+      "text": "Did you give {player} specific licence to roam and hurt {opponent} today, or was that pure instinct?",
+      "voText": "Did you give your playmaker licence to roam and hurt the opposition, or was that instinct?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Tactical",
+          "text": "We designed our wide overloads specifically to free up pockets for him in zone 14.",
+          "voText": "We designed our overloads specifically to free up pockets for him in central areas.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 2,
+            "playerMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Generous",
+          "text": "You cannot cage a talent like that with rigid instructions. You give him the canvas and let him paint.",
+          "voText": "You cannot cage a talent like that with rigid instructions. Let him express himself.",
+          "effects": {
+            "fans": 3,
+            "board": 1,
+            "squadMorale": 1,
+            "playerMorale": 5
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Modest",
+          "text": "Instinct. Managers take credit for systems, but players win games with heart and imagination.",
+          "voText": "Instinct. Managers take credit for systems, but players win games with imagination.",
+          "effects": {
+            "fans": 2,
+            "board": 1,
+            "squadMorale": 3,
+            "playerMorale": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "player_praise_04",
+      "context": ["PLAYER_PRAISE"],
+      "text": "{player} received a standing ovation from all four corners of the ground as he came off. How special was that moment?",
+      "voText": "Your player received a standing ovation as he came off. How special was that moment?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Emotional",
+          "text": "Gave me goosebumps. He has worked so hard through tough moments, and he earned every ounce of that applause.",
+          "voText": "Gave me goosebumps. He worked through tough moments and earned every ounce of that applause.",
+          "effects": {
+            "fans": 4,
+            "board": 1,
+            "squadMorale": 2,
+            "playerMorale": 6
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Professional",
+          "text": "Richly deserved. The supporters know quality when they see it.",
+          "voText": "Richly deserved. The supporters know quality when they see it.",
+          "effects": {
+            "fans": 2,
+            "board": 2,
+            "squadMorale": 1,
+            "playerMorale": 3
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Incentivising",
+          "text": "I told him as he crossed the touchline: remember this feeling and go do it again next Saturday.",
+          "voText": "I told him on the touchline: remember this feeling and do it again next Saturday.",
+          "effects": {
+            "fans": 2,
+            "board": 1,
+            "squadMorale": 2,
+            "playerMorale": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "player_criticism_01",
+      "context": ["PLAYER_CRITICISM"],
+      "text": "An afternoon to forget for {player}. Hooked early and looked well off the pace. Is his place in the starting XI in jeopardy?",
+      "voText": "An afternoon to forget for your starter. Hooked early and looked off the pace. Is his place in jeopardy?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Protective",
+          "text": "We win as a team and we suffer as a team. He had a tough day at the office, but I have total faith in his quality.",
+          "voText": "We win and suffer as a team. Tough day, but I have total faith in his quality.",
+          "effects": {
+            "fans": -1,
+            "board": 1,
+            "squadMorale": 3,
+            "playerMorale": 4
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Blunt",
+          "text": "He knows he was nowhere near the standard required. Football is merit-based and places must be earned.",
+          "voText": "He knows he was nowhere near the required standard. Places must be earned.",
+          "effects": {
+            "fans": 2,
+            "board": 0,
+            "squadMorale": -1,
+            "playerMorale": -6
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Tactical",
+          "text": "The substitution was purely tactical to alter our shape. Do not read drama into routine management decisions.",
+          "voText": "The change was purely tactical to alter our shape. Do not read drama into routine decisions.",
+          "effects": {
+            "fans": 0,
+            "board": 1,
+            "squadMorale": 1,
+            "playerMorale": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "player_criticism_02",
+      "context": ["PLAYER_CRITICISM"],
+      "text": "{player} seemed to react angrily when his number went up on the fourth official's board. How do you handle that dissent?",
+      "voText": "Your player reacted angrily when his number went up. How do you handle that dissent?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Strict",
+          "text": "Disrespecting teammates or the bench is unacceptable. That will be dealt with behind closed doors.",
+          "voText": "Disrespecting teammates or the bench is unacceptable. That will be dealt with internally.",
+          "effects": {
+            "fans": 2,
+            "board": 2,
+            "squadMorale": -1,
+            "playerMorale": -5
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Forgiving",
+          "text": "I like players who want to stay on the pitch. It shows fire in the belly. We will have a quiet chat on Monday.",
+          "voText": "I like players who want to stay on the pitch. Shows fire in the belly. We will chat on Monday.",
+          "effects": {
+            "fans": 0,
+            "board": 0,
+            "squadMorale": 2,
+            "playerMorale": 3
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Dismissive",
+          "text": "Adrenaline runs high in competitive football. You are making a mountain out of a molehill.",
+          "voText": "Adrenaline runs high. You are making a mountain out of a molehill.",
+          "effects": {
+            "fans": 1,
+            "board": 1,
+            "squadMorale": 1,
+            "playerMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "player_criticism_03",
+      "context": ["PLAYER_CRITICISM"],
+      "text": "Is {player} carrying an undisclosed knock? He looked a yard slower than his usual sharp self today.",
+      "voText": "Is your player carrying a knock? He looked a yard slower than his usual sharp self today.",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Honest",
+          "text": "He has been managing a minor muscle niggle, but he put his hand up to play. Perhaps in hindsight that was a mistake.",
+          "voText": "He was managing a niggle, but put his hand up. In hindsight perhaps that was a mistake.",
+          "effects": {
+            "fans": 1,
+            "board": 0,
+            "squadMorale": 1,
+            "playerMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Guarded",
+          "text": "Our medical department cleared him completely. Form fluctuates across a long campaign.",
+          "voText": "Our medical department cleared him. Form fluctuates across a long campaign.",
+          "effects": {
+            "fans": 0,
+            "board": 1,
+            "squadMorale": 0,
+            "playerMorale": -2
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Protective",
+          "text": "He ran twelve kilometres today. Criticising his physical output is completely inaccurate.",
+          "voText": "He covered twelve kilometres today. Criticising his output is completely inaccurate.",
+          "effects": {
+            "fans": -1,
+            "board": 1,
+            "squadMorale": 2,
+            "playerMorale": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "player_criticism_04",
+      "context": ["PLAYER_CRITICISM"],
+      "text": "With young talent pushing hard from the reserves, does {player} risk being left behind if this slump continues?",
+      "voText": "With young talent pushing hard, does your player risk being left behind if this slump continues?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Challenging",
+          "text": "Competition is healthy. If young lads outperform established names in training, they will wear the shirt.",
+          "voText": "Competition is healthy. If young lads outperform established names, they will wear the shirt.",
+          "effects": {
+            "fans": 3,
+            "board": 2,
+            "squadMorale": 1,
+            "playerMorale": -4
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Supportive",
+          "text": "Class is permanent, form is temporary. He has too much pedigree to stay down for long.",
+          "voText": "Class is permanent, form is temporary. He has too much pedigree to stay down for long.",
+          "effects": {
+            "fans": 0,
+            "board": 1,
+            "squadMorale": 2,
+            "playerMorale": 5
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Diplomatic",
+          "text": "We need both the experience of senior heads and the hunger of our youth academy to succeed.",
+          "voText": "We need both the experience of senior heads and the hunger of youth to succeed.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1,
+            "playerMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "transfer_rumour_01",
+      "context": ["TRANSFER_RUMOUR"],
+      "text": "Reports in the national press suggest several rival clubs are preparing big-money bids for your key assets. Will the board cash in?",
+      "voText": "Reports suggest rival clubs are preparing big-money bids for your key assets. Will the board cash in?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Defiant",
+          "text": "We are not a feeder club. We are building something here and our best players are staying.",
+          "voText": "We are not a feeder club. We are building something here and our best players stay.",
+          "effects": {
+            "fans": 4,
+            "board": -1,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Realist",
+          "text": "Every player in world football has a valuation. If an astronomical offer arrives that benefits {club}, we must evaluate it.",
+          "voText": "Every player in world football has a price. If a huge offer arrives, we must evaluate it.",
+          "effects": {
+            "fans": -3,
+            "board": 3,
+            "squadMorale": -1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Deflective",
+          "text": "Speculation sells newspapers. My only concern is preparing the squad for three points this weekend.",
+          "voText": "Speculation sells newspapers. My only concern is preparing the squad for this weekend.",
+          "effects": {
+            "fans": 1,
+            "board": 1,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "transfer_rumour_02",
+      "context": ["TRANSFER_RUMOUR"],
+      "text": "Supporters are anxious about lack of incoming reinforcements. Can they expect new faces before the transfer deadline?",
+      "voText": "Supporters are anxious about lack of incoming reinforcements. Can they expect new faces soon?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Promising",
+          "text": "We are working around the clock on multiple targets. We want quality additions that raise the ceiling.",
+          "voText": "We are working around the clock on targets. We want additions that raise the ceiling.",
+          "effects": {
+            "fans": 4,
+            "board": 0,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Cautious",
+          "text": "We will only sign players who improve us, not make panic buys that handicap the wage structure.",
+          "voText": "We will only sign players who improve us, not make panic buys that handicap our wage bill.",
+          "effects": {
+            "fans": -1,
+            "board": 3,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Confident",
+          "text": "I am delighted with the squad we already have in that dressing room. Any signing is a bonus.",
+          "voText": "I am delighted with the squad we already have. Any signing is a bonus.",
+          "effects": {
+            "fans": 0,
+            "board": 2,
+            "squadMorale": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "transfer_rumour_03",
+      "context": ["TRANSFER_RUMOUR"],
+      "text": "Are you finding the current transfer market inflated with unrealistic valuation demands from selling clubs?",
+      "voText": "Are you finding the current transfer market inflated with unrealistic valuation demands?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Candid",
+          "text": "The numbers being quoted for average players are madness. We refuse to be held to ransom.",
+          "voText": "The numbers being quoted are madness. We refuse to be held to ransom.",
+          "effects": {
+            "fans": 2,
+            "board": 3,
+            "squadMorale": 0
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Pragmatic",
+          "text": "That is the market. You either adapt and pay the going rate or you rely on elite scouting.",
+          "voText": "That is the market. You either adapt and pay the rate or rely on elite scouting.",
+          "effects": {
+            "fans": 0,
+            "board": 1,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Ambitious",
+          "text": "If you want quality, you have to invest. The board knows where we need to strengthen.",
+          "voText": "If you want quality, you have to invest. The board knows where we need to strengthen.",
+          "effects": {
+            "fans": 3,
+            "board": -2,
+            "squadMorale": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "transfer_rumour_04",
+      "context": ["TRANSFER_RUMOUR"],
+      "text": "Has transfer speculation unsettled any players in the dressing room during training this week?",
+      "voText": "Has transfer speculation unsettled any players in the dressing room this week?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Reassuring",
+          "text": "Not at all. The atmosphere in the group is fantastic. Everyone is focused on the pitch.",
+          "voText": "Not at all. The atmosphere in the group is fantastic. Everyone is focused.",
+          "effects": {
+            "fans": 2,
+            "board": 1,
+            "squadMorale": 3
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Strict",
+          "text": "If an agent is whispering in somebody's ear and distracting them, they will find themselves in the stands.",
+          "voText": "If an agent is whispering and distracting someone, they will sit in the stands.",
+          "effects": {
+            "fans": 3,
+            "board": 1,
+            "squadMorale": -1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Understanding",
+          "text": "Players are human beings. It is natural to hear noise, but we communicate openly and honestly.",
+          "voText": "Players are human beings. It is natural to hear noise, but we communicate openly.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "opening_day_01",
+      "context": ["OPENING_DAY"],
+      "text": "Matchday one of a brand new campaign! Fresh optimism everywhere. What is the realistic objective for {club} this season?",
+      "voText": "Matchday one of a brand new campaign! Fresh optimism everywhere. What is the realistic objective?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Ambitious",
+          "text": "We are aiming for the very top. Promotion and title contention. We fear nobody.",
+          "voText": "We are aiming for the very top. Promotion and title contention. We fear nobody.",
+          "effects": {
+            "fans": 5,
+            "board": -1,
+            "squadMorale": 3,
+            "conditionalRisk": "If we lose opening match, fans -3",
+            "nextMatchCondition": {
+              "type": "lose",
+              "fansDelta": -3,
+              "boardDelta": -1
+            }
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Measured",
+          "text": "Progress and stability. We want to establish ourselves in the top half and build sustainable growth.",
+          "voText": "Progress and stability. Top half finish and building sustainable growth.",
+          "effects": {
+            "fans": 1,
+            "board": 3,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Grounded",
+          "text": "Safety first in a brutal division. Once we secure our baseline, we can look upward.",
+          "voText": "Safety first in a brutal division. Once secure, we can look upward.",
+          "effects": {
+            "fans": -3,
+            "board": 2,
+            "squadMorale": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "opening_day_02",
+      "context": ["OPENING_DAY"],
+      "text": "Pre-season is behind us. Do you feel the squad is at peak physical readiness for the rigours of 90 minutes?",
+      "voText": "Pre-season is behind us. Do you feel the squad is at peak physical readiness?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Confident",
+          "text": "The conditioning data is the best this club has seen. The lads are flying and itching to go.",
+          "voText": "The conditioning data is the best this club has seen. The lads are flying.",
+          "effects": {
+            "fans": 3,
+            "board": 2,
+            "squadMorale": 3
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Honest",
+          "text": "Competitive sharpness takes two or three matches to fully settle, but we are ready to compete.",
+          "voText": "Competitive sharpness takes two or three matches to settle, but we are ready.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Demanding",
+          "text": "Friendlies tell you nothing. Today is where we find out who did their homework over the summer.",
+          "voText": "Friendlies tell you nothing. Today is where we find out who did their summer work.",
+          "effects": {
+            "fans": 2,
+            "board": 1,
+            "squadMorale": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "opening_day_03",
+      "context": ["OPENING_DAY"],
+      "text": "How special is that walk out of the tunnel on the first day of the season with thousands roaring you on?",
+      "voText": "How special is that walk out of the tunnel on opening day with thousands roaring you on?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Passionate",
+          "text": "There is nothing like it on earth. That roar gives you butterflies and reminds you why this game matters.",
+          "voText": "There is nothing like it on earth. That roar reminds you why this game matters.",
+          "effects": {
+            "fans": 4,
+            "board": 1,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Focused",
+          "text": "Wonderful tradition, but my focus is strictly between the white lines once the whistle blows.",
+          "voText": "Wonderful tradition, but my focus is strictly between the white lines.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Dedicated",
+          "text": "We want to give those supporters a season they will talk about for years to come.",
+          "voText": "We want to give those supporters a season they will talk about for years to come.",
+          "effects": {
+            "fans": 4,
+            "board": 2,
+            "squadMorale": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "opening_day_04",
+      "context": ["OPENING_DAY"],
+      "text": "First match against {opponent}. Do you see this as the ideal opening fixture to lay down a marker?",
+      "voText": "First match today. Do you see this as the ideal opening fixture to lay down a marker?",
+      "answers": [
+        {
+          "id": "a",
+          "tone": "Bold",
+          "text": "Every fixture is an opportunity. We want to start fast, put three points on the board, and set the pace.",
+          "voText": "Every fixture is an opportunity. We want to start fast and put points on the board.",
+          "effects": {
+            "fans": 3,
+            "board": 2,
+            "squadMorale": 2
+          }
+        },
+        {
+          "id": "b",
+          "tone": "Respectful",
+          "text": "{opponent} are tough competitors and will test our organization. We must be patient.",
+          "voText": "The opposition are tough competitors and will test our organization.",
+          "effects": {
+            "fans": 1,
+            "board": 2,
+            "squadMorale": 1
+          }
+        },
+        {
+          "id": "c",
+          "tone": "Relentless",
+          "text": "Does not matter who is in the opposite tunnel. When the referee blows his whistle, we attack.",
+          "voText": "Does not matter who is in the opposite tunnel. When the whistle blows, we attack.",
+          "effects": {
+            "fans": 4,
+            "board": 0,
+            "squadMorale": 3
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -31,6 +31,12 @@ import {
 import { checkTrainingInjury } from '../player/injuries';
 import { processPlayerDevelopment } from '../player/development';
 import { processPlayerMatchCards } from '../player/discipline';
+import {
+  shouldTriggerPostMatchPress,
+  shouldTriggerPreMatchPress,
+  determinePressContext,
+  generatePressConference,
+} from './press';
 
 export interface LineupValidationResult {
   valid: boolean;
@@ -401,6 +407,139 @@ export function applyMatchResults(
     userClub.boardConfidence = clamp(userClub.boardConfidence + posDelta, 0, 100);
   }
 
+  // 6. Handle active press condition from previous match if set (§16.2)
+  if (next.activePressCondition) {
+    const userFix = next.fixtures.find(
+      (f) =>
+        f.matchday === currentMatchday &&
+        (f.homeId === next.userClubId || f.awayId === next.userClubId),
+    );
+    if (userFix && userFix.result) {
+      const isHome = userFix.homeId === next.userClubId;
+      const userWon = isHome
+        ? userFix.result.homeGoals > userFix.result.awayGoals
+        : userFix.result.awayGoals > userFix.result.homeGoals;
+      const userLost = isHome
+        ? userFix.result.homeGoals < userFix.result.awayGoals
+        : userFix.result.awayGoals < userFix.result.homeGoals;
+      const outcome: 'win' | 'lose' | 'draw' = userWon ? 'win' : userLost ? 'lose' : 'draw';
+
+      if (outcome === next.activePressCondition.type) {
+        const uClub = next.clubs[next.userClubId];
+        if (uClub) {
+          uClub.fanMood = clamp(uClub.fanMood + next.activePressCondition.fansDelta, 0, 100);
+          uClub.boardConfidence = clamp(
+            uClub.boardConfidence + next.activePressCondition.boardDelta,
+            0,
+            100,
+          );
+        }
+      }
+    }
+    next.activePressCondition = null;
+  }
+
+  // 7. Post-match press conference trigger (§12.6, §16.2)
+  const userFix = next.fixtures.find(
+    (f) =>
+      f.matchday === currentMatchday &&
+      (f.homeId === next.userClubId || f.awayId === next.userClubId),
+  );
+  if (userFix && userFix.result) {
+    const isUserHome = userFix.homeId === next.userClubId;
+    const userClub = next.clubs[next.userClubId]!;
+    const oppClub = next.clubs[isUserHome ? userFix.awayId : userFix.homeId]!;
+    const userGoals = isUserHome ? userFix.result.homeGoals : userFix.result.awayGoals;
+    const oppGoals = isUserHome ? userFix.result.awayGoals : userFix.result.homeGoals;
+    const userWon = userGoals > oppGoals;
+    const userLost = userGoals < oppGoals;
+    const userDrew = userGoals === oppGoals;
+    const isDerby = userClub.rivals.includes(oppClub.id) || oppClub.rivals.includes(userClub.id);
+    const userWonOrDrawnAgainstHighRep =
+      oppClub.reputation >= userClub.reputation + 2 && (userWon || userDrew);
+    const lossByThreeOrMore = userLost && oppGoals - userGoals >= 3;
+
+    // Check form streak
+    const userRow = next.table.find((r) => r.clubId === next.userClubId);
+    const formLast3 = userRow?.form.slice(-3) ?? [];
+    const winStreak = formLast3.every((res) => res === 'W') && formLast3.length === 3 ? 3 : 0;
+    const lossStreak = formLast3.every((res) => res === 'L') && formLast3.length === 3 ? 3 : 0;
+    const streakReachedThree = winStreak >= 3 || lossStreak >= 3;
+
+    const pressRng = createRng(deriveSeed(next.seed, 'post-match-press', currentMatchday));
+    const shouldTrigger = shouldTriggerPostMatchPress(
+      {
+        isDerby,
+        matchday: currentMatchday,
+        userWonOrDrawnAgainstHighRep,
+        lossByThreeOrMore,
+        streakReachedThree,
+      },
+      pressRng,
+    );
+
+    if (shouldTrigger) {
+      let topRatingPlayer: { playerId: PlayerId; rating: number } | undefined;
+      let lowRatingPlayer: { playerId: PlayerId; rating: number } | undefined;
+
+      const fullRes = results[userFix.id];
+      const playerResults = (fullRes?.players ?? []).filter((pl) => {
+        const p = next.players[pl.playerId];
+        return p && p.clubId === next.userClubId;
+      });
+
+      playerResults.sort((a, b) => b.rating - a.rating);
+      if (playerResults[0] && playerResults[0].rating >= 8.5) {
+        topRatingPlayer = { playerId: playerResults[0].playerId, rating: playerResults[0].rating };
+      }
+      const lowest = playerResults[playerResults.length - 1];
+      if (lowest && lowest.rating <= 5.5 && lowest.rating > 0) {
+        lowRatingPlayer = { playerId: lowest.playerId, rating: lowest.rating };
+      }
+
+      const pressContext = determinePressContext(
+        {
+          matchday: currentMatchday,
+          userGoals,
+          oppGoals,
+          userRep: userClub.reputation,
+          oppRep: oppClub.reputation,
+          winStreak,
+          lossStreak,
+          topRating: topRatingPlayer,
+          lowRating: lowRatingPlayer,
+        },
+        pressRng,
+      );
+
+      const targetPlayer =
+        pressContext === 'PLAYER_PRAISE' && topRatingPlayer
+          ? next.players[topRatingPlayer.playerId]
+          : pressContext === 'PLAYER_CRITICISM' && lowRatingPlayer
+            ? next.players[lowRatingPlayer.playerId]
+            : userFix.result.motm && next.players[userFix.result.motm]?.clubId === next.userClubId
+              ? next.players[userFix.result.motm]
+              : undefined;
+
+      const targetPlayerName = targetPlayer
+        ? (targetPlayer.knownAs ?? `${targetPlayer.firstName} ${targetPlayer.lastName}`)
+        : undefined;
+
+      next.pendingPress = generatePressConference(
+        pressContext,
+        next.pressHistory ?? [],
+        {
+          opponent: oppClub.name,
+          club: userClub.name,
+          player: targetPlayerName,
+          score: `${userGoals} - ${oppGoals}`,
+        },
+        pressRng,
+        targetPlayer?.id,
+      );
+    }
+  }
+
   next.phase = 'PostMatch';
   return next;
 }
@@ -688,6 +827,34 @@ export function computeSeasonEnd(state: GameState): GameState {
 /**
  * Master dispatcher for game loop phase advancement (SPEC §10.1)
  */
+function checkPreMatchDerbyPress(state: GameState): void {
+  const userFix = state.fixtures.find(
+    (f) =>
+      f.matchday === state.matchday &&
+      (f.homeId === state.userClubId || f.awayId === state.userClubId),
+  );
+  if (!userFix) return;
+  const homeClub = state.clubs[userFix.homeId];
+  const awayClub = state.clubs[userFix.awayId];
+  if (!homeClub || !awayClub) return;
+  const isDerby = homeClub.rivals.includes(awayClub.id) || awayClub.rivals.includes(homeClub.id);
+  if (isDerby && shouldTriggerPreMatchPress(true) && !state.pendingPress) {
+    const isUserHome = userFix.homeId === state.userClubId;
+    const userClub = isUserHome ? homeClub : awayClub;
+    const oppClub = isUserHome ? awayClub : homeClub;
+    const pressRng = createRng(deriveSeed(state.seed, 'pre-match-derby-press', state.matchday));
+    state.pendingPress = generatePressConference(
+      'PRE_DERBY',
+      state.pressHistory ?? [],
+      {
+        opponent: oppClub.name,
+        club: userClub.name,
+      },
+      pressRng,
+    );
+  }
+}
+
 export function advance(
   state: GameState,
   action?: {
@@ -708,6 +875,7 @@ export function advance(
       const next = JSON.parse(JSON.stringify(state)) as GameState;
       next.matchday = 1;
       next.phase = 'PreMatch';
+      checkPreMatchDerbyPress(next);
       return next;
     }
 
@@ -811,6 +979,7 @@ export function advance(
       const next = JSON.parse(JSON.stringify(state)) as GameState;
       next.matchday += 1;
       next.phase = 'PreMatch';
+      checkPreMatchDerbyPress(next);
       return next;
     }
 
@@ -823,6 +992,7 @@ export function advance(
         next.matchday += 1;
         next.phase = 'PreMatch';
       }
+      checkPreMatchDerbyPress(next);
       return next;
     }
 

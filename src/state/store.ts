@@ -8,6 +8,7 @@ import { advance, validateLineup } from '@/core/game/advance';
 import { pickBestLineup } from '@/core/match/aiManager';
 import { applyClubTheme } from '@/config/clubThemes';
 import { TalkContext, TalkTone, TeamTalkResult, applyTeamTalk } from '@/core/player/talks';
+import { applyPressAnswer, PressAnswerResult } from '@/core/game/press';
 import { deriveSeed, createRng } from '@/core/rng';
 
 export type AppScreen =
@@ -75,6 +76,8 @@ export interface AppState {
   swapLineupWithBench: (lineupSlot: number, benchIndex: number) => void;
   markInboxRead: (id: string) => void;
   performTeamTalk: (context: TalkContext, tone: TalkTone) => TeamTalkResult | null;
+  answerPressQuestion: (answerId: string) => PressAnswerResult | null;
+  skipPressConference: () => void;
   saveAutosave: () => Promise<void>;
   checkAutosave: () => Promise<void>;
   continueAutosave: () => Promise<boolean>;
@@ -408,6 +411,26 @@ export const useStore = create<AppState>((set, get) => {
       set({ gameState: next });
       triggerDebouncedAutosave(next);
       return result;
+    },
+
+    answerPressQuestion: (answerId: string) => {
+      const state = get().gameState;
+      if (!state || !state.pendingPress) return null;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      if (!next.pendingPress) return null;
+      const result = applyPressAnswer(next, next.pendingPress, answerId);
+      set({ gameState: next });
+      triggerDebouncedAutosave(next);
+      return result;
+    },
+
+    skipPressConference: () => {
+      const state = get().gameState;
+      if (!state || !state.pendingPress) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      next.pendingPress = null;
+      set({ gameState: next });
+      triggerDebouncedAutosave(next);
     },
 
     saveAutosave: async () => {

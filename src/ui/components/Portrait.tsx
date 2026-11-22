@@ -4,7 +4,8 @@ import { assetUrl } from '@/assets/registry';
 import { generateAvatarSvg } from '@/assets/procedural/avatar';
 
 export interface PortraitProps {
-  playerId: string;
+  playerId?: string;
+  assetPath?: string;
   initials?: string;
   primaryColor?: string;
   secondaryColor?: string;
@@ -14,13 +15,18 @@ export interface PortraitProps {
 
 export const Portrait: React.FC<PortraitProps> = ({
   playerId,
+  assetPath,
   initials = 'PL',
   primaryColor = '#0B1F3A',
   secondaryColor = '#F2B705',
   size = 48,
   className = '',
 }) => {
-  const realUrl = assetUrl(`images/portraits/${playerId}.webp`);
+  const realUrl = assetPath
+    ? assetUrl(assetPath)
+    : playerId
+      ? assetUrl(`images/portraits/${playerId}.webp`)
+      : null;
 
   if (realUrl) {
     return (

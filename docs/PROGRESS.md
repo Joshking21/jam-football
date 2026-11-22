@@ -552,3 +552,21 @@ REVIEW REQUESTED: M4
     - Integrated team talks across PreMatchScreen (Kick Off flow), MatchScreen HalfTimeModal (tactical talk and resume second half with toast), and PostMatchScreen (dressing room debrief before advancing to Week Summary).
     - Added 14 unit tests in `tests/core/player/talks.test.ts` covering context deduction, reaction predictions, personality multipliers, and squad application.
 
+## 2026-11-22 · M5.3 Press conferences and media suite
+- Changed: src/content/press.json, src/core/types.ts, src/core/game/press.ts, src/core/game/advance.ts, src/core/game/newGame.ts, src/state/store.ts, src/ui/components/Portrait.tsx, src/ui/screens/PreMatchScreen.tsx, src/ui/screens/PostMatchScreen.tsx, tests/core/game/press.test.ts
+- Ran:
+  - `npm run check`:
+    - `prettier --check .` PASS
+    - `tsc --noEmit` PASS
+    - `vitest run`: 29 test files passed (180 tests passed in 26.10s) PASS
+    - `vite build`: main chunk 1,196 kB / three.js chunk 490 kB, built in 14.09s PASS
+- Notes:
+  - Implemented SPEC §12.6 Discipline and press triggers & §16.2 Press conferences:
+    - Authored comprehensive `src/content/press.json` featuring 3 fictional journalists (Priya Natarajan of Meridian Sport, Joe Kettering of The Saltmere Echo, Femi Adebayo-Clarke of Coastline Radio) and 52 questions across all 13 contexts (`PRE_DERBY`, `POST_WIN`, `POST_BIG_WIN`, `POST_DRAW`, `POST_LOSS`, `POST_BIG_LOSS`, `POST_UPSET_WIN`, `STREAK_WIN`, `STREAK_LOSS`, `PLAYER_PRAISE`, `PLAYER_CRITICISM`, `TRANSFER_RUMOUR`, `OPENING_DAY`), each question with 3 varied answers with tone pills, voice copy (`voText`), effect deltas (fans, board, squad/player morale), and conditional risks (`nextMatchCondition`).
+    - Implemented `src/core/game/press.ts` with pure evaluation functions: `shouldTriggerPostMatchPress` (derbies, MD1, upsets, 3+ goal losses, 3-match streaks, 30% standard chance), `shouldTriggerPreMatchPress` (derbies only), `determinePressContext`, `generatePressConference` with token replacements and season repetition prevention (`pressHistory`), and `applyPressAnswer`.
+    - Integrated conditional risk resolution (`activePressCondition`) and post-match press triggering into `applyMatchResults` in `src/core/game/advance.ts`.
+    - Integrated optional pre-match derby briefing into `advanceGame` and `PreMatchScreen` (Step 0).
+    - Upgraded `Portrait` component to support journalist portraits with procedural avatar fallback.
+    - Integrated media suite press conference interactive panel into `PostMatchScreen` (prompting manager response, displaying feedback and effects).
+    - Added 14 unit tests in `tests/core/game/press.test.ts` covering data integrity, trigger probabilities, context deduction, token replacement, and state modification.
+

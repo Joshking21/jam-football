@@ -511,10 +511,82 @@ export interface GameState {
   conversationsHistory: string[];
   tutorial: { step: number; done: boolean };
   pendingMatch: { fixtureId: FixtureId } | null;
+  pendingPress?: PendingPressConference | null;
+  activePressCondition?: ActivePressCondition | null;
   focusBoost?: number; // team-wide z-unit boost from pre-match team talk (§12.8)
   awards: SeasonAwards | null;
   score: number; // leaderboard score, computed at season end
   counters: { news: number; inbox: number; offer: number };
+}
+
+// --- 8.10 Press Conference Types (SPEC §12.6, §16.2) ---
+export type PressContext =
+  | 'PRE_DERBY'
+  | 'POST_WIN'
+  | 'POST_BIG_WIN'
+  | 'POST_DRAW'
+  | 'POST_LOSS'
+  | 'POST_BIG_LOSS'
+  | 'POST_UPSET_WIN'
+  | 'STREAK_WIN'
+  | 'STREAK_LOSS'
+  | 'PLAYER_PRAISE'
+  | 'PLAYER_CRITICISM'
+  | 'TRANSFER_RUMOUR'
+  | 'OPENING_DAY';
+
+export interface Journalist {
+  id: string;
+  name: string;
+  outlet: string;
+  portrait: string;
+  initials: string;
+}
+
+export interface PressAnswerEffects {
+  fans?: number;
+  board?: number;
+  squadMorale?: number;
+  playerMorale?: number;
+  targetPlayerId?: PlayerId;
+  conditionalRisk?: string;
+  nextMatchCondition?: {
+    type: 'win' | 'lose' | 'draw';
+    fansDelta: number;
+    boardDelta: number;
+  };
+}
+
+export interface PressAnswer {
+  id: string;
+  tone: string;
+  text: string;
+  voText: string;
+  effects: PressAnswerEffects;
+}
+
+export interface PressQuestion {
+  id: string;
+  context: PressContext[];
+  text: string;
+  voText: string;
+  answers: PressAnswer[];
+}
+
+export interface PendingPressConference {
+  id: string;
+  context: PressContext;
+  journalist: Journalist;
+  question: PressQuestion;
+  resolvedAnswerId?: string;
+  targetPlayerName?: string;
+  targetPlayerId?: PlayerId;
+}
+
+export interface ActivePressCondition {
+  type: 'win' | 'lose' | 'draw';
+  fansDelta: number;
+  boardDelta: number;
 }
 
 // --- 13. Match Engine Types ---

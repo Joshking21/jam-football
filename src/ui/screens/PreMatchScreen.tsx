@@ -6,6 +6,7 @@ import { useStore } from '../../state/store';
 import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { Crest } from '../components/Crest';
+import { Portrait } from '../components/Portrait';
 import { TacticsScreen } from './TacticsScreen';
 import { Ticker } from '../components/Ticker';
 import { TelestratorPitch } from '../components/TelestratorPitch';
@@ -30,16 +31,18 @@ import {
 import { rawOvr } from '@/core/player/ratings';
 import { Player } from '@/core/types';
 
-type PreMatchStep = 1 | 2 | 3;
+type PreMatchStep = 0 | 1 | 2 | 3;
 
 export const PreMatchScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
   const advanceGame = useStore((state) => state.advanceGame);
   const updateUserTactics = useStore((state) => state.updateUserTactics);
   const performTeamTalk = useStore((state) => state.performTeamTalk);
+  const answerPressQuestion = useStore((state) => state.answerPressQuestion);
+  const skipPressConference = useStore((state) => state.skipPressConference);
   const showToast = useStore((state) => state.showToast);
 
-  const [currentStep, setCurrentStep] = useState<PreMatchStep>(1);
+  const [currentStep, setCurrentStep] = useState<PreMatchStep>(gameState?.pendingPress ? 0 : 1);
   const [selectedTone, setSelectedTone] = useState<TalkTone>('Calm');
 
   if (!gameState) return null;
@@ -195,14 +198,23 @@ export const PreMatchScreen: React.FC = () => {
 
             {/* Step Indicators */}
             <div style={{ display: 'flex', gap: '8px' }}>
-              {[
-                { s: 1, label: '1. OPPONENT REPORT' },
-                { s: 2, label: '2. TEAM SELECTION' },
-                { s: 3, label: '3. TEAM TALK' },
-              ].map(({ s, label }) => (
+              {(
+                (gameState.pendingPress || currentStep === 0
+                  ? [
+                      { s: 0, label: '0. MEDIA BRIEFING' },
+                      { s: 1, label: '1. OPPONENT REPORT' },
+                      { s: 2, label: '2. TEAM SELECTION' },
+                      { s: 3, label: '3. TEAM TALK' },
+                    ]
+                  : [
+                      { s: 1, label: '1. OPPONENT REPORT' },
+                      { s: 2, label: '2. TEAM SELECTION' },
+                      { s: 3, label: '3. TEAM TALK' },
+                    ]) as { s: PreMatchStep; label: string }[]
+              ).map(({ s, label }) => (
                 <button
                   key={s}
-                  onClick={() => setCurrentStep(s as PreMatchStep)}
+                  onClick={() => setCurrentStep(s)}
                   className="broadcast-label"
                   style={{
                     padding: '8px 16px',
@@ -212,6 +224,7 @@ export const PreMatchScreen: React.FC = () => {
                     border: `1px solid ${currentStep === s ? 'var(--accent)' : 'var(--border)'}`,
                     fontWeight: 700,
                     fontSize: '12px',
+                    cursor: 'pointer',
                   }}
                 >
                   {label}
@@ -219,6 +232,148 @@ export const PreMatchScreen: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* Step 0: Pre-Match Derby Press Conference (§12.6, §16.2) */}
+          {currentStep === 0 && gameState.pendingPress && (
+            <Panel dominant title="MEDIA SUITE · PRE-MATCH DERBY PRESS CONFERENCE">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <Portrait
+                    assetPath={gameState.pendingPress.journalist.portrait}
+                    initials={gameState.pendingPress.journalist.initials}
+                    size={56}
+                  />
+                  <div>
+                    <div
+                      style={{
+                        fontSize: '18px',
+                        fontWeight: 700,
+                        fontFamily: 'var(--font-head)',
+                      }}
+                    >
+                      {gameState.pendingPress.journalist.name}
+                    </div>
+                    <div
+                      className="broadcast-label"
+                      style={{ color: 'var(--accent-text)', fontSize: '12px' }}
+                    >
+                      {gameState.pendingPress.journalist.outlet}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    padding: '16px 20px',
+                    backgroundColor: 'var(--surface-2)',
+                    borderLeft: '4px solid var(--accent)',
+                    borderRadius: 'var(--radius-s)',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  "{gameState.pendingPress.question.text}"
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div
+                    className="broadcast-label"
+                    style={{ fontSize: '11px', color: 'var(--text-dim)' }}
+                  >
+                    SELECT MANAGER RESPONSE:
+                  </div>
+                  {gameState.pendingPress.question.answers.map((ans) => (
+                    <button
+                      key={ans.id}
+                      onClick={() => {
+                        const res = answerPressQuestion(ans.id);
+                        if (res) {
+                          showToast(`Press (${ans.tone}): Response delivered to media`, 'success');
+                        }
+                        setCurrentStep(1);
+                      }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px',
+                        padding: '14px 18px',
+                        backgroundColor: 'var(--surface-2)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--radius-m)',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.15s, border-color 0.15s',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--surface-3)';
+                        e.currentTarget.style.borderColor = 'var(--accent)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--surface-2)';
+                        e.currentTarget.style.borderColor = 'var(--border)';
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            padding: '2px 8px',
+                            backgroundColor: 'var(--accent-dim, rgba(242,183,5,0.15))',
+                            color: 'var(--accent-text)',
+                            borderRadius: 'var(--radius-xs)',
+                          }}
+                        >
+                          {ans.tone}
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+                          {ans.effects.fans
+                            ? `Fans ${ans.effects.fans > 0 ? '+' : ''}${ans.effects.fans} `
+                            : ''}
+                          {ans.effects.board
+                            ? `Board ${ans.effects.board > 0 ? '+' : ''}${ans.effects.board} `
+                            : ''}
+                          {ans.effects.squadMorale
+                            ? `Squad ${ans.effects.squadMorale > 0 ? '+' : ''}${ans.effects.squadMorale}`
+                            : ''}
+                          {ans.effects.conditionalRisk ? ` · ${ans.effects.conditionalRisk}` : ''}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '14px', color: 'var(--text)' }}>"{ans.text}"</div>
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '6px' }}>
+                  <button
+                    onClick={() => {
+                      skipPressConference();
+                      showToast('Skipped pre-match briefing to enter dressing room', 'info');
+                      setCurrentStep(1);
+                    }}
+                    className="broadcast-label"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-dim)',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                    }}
+                  >
+                    Skip briefing / Enter dressing room
+                  </button>
+                </div>
+              </div>
+            </Panel>
+          )}
 
           {/* Step 1: Opponent Report (Dominant Broadcast Panel, Telestrator Pitch, Key Battles) */}
           {currentStep === 1 && (
