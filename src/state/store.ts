@@ -9,6 +9,7 @@ import { pickBestLineup } from '@/core/match/aiManager';
 import { applyClubTheme } from '@/config/clubThemes';
 import { TalkContext, TalkTone, TeamTalkResult, applyTeamTalk } from '@/core/player/talks';
 import { applyPressAnswer, PressAnswerResult } from '@/core/game/press';
+import { applyConversationReply, ConversationResolution } from '@/core/player/conversations';
 import { deriveSeed, createRng } from '@/core/rng';
 
 export type AppScreen =
@@ -47,6 +48,7 @@ export interface AppState {
   settings: GameSettings;
   isSettingsOpen: boolean;
   isCreditsOpen: boolean;
+  isConversationModalOpen: boolean;
   activeModal: string | null;
   selectedPlayerId: PlayerId | null;
   sidebarCollapsed: boolean;
@@ -78,6 +80,10 @@ export interface AppState {
   performTeamTalk: (context: TalkContext, tone: TalkTone) => TeamTalkResult | null;
   answerPressQuestion: (answerId: string) => PressAnswerResult | null;
   skipPressConference: () => void;
+  openConversationModal: () => void;
+  closeConversationModal: () => void;
+  answerConversation: (replyId: string) => ConversationResolution | null;
+  dismissConversation: () => void;
   saveAutosave: () => Promise<void>;
   checkAutosave: () => Promise<void>;
   continueAutosave: () => Promise<boolean>;
@@ -140,6 +146,7 @@ export const useStore = create<AppState>((set, get) => {
     settings: initialSettings,
     isSettingsOpen: false,
     isCreditsOpen: false,
+    isConversationModalOpen: false,
     activeModal: null,
     selectedPlayerId: null,
     sidebarCollapsed: false,
@@ -430,6 +437,40 @@ export const useStore = create<AppState>((set, get) => {
       const next = JSON.parse(JSON.stringify(state)) as GameState;
       next.pendingPress = null;
       set({ gameState: next });
+      triggerDebouncedAutosave(next);
+    },
+
+    openConversationModal: () => set({ isConversationModalOpen: true }),
+    closeConversationModal: () => set({ isConversationModalOpen: false }),
+
+    answerConversation: (replyId: string) => {
+      const state = get().gameState;
+      if (!state || !state.activeConversation) return null;
+      const active = state.activeConversation;
+      const player = state.players[active.playerId];
+      const club = state.clubs[state.userClubId];
+      if (!player || !club) return null;
+
+      const res = applyConversationReply(player, club, active, replyId, state.matchday);
+      if (!res) return null;
+
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      next.players[res.updatedPlayer.id] = res.updatedPlayer;
+      next.conversationsHistory = [...(next.conversationsHistory ?? []), active.opening.id];
+      next.inbox.unshift(res.inboxNotice);
+      next.activeConversation = null;
+
+      set({ gameState: next });
+      triggerDebouncedAutosave(next);
+      return res;
+    },
+
+    dismissConversation: () => {
+      const state = get().gameState;
+      if (!state || !state.activeConversation) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      next.activeConversation = null;
+      set({ gameState: next, isConversationModalOpen: false });
       triggerDebouncedAutosave(next);
     },
 

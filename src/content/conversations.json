@@ -1,0 +1,437 @@
+{
+  "playing_time": {
+    "openings": [
+      {
+        "id": "conv_playtime_open_01",
+        "text": "Boss, I need to talk to you about my minutes. I came here to play, not to watch from the bench.",
+        "voText": "Boss, I need to talk to you about my minutes. I came here to play, not to watch from the bench.",
+        "replies": [
+          {
+            "id": "conv_playtime_rep_01_a",
+            "text": "{player}, you'll start in the coming matches. You have my word.",
+            "voText": "You'll start in the coming matches. You have my word.",
+            "nameSlot": "start",
+            "tone": "promise",
+            "playerReaction": "That's what I needed to hear, boss. I won't let you down on Saturday.",
+            "moraleDelta": 10,
+            "promise": {
+              "kind": "Starter",
+              "matches": 4,
+              "targetStarts": 2
+            }
+          },
+          {
+            "id": "conv_playtime_rep_01_b",
+            "text": "You haven't earned a starting place yet. Train harder and prove me wrong.",
+            "voText": "You haven't earned a starting place yet. Train harder and prove me wrong.",
+            "tone": "tough",
+            "playerReaction": "Fine. I'll show you on the training pitch what I'm capable of.",
+            "moraleDelta": -8
+          },
+          {
+            "id": "conv_playtime_rep_01_c",
+            "text": "If you're unhappy with the squad rotation, I'll find you a move, {player}.",
+            "voText": "If you're unhappy with the squad rotation, I'll find you a move.",
+            "nameSlot": "end",
+            "tone": "release",
+            "playerReaction": "Then put me on the list, boss. It's time for a fresh start.",
+            "moraleDelta": -5,
+            "transferList": true
+          }
+        ]
+      },
+      {
+        "id": "conv_playtime_open_02",
+        "text": "Gaffer, I'm at the stage of my career where I have to be starting regularly. Sitting out every week isn't working for me.",
+        "voText": "Gaffer, I'm at the stage of my career where I have to be starting regularly. Sitting out every week isn't working for me.",
+        "replies": [
+          {
+            "id": "conv_playtime_rep_02_a",
+            "text": "Be patient. Your chance is coming in the next block of fixtures.",
+            "voText": "Be patient. Your chance is coming in the next block of fixtures.",
+            "tone": "promise",
+            "playerReaction": "Alright gaffer, I'll trust your plan. Just make sure the chance comes.",
+            "moraleDelta": 5,
+            "promise": {
+              "kind": "Starter",
+              "matches": 4,
+              "targetStarts": 2
+            }
+          },
+          {
+            "id": "conv_playtime_rep_02_b",
+            "text": "{player}, nobody is guaranteed a shirt here. The team comes first.",
+            "voText": "Nobody is guaranteed a shirt here. The team comes first.",
+            "nameSlot": "start",
+            "tone": "tough",
+            "playerReaction": "I respect that, but I need to look after my career as well.",
+            "moraleDelta": -6
+          },
+          {
+            "id": "conv_playtime_rep_02_c",
+            "text": "If you don't want to fight for your place, we can look for offers in the window.",
+            "voText": "If you don't want to fight for your place, we can look for offers in the window.",
+            "tone": "release",
+            "playerReaction": "If that's how you see it, tell the board to listen to incoming bids.",
+            "moraleDelta": -8,
+            "transferList": true
+          }
+        ]
+      },
+      {
+        "id": "conv_playtime_open_03",
+        "text": "Manager, can we speak about my role? I feel like I've been frozen out of the starting XI without an explanation.",
+        "voText": "Manager, can we speak about my role? I feel like I've been frozen out of the starting XI without an explanation.",
+        "replies": [
+          {
+            "id": "conv_playtime_rep_03_a",
+            "text": "I was resting you and you are starting this weekend, {player}.",
+            "voText": "I was resting you and you are starting this weekend.",
+            "nameSlot": "end",
+            "tone": "promise",
+            "playerReaction": "Good to know where I stand. I'll be ready for kickoff.",
+            "moraleDelta": 12,
+            "promise": {
+              "kind": "Starter",
+              "matches": 4,
+              "targetStarts": 2
+            }
+          },
+          {
+            "id": "conv_playtime_rep_03_b",
+            "text": "The tactical system demanded different profiles for those games. Stay ready.",
+            "voText": "The tactical system demanded different profiles for those games. Stay ready.",
+            "tone": "tough",
+            "playerReaction": "I understand tactical decisions, but I want to be in those plans.",
+            "moraleDelta": 2
+          },
+          {
+            "id": "conv_playtime_rep_03_c",
+            "text": "{player}, you're not in my long-term plans. We should part ways.",
+            "voText": "You're not in my long-term plans. We should part ways.",
+            "nameSlot": "start",
+            "tone": "release",
+            "playerReaction": "At least you're honest. I'll tell my agent to find a new club.",
+            "moraleDelta": -12,
+            "transferList": true
+          }
+        ]
+      }
+    ]
+  },
+  "contract": {
+    "openings": [
+      {
+        "id": "conv_contract_open_01",
+        "text": "Boss, with only a year left on my deal, I want to commit my future here. Are we going to talk terms?",
+        "voText": "Boss, with only a year left on my deal, I want to commit my future here. Are we going to talk terms?",
+        "replies": [
+          {
+            "id": "conv_contract_rep_01_a",
+            "text": "{player}, you've earned an extension. Let's get the paperwork signed.",
+            "voText": "You've earned an extension. Let's get the paperwork signed.",
+            "nameSlot": "start",
+            "tone": "renew",
+            "playerReaction": "Brilliant, gaffer! Delighted to commit my future to the club.",
+            "moraleDelta": 15,
+            "contractRenewal": true
+          },
+          {
+            "id": "conv_contract_rep_01_b",
+            "text": "Now isn't the right time for contract talks. Let's revisit this at the end of the season.",
+            "voText": "Now isn't the right time for contract talks. Let's revisit this at the end of the season.",
+            "tone": "delay",
+            "playerReaction": "Disappointing, boss. If we wait too long, I might have to consider my options.",
+            "moraleDelta": -8
+          },
+          {
+            "id": "conv_contract_rep_01_c",
+            "text": "The wage structure doesn't allow a raise right now and we cannot offer new terms, {player}.",
+            "voText": "The wage structure doesn't allow a raise right now and we cannot offer new terms.",
+            "nameSlot": "end",
+            "tone": "refuse",
+            "playerReaction": "Understood. Then I'll be looking elsewhere for next season.",
+            "moraleDelta": -15,
+            "transferList": true
+          }
+        ]
+      },
+      {
+        "id": "conv_contract_open_02",
+        "text": "Gaffer, I've had a strong season and my contract is ticking down. My agent wants to know where I stand.",
+        "voText": "Gaffer, I've had a strong season and my contract is ticking down. My agent wants to know where I stand.",
+        "replies": [
+          {
+            "id": "conv_contract_rep_02_a",
+            "text": "We value you greatly. A new improved deal is on the table.",
+            "voText": "We value you greatly. A new improved deal is on the table.",
+            "tone": "renew",
+            "playerReaction": "Thanks gaffer. That gives me peace of mind to focus on winning matches.",
+            "moraleDelta": 14,
+            "contractRenewal": true
+          },
+          {
+            "id": "conv_contract_rep_02_b",
+            "text": "{player}, we need to see how the budget looks before committing to new wages.",
+            "voText": "We need to see how the budget looks before committing to new wages.",
+            "nameSlot": "start",
+            "tone": "delay",
+            "playerReaction": "I can wait a short while, but my representatives won't wait forever.",
+            "moraleDelta": -5
+          },
+          {
+            "id": "conv_contract_rep_02_c",
+            "text": "We won't be renewing your contract. You're free to speak to other clubs.",
+            "voText": "We won't be renewing your contract. You're free to speak to other clubs.",
+            "tone": "refuse",
+            "playerReaction": "That's clear enough. I'll make arrangements for my next move.",
+            "moraleDelta": -12,
+            "transferList": true
+          }
+        ]
+      },
+      {
+        "id": "conv_contract_open_03",
+        "text": "Manager, other clubs are monitoring my contract situation. I want to stay, but I need an improved deal.",
+        "voText": "Manager, other clubs are monitoring my contract situation. I want to stay, but I need an improved deal.",
+        "replies": [
+          {
+            "id": "conv_contract_rep_03_a",
+            "text": "Don't listen to the rumours, you're getting the contract you deserve, {player}.",
+            "voText": "Don't listen to the rumours, you're getting the contract you deserve.",
+            "nameSlot": "end",
+            "tone": "renew",
+            "playerReaction": "Exactly what I wanted to hear, boss. My heart is right here.",
+            "moraleDelta": 16,
+            "contractRenewal": true
+          },
+          {
+            "id": "conv_contract_rep_03_b",
+            "text": "Don't try to use outside interest to pressure me into a deal.",
+            "voText": "Don't try to use outside interest to pressure me into a deal.",
+            "tone": "delay",
+            "playerReaction": "It's not pressure, boss, it's reality. I have to protect my family.",
+            "moraleDelta": -10
+          },
+          {
+            "id": "conv_contract_rep_03_c",
+            "text": "{player}, if you want to leave, bring us an acceptable offer in January.",
+            "voText": "If you want to leave, bring us an acceptable offer in January.",
+            "nameSlot": "start",
+            "tone": "refuse",
+            "playerReaction": "Fine. We'll bring you the bid and take it from there.",
+            "moraleDelta": -14,
+            "transferList": true
+          }
+        ]
+      }
+    ]
+  },
+  "unhappy": {
+    "openings": [
+      {
+        "id": "conv_unhappy_open_01",
+        "text": "Boss, to be blunt, I'm really struggling here right now. Things aren't working out and my head's not in the right place.",
+        "voText": "Boss, to be blunt, I'm really struggling here right now. Things aren't working out and my head's not in the right place.",
+        "replies": [
+          {
+            "id": "conv_unhappy_rep_01_a",
+            "text": "{player}, I back you completely. You're crucial to our plans.",
+            "voText": "I back you completely. You're crucial to our plans.",
+            "nameSlot": "start",
+            "tone": "encourage",
+            "playerReaction": "Thanks, boss. It helps knowing you have faith in me.",
+            "moraleDelta": 15
+          },
+          {
+            "id": "conv_unhappy_rep_01_b",
+            "text": "We're all fighting through a tough spell together. Keep your chin up.",
+            "voText": "We're all fighting through a tough spell together. Keep your chin up.",
+            "tone": "firm",
+            "playerReaction": "Right, gaffer. I'll keep my head down and battle on.",
+            "moraleDelta": 6
+          },
+          {
+            "id": "conv_unhappy_rep_01_c",
+            "text": "Stop sulking and get on with your job because we have matches to win, {player}.",
+            "voText": "Stop sulking and get on with your job because we have matches to win.",
+            "nameSlot": "end",
+            "tone": "tough",
+            "playerReaction": "If that's your attitude, I don't see any future for me here.",
+            "moraleDelta": -12,
+            "transferList": true
+          }
+        ]
+      },
+      {
+        "id": "conv_unhappy_open_02",
+        "text": "Gaffer, I'm unhappy with how things are going at the club. The atmosphere and results have been dragging me down.",
+        "voText": "Gaffer, I'm unhappy with how things are going at the club. The atmosphere and results have been dragging me down.",
+        "replies": [
+          {
+            "id": "conv_unhappy_rep_02_a",
+            "text": "I hear your frustration, and I'm fixing the dressing room culture. Stay with me.",
+            "voText": "I hear your frustration, and I'm fixing the dressing room culture. Stay with me.",
+            "tone": "encourage",
+            "playerReaction": "Appreciate you listening, boss. I'll do my part to lift the squad.",
+            "moraleDelta": 12
+          },
+          {
+            "id": "conv_unhappy_rep_02_b",
+            "text": "{player}, football is about grit. When the going gets tough, you stand tall.",
+            "voText": "Football is about grit. When the going gets tough, you stand tall.",
+            "nameSlot": "start",
+            "tone": "firm",
+            "playerReaction": "Point taken, boss. Let's roll up our sleeves.",
+            "moraleDelta": 4
+          },
+          {
+            "id": "conv_unhappy_rep_02_c",
+            "text": "If you don't have the stomach for this battle, I'll find players who do.",
+            "voText": "If you don't have the stomach for this battle, I'll find players who do.",
+            "tone": "tough",
+            "playerReaction": "Don't question my commitment. If you don't want me, sell me.",
+            "moraleDelta": -15,
+            "transferList": true
+          }
+        ]
+      },
+      {
+        "id": "conv_unhappy_open_03",
+        "text": "Manager, I don't feel valued or supported here anymore. I can't keep pretending everything is fine.",
+        "voText": "Manager, I don't feel valued or supported here anymore. I can't keep pretending everything is fine.",
+        "replies": [
+          {
+            "id": "conv_unhappy_rep_03_a",
+            "text": "You are a core leader here and I need you in this team, {player}.",
+            "voText": "You are a core leader here and I need you in this team.",
+            "nameSlot": "end",
+            "tone": "encourage",
+            "playerReaction": "That means a lot to hear, boss. I needed that reassurance.",
+            "moraleDelta": 18
+          },
+          {
+            "id": "conv_unhappy_rep_03_b",
+            "text": "{player}, my door is always open. Let's work on what's bothering you.",
+            "voText": "My door is always open. Let's work on what's bothering you.",
+            "nameSlot": "start",
+            "tone": "firm",
+            "playerReaction": "Thank you, gaffer. Let's sit down with the coaches this week.",
+            "moraleDelta": 8
+          },
+          {
+            "id": "conv_unhappy_rep_03_c",
+            "text": "The club pays you well to perform. Save the excuses for the pitch.",
+            "voText": "The club pays you well to perform. Save the excuses for the pitch.",
+            "tone": "tough",
+            "playerReaction": "That tells me everything I need to know about this management.",
+            "moraleDelta": -14,
+            "transferList": true
+          }
+        ]
+      }
+    ]
+  },
+  "praise": {
+    "openings": [
+      {
+        "id": "conv_praise_open_01",
+        "text": "You asked to see me, gaffer? Always ready for a chat.",
+        "voText": "You asked to see me, gaffer? Always ready for a chat.",
+        "replies": [
+          {
+            "id": "conv_praise_rep_01_a",
+            "text": "{player}, your recent form has been exceptional. You're driving this team forward.",
+            "voText": "Your recent form has been exceptional. You're driving this team forward.",
+            "nameSlot": "start",
+            "tone": "praise",
+            "playerReaction": "Appreciate that, boss! Loving my football right now and want to keep this run going.",
+            "moraleDelta": 12
+          },
+          {
+            "id": "conv_praise_rep_01_b",
+            "text": "Good performances lately, but don't get complacent. Maintain these high standards.",
+            "voText": "Good performances lately, but don't get complacent. Maintain these high standards.",
+            "tone": "standards",
+            "playerReaction": "Understood, gaffer. Feet firmly on the ground, hungry for the next match.",
+            "moraleDelta": 8
+          },
+          {
+            "id": "conv_praise_rep_01_c",
+            "text": "You have another gear in you, so go out and dominate this league, {player}.",
+            "voText": "You have another gear in you, so go out and dominate this league.",
+            "nameSlot": "end",
+            "tone": "challenge",
+            "playerReaction": "Challenge accepted, boss. Let's go get those points on Saturday.",
+            "moraleDelta": 10
+          }
+        ]
+      },
+      {
+        "id": "conv_praise_open_02",
+        "text": "Morning, boss. How can I help you today?",
+        "voText": "Morning, boss. How can I help you today?",
+        "replies": [
+          {
+            "id": "conv_praise_rep_02_a",
+            "text": "Just wanted to say your performances in the last few games have been world-class.",
+            "voText": "Just wanted to say your performances in the last few games have been world-class.",
+            "tone": "praise",
+            "playerReaction": "That means everything coming from you, boss. I'll keep working hard.",
+            "moraleDelta": 14
+          },
+          {
+            "id": "conv_praise_rep_02_b",
+            "text": "{player}, the consistency you're showing is setting the benchmark for the squad.",
+            "voText": "The consistency you're showing is setting the benchmark for the squad.",
+            "nameSlot": "start",
+            "tone": "standards",
+            "playerReaction": "Proud to lead by example, gaffer. We're all pushing each other.",
+            "moraleDelta": 10
+          },
+          {
+            "id": "conv_praise_rep_02_c",
+            "text": "Don't let up now. I want you to be the player of the season.",
+            "voText": "Don't let up now. I want you to be the player of the season.",
+            "tone": "challenge",
+            "playerReaction": "That's my target, boss. I won't take my foot off the gas.",
+            "moraleDelta": 10
+          }
+        ]
+      },
+      {
+        "id": "conv_praise_open_03",
+        "text": "Knock knock, manager. Theo said you wanted a quick word in the office.",
+        "voText": "Knock knock, manager. Theo said you wanted a quick word in the office.",
+        "replies": [
+          {
+            "id": "conv_praise_rep_03_a",
+            "text": "Take a seat. I just wanted to tell you how proud the staff are of your recent displays.",
+            "voText": "Take a seat. I just wanted to tell you how proud the staff are of your recent displays.",
+            "tone": "praise",
+            "playerReaction": "Thank you, gaffer! The whole squad feels in a great rhythm right now.",
+            "moraleDelta": 11
+          },
+          {
+            "id": "conv_praise_rep_03_b",
+            "text": "You're playing well, so keep that discipline and tactical sharpness, {player}.",
+            "voText": "You're playing well, so keep that discipline and tactical sharpness.",
+            "nameSlot": "end",
+            "tone": "standards",
+            "playerReaction": "Absolutely, boss. Staying locked in for the weekend.",
+            "moraleDelta": 7
+          },
+          {
+            "id": "conv_praise_rep_03_c",
+            "text": "{player}, show the opposition fans why you're the best in your position.",
+            "voText": "Show the opposition fans why you're the best in your position.",
+            "nameSlot": "start",
+            "tone": "challenge",
+            "playerReaction": "Count on me, boss. Can't wait for kickoff.",
+            "moraleDelta": 12
+          }
+        ]
+      }
+    ]
+  }
+}

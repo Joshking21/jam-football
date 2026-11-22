@@ -8,11 +8,21 @@ import { Crest } from '../components/Crest';
 import { Ticker } from '../components/Ticker';
 import { formatMoney } from '../../core/math';
 import { Player } from '../../core/types';
-import { Calendar, DollarSign, TrendingUp, Activity, ArrowRight, CheckCircle2 } from 'lucide-react';
+import {
+  Calendar,
+  DollarSign,
+  TrendingUp,
+  Activity,
+  ArrowRight,
+  CheckCircle2,
+  MessageSquare,
+  ChevronRight,
+} from 'lucide-react';
 
 export const WeekSummaryScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
   const advanceGame = useStore((state) => state.advanceGame);
+  const openConversationModal = useStore((state) => state.openConversationModal);
 
   if (!gameState) return null;
 
@@ -96,6 +106,43 @@ export const WeekSummaryScreen: React.FC = () => {
               Advance Week <ArrowRight size={18} />
             </Button>
           </div>
+
+          {/* Player at the Door Alert (§12.9, §14.11.3) */}
+          {gameState.activeConversation && (
+            <div
+              style={{
+                backgroundColor: 'var(--surface-elevated, #161b22)',
+                border: '1px solid var(--border-subtle, #30363d)',
+                borderLeft: '4px solid var(--accent, #3b82f6)',
+                borderRadius: '4px',
+                padding: '14px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <MessageSquare
+                  size={22}
+                  style={{ color: 'var(--accent, #3b82f6)', flexShrink: 0 }}
+                />
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text)' }}>
+                    Player at Your Office Door:{' '}
+                    {gameState.players[gameState.activeConversation.playerId]?.knownAs ??
+                      gameState.players[gameState.activeConversation.playerId]?.lastName}
+                  </div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '2px' }}>
+                    "{gameState.activeConversation.opening.text}"
+                  </div>
+                </div>
+              </div>
+              <Button variant="primary" size="m" onClick={openConversationModal}>
+                Speak with Player <ChevronRight size={16} />
+              </Button>
+            </div>
+          )}
 
           {/* Grid: Round Results + Table Excerpt */}
           <div

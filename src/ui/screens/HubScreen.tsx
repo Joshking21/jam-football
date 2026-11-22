@@ -28,6 +28,7 @@ import {
   Check,
   FileText,
   Award,
+  MessageSquare,
 } from 'lucide-react';
 import { ClubId } from '../../core/types';
 
@@ -36,6 +37,7 @@ export const HubScreen: React.FC = () => {
   const setScreen = useStore((state) => state.setScreen);
   const showToast = useStore((state) => state.showToast);
   const updateUserTactics = useStore((state) => state.updateUserTactics);
+  const openConversationModal = useStore((state) => state.openConversationModal);
 
   const [showOpponentReport, setShowOpponentReport] = useState(false);
   const [tipApplied, setTipApplied] = useState(false);
@@ -149,6 +151,41 @@ export const HubScreen: React.FC = () => {
       }}
     >
       <div className="app-content-area" style={{ flex: 1 }}>
+        {/* Knock at the Door Office Conversation Banner (§12.9, §14.11.3) */}
+        {gameState.activeConversation && (
+          <div
+            style={{
+              backgroundColor: 'var(--surface-elevated, #161b22)',
+              border: '1px solid var(--border-subtle, #30363d)',
+              borderLeft: '4px solid var(--accent, #3b82f6)',
+              borderRadius: '4px',
+              padding: '12px 18px',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <MessageSquare size={20} style={{ color: 'var(--accent, #3b82f6)', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text)' }}>
+                  Knock at the Office Door ·{' '}
+                  {gameState.players[gameState.activeConversation.playerId]?.knownAs ??
+                    gameState.players[gameState.activeConversation.playerId]?.lastName}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>
+                  "{gameState.activeConversation.opening.text}"
+                </div>
+              </div>
+            </div>
+            <Button variant="primary" size="s" onClick={openConversationModal}>
+              Speak with Player <ChevronRight size={14} />
+            </Button>
+          </div>
+        )}
+
         <div className="hub-grid">
           {/* =========================================================================
               ROW 1: Dominant Next Match Graphic (Full Width 1/-1)

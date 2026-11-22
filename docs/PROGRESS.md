@@ -586,4 +586,24 @@ REVIEW REQUESTED: M4
   - Applied SPEC 1.7 content rules to team talks in `src/content/talks.json`: all 54 context × tone combinations updated with structured `{ id, text, voText, nameSlot? }` objects, with shouted variants for HT deficit and player token slotting.
   - Recaptured Tactics screenshots at 1280×720, 1920×1080, and 2560×1440 in `docs/screens/M3/`.
 
+## 2026-11-22 · M5.4 Player conversations, promises and office dialogue
+- Changed: src/content/conversations.json, src/core/types.ts, src/core/player/conversations.ts, src/core/game/advance.ts, src/state/store.ts, src/ui/screens/ConversationModal.tsx, src/ui/screens/InboxScreen.tsx, src/ui/screens/HubScreen.tsx, src/ui/screens/WeekSummaryScreen.tsx, src/App.tsx, tests/core/player/conversations.test.ts
+- Ran:
+  - `npm run check`:
+    - `prettier --check .` PASS
+    - `tsc --noEmit` PASS
+    - `vitest run`: 30 test files passed (193 tests passed in 32.99s) PASS
+    - `vite build`: main chunk 1,262 kB / three.js chunk 490 kB, built in 21.32s PASS
+- Notes:
+  - Implemented SPEC §12.9, §14.11.3, §16.4 Player Conversations, Promises & Office Dialogue:
+    - Authored `src/content/conversations.json` covering all 4 conversation types (`playing_time`, `contract`, `unhappy`, `praise`), each with >= 3 opening lines and 3 replies per opening (36 reply options total). Applied SPEC 1.7 content rules: every manager line and player line has a unique `id` and token-free `voText`. Coach reply lines that name a player utilize `nameSlot: "start"` or `"end"` with exactly one `{player}` token at the boundary. At least 1 of 3 alternatives per opening names a player.
+    - Implemented pure module `src/core/player/conversations.ts`:
+      - `checkConversationTriggers`: evaluated at WeekSummary (at most 1 conversation per week) covering playing time (<50% starts in completed fixtures while fit -> 60% chance), unhappy morale (<30 -> 40% chance), contract (yearsLeft === 1 and Ambitious or growth >= 3 -> 30% chance), and praise (last-3 avg rating >= 7.5 -> 20% chance). Deterministic token replacement and priority sorting.
+      - `applyConversationReply`: resolves chosen manager replies, applying morale deltas clamped to [0, 100], transfer listing flags, contract extensions (+20% wage, yearsLeft = 3), and promise creation (`{ kind: 'Starter', matchesRemaining: 4, startsCount: 0, targetStarts: 2 }`).
+      - `evaluatePromisesAfterMatch`: tracks starter status over a 4-match window in `applyMatchResults`. Fulfilling the promise awards +10 morale and sends thank-you dispatch; breaking the promise penalizes morale by -15, sets `transferListed = true`, and logs an urgent memo.
+    - Built atmospheric `src/ui/screens/ConversationModal.tsx` office dialogue component featuring desk view, player dossier tab, portrait, dialogue bubbles, tone pills, predicted effects, and resolution feedback.
+    - Wired global store, `advance.ts` week processing, and UI entry points in `InboxScreen` (Respond / Speak with Player button on memos), `HubScreen` (Knock at the Office Door banner), and `WeekSummaryScreen` (Player at the Door banner).
+    - Added 13 unit tests in `tests/core/player/conversations.test.ts` covering content integrity, SPEC 1.7 voText/nameSlot rules, trigger conditions, reply resolution, and promise lifecycle.
+
+
 

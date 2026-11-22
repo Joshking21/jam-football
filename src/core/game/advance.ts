@@ -37,6 +37,7 @@ import {
   determinePressContext,
   generatePressConference,
 } from './press';
+import { checkConversationTriggers, evaluatePromisesAfterMatch } from '../player/conversations';
 
 export interface LineupValidationResult {
   valid: boolean;
@@ -439,6 +440,24 @@ export function applyMatchResults(
     next.activePressCondition = null;
   }
 
+  // 6b. Evaluate player promises after matchday (§12.9)
+  const userClubForPromise = next.clubs[next.userClubId];
+  if (userClubForPromise) {
+    const userStarters = (userClubForPromise.tactics.lineup ?? []).filter(
+      (id): id is PlayerId => id != null,
+    );
+    const promiseCheck = evaluatePromisesAfterMatch(
+      next.players,
+      next.userClubId,
+      userStarters,
+      currentMatchday,
+    );
+    next.players = promiseCheck.updatedPlayers;
+    if (promiseCheck.notifications.length > 0) {
+      next.inbox.unshift(...promiseCheck.notifications);
+    }
+  }
+
   // 7. Post-match press conference trigger (§12.6, §16.2)
   const userFix = next.fixtures.find(
     (f) =>
@@ -702,6 +721,24 @@ export function runWeeklyProcessing(state: GameState): GameState {
     }
     const isTactical = (club.trainingPlan?.focus as string) === 'Tactical';
     club.familiarity = updateClubFamiliarity(club.familiarity, club.tactics, isTactical);
+  }
+
+  // 4. Check player conversation triggers (SPEC §12.9: At most 1 new conversation per week)
+  if (!next.activeConversation) {
+    const userClub = next.clubs[next.userClubId]!;
+    const convRng = createRng(deriveSeed(next.seed, 'player-conv', `${currentMatchday}`));
+    const convResult = checkConversationTriggers(
+      userClub,
+      next.players,
+      next.fixtures,
+      currentMatchday,
+      next.conversationsHistory ?? [],
+      convRng,
+    );
+    if (convResult) {
+      next.activeConversation = convResult.conversation;
+      next.inbox.unshift(convResult.inboxItem);
+    }
   }
 
   next.phase = 'WeekSummary';

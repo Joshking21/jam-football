@@ -22,6 +22,7 @@ import { WeekSummaryScreen } from './ui/screens/WeekSummaryScreen';
 import { SeasonEndScreen } from './ui/screens/SeasonEndScreen';
 import { SackedScreen } from './ui/screens/SackedScreen';
 import { PlayerProfileModal } from './ui/screens/PlayerProfileModal';
+import { ConversationModal } from './ui/screens/ConversationModal';
 import { SettingsModal } from './ui/screens/SettingsModal';
 import { CreditsModal } from './ui/screens/CreditsModal';
 import { TopBar } from './ui/components/TopBar';
@@ -177,6 +178,7 @@ export const App: React.FC = () => {
       )}
 
       {/* Global Modals */}
+      <ConversationModal />
       <SettingsModal />
       <CreditsModal />
       <Toast />

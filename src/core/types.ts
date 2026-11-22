@@ -141,6 +141,7 @@ export interface Player {
   scoutedBy: ClubId[]; // clubs that have full knowledge
   growth: number; // fractional OVR progress carried between weeks
   history: { matchday: number; event: string }[]; // e.g. 'Signed from Ironvale for €4.2M'
+  promise?: PlayerPromise | null; // active promise (§12.9)
 }
 
 // --- 8.4 Tactics ---
@@ -509,6 +510,7 @@ export interface GameState {
   news: NewsItem[];
   pressHistory: string[]; // question ids already asked
   conversationsHistory: string[];
+  activeConversation?: ActiveConversation | null; // pending player conversation (§12.9)
   tutorial: { step: number; done: boolean };
   pendingMatch: { fixtureId: FixtureId } | null;
   pendingPress?: PendingPressConference | null;
@@ -801,3 +803,44 @@ export type MatchCommand =
       plan: 0 | 1 | 2;
       issuedAtT: number;
     };
+
+// --- 8.11 Player Conversation Types (SPEC §12.9, §16.4) ---
+export type ConversationType = 'playing_time' | 'contract' | 'unhappy' | 'praise';
+
+export interface PlayerPromise {
+  kind: 'Starter';
+  matchesRemaining: number;
+  startsCount: number;
+  targetStarts: number;
+}
+
+export interface ConversationReplyOption {
+  id: string;
+  text: string;
+  voText: string;
+  nameSlot?: 'start' | 'end';
+  tone: string;
+  playerReaction: string;
+  moraleDelta: number;
+  transferList?: boolean;
+  contractRenewal?: boolean;
+  promise?: {
+    kind: 'Starter';
+    matches: number;
+    targetStarts: number;
+  };
+}
+
+export interface ConversationOpening {
+  id: string;
+  text: string;
+  voText: string;
+  replies: ConversationReplyOption[];
+}
+
+export interface ActiveConversation {
+  id: string;
+  type: ConversationType;
+  playerId: PlayerId;
+  opening: ConversationOpening;
+}

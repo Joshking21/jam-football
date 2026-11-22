@@ -10,6 +10,7 @@ import { Mail, AlertCircle, FileText, CheckCircle2, ChevronRight, Stamp } from '
 export const InboxScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
   const markInboxRead = useStore((state) => state.markInboxRead);
+  const openConversationModal = useStore((state) => state.openConversationModal);
 
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
@@ -296,10 +297,14 @@ export const InboxScreen: React.FC = () => {
                       variant="primary"
                       size="m"
                       onClick={() => {
-                        // Handle optional action
+                        if (currentItem.action?.type === 'conversation') {
+                          openConversationModal();
+                        }
                       }}
                     >
-                      Respond
+                      {currentItem.action?.type === 'conversation'
+                        ? 'Speak with Player'
+                        : 'Respond'}
                     </Button>
                   </div>
                 )}
