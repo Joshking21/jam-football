@@ -518,3 +518,19 @@ REVIEW REQUESTED: M3 (second pass)
     - Automated screenshot capture saved all 51 screenshots across 17 screens at 1280×720, 1920×1080, and 2560×1440 into `docs/screens/M4/`.
 
 REVIEW REQUESTED: M4
+
+## 2026-11-22 · M5.1 Training, development, condition/fatigue, injuries, and discipline
+- Changed: src/content/injuries.json, src/core/types.ts, src/core/player/condition.ts, src/core/player/development.ts, src/core/player/injuries.ts, src/core/player/discipline.ts, src/core/game/advance.ts, tests/core/player/condition.test.ts, tests/core/player/development.test.ts, tests/core/player/injuries.test.ts, tests/core/player/discipline.test.ts
+- Ran:
+  - `npm run check`:
+    - `prettier --check .` PASS
+    - `tsc --noEmit` PASS
+    - `vitest run`: 26 test files passed (152 tests passed in 23.36s) PASS
+    - `vite build`: built in 17.86s PASS
+- Notes:
+  - Implemented SPEC §12.1 Condition & §12.2 Fatigue in `src/core/player/condition.ts`: in-match drain by stamina/pressing/tempo, weekly recovery curves with fitness focus and unplayed player bonuses, fatigue accumulation (+minutes/9) and recovery, condition skill penalties, and selection disqualification (< 40).
+  - Implemented SPEC §12.3 Training & §12.4 Development in `src/core/player/development.ts`: age base growth curve, headroom, minutes factor, intensity and morale multipliers, attribute boosting (+1 to 3 attributes from focus pool without duplicates up to potential ceiling and 99 attribute cap), individual focus prioritization, and age decline.
+  - Implemented SPEC §12.5 Injuries in `src/content/injuries.json` (26 realistic injury definitions across Minor, Moderate, Major) and `src/core/player/injuries.ts`: in-match hazard calculation, weekly training injury checks, and healing with condition reset to 75.
+  - Implemented SPEC §12.6 Discipline in `src/core/player/discipline.ts`: 5 accumulated yellows trigger 1-match ban and reset, second yellow triggers 1-match ban, direct red triggers 2-match ban, and post-match press conference trigger rules.
+  - Integrated into `src/core/game/advance.ts` for both matchday results resolution and weekly cycle transitions.
+  - Added 26 unit tests across 4 test suites covering all M5.1 requirements.

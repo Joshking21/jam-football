@@ -23,6 +23,14 @@ import { deriveSeed, createRng } from '../rng';
 import { BALANCE } from '@/config/balance';
 import { roundTo, clamp } from '../math';
 import { updateClubFamiliarity, createStartingFamiliarity } from './familiarity';
+import {
+  calculateWeeklyConditionRecovery,
+  calculateWeeklyFatigueRecovery,
+  calculateMatchFatigue,
+} from '../player/condition';
+import { checkTrainingInjury } from '../player/injuries';
+import { processPlayerDevelopment } from '../player/development';
+import { processPlayerMatchCards } from '../player/discipline';
 
 export interface LineupValidationResult {
   valid: boolean;
@@ -151,6 +159,13 @@ export function applyMatchResults(
   const next = JSON.parse(JSON.stringify(state)) as GameState;
   const currentMatchday = next.matchday;
 
+  // Reset minutesLastMatch for all players before applying this round's minutes
+  for (const p of Object.values(next.players)) {
+    if (p.stats) {
+      p.stats.minutesLastMatch = 0;
+    }
+  }
+
   // 1. Update fixtures
   for (const f of next.fixtures) {
     if (f.matchday !== currentMatchday) continue;
@@ -212,6 +227,7 @@ export function applyMatchResults(
       p.stats.apps++;
       if (pl.minutes > 0) p.stats.starts++;
       p.stats.minutes += Math.round(pl.minutes);
+      p.stats.minutesLastMatch = Math.round(pl.minutes);
       p.stats.goals += pl.goals;
       p.stats.assists += pl.assists;
       p.stats.yellow += pl.yellow;
@@ -235,22 +251,17 @@ export function applyMatchResults(
 
       // Condition drain & fatigue accumulated (§12.1, §12.2)
       p.condition = pl.conditionEnd;
-      p.fatigue = Math.min(
-        100,
-        Math.round(p.fatigue + pl.minutes / BALANCE.fatigue.minutesDivisor),
-      );
+      p.fatigue = clamp(p.fatigue + calculateMatchFatigue(pl.minutes), 0, 100);
 
       // Cards & Suspensions (§12.6)
-      if (pl.yellow > 0) {
-        p.yellowAccumulation += pl.yellow;
-        if (p.yellowAccumulation >= BALANCE.discipline.yellowSuspensionCount) {
-          p.suspendedMatches = 1;
-          p.yellowAccumulation = 0;
-        }
-      }
-      if (pl.red > 0) {
-        p.suspendedMatches = 1;
-      }
+      const isDirectRed = pl.red > 0 && pl.yellow === 0;
+      const cardRes = processPlayerMatchCards(p, {
+        yellow: pl.yellow,
+        red: pl.red,
+        isDirectRed,
+      });
+      p.yellowAccumulation = cardRes.newYellowAccumulation;
+      p.suspendedMatches = cardRes.newSuspension;
 
       // Match result morale adjustment
       const isHome = pl.side === 'home';
@@ -399,35 +410,69 @@ export function runWeeklyProcessing(state: GameState): GameState {
   const next = JSON.parse(JSON.stringify(state)) as GameState;
   const currentMatchday = next.matchday;
 
-  // 1. Process player weekly recovery & development
+  // 1. Process player weekly recovery, development, training injuries & healing
   for (const [idStr, p] of Object.entries(next.players)) {
     const id = idStr as PlayerId;
     const club = p.clubId ? next.clubs[p.clubId] : null;
     const intensity = club?.trainingPlan.intensity ?? 'Normal';
     const focus = club?.trainingPlan.focus ?? 'Balanced';
+    const playedMinutes = p.stats.minutesLastMatch ?? 0;
 
-    const intMult = BALANCE.condition.intensityRecoveryMultipliers[intensity] ?? 1.0;
-    const stamDiv = BALANCE.condition.weeklyRecoveryStaminaDivisor;
-    const condBase = BALANCE.condition.weeklyRecoveryBase;
+    // Condition recovery (§12.1, §12.2)
+    const condRec = calculateWeeklyConditionRecovery({
+      stamina: p.attributes.stamina,
+      intensity,
+      focus,
+      playedMinutes,
+      fatigue: p.fatigue,
+    });
+    p.condition = clamp(Math.round(p.condition + condRec), 0, 100);
 
-    // Condition recovery
-    let condRec = (condBase + p.attributes.stamina / stamDiv) * intMult;
-    if (focus === 'Fitness') condRec += BALANCE.condition.fitnessFocusBonus;
-    // Unplayed bonus: if played 0 minutes this matchday
-    const playedMinutes = p.stats.minutes; // heuristic check
-    condRec += BALANCE.condition.restBonus;
-    p.condition = Math.min(100, p.condition + condRec);
+    // Fatigue recovery (§12.2)
+    const fatRec = calculateWeeklyFatigueRecovery(intensity);
+    p.fatigue = clamp(Math.round(p.fatigue - fatRec), 0, 100);
 
-    // Fatigue recovery
-    const fatRec =
-      BALANCE.fatigue.weeklyRecoveryIntensity[intensity] ?? BALANCE.fatigue.weeklyRecoveryBase;
-    p.fatigue = Math.max(0, p.fatigue - fatRec);
+    // Training injury check per SPEC §12.3 (only for healthy players)
+    if (!p.injury && p.clubId) {
+      const trainRng = createRng(
+        deriveSeed(next.seed, 'training-inj', `${currentMatchday}-${p.id}`),
+      );
+      const trainingInj = checkTrainingInjury(trainRng, intensity, p.fatigue);
+      if (trainingInj) {
+        p.injury = trainingInj;
+        if (p.clubId === next.userClubId) {
+          next.counters.inbox++;
+          next.inbox.unshift({
+            id: `inbox_${next.counters.inbox}`,
+            matchday: currentMatchday,
+            kind: 'Medical',
+            title: `Training Injury: ${p.knownAs ?? `${p.firstName} ${p.lastName}`}`,
+            body: `${p.knownAs ?? `${p.firstName} ${p.lastName}`} has suffered a ${trainingInj.kind.toLowerCase()} during training and is expected to miss ${trainingInj.matchdaysOut} matchdays.`,
+            read: false,
+            requiresAction: false,
+          });
+        }
+      }
+    }
 
-    // Injury healing
+    // Injury healing (§12.5)
     if (p.injury) {
       p.injury.matchdaysOut -= 1;
       if (p.injury.matchdaysOut <= 0) {
         p.injury = null;
+        p.condition = 75; // condition set to 75 per §12.5
+        if (p.clubId === next.userClubId) {
+          next.counters.inbox++;
+          next.inbox.unshift({
+            id: `inbox_${next.counters.inbox}`,
+            matchday: currentMatchday,
+            kind: 'Medical',
+            title: `Returned from Injury: ${p.knownAs ?? `${p.firstName} ${p.lastName}`}`,
+            body: `${p.knownAs ?? `${p.firstName} ${p.lastName}`} has recovered from injury and resumed full team training. Condition is at 75%.`,
+            read: false,
+            requiresAction: false,
+          });
+        }
       }
     }
 
@@ -437,24 +482,15 @@ export function runWeeklyProcessing(state: GameState): GameState {
     }
 
     // Fractional Development & Age Decline (§12.4)
-    let ageGrowth = 0;
-    for (const tier of BALANCE.development.ageBaseGrowth) {
-      if (p.age <= tier.maxAge) {
-        ageGrowth = tier.growth;
-        break;
-      }
-    }
-    const intFactor = BALANCE.training.intensityFactors[intensity]?.growth ?? 1.0;
-    p.growth = roundTo(p.growth + (ageGrowth * intFactor) / 18, 4);
-
-    if (p.growth >= 1.0) {
-      p.growth -= 1.0;
-      // Boost highest weight attribute or individual focus
-      p.attributes.composure = Math.min(99, p.attributes.composure + 1);
-    } else if (p.growth <= -1.0) {
-      p.growth += 1.0;
-      p.attributes.pace = Math.max(1, p.attributes.pace - 1);
-    }
+    const devRng = createRng(deriveSeed(next.seed, 'player-dev', `${currentMatchday}-${p.id}`));
+    const devRes = processPlayerDevelopment(p, {
+      focus,
+      intensity,
+      minutesLastMatch: playedMinutes,
+      individualFocus: club?.trainingPlan.individual[p.id] ?? null,
+      rng: devRng,
+    });
+    next.players[id] = devRes.player;
   }
 
   // 2. Club Weekly Finances & Fan Mood Drift (§12.10, §12.14)

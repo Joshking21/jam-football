@@ -1,0 +1,184 @@
+[
+  {
+    "id": "dead_leg",
+    "name": "Dead leg",
+    "severity": "Minor",
+    "minMatchdays": 1,
+    "maxMatchdays": 2
+  },
+  {
+    "id": "bruised_foot",
+    "name": "Bruised foot",
+    "severity": "Minor",
+    "minMatchdays": 1,
+    "maxMatchdays": 2
+  },
+  {
+    "id": "mild_hamstring_strain",
+    "name": "Hamstring strain",
+    "severity": "Minor",
+    "minMatchdays": 1,
+    "maxMatchdays": 2
+  },
+  {
+    "id": "calf_tightness",
+    "name": "Calf tightness",
+    "severity": "Minor",
+    "minMatchdays": 1,
+    "maxMatchdays": 2
+  },
+  {
+    "id": "twisted_ankle",
+    "name": "Twisted ankle",
+    "severity": "Minor",
+    "minMatchdays": 1,
+    "maxMatchdays": 2
+  },
+  {
+    "id": "groin_strain",
+    "name": "Groin strain",
+    "severity": "Minor",
+    "minMatchdays": 1,
+    "maxMatchdays": 2
+  },
+  {
+    "id": "lower_back_spasm",
+    "name": "Lower back spasm",
+    "severity": "Minor",
+    "minMatchdays": 1,
+    "maxMatchdays": 2
+  },
+  {
+    "id": "hip_pointer",
+    "name": "Hip pointer",
+    "severity": "Minor",
+    "minMatchdays": 1,
+    "maxMatchdays": 2
+  },
+  {
+    "id": "shoulder_contusion",
+    "name": "Shoulder contusion",
+    "severity": "Minor",
+    "minMatchdays": 1,
+    "maxMatchdays": 2
+  },
+  {
+    "id": "minor_knee_hyperextension",
+    "name": "Knee hyperextension",
+    "severity": "Minor",
+    "minMatchdays": 1,
+    "maxMatchdays": 2
+  },
+  {
+    "id": "hamstring_tear_grade2",
+    "name": "Hamstring tear",
+    "severity": "Moderate",
+    "minMatchdays": 3,
+    "maxMatchdays": 5
+  },
+  {
+    "id": "groin_tear",
+    "name": "Groin tear",
+    "severity": "Moderate",
+    "minMatchdays": 3,
+    "maxMatchdays": 5
+  },
+  {
+    "id": "ankle_ligament_sprain",
+    "name": "Ankle ligament sprain",
+    "severity": "Moderate",
+    "minMatchdays": 3,
+    "maxMatchdays": 5
+  },
+  {
+    "id": "thigh_muscle_hematoma",
+    "name": "Thigh muscle hematoma",
+    "severity": "Moderate",
+    "minMatchdays": 3,
+    "maxMatchdays": 5
+  },
+  {
+    "id": "fractured_toe",
+    "name": "Fractured toe",
+    "severity": "Moderate",
+    "minMatchdays": 3,
+    "maxMatchdays": 4
+  },
+  {
+    "id": "fractured_cheekbone",
+    "name": "Fractured cheekbone",
+    "severity": "Moderate",
+    "minMatchdays": 3,
+    "maxMatchdays": 5
+  },
+  {
+    "id": "calf_tear_grade2",
+    "name": "Calf tear",
+    "severity": "Moderate",
+    "minMatchdays": 3,
+    "maxMatchdays": 5
+  },
+  {
+    "id": "dislocated_wrist",
+    "name": "Dislocated wrist",
+    "severity": "Moderate",
+    "minMatchdays": 3,
+    "maxMatchdays": 4
+  },
+  {
+    "id": "rib_fracture",
+    "name": "Rib fracture",
+    "severity": "Moderate",
+    "minMatchdays": 4,
+    "maxMatchdays": 5
+  },
+  {
+    "id": "concussion",
+    "name": "Concussion recovery",
+    "severity": "Moderate",
+    "minMatchdays": 3,
+    "maxMatchdays": 4
+  },
+  {
+    "id": "acl_tear",
+    "name": "Knee ligament damage (ACL)",
+    "severity": "Major",
+    "minMatchdays": 8,
+    "maxMatchdays": 12
+  },
+  {
+    "id": "mcl_tear",
+    "name": "Medial knee ligament tear",
+    "severity": "Major",
+    "minMatchdays": 6,
+    "maxMatchdays": 9
+  },
+  {
+    "id": "achilles_rupture",
+    "name": "Achilles tendon rupture",
+    "severity": "Major",
+    "minMatchdays": 9,
+    "maxMatchdays": 12
+  },
+  {
+    "id": "fractured_metatarsal",
+    "name": "Fractured metatarsal",
+    "severity": "Major",
+    "minMatchdays": 6,
+    "maxMatchdays": 10
+  },
+  {
+    "id": "fractured_fibula",
+    "name": "Fractured fibula",
+    "severity": "Major",
+    "minMatchdays": 7,
+    "maxMatchdays": 11
+  },
+  {
+    "id": "torn_meniscus",
+    "name": "Torn meniscus",
+    "severity": "Major",
+    "minMatchdays": 6,
+    "maxMatchdays": 8
+  }
+]

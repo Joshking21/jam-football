@@ -94,6 +94,7 @@ export interface PlayerSeasonStats {
   apps: number;
   starts: number;
   minutes: number;
+  minutesLastMatch?: number;
   goals: number;
   assists: number;
   yellow: number;
@@ -313,9 +314,11 @@ export interface Kit {
   text: string;
 }
 
+export type Intensity = 'Light' | 'Normal' | 'Hard';
+
 export interface TrainingPlan {
   focus: 'Balanced' | 'Attacking' | 'Defending' | 'Fitness' | 'SetPieces' | 'Tactical';
-  intensity: 'Light' | 'Normal' | 'Hard';
+  intensity: Intensity;
   individual: Record<PlayerId, AttributeKey | null>;
 }
 
