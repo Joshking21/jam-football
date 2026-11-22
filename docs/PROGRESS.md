@@ -605,5 +605,25 @@ REVIEW REQUESTED: M4
     - Wired global store, `advance.ts` week processing, and UI entry points in `InboxScreen` (Respond / Speak with Player button on memos), `HubScreen` (Knock at the Office Door banner), and `WeekSummaryScreen` (Player at the Door banner).
     - Added 13 unit tests in `tests/core/player/conversations.test.ts` covering content integrity, SPEC 1.7 voText/nameSlot rules, trigger conditions, reply resolution, and promise lifecycle.
 
-
+## 2026-11-22 · M5.5 Board confidence, fans mood, and club finances
+- Changed: src/config/balance.ts, src/core/types.ts, src/core/game/advance.ts, src/ui/screens/ClubScreen.tsx, tests/core/game/financesAndBoard.test.ts
+- Ran:
+  - `npm run check`:
+    - `prettier --check .` PASS
+    - `tsc --noEmit` PASS
+    - `vitest run`: 31 test files passed (207 tests passed in 29.32s) PASS
+    - `vite build`: main chunk 1,264 kB / three.js chunk 490 kB, built in 13.22s PASS
+- Notes:
+  - Implemented SPEC §12.7 Board Confidence, §12.10 Finances, and §12.14 Fan Mood:
+    - Added comprehensive constants to `BALANCE` in `src/config/balance.ts`: `finances` (weekly TV income €300k, weekly sponsor income by reputation €100k-€400k, ticket price by reputation €26-€45, operating cost per reputation €50k, season-end prize money €20M down to €2M), `board` (match deltas based on opponent reputation and 3+ goal margin, position vs expectation checks from matchday 4, weekly wage and negative balance penalties, warning threshold < 25, praise threshold >= 80, sacking threshold < 12 from MD6), and `fans` (match deltas for home/away win/draw/loss, margin bonus, derby 2x multiplier, weekly drift to 60).
+    - Updated `src/core/game/advance.ts`:
+      - Calculated attendance using SPEC §12.10 capacity clamp and gate receipts using reputation-based ticket pricing.
+      - Updated matchday board confidence adjustment for both home and away clubs factoring in opponent relative reputation and blowout margins.
+      - Applied position vs expectation adjustments (+1 / -1 / -3) starting from matchday 4 across all clubs.
+      - Integrated weekly financial ledger updates in `runWeeklyProcessing`: TV rights, sponsorship revenue, payroll deductions, and operating expenses.
+      - Added board alerts: single warning inbox memo when confidence drops below 25 (`boardWarningSent`), single commendation inbox memo when confidence hits 80+ (`boardPraiseSent`), and sacking trigger (`next.phase = 'Sacked'`) when confidence drops below 12 from matchday 6 onwards.
+      - Applied weekly fan mood drift (+/- 1 towards 60).
+      - Added prize money disbursement at season end in `computeSeasonEnd`.
+    - Updated `src/ui/screens/ClubScreen.tsx` to read exact sponsor and operating cost values from `BALANCE`.
+    - Added 14 unit tests in `tests/core/game/financesAndBoard.test.ts` covering player value and wage calculations, weekly ledger and prize money, board confidence deltas and sacking rules, warning/commendation inbox dispatches, fan mood match deltas and derby doubling.
 

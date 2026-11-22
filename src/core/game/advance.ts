@@ -185,20 +185,19 @@ export function applyMatchResults(
     const awayClub = next.clubs[f.awayId]!;
 
     // Attendance calculation SPEC §12.10
-    const repTicketPrice: Record<number, number> = { 5: 45, 4: 38, 3: 32, 2: 26 };
-    const ticketPrice = repTicketPrice[homeClub.reputation] ?? 30;
+    const ticketPrice = BALANCE.finances.ticketPriceByReputation[homeClub.reputation] ?? 32;
     const isDerby = homeClub.rivals.includes(awayClub.id) || awayClub.rivals.includes(homeClub.id);
 
     const matchRng = createRng(deriveSeed(next.seed, 'match-meta', f.id));
-    const noise = (matchRng.next() - 0.5) * 0.06;
+    const noise = (matchRng.next() - 0.5) * BALANCE.finances.attendanceNoiseRange;
     const attPct = clamp(
-      0.55 +
-        0.4 * (homeClub.fanMood / 100) +
-        (isDerby ? 0.08 : 0) +
-        (awayClub.reputation === 5 ? 0.04 : 0) +
+      BALANCE.finances.attendanceBase +
+        BALANCE.finances.attendanceFanMoodFactor * (homeClub.fanMood / 100) +
+        (isDerby ? BALANCE.finances.attendanceDerbyBonus : 0) +
+        (awayClub.reputation === 5 ? BALANCE.finances.attendanceRep5Bonus : 0) +
         noise,
-      0.4,
-      1.0,
+      BALANCE.finances.attendanceMin,
+      BALANCE.finances.attendanceMax,
     );
     const attendance = Math.round(homeClub.stadium.capacity * attPct);
 
@@ -307,46 +306,66 @@ export function applyMatchResults(
     const isDraw = res.homeGoals === res.awayGoals;
     const margin = Math.abs(res.homeGoals - res.awayGoals);
 
-    // Fan Mood
-    let homeFanChange = homeWon ? 4 : isDraw ? -1 : -4;
-    let awayFanChange = awayWon ? 3 : isDraw ? -1 : -4;
+    // Fan Mood (§12.14)
+    let homeFanChange = homeWon
+      ? BALANCE.fans.homeWin
+      : isDraw
+        ? BALANCE.fans.draw
+        : BALANCE.fans.loss;
+    let awayFanChange = awayWon
+      ? BALANCE.fans.awayWin
+      : isDraw
+        ? BALANCE.fans.draw
+        : BALANCE.fans.loss;
     if (margin >= 3) {
-      if (homeWon) homeFanChange += 2;
-      else if (awayWon) awayFanChange += 2;
-      else if (homeWon) awayFanChange -= 2;
-      else if (awayWon) homeFanChange -= 2;
+      if (homeWon) {
+        homeFanChange += BALANCE.fans.margin3Extra;
+        awayFanChange -= BALANCE.fans.margin3Extra;
+      } else if (awayWon) {
+        awayFanChange += BALANCE.fans.margin3Extra;
+        homeFanChange -= BALANCE.fans.margin3Extra;
+      }
     }
     if (isDerby) {
-      homeFanChange *= 2;
-      awayFanChange *= 2;
+      homeFanChange *= BALANCE.fans.derbyMultiplier;
+      awayFanChange *= BALANCE.fans.derbyMultiplier;
     }
     homeClub.fanMood = clamp(homeClub.fanMood + homeFanChange, 0, 100);
     awayClub.fanMood = clamp(awayClub.fanMood + awayFanChange, 0, 100);
 
-    // Board Confidence for User Club (§12.7)
-    if (f.homeId === next.userClubId || f.awayId === next.userClubId) {
-      const isUserHome = f.homeId === next.userClubId;
-      const userClub = isUserHome ? homeClub : awayClub;
-      const oppClub = isUserHome ? awayClub : homeClub;
-      const userWon = isUserHome ? homeWon : awayWon;
-      const userLost = isUserHome ? awayWon : homeWon;
-
+    // Board Confidence (§12.7) for participating clubs
+    const updateClubBoardConfidence = (
+      club: Club,
+      opponent: Club,
+      won: boolean,
+      draw: boolean,
+      lost: boolean,
+    ) => {
       let confDelta = 0;
-      if (userWon) {
-        confDelta = oppClub.reputation > userClub.reputation ? 5 : 3;
-      } else if (isDraw) {
+      if (won) {
         confDelta =
-          oppClub.reputation > userClub.reputation
-            ? 1
-            : oppClub.reputation < userClub.reputation
-              ? -1
+          opponent.reputation > club.reputation
+            ? BALANCE.board.winHigherRep
+            : BALANCE.board.winBase;
+      } else if (draw) {
+        confDelta =
+          opponent.reputation > club.reputation
+            ? BALANCE.board.drawHigherRep
+            : opponent.reputation < club.reputation
+              ? BALANCE.board.drawLowerRep
               : 0;
-      } else if (userLost) {
-        confDelta = oppClub.reputation < userClub.reputation ? -5 : -3;
-        if (margin >= 3) confDelta -= 2;
+      } else if (lost) {
+        confDelta =
+          opponent.reputation < club.reputation
+            ? BALANCE.board.lossLowerRep
+            : BALANCE.board.lossBase;
+        if (margin >= 3) confDelta += BALANCE.board.lossMargin3Extra;
       }
-      userClub.boardConfidence = clamp(userClub.boardConfidence + confDelta, 0, 100);
-    }
+      club.boardConfidence = clamp(club.boardConfidence + confDelta, 0, 100);
+    };
+
+    updateClubBoardConfidence(homeClub, awayClub, homeWon, isDraw, awayWon);
+    updateClubBoardConfidence(awayClub, homeClub, awayWon, isDraw, homeWon);
   }
 
   // 5. Update and sort table
@@ -394,18 +413,19 @@ export function applyMatchResults(
 
   // Position vs expectation check from matchday 4 (§12.7)
   if (currentMatchday >= 4) {
-    const userClub = next.clubs[next.userClubId]!;
-    const userPos = next.table.findIndex((r) => r.clubId === next.userClubId) + 1;
-    let posDelta = 0;
-    if (userPos <= userClub.expectation.target) {
-      posDelta = 1;
-    } else if (userPos > userClub.expectation.acceptable) {
-      posDelta = -1;
-      if (userPos >= userClub.expectation.acceptable + 3) {
-        posDelta = -3;
+    for (const club of Object.values(next.clubs)) {
+      const pos = next.table.findIndex((r) => r.clubId === club.id) + 1;
+      let posDelta = 0;
+      if (pos <= club.expectation.target) {
+        posDelta = BALANCE.board.matchday4TargetMet;
+      } else if (pos > club.expectation.acceptable) {
+        posDelta = BALANCE.board.matchday4AcceptableExceeded;
+        if (pos >= club.expectation.acceptable + 3) {
+          posDelta += BALANCE.board.matchday4AcceptablePlus3Extra;
+        }
       }
+      club.boardConfidence = clamp(club.boardConfidence + posDelta, 0, 100);
     }
-    userClub.boardConfidence = clamp(userClub.boardConfidence + posDelta, 0, 100);
   }
 
   // 6. Handle active press condition from previous match if set (§16.2)
@@ -655,19 +675,11 @@ export function runWeeklyProcessing(state: GameState): GameState {
   }
 
   // 2. Club Weekly Finances & Fan Mood Drift (§12.10, §12.14)
-  const repSponsorIncome: Record<number, number> = {
-    5: 800_000,
-    4: 600_000,
-    3: 400_000,
-    2: 250_000,
-  };
-  const TV_INCOME = 600_000;
-
   for (const club of Object.values(next.clubs)) {
     // Income
-    const sponsor = repSponsorIncome[club.reputation] ?? 400_000;
-    club.balance += TV_INCOME + sponsor;
-    club.seasonStats.tvIncome += TV_INCOME;
+    const sponsor = BALANCE.finances.sponsorIncomeWeekly[club.reputation] ?? 400_000;
+    club.balance += BALANCE.finances.tvIncomeWeekly + sponsor;
+    club.seasonStats.tvIncome += BALANCE.finances.tvIncomeWeekly;
     club.seasonStats.sponsorIncome += sponsor;
 
     // Expenses: wages + operating
@@ -676,27 +688,33 @@ export function runWeeklyProcessing(state: GameState): GameState {
       const p = next.players[pId];
       if (p?.contract) squadWages += p.contract.wagePerWeek;
     }
-    const operating = 100_000 * club.reputation;
+    const operating = BALANCE.finances.operatingCostPerReputation * club.reputation;
     club.balance -= squadWages + operating;
     club.seasonStats.wagesPaid += squadWages;
     club.seasonStats.operating += operating;
 
     // Fan mood drift towards 60 by 1 per week (§12.14)
-    if (club.fanMood > 60) club.fanMood -= 1;
-    else if (club.fanMood < 60) club.fanMood += 1;
+    if (club.fanMood > BALANCE.fans.driftTarget) club.fanMood -= BALANCE.fans.driftStep;
+    else if (club.fanMood < BALANCE.fans.driftTarget) club.fanMood += BALANCE.fans.driftStep;
 
     // Board confidence penalties (§12.7)
     if (squadWages > club.wageBudget) {
-      club.boardConfidence = Math.max(0, club.boardConfidence - 2);
+      club.boardConfidence = Math.max(
+        0,
+        club.boardConfidence + BALANCE.board.wageOverBudgetPenalty,
+      );
     }
     if (club.balance < 0) {
-      club.boardConfidence = Math.max(0, club.boardConfidence - 4);
+      club.boardConfidence = Math.max(
+        0,
+        club.boardConfidence + BALANCE.board.balanceNegativePenalty,
+      );
     }
   }
 
-  // 3. User Club Sacking & Board Warnings (§12.7)
+  // 3. User Club Sacking & Board Warnings (§12.7, §12.11)
   const userClub = next.clubs[next.userClubId]!;
-  if (userClub.boardConfidence < 25) {
+  if (userClub.boardConfidence < BALANCE.board.warningThreshold && !next.boardWarningSent) {
     next.counters.inbox++;
     next.inbox.unshift({
       id: `inbox_${next.counters.inbox}`,
@@ -707,9 +725,28 @@ export function runWeeklyProcessing(state: GameState): GameState {
       read: false,
       requiresAction: false,
     });
+    next.boardWarningSent = true;
   }
 
-  if (currentMatchday >= 6 && userClub.boardConfidence < 12) {
+  // Board praise when confidence >= 80 for the first time (§12.11)
+  if (userClub.boardConfidence >= BALANCE.board.praiseThreshold && !next.boardPraiseSent) {
+    next.counters.inbox++;
+    next.inbox.unshift({
+      id: `inbox_${next.counters.inbox}`,
+      matchday: currentMatchday,
+      kind: 'Board',
+      title: 'Board Commendation: Outstanding Management',
+      body: `The board of ${userClub.name} wishes to formally express their unanimous satisfaction with recent results. The club is currently exceeding boardroom expectations.`,
+      read: false,
+      requiresAction: false,
+    });
+    next.boardPraiseSent = true;
+  }
+
+  if (
+    currentMatchday >= BALANCE.board.sackingMatchdayStart &&
+    userClub.boardConfidence < BALANCE.board.sackingThreshold
+  ) {
     next.phase = 'Sacked';
     return next;
   }
@@ -770,7 +807,7 @@ export function computeSeasonEnd(state: GameState): GameState {
     const row = next.table[i]!;
     const club = next.clubs[row.clubId];
     if (club) {
-      const prize = 20_000_000 - i * 2_000_000;
+      const prize = BALANCE.finances.prizeMoney1st - i * BALANCE.finances.prizeMoneyStep;
       club.balance += prize;
       club.seasonStats.prizeMoney += prize;
     }

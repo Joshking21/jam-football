@@ -6,6 +6,7 @@ import { useStore } from '../../state/store';
 import { Sheet } from '../components/Sheet';
 import { CountUp } from '../components/CountUp';
 import { formatMoney } from '../../core/math';
+import { BALANCE } from '../../config/balance';
 import { Crest } from '../components/Crest';
 import { DollarSign, TrendingUp, Building, Users, Target, ShieldCheck } from 'lucide-react';
 
@@ -240,7 +241,10 @@ export const ClubScreen: React.FC = () => {
                         color: 'var(--marker-green)',
                       }}
                     >
-                      +{formatMoney(userClub.reputation * 150000)}
+                      +
+                      {formatMoney(
+                        BALANCE.finances.sponsorIncomeWeekly[userClub.reputation] ?? 400_000,
+                      )}
                     </td>
                   </tr>
                   <tr style={{ borderBottom: '1px solid var(--paper-rule)' }}>
@@ -268,7 +272,10 @@ export const ClubScreen: React.FC = () => {
                         color: 'var(--marker-red)',
                       }}
                     >
-                      -{formatMoney(userClub.reputation * 100000)}
+                      -
+                      {formatMoney(
+                        userClub.reputation * BALANCE.finances.operatingCostPerReputation,
+                      )}
                     </td>
                   </tr>
                 </tbody>

@@ -517,6 +517,8 @@ export interface GameState {
   activePressCondition?: ActivePressCondition | null;
   focusBoost?: number; // team-wide z-unit boost from pre-match team talk (§12.8)
   awards: SeasonAwards | null;
+  boardWarningSent?: boolean;
+  boardPraiseSent?: boolean;
   score: number; // leaderboard score, computed at season end
   counters: { news: number; inbox: number; offer: number };
 }

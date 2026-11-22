@@ -76,6 +76,62 @@ export const BALANCE = {
     directRedProbability: 0.006,
     yellowSuspensionCount: 5,
   },
+  // Finances (SPEC §12.10)
+  finances: {
+    tvIncomeWeekly: 600_000,
+    sponsorIncomeWeekly: {
+      5: 800_000,
+      4: 600_000,
+      3: 400_000,
+      2: 250_000,
+    } as Record<number, number>,
+    ticketPriceByReputation: {
+      5: 45,
+      4: 38,
+      3: 32,
+      2: 26,
+    } as Record<number, number>,
+    operatingCostPerReputation: 100_000,
+    prizeMoney1st: 20_000_000,
+    prizeMoneyStep: 2_000_000,
+    attendanceBase: 0.55,
+    attendanceFanMoodFactor: 0.4,
+    attendanceDerbyBonus: 0.08,
+    attendanceRep5Bonus: 0.04,
+    attendanceNoiseRange: 0.06,
+    attendanceMin: 0.4,
+    attendanceMax: 1.0,
+  },
+  // Board Confidence (SPEC §12.7)
+  board: {
+    winBase: 3,
+    winHigherRep: 5,
+    drawHigherRep: 1,
+    drawLowerRep: -1,
+    lossBase: -3,
+    lossLowerRep: -5,
+    lossMargin3Extra: -2,
+    matchday4TargetMet: 1,
+    matchday4AcceptableExceeded: -1,
+    matchday4AcceptablePlus3Extra: -2,
+    wageOverBudgetPenalty: -2,
+    balanceNegativePenalty: -4,
+    warningThreshold: 25,
+    sackingThreshold: 12,
+    sackingMatchdayStart: 6,
+    praiseThreshold: 80,
+  },
+  // Fans (SPEC §12.14)
+  fans: {
+    homeWin: 4,
+    awayWin: 3,
+    draw: -1,
+    loss: -4,
+    margin3Extra: 2,
+    derbyMultiplier: 2,
+    driftTarget: 60,
+    driftStep: 1,
+  },
 } as const;
 
 // SPEC §13.7, §13.8, §13.16 Calibration Constants (K.*)
