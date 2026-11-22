@@ -4,7 +4,7 @@ Version 1.7 · 22 November 2026 · Target: OpenGame Game Jam #1 (entries close *
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
 
-**Changes in 1.7 (22 Nov):** the game becomes a club you live in. Every screen sits in a room of one 3D club building (office, boardroom, dressing room, tunnel, training ground, press room). The coach walks between rooms, and the player can look around each room with the mouse (§11.25). People share one rig and have painted face layers whose mouths move with their voices (§14.11). Players knock on the office door for conversations, Theo the assistant is a visible person, and the match gets touchline cuts of the coach and bench (§14.11). The coach is voiced (§17.4), and every room has its own sound (§17.5). New content file `club.json` (§16.9), asset contracts (§18.2, §18.3, §18.6), budgets (§21), and milestone **M6b** (§23). Depth still comes first: rooms frame the screens and never replace them. **Tactics returns to the sideways board** (v3 look, "v5 layout", §11.8); the v1.6 vertical three-column layout is withdrawn. Proposal record: `docs/design/SPEC-1.7-PROPOSAL.md`.
+**Changes in 1.7 (22 Nov):** the game becomes a club you live in. Every screen sits in a room of one 3D club building (office, boardroom, dressing room, tunnel, training ground, press room). The coach walks between rooms, and the player can look around each room with the mouse (§11.25). People share one rig and have painted face layers whose mouths move with their voices (§14.11). Players knock on the office door for conversations, Theo the assistant is a visible person, and the match gets touchline cuts of the coach and bench (§14.11). The coach is voiced (§17.4), and every room has its own sound (§17.5). New content file `club.json` (§16.9), asset contracts (§18.2, §18.3, §18.6), budgets (§21), and milestone **M6b** (§23). Depth still comes first: rooms frame the screens and never replace them. **Training in detail** (§12.18, M5 task 8): a planned week of sessions, personal plans, one-to-ones, training ratings and progress. **Tactics returns to the sideways board** (v3 look, "v5 layout", §11.8); the v1.6 vertical three-column layout is withdrawn. Proposal record: `docs/design/SPEC-1.7-PROPOSAL.md`.
 
 **Changes in 1.6 (20 Nov):** the sidebar is gone: navigation moves into the top bar as tabs (§11.0, §19.6) on **every** screen, on air and office alike, like Football Manager. Office work screens fit the window with no page scroll. Tactics becomes three columns around a vertical board: the player's file (who he is) on the left, his orders (what he's told) on the right (§11.8, layout in `docs/design/tactics/README.md` "v4 layout"). New component RadarChart: the player's shape against what his role needs (§19.5).
 
@@ -223,7 +223,7 @@ jam-football/
 │  │  ├─ people/  board.ts  fans.ts  talks.ts  press.ts  conversations.ts  assistant.ts  training.ts
 │  │  ├─ news/    news.ts
 │  │  └─ game/    newGame.ts  advance.ts  score.ts  migrations.ts
-│  ├─ content/  commentary.json  press.json  talks.json  conversations.json  news.json  assistant.json  injuries.json  club.json (§16.9)
+│  ├─ content/  commentary.json  press.json  talks.json  conversations.json  news.json  assistant.json  injuries.json  club.json (§16.9)  training.json (§12.18.10)
 │  │            tactics.json   (role/order/setting gain and cost lines, §13.17.6)
 │  ├─ workers/  match.worker.ts  season.worker.ts
 │  ├─ state/    store.ts  saves.ts  selectors.ts  settings.ts
@@ -751,6 +751,8 @@ Grid of cards:
 - Validation (blocks Kick Off with a clear message): exactly 1 GK in the GK slot, 11 starters, no injured/suspended player in XI or bench, no duplicates.
 
 ### 11.9 Training
+**v1.7 (wins over the bullets below where they differ; rules in §12.18):** the screen lives on the training ground (§11.25), with no page scroll. The board on the left is the **week**: a grid of days × morning and afternoon with session cards (category colour, name, load pips). You drag cards from a library strip under it, or press Enter on a slot to pick one. Above it are the template dropdown, intensity, **Theo's week** (memo and Apply), "Let Theo plan every week", the week's load meter with its condition and injury forecast, and the team's average training rating. The panel on the right has tabs: **Players** (focus, workload, extra sessions, rest, mentor, this week's rating with a 6-week sparkline, injury risk, overload flag; selecting a row opens his file with the attribute arrows), **One-to-one** (the week's pick, the four types with their effects, Theo's suggestion, then the scene), and **Progress** (the selected player's season OVR line, attribute arrows and coach's note). The 3D drills on the training ground follow the category that dominates the week.
+
 - Team focus (6 cards with icons and effect descriptions from §12.3), intensity (Light/Normal/Hard with injury-risk and recovery indicators).
 - Individual focus table: players with a dropdown grouped as Attribute / Role / Position (or "None") (§12.17.4), a rest toggle (§12.17.3), and an injury-risk chip (§12.17.6).
 - "Last week" panel: growth summary (players who improved, with +OVR), training injuries.
@@ -1033,6 +1035,152 @@ Same rules as §13.17: every option has a gain and a cost, defaults are neutral,
 **12.17.6 Injury risk (display only).** Per player, Low / Medium / High from the §12.5 hazard terms (condition, fatigue) × physio, plus age ≥ 30 shown as a reason. Thresholds: hazard factor < 1.2 Low, < 1.6 Medium, otherwise High. It shows in a Squad column and in the player's file. It is not a new engine rule.
 
 **12.17.7 Not in this jam** (SPEC-1.4 proposal Tier C, kept for later): full set-piece designer, contract clauses, youth academy, social groups, multi-season careers.
+
+### 12.18 Training in detail (v1.7, approved by the user 22 Nov; `core/people/training.ts`)
+This replaces the single weekly team focus of §12.3 with a planned week. The §12.3 tables stay as the **category** numbers. The same rules apply as §13.17: every option has a gain and a cost; the **default week reproduces the old Balanced / Normal results**, so the §13.16 calibration still holds; Theo can set everything with one Apply; all numbers go in `balance.ts → K.train.*`. AI clubs don't simulate any of this: they use the default week's effects.
+
+#### 12.18.1 The week
+Each week between matchdays has these slots:
+
+| Day | Slots |
+|---|---|
+| 1 | **Recovery** (fixed). Players who played ≥ 60' recover; everyone else does a Small-sided game. Not editable. |
+| 2–5 | **Morning and afternoon**: 8 free slots |
+| 6 | **Match prep**: 1 slot (Opponent prep, Shape work, Set-piece practice, Video analysis or Light session) |
+| 7 | Matchday |
+
+Every free slot holds one session from the library (§12.18.2) or **Rest**.
+
+#### 12.18.2 Session library
+Each session belongs to a category (the §12.3 focus rows). It lists the attributes it grows and has a **load** (how much it tires players). Goalkeepers always do goalkeeping work in parallel; their growth goes to reflexes, handling, oneOnOnes and aerialCommand, whatever the session.
+
+| Session | Category | Grows | Load |
+|---|---|---|---|
+| Finishing | Attacking | finishing, composure, offTheBall | 2 |
+| Crossing and delivery | Attacking | crossing, setPieces, passing | 2 |
+| Combination play | Attacking | passing, firstTouch, offTheBall, decisions | 2 |
+| 1v1 dribbling | Attacking | dribbling, firstTouch, pace | 2 |
+| Defensive shape | Defending | positioning, decisions, workRate | 1 |
+| Defending the box | Defending | heading, tackling, strength, positioning | 2 |
+| Pressing | Defending | workRate, stamina, decisions | 3 |
+| Endurance | Fitness | stamina | 3 |
+| Speed and power | Fitness | pace, strength | 3 |
+| Shape work | Tactical | positioning, decisions; formation familiarity +3 per session | 1 |
+| Video analysis | Tactical | decisions, composure; all four familiarity areas +1 per session | 0 |
+| Opponent prep (day 6 only) | Tactical | none; applies the §12.17.2 prep (SetPieces, Press, Wingers or Shape) | 1 |
+| Set-piece practice | SetPieces | setPieces, heading, crossing | 1 |
+| Small-sided game | Balanced | the player's primary-position weights; morale +1 | 2 |
+| Recovery | Fitness | none; condition +3, fatigue −2 | −2 |
+| Rest | none | none; condition +2 | −1 |
+| Light session (day 6 only) | none | none | 0 |
+
+#### 12.18.3 What the week does
+- **Development** (§12.4): the 3 attributes picked per growth point come from the union of the week's "Grows" lists. Each attribute is weighted by how many sessions include it × its OVR weight at the player's position (weight-0 attributes count 0.05). An individual focus (§12.17.4) still always takes its 40%.
+- **Volume:** positive growth × `0.6 + 0.05 × trainingSessions`, where `trainingSessions` = free slots that aren't Rest or Recovery (8 → ×1.0, 4 → ×0.8).
+- **Next-match bonus (sharpness):** only day 5 (both slots) and day 6 count. Each category's §12.3 bonus × (its sessions in those 3 slots ÷ 3). For example, Finishing + Combination play + Light = Attacking bonus × ⅔.
+- **Load and condition:** `weekLoad` = the sum of the 8 free slots' loads plus day 6. Weekly recovery (§12.1) gets `+ K.train.loadCond × (12 − weekLoad)` (default 0.6 per point). Training injury chance (§12.3) × `weekLoad / 12`. Team intensity (Light / Normal / Hard, §12.3) still multiplies growth, injury and recovery on top.
+- **The default week ("Balanced week"):**
+  - Day 2: Combination play, Defensive shape
+  - Day 3: Endurance, Finishing
+  - Day 4: Small-sided game, Defending the box
+  - Day 5: Shape work, Set-piece practice
+  - Day 6: Light session
+
+  `weekLoad` = 12. Its sharpness and familiarity are the baseline the §13.16 calibration is measured with.
+- **Templates:**
+
+  | Template | Use |
+  |---|---|
+  | Balanced week | the default |
+  | Tactical week | more Shape work and Video analysis; low load |
+  | Physical week | Endurance, Speed and power; high load; best early in the season |
+  | Attacking week | |
+  | Defensive week | |
+  | Opponent week | Theo fills day 5–6 against the next opponent |
+  | Recovery week | for congested or tired squads; low growth |
+
+  The user can save one custom week.
+
+#### 12.18.4 Theo's week (one click)
+Theo builds a suggested week from the Balanced week:
+- If ≥ 4 starters have fatigue > 50: swap the two load-3 sessions for Recovery.
+- If any familiarity area is < 70: add Shape work or Video analysis on day 5.
+- Day 6: Opponent prep with the prep §12.17.2 suggests from the opponent's style.
+- If the next opponent's set-piece threat (their best header ≥ 75) is high: Set-piece practice on day 5.
+
+He shows it as a memo with the reasons (one line each) and **Apply**. A setting on the Training screen, **"Let Theo plan every week"**, applies it automatically each week.
+
+#### 12.18.5 Each player's plan (personal training)
+In the Players tab of Training, and in the player's file:
+- **Individual focus:** attribute, role or position (§12.17.4, unchanged).
+- **Workload:**
+
+  | Workload | Growth | Injury chance | Condition | Training rating |
+  |---|---|---|---|---|
+  | Light | ×0.8 | ×0.6 | +3 per week | |
+  | Normal | (default) | | | |
+  | Heavy | ×1.15 | ×1.6 | −3 per week | +0.2 |
+
+- **Extra sessions** (on or off): he stays after training. Growth ×1.15, fatigue +4 per week, injury ×1.3, training rating +0.2. A Relaxed or Temperamental player has a 30% chance each week to skip them ("Didn't fancy it"), with morale −3 and no gain.
+- **Rest** (§12.17.3, unchanged).
+- **Mentoring:** up to 3 pairs. The mentor must be a leader (§12.17.5) or aged ≥ 28 and Professional or Leader; the mentee must be aged ≤ 21.
+  - **Gain:** each week the mentee's morale moves 20% toward the mentor's (on top of §12.17.5), and his positive development is ×1.08.
+  - **Cost:** the mentor's own development ×0.9. If the mentor is sold or loses his place for 3 matches running, the mentee's morale −6.
+
+#### 12.18.6 One-to-one sessions
+Once per week the coach takes **one player** for a personal session on the training ground. It is a scene with that player, with faces and voices (§11.25, §14.11), and the coach's lines come from `training.json`. Pick one type:
+
+| Type | Effect | When it's offered |
+|---|---|---|
+| Technique work | his positive growth this week ×1.25 (it lands on his individual focus first) | always |
+| Confidence talk | morale +6 if his morale < 50, else +2 (Relaxed ×0.5, Leader ×1.2) | always |
+| Fitness work | condition +6, fatigue −4 | always |
+| Video of his last match | next match: his decision-weighted contests ctx +0.05 | only if he played the last match |
+
+- **Cost: favourites.** Picking the same player 3 weeks running gives every other leader morale −2, with an inbox memo ("The lads think you've got a favourite").
+- The session is optional; skipping it costs nothing.
+- Theo suggests one each week from the clearest need: lowest morale among starters, a fatigue > 60 starter, or a young player with an individual focus.
+
+#### 12.18.7 Training ratings
+- Every player gets a weekly **training rating** from 1.0 to 10.0 (one decimal):
+  `6.4 + (Professional +0.6, Ambitious +0.3, Relaxed −0.4) + 0.6·(morale − 50)/50 + (condition < 80 ? (condition − 80)/50 : 0) + workload and extra-session bonuses + rng.normal(0, Temperamental ? 1.0 : 0.6)`, clamped.
+- **Effects:**
+  - **≥ 7.5:** development ×1.05 and morale +1.
+  - **≤ 5.5:** development ×0.95.
+  - **3 weeks running ≥ 7.5 while he started < 50% of those matches:** a new §12.9 trigger, **"Training well, not playing"**, at 50% chance (content: its own `conversations.json` type `training_well`, ≥ 3 openings × 3 replies).
+- **Shown in:** a Training Players-tab column (this week's rating and a 6-week sparkline), the player's file, and an assistant remark when a player is "flying in training" (≥ 8.0) or "going through the motions" (≤ 5.0). The team average shows on the Week tab.
+
+#### 12.18.8 Progress you can see
+- Store for the user's club only:
+  - weekly OVR for the season (`ovrHistory: number[]`)
+  - a 4-week attribute snapshot ring (`attrHistory`)
+  - the last 8 training ratings
+- **The player's file and the Training Progress tab show:**
+  - an arrow beside each attribute: ▲ if it's +1 or more over 4 weeks, ▼ if −1 or less, nothing otherwise
+  - the season's OVR line
+  - a coach's note, one line chosen from `training.json` by the strongest signal (rating trend, growth, condition, workload): "Sharper on the ball this month.", "Struggling with the pace of training.", "Ready for more minutes."
+- **Week Summary** lists the top 3 improvers and anyone whose rating dropped 2+ points.
+
+#### 12.18.9 Workload and the physio
+- Day 1 Recovery is automatic for players who played ≥ 60'.
+- A player is **overloaded** if his fatigue > 60 and his workload isn't Light, or he does Extra sessions with fatigue > 50. The physio raises it in an inbox memo ("Overloaded: Calder, Mensah. Ease them off?") with a one-click "Set workload Light". His injury-risk chip (§12.17.6) adds "overloaded" as a reason.
+
+#### 12.18.10 Content (`training.json`, new)
+- Coach's notes: ≥ 24, by signal.
+- One-to-one coach lines: ≥ 3 per type, voiced (`vo/coach/`), `nameSlot` allowed (§16.3).
+- Player replies per type: ≥ 3, with mood.
+- Theo's week memo reasons: ≥ 1 per rule.
+
+#### 12.18.11 Coaches per area (only if time allows, after everything above is accepted)
+- **New staff (§12.17.1):** attacking coach, defending coach, fitness coach and goalkeeping coach, each 1–5 stars.
+- **Gain:** sessions of that coach's category grow × `0.85 + 0.06·stars`, replacing the first-team coach's multiplier for that category. The fitness coach also scales the Recovery and Rest condition gains by the same factor. The goalkeeping coach drives goalkeeper growth.
+- **Cost:** wages as §12.17.1.
+- They are replaced the same way as other staff. Without these coaches, the first-team coach covers every category.
+
+#### 12.18.12 Calibration and tests
+- **Default-week check:** the default week, Normal intensity and default player plans reproduce the M5.1 development numbers within ±3% over a 2,000-season-week sample.
+- **No-dominant-choice check:** no template beats the Balanced week on total OVR growth by more than 15% without paying for it in injuries or condition.
+- **Unit tests:** every session's growth list, sharpness, `weekLoad`, workload, extra sessions, mentoring, one-to-one effects and costs, training ratings, and the new conversation trigger.
 
 ---
 
@@ -2355,6 +2503,7 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 5. Board and fans (§12.7, §12.14), finances (§12.10).
 6. Transfer windows complete (§12.13) with scouting (§12.12) and AI activity; news (§16.6).
 7. Club depth (§12.17): staff and replacing them, match preparation, rest days, role and position training, dressing room (leaders, cohesion), injury risk column.
+8. **Training in detail (§12.18, v1.7):** the planned week and session library, templates, Theo's week, personal plans (workload, extra sessions, mentoring), one-to-one sessions (screen flow now, the 3D scene in M6b), training ratings and the new conversation trigger, progress arrows and the OVR line, overload memos, `training.json`, the Training screen (§11.9 v1.7) as a 2D screen until M6b frames it. Run the §12.18.12 checks. §12.18.11 (coaches per area) only after M7 is on track.
 **Accept:** every system visibly changes something the player can see within a season; transfer window rounds behave per the tests; content files meet minimum counts.
 
 ### M6 — Assistant and audio (8–10 Dec)
