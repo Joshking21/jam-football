@@ -2,9 +2,22 @@
   "PRE_FAV": {
     "Calm": {
       "managerLines": [
-        "We are the better side, but only if we do the fundamentals. Play our game, stay patient.",
-        "Keep your heads, stick to our shape and let the quality show. Do not give them a sniff.",
-        "No complacency today. We have prepared well, so trust the pattern and execute cleanly."
+        {
+          "id": "pre_fav_calm_01",
+          "text": "We are the better side, but only if we do the fundamentals. Play our game, stay patient.",
+          "voText": "We are the better side, but only if we do the fundamentals. Play our game, stay patient."
+        },
+        {
+          "id": "pre_fav_calm_02",
+          "text": "Keep your heads, stick to our shape and let the quality show. Do not give them a sniff.",
+          "voText": "Keep your heads, stick to our shape and let the quality show. Do not give them a sniff."
+        },
+        {
+          "id": "pre_fav_calm_03",
+          "text": "{player}, set the tempo early and keep everyone calm.",
+          "voText": "set the tempo early and keep everyone calm.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "The squad looks composed and ready for business.",
@@ -15,9 +28,22 @@
     },
     "Motivate": {
       "managerLines": [
-        "Go out there and show this crowd why we're favourites. High tempo from the first whistle!",
-        "Take the initiative early! Put them under severe pressure and make them crack.",
-        "This is our pitch. Set the tone in the opening five minutes and dominate every duel."
+        {
+          "id": "pre_fav_motivate_01",
+          "text": "Go out there and show this crowd why we're favourites. High tempo from the first whistle!",
+          "voText": "Go out there and show this crowd why we're favourites. High tempo from the first whistle!"
+        },
+        {
+          "id": "pre_fav_motivate_02",
+          "text": "Take the initiative early! Put them under severe pressure and make them crack.",
+          "voText": "Take the initiative early! Put them under severe pressure and make them crack."
+        },
+        {
+          "id": "pre_fav_motivate_03",
+          "text": "Set the standard for the group today, {player}.",
+          "voText": "Set the standard for the group today.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "The squad roars in approval, ready to run through brick walls.",
@@ -28,9 +54,22 @@
     },
     "Demand": {
       "managerLines": [
-        "I want complete professionalism today. Nothing less than three points is acceptable.",
-        "We are superior in every position on that pitch. Don't waste the advantage—bury them.",
-        "Standards cannot slip against these. Show ruthlessness from the very first whistle."
+        {
+          "id": "pre_fav_demand_01",
+          "text": "I want complete professionalism today. Nothing less than three points is acceptable.",
+          "voText": "I want complete professionalism today. Nothing less than three points is acceptable."
+        },
+        {
+          "id": "pre_fav_demand_02",
+          "text": "We are superior in every position on that pitch. Don't waste the advantage\u2014bury them.",
+          "voText": "We are superior in every position on that pitch. Don't waste the advantage\u2014bury them."
+        },
+        {
+          "id": "pre_fav_demand_03",
+          "text": "{player}, I want zero complacency out of you today.",
+          "voText": "I want zero complacency out of you today.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "The squad embraces the challenge with steely determination.",
@@ -41,12 +80,25 @@
     },
     "Praise": {
       "managerLines": [
-        "You've earned the right to be called favourites. Go express yourselves and enjoy it.",
-        "The work in training this week was world class. Take that belief onto the pitch.",
-        "You're in sensational form. Keep playing with freedom and the result will follow."
+        {
+          "id": "pre_fav_praise_01",
+          "text": "You've earned the right to be called favourites. Go express yourselves and enjoy it.",
+          "voText": "You've earned the right to be called favourites. Go express yourselves and enjoy it."
+        },
+        {
+          "id": "pre_fav_praise_02",
+          "text": "The work in training this week was world class. Take that belief onto the pitch.",
+          "voText": "The work in training this week was world class. Take that belief onto the pitch."
+        },
+        {
+          "id": "pre_fav_praise_03",
+          "text": "You have earned this start, {player}. Go enjoy it.",
+          "voText": "You have earned this start. Go enjoy it.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
-        "positive": "Chest out, heads high—the squad feels appreciated.",
+        "positive": "Chest out, heads high\u2014the squad feels appreciated.",
         "neutral": "Players smile and acknowledge the tribute.",
         "negative": "Some players glance around, wondering if praise before kickoff is wise.",
         "mixed": "Smiles all around, though the captain quickly reminds them to stay focused."
@@ -54,9 +106,22 @@
     },
     "Disappoint": {
       "managerLines": [
-        "I'm hearing whispers that you think this will be a walkover. That attitude disgusts me.",
-        "Drop the egos right now. If any of you coast today, you won't wear the shirt next week.",
-        "Too many of you are reading your own press. You haven't won a single blade of grass yet."
+        {
+          "id": "pre_fav_disappoint_01",
+          "text": "I'm hearing whispers that you think this will be a walkover. That attitude disgusts me.",
+          "voText": "I'm hearing whispers that you think this will be a walkover. That attitude disgusts me."
+        },
+        {
+          "id": "pre_fav_disappoint_02",
+          "text": "Drop the egos right now. If any of you coast today, you won't wear the shirt next week.",
+          "voText": "Drop the egos right now. If any of you coast today, you won't wear the shirt next week."
+        },
+        {
+          "id": "pre_fav_disappoint_03",
+          "text": "{player}, your focus during warmups was poor. Fix it now.",
+          "voText": "your focus during warmups was poor. Fix it now.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "A few fiery leaders take the criticism and channel it into venom.",
@@ -67,9 +132,22 @@
     },
     "Focus": {
       "managerLines": [
-        "Every dead ball, every second ball, every defensive transition. Do not switch off.",
-        "They will look to hit us on the break. Rest defence must be airtight at all times.",
-        "Laser discipline. Track the runners into our box and make zero careless giveaways."
+        {
+          "id": "pre_fav_focus_01",
+          "text": "Every dead ball, every second ball, every defensive transition. Do not switch off.",
+          "voText": "Every dead ball, every second ball, every defensive transition. Do not switch off."
+        },
+        {
+          "id": "pre_fav_focus_02",
+          "text": "They will look to hit us on the break. Rest defence must be airtight at all times.",
+          "voText": "They will look to hit us on the break. Rest defence must be airtight at all times."
+        },
+        {
+          "id": "pre_fav_focus_03",
+          "text": "Lock down your channel from minute one, {player}.",
+          "voText": "Lock down your channel from minute one.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Players lock in completely, absorbing the tactical specifics.",
@@ -82,9 +160,22 @@
   "PRE_DOG": {
     "Calm": {
       "managerLines": [
-        "All the pressure is on them today. Play with freedom, stay compact and frustrate them.",
-        "Nobody outside this room gives us a prayer. Good. Keep our shape and take our moment.",
-        "Do not be overawed by their names. They put their boots on one foot at a time like you."
+        {
+          "id": "pre_dog_calm_01",
+          "text": "All the pressure is on them today. Play with freedom, stay compact and frustrate them.",
+          "voText": "All the pressure is on them today. Play with freedom, stay compact and frustrate them."
+        },
+        {
+          "id": "pre_dog_calm_02",
+          "text": "Nobody outside this room gives us a prayer. Good. Keep our shape and take our moment.",
+          "voText": "Nobody outside this room gives us a prayer. Good. Keep our shape and take our moment."
+        },
+        {
+          "id": "pre_dog_calm_03",
+          "text": "{player}, do not let the occasion swallow you up.",
+          "voText": "do not let the occasion swallow you up.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "A collective sigh of relief as pressure lifts off the squad.",
@@ -95,12 +186,25 @@
     },
     "Motivate": {
       "managerLines": [
-        "This is why we play football! Go out there, shock the entire league and make history!",
-        "Fight for every inch of turf! Make them hate every second of playing against us!",
-        "Leave everything out on that pitch. Run harder than them, fight harder than them!"
+        {
+          "id": "pre_dog_motivate_01",
+          "text": "This is why we play football! Go out there, shock the entire league and make history!",
+          "voText": "This is why we play football! Go out there, shock the entire league and make history!"
+        },
+        {
+          "id": "pre_dog_motivate_02",
+          "text": "Fight for every inch of turf! Make them hate every second of playing against us!",
+          "voText": "Fight for every inch of turf! Make them hate every second of playing against us!"
+        },
+        {
+          "id": "pre_dog_motivate_03",
+          "text": "Show them why you belong on this stage, {player}!",
+          "voText": "Show them why you belong on this stage!",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
-        "positive": "Thunderous applause and raised fists—the squad is pumped full of adrenaline.",
+        "positive": "Thunderous applause and raised fists\u2014the squad is pumped full of adrenaline.",
         "neutral": "Players look fiercely motivated to cause an upset.",
         "negative": "A couple of youngsters look overwhelmed by the intensity.",
         "mixed": "Passionate energy sweeps the room, with only a few showing nerves."
@@ -108,9 +212,22 @@
     },
     "Demand": {
       "managerLines": [
-        "I don't care how much they earn—you match their work rate or you come off after twenty minutes.",
-        "No hiding today! If you back down from a tackle against their stars, you're done here.",
-        "You owe the travelling support blood and sweat today. Anything less is a betrayal."
+        {
+          "id": "pre_dog_demand_01",
+          "text": "I don't care how much they earn\u2014you match their work rate or you come off after twenty minutes.",
+          "voText": "I don't care how much they earn\u2014you match their work rate or you come off after twenty minutes."
+        },
+        {
+          "id": "pre_dog_demand_02",
+          "text": "No hiding today! If you back down from a tackle against their stars, you're done here.",
+          "voText": "No hiding today! If you back down from a tackle against their stars, you're done here."
+        },
+        {
+          "id": "pre_dog_demand_03",
+          "text": "{player}, win your individual battle or we are in trouble.",
+          "voText": "win your individual battle or we are in trouble.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "A handful of fighters nod aggressively, relish the fight.",
@@ -121,9 +238,22 @@
     },
     "Praise": {
       "managerLines": [
-        "You've shown tremendous resilience this season. You belong on the same pitch as them.",
-        "Believe in your own ability. You have the tools to hurt them if we back ourselves.",
-        "I trust every single man in this XI. Go out there and play with pride."
+        {
+          "id": "pre_dog_praise_01",
+          "text": "You've shown tremendous resilience this season. You belong on the same pitch as them.",
+          "voText": "You've shown tremendous resilience this season. You belong on the same pitch as them."
+        },
+        {
+          "id": "pre_dog_praise_02",
+          "text": "Believe in your own ability. You have the tools to hurt them if we back ourselves.",
+          "voText": "Believe in your own ability. You have the tools to hurt them if we back ourselves."
+        },
+        {
+          "id": "pre_dog_praise_03",
+          "text": "I have complete faith in your heart today, {player}.",
+          "voText": "I have complete faith in your heart today.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Players stand taller, bolstered by the manager's faith.",
@@ -134,9 +264,22 @@
     },
     "Disappoint": {
       "managerLines": [
-        "I can see defeat in your eyes already. Have some pride in that badge on your chest!",
-        "If you're already beaten before we leave the tunnel, tell me now and I'll play the reserves.",
-        "Too many of you are acting like tourists. You're footballers—act like it!"
+        {
+          "id": "pre_dog_disappoint_01",
+          "text": "I can see defeat in your eyes already. Have some pride in that badge on your chest!",
+          "voText": "I can see defeat in your eyes already. Have some pride in that badge on your chest!"
+        },
+        {
+          "id": "pre_dog_disappoint_02",
+          "text": "If you're already beaten before we leave the tunnel, tell me now and I'll play the reserves.",
+          "voText": "If you're already beaten before we leave the tunnel, tell me now and I'll play the reserves."
+        },
+        {
+          "id": "pre_dog_disappoint_03",
+          "text": "{player}, look at me. Drop the fear right now.",
+          "voText": "look at me. Drop the fear right now.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Defiant glares from proud leaders who refuse to be insulted.",
@@ -147,9 +290,22 @@
     },
     "Focus": {
       "managerLines": [
-        "Stick to the low block. Deny them space between the lines and strike on the break.",
-        "Organisation is everything today. If one man breaks the line, the whole structure fails.",
-        "Discipline on defensive transitions. Stop their counter-attacks before they start."
+        {
+          "id": "pre_dog_focus_01",
+          "text": "Stick to the low block. Deny them space between the lines and strike on the break.",
+          "voText": "Stick to the low block. Deny them space between the lines and strike on the break."
+        },
+        {
+          "id": "pre_dog_focus_02",
+          "text": "Organisation is everything today. If one man breaks the line, the whole structure fails.",
+          "voText": "Organisation is everything today. If one man breaks the line, the whole structure fails."
+        },
+        {
+          "id": "pre_dog_focus_03",
+          "text": "Track every single runner into the box, {player}.",
+          "voText": "Track every single runner into the box.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Players lock in mentally, ready to execute the defensive plan.",
@@ -162,9 +318,22 @@
   "PRE_EVEN": {
     "Calm": {
       "managerLines": [
-        "It's an even contest on paper, but we have the discipline to tilt it. Steady minds.",
-        "Trust the process. No rash challenges early on; let the game come to us.",
-        "Relax and play our football. When the chances come, we take them with clarity."
+        {
+          "id": "pre_even_calm_01",
+          "text": "It's an even contest on paper, but we have the discipline to tilt it. Steady minds.",
+          "voText": "It's an even contest on paper, but we have the discipline to tilt it. Steady minds."
+        },
+        {
+          "id": "pre_even_calm_02",
+          "text": "Trust the process. No rash challenges early on; let the game come to us.",
+          "voText": "Trust the process. No rash challenges early on; let the game come to us."
+        },
+        {
+          "id": "pre_even_calm_03",
+          "text": "{player}, keep our shape compact and communicate.",
+          "voText": "keep our shape compact and communicate.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "The squad appears composed, collected and confident.",
@@ -175,9 +344,22 @@
     },
     "Motivate": {
       "managerLines": [
-        "This is our level—now prove we belong in the tier above them! Win your individual battles!",
-        "Tight games are won in the heart and the lungs. Outwork them from minute one!",
-        "Give the supporters something to roar about! Take the game by the throat!"
+        {
+          "id": "pre_even_motivate_01",
+          "text": "This is our level\u2014now prove we belong in the tier above them! Win your individual battles!",
+          "voText": "This is our level\u2014now prove we belong in the tier above them! Win your individual battles!"
+        },
+        {
+          "id": "pre_even_motivate_02",
+          "text": "Tight games are won in the heart and the lungs. Outwork them from minute one!",
+          "voText": "Tight games are won in the heart and the lungs. Outwork them from minute one!"
+        },
+        {
+          "id": "pre_even_motivate_03",
+          "text": "Take the game to them from the opening whistle, {player}!",
+          "voText": "Take the game to them from the opening whistle!",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Shouts of encouragement bounce off the dressing room walls.",
@@ -188,9 +370,22 @@
     },
     "Demand": {
       "managerLines": [
-        "These are our direct rivals in the table. Dropping points here is simply not an option.",
-        "I want to see ruthlessness today. Win every 50-50 and impose our will on them.",
-        "Don't give them an inch. Stand up, be counted and show them who rules this pitch."
+        {
+          "id": "pre_even_demand_01",
+          "text": "These are our direct rivals in the table. Dropping points here is simply not an option.",
+          "voText": "These are our direct rivals in the table. Dropping points here is simply not an option."
+        },
+        {
+          "id": "pre_even_demand_02",
+          "text": "I want to see ruthlessness today. Win every 50-50 and impose our will on them.",
+          "voText": "I want to see ruthlessness today. Win every 50-50 and impose our will on them."
+        },
+        {
+          "id": "pre_even_demand_03",
+          "text": "{player}, I need complete authority from you out there.",
+          "voText": "I need complete authority from you out there.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "The squad braces itself with tough, uncompromising focus.",
@@ -201,9 +396,22 @@
     },
     "Praise": {
       "managerLines": [
-        "You've worked tirelessly to get into this position. Play with joy and trust each other.",
-        "We have more chemistry and hunger than this lot. Go out there and show it.",
-        "I'm proud of the togetherness in this group. Back your teammates on every phase."
+        {
+          "id": "pre_even_praise_01",
+          "text": "You've worked tirelessly to get into this position. Play with joy and trust each other.",
+          "voText": "You've worked tirelessly to get into this position. Play with joy and trust each other."
+        },
+        {
+          "id": "pre_even_praise_02",
+          "text": "We have more chemistry and hunger than this lot. Go out there and show it.",
+          "voText": "We have more chemistry and hunger than this lot. Go out there and show it."
+        },
+        {
+          "id": "pre_even_praise_03",
+          "text": "You are in prime condition, {player}. Trust your instincts.",
+          "voText": "You are in prime condition. Trust your instincts.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Squad camaraderie surges with players sharing fist-bumps.",
@@ -214,9 +422,22 @@
     },
     "Disappoint": {
       "managerLines": [
-        "I wasn't happy with the warm-up. Too sloppy, too casual. Fix it right now.",
-        "If you carry that half-hearted attitude into kickoff, we will be two down in ten minutes.",
-        "Wake up! This is a massive match and half of you look half asleep!"
+        {
+          "id": "pre_even_disappoint_01",
+          "text": "I wasn't happy with the warm-up. Too sloppy, too casual. Fix it right now.",
+          "voText": "I wasn't happy with the warm-up. Too sloppy, too casual. Fix it right now."
+        },
+        {
+          "id": "pre_even_disappoint_02",
+          "text": "If you carry that half-hearted attitude into kickoff, we will be two down in ten minutes.",
+          "voText": "If you carry that half-hearted attitude into kickoff, we will be two down in ten minutes."
+        },
+        {
+          "id": "pre_even_disappoint_03",
+          "text": "{player}, do not switch off on defensive transitions.",
+          "voText": "do not switch off on defensive transitions.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Spurred into action, players suddenly snap into gear.",
@@ -227,9 +448,22 @@
     },
     "Focus": {
       "managerLines": [
-        "Matches like this turn on a single mistake or set piece. Do not switch off for a second.",
-        "Manage the game phases intelligently. When we have the momentum, twist the knife.",
-        "Tactical discipline wins tight fixtures. Know your triggers and execute cleanly."
+        {
+          "id": "pre_even_focus_01",
+          "text": "Matches like this turn on a single mistake or set piece. Do not switch off for a second.",
+          "voText": "Matches like this turn on a single mistake or set piece. Do not switch off for a second."
+        },
+        {
+          "id": "pre_even_focus_02",
+          "text": "Manage the game phases intelligently. When we have the momentum, twist the knife.",
+          "voText": "Manage the game phases intelligently. When we have the momentum, twist the knife."
+        },
+        {
+          "id": "pre_even_focus_03",
+          "text": "Watch the space between the lines, {player}.",
+          "voText": "Watch the space between the lines.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "The entire room locks into professional tactical alignment.",
@@ -242,9 +476,22 @@
   "HT_WIN": {
     "Calm": {
       "managerLines": [
-        "Good first half, but the job is only half done. Keep our structure and stay in control.",
-        "Keep doing what got us ahead. Don't get frantic, don't invite pressure.",
-        "Nice and steady. Keep circulating the ball and make them chase shadows."
+        {
+          "id": "ht_win_calm_01",
+          "text": "Good first half, but the job is only half done. Keep our structure and stay in control.",
+          "voText": "Good first half, but the job is only half done. Keep our structure and stay in control."
+        },
+        {
+          "id": "ht_win_calm_02",
+          "text": "Keep doing what got us ahead. Don't get frantic, don't invite pressure.",
+          "voText": "Keep doing what got us ahead. Don't get frantic, don't invite pressure."
+        },
+        {
+          "id": "ht_win_calm_03",
+          "text": "{player}, manage the game clock and keep possession.",
+          "voText": "manage the game clock and keep possession.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Players sip their water and absorb the calming instructions.",
@@ -255,9 +502,22 @@
     },
     "Motivate": {
       "managerLines": [
-        "Don't let them back into this! Come out flying and kill the game off with a second!",
-        "They are reeling! Go finish them off in the first fifteen minutes of the half!",
-        "Keep the foot on the gas! The next goal decides this match—make sure it's ours!"
+        {
+          "id": "ht_win_motivate_01",
+          "text": "Don't let them back into this! Come out flying and kill the game off with a second!",
+          "voText": "Don't let them back into this! Come out flying and kill the game off with a second!"
+        },
+        {
+          "id": "ht_win_motivate_02",
+          "text": "They are reeling! Go finish them off in the first fifteen minutes of the half!",
+          "voText": "They are reeling! Go finish them off in the first fifteen minutes of the half!"
+        },
+        {
+          "id": "ht_win_motivate_03",
+          "text": "Keep driving forward, {player}. Do not let them off the hook!",
+          "voText": "Keep driving forward. Do not let them off the hook!",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Eager nods and high-fives as the XI prepares to storm out.",
@@ -268,9 +528,22 @@
     },
     "Demand": {
       "managerLines": [
-        "We are ahead, but the standards dropped in the last ten minutes. Tighten up!",
-        "Don't you dare get comfortable! Two-goal leads are dangerous if you stop running.",
-        "I want clean sheets and total dominance. Stop showboating and be ruthless."
+        {
+          "id": "ht_win_demand_01",
+          "text": "We are ahead, but the standards dropped in the last ten minutes. Tighten up!",
+          "voText": "We are ahead, but the standards dropped in the last ten minutes. Tighten up!"
+        },
+        {
+          "id": "ht_win_demand_02",
+          "text": "Don't you dare get comfortable! Two-goal leads are dangerous if you stop running.",
+          "voText": "Don't you dare get comfortable! Two-goal leads are dangerous if you stop running."
+        },
+        {
+          "id": "ht_win_demand_03",
+          "text": "{player}, I WANT A CLEAN SHEET! DO NOT LET UP!",
+          "voText": "I WANT A CLEAN SHEET! DO NOT LET UP!",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Leaders like the captain reinforce the warning emphatically.",
@@ -281,9 +554,22 @@
     },
     "Praise": {
       "managerLines": [
-        "Superb forty-five minutes. That was football of the highest order. Keep it going!",
-        "Brilliant execution, every single one of you. The fans are loving every minute.",
-        "First class work rate and quality. More of the same and the points are ours."
+        {
+          "id": "ht_win_praise_01",
+          "text": "Superb forty-five minutes. That was football of the highest order. Keep it going!",
+          "voText": "Superb forty-five minutes. That was football of the highest order. Keep it going!"
+        },
+        {
+          "id": "ht_win_praise_02",
+          "text": "Brilliant execution, every single one of you. The fans are loving every minute.",
+          "voText": "Brilliant execution, every single one of you. The fans are loving every minute."
+        },
+        {
+          "id": "ht_win_praise_03",
+          "text": "Superb shift in that first half, {player}. More of the same.",
+          "voText": "Superb shift in that first half. More of the same.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Broad smiles and soaring morale throughout the dressing room.",
@@ -294,9 +580,22 @@
     },
     "Disappoint": {
       "managerLines": [
-        "Yes, we're winning, but that performance was nowhere near our benchmark.",
-        "We got lucky to be ahead. If we play like that in the second half, we lose this.",
-        "Stop patting yourselves on the back! You know as well as I do that was sloppy."
+        {
+          "id": "ht_win_disappoint_01",
+          "text": "Yes, we're winning, but that performance was nowhere near our benchmark.",
+          "voText": "Yes, we're winning, but that performance was nowhere near our benchmark."
+        },
+        {
+          "id": "ht_win_disappoint_02",
+          "text": "We got lucky to be ahead. If we play like that in the second half, we lose this.",
+          "voText": "We got lucky to be ahead. If we play like that in the second half, we lose this."
+        },
+        {
+          "id": "ht_win_disappoint_03",
+          "text": "{player}, STOP SHOWBOATING! FINISH THIS MATCH OFF!",
+          "voText": "STOP SHOWBOATING! FINISH THIS MATCH OFF!",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "A couple of perfectionist leaders agree and demand more.",
@@ -307,9 +606,22 @@
     },
     "Focus": {
       "managerLines": [
-        "They will come out aggressive and throw bodies forward. Protect the half-spaces.",
-        "Game management now. Draw their fouls, manage the tempo, kill their momentum.",
-        "Clean sheet second half. If we don't concede, we win this match. Stay alert."
+        {
+          "id": "ht_win_focus_01",
+          "text": "They will come out aggressive and throw bodies forward. Protect the half-spaces.",
+          "voText": "They will come out aggressive and throw bodies forward. Protect the half-spaces."
+        },
+        {
+          "id": "ht_win_focus_02",
+          "text": "Game management now. Draw their fouls, manage the tempo, kill their momentum.",
+          "voText": "Game management now. Draw their fouls, manage the tempo, kill their momentum."
+        },
+        {
+          "id": "ht_win_focus_03",
+          "text": "Watch their substitute on the flank, {player}.",
+          "voText": "Watch their substitute on the flank.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "The back line and deep midfielders nod with steely focus.",
@@ -322,9 +634,22 @@
   "HT_DRAW": {
     "Calm": {
       "managerLines": [
-        "It's tight, as expected. Don't rush, don't get frustrated. Our moment will come.",
-        "Breathe. We are well in this game. Stick to the plan and let their patience wear thin.",
-        "Keep our defensive shape solid. The spaces will open up after the hour mark."
+        {
+          "id": "ht_draw_calm_01",
+          "text": "It's tight, as expected. Don't rush, don't get frustrated. Our moment will come.",
+          "voText": "It's tight, as expected. Don't rush, don't get frustrated. Our moment will come."
+        },
+        {
+          "id": "ht_draw_calm_02",
+          "text": "Breathe. We are well in this game. Stick to the plan and let their patience wear thin.",
+          "voText": "Breathe. We are well in this game. Stick to the plan and let their patience wear thin."
+        },
+        {
+          "id": "ht_draw_calm_03",
+          "text": "{player}, stay composed. The opening will come.",
+          "voText": "stay composed. The opening will come.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Anxiety dissipates, replaced by measured self-belief.",
@@ -335,9 +660,22 @@
     },
     "Motivate": {
       "managerLines": [
-        "This game is there for the taking! Who wants to be the hero today?!",
-        "Step up the tempo! Another ten percent effort will break this deadlock!",
-        "Look at them—they're tiring! Go out there, grab the initiative and win this!"
+        {
+          "id": "ht_draw_motivate_01",
+          "text": "This game is there for the taking! Who wants to be the hero today?!",
+          "voText": "This game is there for the taking! Who wants to be the hero today?!"
+        },
+        {
+          "id": "ht_draw_motivate_02",
+          "text": "Step up the tempo! Another ten percent effort will break this deadlock!",
+          "voText": "Step up the tempo! Another ten percent effort will break this deadlock!"
+        },
+        {
+          "id": "ht_draw_motivate_03",
+          "text": "Raise the intensity, {player}. The game is there for the taking!",
+          "voText": "Raise the intensity. The game is there for the taking!",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Sparks fly in the room as players gear up for a big second half push.",
@@ -348,9 +686,22 @@
     },
     "Demand": {
       "managerLines": [
-        "That was far too tame. I need to see more urgency, more hunger in the final third!",
-        "Stop waiting for things to happen! Make them happen or I'll make substitutions!",
-        "We are letting them dictate terms. Take control of this match right now!"
+        {
+          "id": "ht_draw_demand_01",
+          "text": "That was far too tame. I need to see more urgency, more hunger in the final third!",
+          "voText": "That was far too tame. I need to see more urgency, more hunger in the final third!"
+        },
+        {
+          "id": "ht_draw_demand_02",
+          "text": "Stop waiting for things to happen! Make them happen or I'll make substitutions!",
+          "voText": "Stop waiting for things to happen! Make them happen or I'll make substitutions!"
+        },
+        {
+          "id": "ht_draw_demand_03",
+          "text": "{player}, SNAP INTO TACKLES! WE ARE SECOND TO EVERY BALL!",
+          "voText": "SNAP INTO TACKLES! WE ARE SECOND TO EVERY BALL!",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Stung by the manager's words, key players demand more of each other.",
@@ -361,9 +712,22 @@
     },
     "Praise": {
       "managerLines": [
-        "Solid shift so far. We've matched them physically and tactically. Good job.",
-        "I'm pleased with the effort against a tricky opponent. Keep believing.",
-        "You've shown great discipline out there. The breakthrough is coming."
+        {
+          "id": "ht_draw_praise_01",
+          "text": "Solid shift so far. We've matched them physically and tactically. Good job.",
+          "voText": "Solid shift so far. We've matched them physically and tactically. Good job."
+        },
+        {
+          "id": "ht_draw_praise_02",
+          "text": "I'm pleased with the effort against a tricky opponent. Keep believing.",
+          "voText": "I'm pleased with the effort against a tricky opponent. Keep believing."
+        },
+        {
+          "id": "ht_draw_praise_03",
+          "text": "You are holding our spine together, {player}. Keep leading.",
+          "voText": "You are holding our spine together. Keep leading.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Players feel encouraged and sustained by the boss's support.",
@@ -374,22 +738,48 @@
     },
     "Disappoint": {
       "managerLines": [
-        "That was forty-five minutes wasted. No spark, no creativity, no desire.",
-        "Is this the best we can produce? I expected so much more from this team today.",
-        "You are playing well within yourselves. It's frustrating to watch from the bench."
+        {
+          "id": "ht_draw_disappoint_01",
+          "text": "That was forty-five minutes wasted. No spark, no creativity, no desire.",
+          "voText": "That was forty-five minutes wasted. No spark, no creativity, no desire."
+        },
+        {
+          "id": "ht_draw_disappoint_02",
+          "text": "Is this the best we can produce? I expected so much more from this team today.",
+          "voText": "Is this the best we can produce? I expected so much more from this team today."
+        },
+        {
+          "id": "ht_draw_disappoint_03",
+          "text": "{player}, WAKE UP! YOU ARE GIVING THE BALL AWAY TOO EASILY!",
+          "voText": "WAKE UP! YOU ARE GIVING THE BALL AWAY TOO EASILY!",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Pride wounded, several players vow to prove the gaffer wrong.",
         "neutral": "Quiet, stung expressions fill the room.",
         "negative": "Heads drop into towels; morale takes a noticeable hit.",
-        "mixed": "Divisive reaction—some fire up, but morale suffers slightly."
+        "mixed": "Divisive reaction\u2014some fire up, but morale suffers slightly."
       }
     },
     "Focus": {
       "managerLines": [
-        "Notice how they leave space behind their right back? Exploit it on transition.",
-        "Win the second balls in midfield. That is where this match will be won or lost.",
-        "Watch their set pieces at the near post. One lapse will cost us points."
+        {
+          "id": "ht_draw_focus_01",
+          "text": "Notice how they leave space behind their right back? Exploit it on transition.",
+          "voText": "Notice how they leave space behind their right back? Exploit it on transition."
+        },
+        {
+          "id": "ht_draw_focus_02",
+          "text": "Win the second balls in midfield. That is where this match will be won or lost.",
+          "voText": "Win the second balls in midfield. That is where this match will be won or lost."
+        },
+        {
+          "id": "ht_draw_focus_03",
+          "text": "Be sharper on the second ball around the box, {player}.",
+          "voText": "Be sharper on the second ball around the box.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Players immediately identify tactical solutions and feel empowered.",
@@ -402,9 +792,22 @@
   "HT_LOSE": {
     "Calm": {
       "managerLines": [
-        "Do not panic. One goal changes everything in football. Stay composed and work back.",
-        "Keep your heads up. We gave away a cheap one, but we have forty-five minutes to fix it.",
-        "No wild lunges. We get the next goal by following the game plan, not by chasing shadows."
+        {
+          "id": "ht_lose_calm_01",
+          "text": "Do not panic. One goal changes everything in football. Stay composed and work back.",
+          "voText": "Do not panic. One goal changes everything in football. Stay composed and work back."
+        },
+        {
+          "id": "ht_lose_calm_02",
+          "text": "Keep your heads up. We gave away a cheap one, but we have forty-five minutes to fix it.",
+          "voText": "Keep your heads up. We gave away a cheap one, but we have forty-five minutes to fix it."
+        },
+        {
+          "id": "ht_lose_calm_03",
+          "text": "{player}, take a deep breath. We stick to the tactical plan.",
+          "voText": "take a deep breath. We stick to the tactical plan.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Panic is averted; players regroup with mature determination.",
@@ -415,12 +818,25 @@
     },
     "Motivate": {
       "managerLines": [
-        "Show some character! We have forty-five minutes to turn this around—believe in it!",
-        "Nobody leaves this pitch with regret today! Fight for every ball and turn the tide!",
-        "I know what this team is capable of when our backs are against the wall! Now go do it!"
+        {
+          "id": "ht_lose_motivate_01",
+          "text": "Show some character! We have forty-five minutes to turn this around\u2014believe in it!",
+          "voText": "Show some character! We have forty-five minutes to turn this around\u2014believe in it!"
+        },
+        {
+          "id": "ht_lose_motivate_02",
+          "text": "Nobody leaves this pitch with regret today! Fight for every ball and turn the tide!",
+          "voText": "Nobody leaves this pitch with regret today! Fight for every ball and turn the tide!"
+        },
+        {
+          "id": "ht_lose_motivate_03",
+          "text": "We can turn this around, {player}. Believe in it!",
+          "voText": "We can turn this around. Believe in it!",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
-        "positive": "Electrifying rally cry—players shout in defiance and slap hands.",
+        "positive": "Electrifying rally cry\u2014players shout in defiance and slap hands.",
         "neutral": "Energy levels surge back from the deficit.",
         "negative": "A couple of dejected starters still look crestfallen.",
         "mixed": "Brings the fight right back into the squad, lifting morale."
@@ -428,48 +844,100 @@
     },
     "Demand": {
       "managerLines": [
-        "That was totally unacceptable! You were soft in the tackle and sloppy in possession!",
-        "Sort it out! I will not sit here and watch you throw away ninety minutes of hard work!",
-        "Where is the pride?! You are getting outfought and outplayed! Show me something!"
+        {
+          "id": "ht_lose_demand_01",
+          "text": "That was totally unacceptable! You were soft in the tackle and sloppy in possession!",
+          "voText": "That was totally unacceptable! You were soft in the tackle and sloppy in possession!"
+        },
+        {
+          "id": "ht_lose_demand_02",
+          "text": "Sort it out! I will not sit here and watch you throw away ninety minutes of hard work!",
+          "voText": "Sort it out! I will not sit here and watch you throw away ninety minutes of hard work!"
+        },
+        {
+          "id": "ht_lose_demand_03",
+          "text": "{player}, LOOK AT ME! SHOW SOME PRIDE IN THAT SHIRT!",
+          "voText": "LOOK AT ME! SHOW SOME PRIDE IN THAT SHIRT!",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Stung to their core, leaders shout back that they will fix it.",
         "neutral": "Grim silence as the hair-dryer treatment lands.",
         "negative": "Some players shrink into their seats, intimidated.",
-        "mixed": "High risk—hard men fire up with fury while fragile players wilt."
+        "mixed": "High risk\u2014hard men fire up with fury while fragile players wilt."
       }
     },
     "Praise": {
       "managerLines": [
-        "Unlucky to be trailing. The performance has been decent—keep knocking on the door.",
-        "Don't let the score fool you, we are playing good football. Keep faith.",
-        "You've shown courage out there. Keep creating chances and they will break."
+        {
+          "id": "ht_lose_praise_01",
+          "text": "Unlucky to be trailing. The performance has been decent\u2014keep knocking on the door.",
+          "voText": "Unlucky to be trailing. The performance has been decent\u2014keep knocking on the door."
+        },
+        {
+          "id": "ht_lose_praise_02",
+          "text": "Don't let the score fool you, we are playing good football. Keep faith.",
+          "voText": "Don't let the score fool you, we are playing good football. Keep faith."
+        },
+        {
+          "id": "ht_lose_praise_03",
+          "text": "You are the only one fighting out there, {player}. Drag them with you.",
+          "voText": "You are the only one fighting out there. Drag them with you.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "A small comfort to know the boss isn't turning on them.",
         "neutral": "Polite nods, but players know they are behind.",
-        "negative": "Players look bewildered—why are we being praised when losing?",
+        "negative": "Players look bewildered\u2014why are we being praised when losing?",
         "mixed": "Mildly soothing, but risks sounding disconnected from reality."
       }
     },
     "Disappoint": {
       "managerLines": [
-        "I feel sorry for the fans who travelled to watch that rubbish. Utterly pathetic.",
-        "You've let yourselves down, you've let the club down, and you've let me down.",
-        "I thought I could rely on you in big moments. Clearly I was mistaken."
+        {
+          "id": "ht_lose_disappoint_01",
+          "text": "I feel sorry for the fans who travelled to watch that rubbish. Utterly pathetic.",
+          "voText": "I feel sorry for the fans who travelled to watch that rubbish. Utterly pathetic."
+        },
+        {
+          "id": "ht_lose_disappoint_02",
+          "text": "You've let yourselves down, you've let the club down, and you've let me down.",
+          "voText": "You've let yourselves down, you've let the club down, and you've let me down."
+        },
+        {
+          "id": "ht_lose_disappoint_03",
+          "text": "{player}, THAT FIRST HALF DEFENDING WAS AN ABSOLUTE DISGRACE!",
+          "voText": "THAT FIRST HALF DEFENDING WAS AN ABSOLUTE DISGRACE!",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Proud players stew with bitter rage, desperate to make amends.",
         "neutral": "Heavy, suffocating gloom descends on the bench.",
         "negative": "Morale takes a nosedive; heads drop completely.",
-        "mixed": "Harsh medicine that divides the room—anger vs despair."
+        "mixed": "Harsh medicine that divides the room\u2014anger vs despair."
       }
     },
     "Focus": {
       "managerLines": [
-        "Stop forcing the long ball. Work the overloads out wide and get bodies in the box.",
-        "We need to stop their counter-attacks at source. Tactical fouls if necessary.",
-        "Change of emphasis: press their center backs on receipt and force errors."
+        {
+          "id": "ht_lose_focus_01",
+          "text": "Stop forcing the long ball. Work the overloads out wide and get bodies in the box.",
+          "voText": "Stop forcing the long ball. Work the overloads out wide and get bodies in the box."
+        },
+        {
+          "id": "ht_lose_focus_02",
+          "text": "We need to stop their counter-attacks at source. Tactical fouls if necessary.",
+          "voText": "We need to stop their counter-attacks at source. Tactical fouls if necessary."
+        },
+        {
+          "id": "ht_lose_focus_03",
+          "text": "Cut out the cross at source, {player}.",
+          "voText": "Cut out the cross at source.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Clear actionable plan gives the team a concrete path back into the game.",
@@ -482,9 +950,22 @@
   "FT_WIN": {
     "Calm": {
       "managerLines": [
-        "Good professional win. Enjoy the evening, but recovery starts tomorrow morning.",
-        "Three points in the bag. Keep your feet on the ground—plenty of football left.",
-        "Well done. We did the job we came to do. Rest up and focus on the next matchday."
+        {
+          "id": "ft_win_calm_01",
+          "text": "Good professional win. Enjoy the evening, but recovery starts tomorrow morning.",
+          "voText": "Good professional win. Enjoy the evening, but recovery starts tomorrow morning."
+        },
+        {
+          "id": "ft_win_calm_02",
+          "text": "Three points in the bag. Keep your feet on the ground\u2014plenty of football left.",
+          "voText": "Three points in the bag. Keep your feet on the ground\u2014plenty of football left."
+        },
+        {
+          "id": "ft_win_calm_03",
+          "text": "{player}, great professional performance to see it out.",
+          "voText": "great professional performance to see it out.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Satisfied, mature atmosphere as the squad celebrates quietly.",
@@ -495,22 +976,48 @@
     },
     "Motivate": {
       "managerLines": [
-        "That's the benchmark! Now let's build a real run of momentum off this result!",
-        "Look around this room—that's what victory feels like! Let's get addicted to it!",
-        "Outstanding spirit today! Keep this hunger and no one in this division can stop us!"
+        {
+          "id": "ft_win_motivate_01",
+          "text": "That's the benchmark! Now let's build a real run of momentum off this result!",
+          "voText": "That's the benchmark! Now let's build a real run of momentum off this result!"
+        },
+        {
+          "id": "ft_win_motivate_02",
+          "text": "Look around this room\u2014that's what victory feels like! Let's get addicted to it!",
+          "voText": "Look around this room\u2014that's what victory feels like! Let's get addicted to it!"
+        },
+        {
+          "id": "ft_win_motivate_03",
+          "text": "Enjoy tonight, {player}. We go again next week.",
+          "voText": "Enjoy tonight. We go again next week.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Roars of delight! Squad cohesion and belief hit top gear.",
         "neutral": "Great high-spirited banter among teammates.",
-        "negative": "None—hard to complain after a passionate victory speech.",
+        "negative": "None\u2014hard to complain after a passionate victory speech.",
         "mixed": "Tremendous energy and enthusiasm for upcoming fixtures."
       }
     },
     "Demand": {
       "managerLines": [
-        "We won, but you made heavy weather of it. You must manage the final minutes better.",
-        "I'm happy with the points, but don't think for a second that was a flawless display.",
-        "Enjoy the win, but we've got plenty of footage to review on Monday morning."
+        {
+          "id": "ft_win_demand_01",
+          "text": "We won, but you made heavy weather of it. You must manage the final minutes better.",
+          "voText": "We won, but you made heavy weather of it. You must manage the final minutes better."
+        },
+        {
+          "id": "ft_win_demand_02",
+          "text": "I'm happy with the points, but don't think for a second that was a flawless display.",
+          "voText": "I'm happy with the points, but don't think for a second that was a flawless display."
+        },
+        {
+          "id": "ft_win_demand_03",
+          "text": "Do not let standards drop in training after this, {player}.",
+          "voText": "Do not let standards drop in training after this.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Perfectionists respect the manager's refusal to accept mediocrity.",
@@ -521,35 +1028,74 @@
     },
     "Praise": {
       "managerLines": [
-        "Sensational performance from every single one of you! Absolutely magnificent!",
-        "Take a bow, lads! That was a masterclass and you deserved every bit of it!",
-        "Proud of each and every one of you. Go out and celebrate with your families!"
+        {
+          "id": "ft_win_praise_01",
+          "text": "Sensational performance from every single one of you! Absolutely magnificent!",
+          "voText": "Sensational performance from every single one of you! Absolutely magnificent!"
+        },
+        {
+          "id": "ft_win_praise_02",
+          "text": "Take a bow, lads! That was a masterclass and you deserved every bit of it!",
+          "voText": "Take a bow, lads! That was a masterclass and you deserved every bit of it!"
+        },
+        {
+          "id": "ft_win_praise_03",
+          "text": "That was an absolute masterclass from you today, {player}.",
+          "voText": "That was an absolute masterclass from you today.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Euphoric scenes in the dressing room! Morale reaches peak levels.",
         "neutral": "Rapturous applause and smiles across all squad members.",
-        "negative": "None—pure unadulterated post-match joy.",
+        "negative": "None\u2014pure unadulterated post-match joy.",
         "mixed": "Universal morale boost across starters and substitutes alike."
       }
     },
     "Disappoint": {
       "managerLines": [
-        "I cannot believe how lucky we got. You were awful despite the scoreline.",
-        "If you celebrate that sloppy nonsense, you have no standards. Disgraceful finish.",
-        "That performance was an accident waiting to happen. Wipe those smiles off your faces."
+        {
+          "id": "ft_win_disappoint_01",
+          "text": "I cannot believe how lucky we got. You were awful despite the scoreline.",
+          "voText": "I cannot believe how lucky we got. You were awful despite the scoreline."
+        },
+        {
+          "id": "ft_win_disappoint_02",
+          "text": "If you celebrate that sloppy nonsense, you have no standards. Disgraceful finish.",
+          "voText": "If you celebrate that sloppy nonsense, you have no standards. Disgraceful finish."
+        },
+        {
+          "id": "ft_win_disappoint_03",
+          "text": "{player}, you were sloppy late on. Standards must stay high.",
+          "voText": "you were sloppy late on. Standards must stay high.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Only the grumpiest veteran agrees.",
         "neutral": "Shocked looks as music gets cut off.",
-        "negative": "Fury and resentment—ruining a victory speech creates deep unrest.",
+        "negative": "Fury and resentment\u2014ruining a victory speech creates deep unrest.",
         "mixed": "Dressing room atmosphere turns icy; players feel completely cheated."
       }
     },
     "Focus": {
       "managerLines": [
-        "Good win. Ice baths, hydration, nutrition. Our next opponent is already watching tape.",
-        "Take the three points, but note the mistakes we got away with. We move on to next week.",
-        "Discipline carried us through the final whistle. Maintain those habits in training."
+        {
+          "id": "ft_win_focus_01",
+          "text": "Good win. Ice baths, hydration, nutrition. Our next opponent is already watching tape.",
+          "voText": "Good win. Ice baths, hydration, nutrition. Our next opponent is already watching tape."
+        },
+        {
+          "id": "ft_win_focus_02",
+          "text": "Take the three points, but note the mistakes we got away with. We move on to next week.",
+          "voText": "Take the three points, but note the mistakes we got away with. We move on to next week."
+        },
+        {
+          "id": "ft_win_focus_03",
+          "text": "Recovery starts tonight, {player}. Ice baths first.",
+          "voText": "Recovery starts tonight. Ice baths first.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Professional, methodical squad culture reinforced.",
@@ -562,9 +1108,22 @@
   "FT_DRAW": {
     "Calm": {
       "managerLines": [
-        "A point gained in a hard-fought contest. Keep your heads up and move forward.",
-        "We didn't lose, and in this division every point counts over eighteen rounds.",
-        "Good battle today. We'll take the point, learn the lessons and prepare for next week."
+        {
+          "id": "ft_draw_calm_01",
+          "text": "A point gained in a hard-fought contest. Keep your heads up and move forward.",
+          "voText": "A point gained in a hard-fought contest. Keep your heads up and move forward."
+        },
+        {
+          "id": "ft_draw_calm_02",
+          "text": "We didn't lose, and in this division every point counts over eighteen rounds.",
+          "voText": "We didn't lose, and in this division every point counts over eighteen rounds."
+        },
+        {
+          "id": "ft_draw_calm_03",
+          "text": "{player}, a solid point on the road. Rest up.",
+          "voText": "a solid point on the road. Rest up.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Squad accepts the pragmatic reality with quiet resilience.",
@@ -575,9 +1134,22 @@
     },
     "Motivate": {
       "managerLines": [
-        "We showed heart to hold on, but next time we turn that draw into three points!",
-        "That effort proved we can compete with anyone! Keep that hunger burning!",
-        "Hold your heads high! We showed grit and we take that fight into next matchday!"
+        {
+          "id": "ft_draw_motivate_01",
+          "text": "We showed heart to hold on, but next time we turn that draw into three points!",
+          "voText": "We showed heart to hold on, but next time we turn that draw into three points!"
+        },
+        {
+          "id": "ft_draw_motivate_02",
+          "text": "That effort proved we can compete with anyone! Keep that hunger burning!",
+          "voText": "That effort proved we can compete with anyone! Keep that hunger burning!"
+        },
+        {
+          "id": "ft_draw_motivate_03",
+          "text": "We dust ourselves down and take three points next time, {player}.",
+          "voText": "We dust ourselves down and take three points next time.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Spirited encouragement lifts tired legs.",
@@ -588,9 +1160,22 @@
     },
     "Demand": {
       "managerLines": [
-        "Two points dropped against a side we should be beating. Totally unacceptable.",
-        "You lacked the killer instinct to finish them off. We must be more clinical.",
-        "If we want to hit our board objectives, drawing matches like that will kill us."
+        {
+          "id": "ft_draw_demand_01",
+          "text": "Two points dropped against a side we should be beating. Totally unacceptable.",
+          "voText": "Two points dropped against a side we should be beating. Totally unacceptable."
+        },
+        {
+          "id": "ft_draw_demand_02",
+          "text": "You lacked the killer instinct to finish them off. We must be more clinical.",
+          "voText": "You lacked the killer instinct to finish them off. We must be more clinical."
+        },
+        {
+          "id": "ft_draw_demand_03",
+          "text": "{player}, we should have killed that game off.",
+          "voText": "we should have killed that game off.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Ambitious players agree and express frustration at the result.",
@@ -601,9 +1186,22 @@
     },
     "Praise": {
       "managerLines": [
-        "Tremendous effort out there today against a tough opponent. Proud of the graft.",
-        "You gave everything you had on that pitch. No manager can ask for more than that.",
-        "Great resilience under pressure. We earned that point through sheer hard work."
+        {
+          "id": "ft_draw_praise_01",
+          "text": "Tremendous effort out there today against a tough opponent. Proud of the graft.",
+          "voText": "Tremendous effort out there today against a tough opponent. Proud of the graft."
+        },
+        {
+          "id": "ft_draw_praise_02",
+          "text": "You gave everything you had on that pitch. No manager can ask for more than that.",
+          "voText": "You gave everything you had on that pitch. No manager can ask for more than that."
+        },
+        {
+          "id": "ft_draw_praise_03",
+          "text": "Immense defensive commitment today, {player}.",
+          "voText": "Immense defensive commitment today.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Players appreciate the acknowledgement after an exhausting afternoon.",
@@ -614,9 +1212,22 @@
     },
     "Disappoint": {
       "managerLines": [
-        "That was two points thrown away through sheer lack of composure and desire.",
-        "I am bitterly disappointed by what I saw in key moments today. We choked.",
-        "You had the chance to make a statement in the table and you fluffed it."
+        {
+          "id": "ft_draw_disappoint_01",
+          "text": "That was two points thrown away through sheer lack of composure and desire.",
+          "voText": "That was two points thrown away through sheer lack of composure and desire."
+        },
+        {
+          "id": "ft_draw_disappoint_02",
+          "text": "I am bitterly disappointed by what I saw in key moments today. We choked.",
+          "voText": "I am bitterly disappointed by what I saw in key moments today. We choked."
+        },
+        {
+          "id": "ft_draw_disappoint_03",
+          "text": "{player}, that late conceded chance should never have happened.",
+          "voText": "that late conceded chance should never have happened.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "A couple of leaders take it on the chin and resolve to fix it.",
@@ -627,9 +1238,22 @@
     },
     "Focus": {
       "managerLines": [
-        "We'll review the tape on Tuesday and see where the final pass broke down.",
-        "Small margins decided that draw. Work on our final third execution starts now.",
-        "Good structure, but we need more ruthlessness in transition. Rest up."
+        {
+          "id": "ft_draw_focus_01",
+          "text": "We'll review the tape on Tuesday and see where the final pass broke down.",
+          "voText": "We'll review the tape on Tuesday and see where the final pass broke down."
+        },
+        {
+          "id": "ft_draw_focus_02",
+          "text": "Small margins decided that draw. Work on our final third execution starts now.",
+          "voText": "Small margins decided that draw. Work on our final third execution starts now."
+        },
+        {
+          "id": "ft_draw_focus_03",
+          "text": "We analyze the video on Monday, {player}.",
+          "voText": "We analyze the video on Monday.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Players appreciate the analytical, objective approach.",
@@ -642,9 +1266,22 @@
   "FT_LOSE": {
     "Calm": {
       "managerLines": [
-        "Tough result to swallow, but we do not unravel. We stick together, learn and bounce back.",
-        "Keep your chins up. One defeat does not define this season. We react on Monday.",
-        "Painful, but there were positive moments. Rest well, clear your heads and come back ready."
+        {
+          "id": "ft_lose_calm_01",
+          "text": "Tough result to swallow, but we do not unravel. We stick together, learn and bounce back.",
+          "voText": "Tough result to swallow, but we do not unravel. We stick together, learn and bounce back."
+        },
+        {
+          "id": "ft_lose_calm_02",
+          "text": "Keep your chins up. One defeat does not define this season. We react on Monday.",
+          "voText": "Keep your chins up. One defeat does not define this season. We react on Monday."
+        },
+        {
+          "id": "ft_lose_calm_03",
+          "text": "{player}, keep your chin up. We stick together.",
+          "voText": "keep your chin up. We stick together.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "The squad appreciates the manager shielding them after a loss.",
@@ -655,12 +1292,25 @@
     },
     "Motivate": {
       "managerLines": [
-        "Use this agony! Remember how this feels right now and make sure it never happens again!",
-        "We are down, but we are not out! We come back twice as hungry next matchday!",
-        "Character is revealed in defeat! Let's see who has the stomach for the fight!"
+        {
+          "id": "ft_lose_motivate_01",
+          "text": "Use this agony! Remember how this feels right now and make sure it never happens again!",
+          "voText": "Use this agony! Remember how this feels right now and make sure it never happens again!"
+        },
+        {
+          "id": "ft_lose_motivate_02",
+          "text": "We are down, but we are not out! We come back twice as hungry next matchday!",
+          "voText": "We are down, but we are not out! We come back twice as hungry next matchday!"
+        },
+        {
+          "id": "ft_lose_motivate_03",
+          "text": "Remember this bitter feeling, {player}. Use it as fuel.",
+          "voText": "Remember this bitter feeling. Use it as fuel.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
-        "positive": "Fists clench and eyes narrow—the squad is eager to make amends.",
+        "positive": "Fists clench and eyes narrow\u2014the squad is eager to make amends.",
         "neutral": "Players shake off the sorrow and rally around each other.",
         "negative": "Tired, dejected players struggle to summon the energy to fire back.",
         "mixed": "Replaces sorrow with determination for the vast majority."
@@ -668,9 +1318,22 @@
     },
     "Demand": {
       "managerLines": [
-        "That performance was nowhere near the standard required for this football club.",
-        "I expect an immediate reaction in training this week. Places are on the line.",
-        "No excuses. You were second to every loose ball and you got what you deserved."
+        {
+          "id": "ft_lose_demand_01",
+          "text": "That performance was nowhere near the standard required for this football club.",
+          "voText": "That performance was nowhere near the standard required for this football club."
+        },
+        {
+          "id": "ft_lose_demand_02",
+          "text": "I expect an immediate reaction in training this week. Places are on the line.",
+          "voText": "I expect an immediate reaction in training this week. Places are on the line."
+        },
+        {
+          "id": "ft_lose_demand_03",
+          "text": "{player}, that level of effort will not be tolerated again.",
+          "voText": "that level of effort will not be tolerated again.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Proud professionals accept the rebuke and demand better of themselves.",
@@ -681,9 +1344,22 @@
     },
     "Praise": {
       "managerLines": [
-        "You gave everything you had against a top side. The score didn't do you justice.",
-        "Hold your heads high. You fought until the final whistle and I'm proud of the effort.",
-        "Unlucky today. Keep that commitment and the results will turn around quickly."
+        {
+          "id": "ft_lose_praise_01",
+          "text": "You gave everything you had against a top side. The score didn't do you justice.",
+          "voText": "You gave everything you had against a top side. The score didn't do you justice."
+        },
+        {
+          "id": "ft_lose_praise_02",
+          "text": "Hold your heads high. You fought until the final whistle and I'm proud of the effort.",
+          "voText": "Hold your heads high. You fought until the final whistle and I'm proud of the effort."
+        },
+        {
+          "id": "ft_lose_praise_03",
+          "text": "You can hold your head high today, {player}.",
+          "voText": "You can hold your head high today.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Comforting words that lift the heavy weight of defeat.",
@@ -694,9 +1370,22 @@
     },
     "Disappoint": {
       "managerLines": [
-        "I am furious with what I just witnessed. You threw that match away with zero heart.",
-        "You gave up in the second half. That is the one thing I will never tolerate as manager.",
-        "Every single supporter in the away end deserves an apology for that shambles."
+        {
+          "id": "ft_lose_disappoint_01",
+          "text": "I am furious with what I just witnessed. You threw that match away with zero heart.",
+          "voText": "I am furious with what I just witnessed. You threw that match away with zero heart."
+        },
+        {
+          "id": "ft_lose_disappoint_02",
+          "text": "You gave up in the second half. That is the one thing I will never tolerate as manager.",
+          "voText": "You gave up in the second half. That is the one thing I will never tolerate as manager."
+        },
+        {
+          "id": "ft_lose_disappoint_03",
+          "text": "{player}, that was completely unacceptable for this football club.",
+          "voText": "that was completely unacceptable for this football club.",
+          "nameSlot": "start"
+        }
       ],
       "reactions": {
         "positive": "Fiery players burn with embarrassment and want redemption.",
@@ -707,9 +1396,22 @@
     },
     "Focus": {
       "managerLines": [
-        "We conceded from simple tactical errors. We go back to basics on the training pitch.",
-        "Clear your heads tonight. On Monday, we dissect every goal conceded and fix it.",
-        "Discipline broke down and cost us. We rebuild our defensive foundation this week."
+        {
+          "id": "ft_lose_focus_01",
+          "text": "We conceded from simple tactical errors. We go back to basics on the training pitch.",
+          "voText": "We conceded from simple tactical errors. We go back to basics on the training pitch."
+        },
+        {
+          "id": "ft_lose_focus_02",
+          "text": "Clear your heads tonight. On Monday, we dissect every goal conceded and fix it.",
+          "voText": "Clear your heads tonight. On Monday, we dissect every goal conceded and fix it."
+        },
+        {
+          "id": "ft_lose_focus_03",
+          "text": "Back on the training pitch Monday morning, {player}.",
+          "voText": "Back on the training pitch Monday morning.",
+          "nameSlot": "end"
+        }
       ],
       "reactions": {
         "positive": "Analytical players appreciate focusing on tangible solutions.",

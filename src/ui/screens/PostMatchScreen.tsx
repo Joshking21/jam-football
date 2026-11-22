@@ -291,7 +291,8 @@ export const PostMatchScreen: React.FC = () => {
                 }}
               >
                 "
-                {TALKS_DATA[ftContext]?.[postMatchTalk]?.managerLines[0] ?? 'Well played everyone.'}
+                {TALKS_DATA[ftContext]?.[postMatchTalk]?.managerLines[0]?.text ??
+                  'Well played everyone.'}
                 "
               </div>
             </div>

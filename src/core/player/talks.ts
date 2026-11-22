@@ -17,8 +17,15 @@ export type TalkContext =
   | 'FT_DRAW'
   | 'FT_LOSE';
 
+export interface ManagerLine {
+  id: string;
+  text: string;
+  voText: string;
+  nameSlot?: 'start' | 'end';
+}
+
 export interface TalkContentEntry {
-  managerLines: string[];
+  managerLines: ManagerLine[];
   reactions: {
     positive: string;
     neutral: string;
@@ -158,8 +165,15 @@ export function applyTeamTalk(
   rng: Rng,
 ): TeamTalkResult {
   const content = TALKS_DATA[context]?.[tone];
-  const speechLines = content?.managerLines ?? ['Let us give everything on the pitch today.'];
-  const managerSpeech = speechLines[rng.int(0, speechLines.length - 1)]!;
+  const speechLines: ManagerLine[] = content?.managerLines ?? [
+    {
+      id: 'fallback_01',
+      text: 'Let us give everything on the pitch today.',
+      voText: 'Let us give everything on the pitch today.',
+    },
+  ];
+  const chosenLine = speechLines[rng.int(0, speechLines.length - 1)]!;
+  const managerSpeech = chosenLine.text;
 
   const updatedPlayers: Record<PlayerId, Player> = {};
   const playerDeltas: Record<PlayerId, number> = {};

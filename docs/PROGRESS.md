@@ -570,3 +570,20 @@ REVIEW REQUESTED: M4
     - Integrated media suite press conference interactive panel into `PostMatchScreen` (prompting manager response, displaying feedback and effects).
     - Added 14 unit tests in `tests/core/game/press.test.ts` covering data integrity, trigger probabilities, context deduction, token replacement, and state modification.
 
+## 2026-11-22 · Tactics layout v5 restore (SPEC 1.7 & §11.8) and team talk content upgrade
+- Changed: src/content/talks.json, src/core/player/talks.ts, src/ui/screens/PreMatchScreen.tsx, src/ui/screens/Match/HalfTimeModal.tsx, src/ui/screens/PostMatchScreen.tsx, src/ui/screens/TacticsScreen.tsx, scripts/capture-tactics-v5.ts, docs/screens/M3/tactics-1280.png, docs/screens/M3/tactics-1920.png, docs/screens/M3/tactics-2560.png
+- Ran:
+  - `npm run check`:
+    - `prettier --check .` PASS
+    - `tsc --noEmit` PASS
+    - `vitest run`: 29 test files passed (180 tests passed in 23.06s) PASS
+    - `vite build`: main chunk 1,232 kB / three.js chunk 490 kB, built in 13.03s PASS
+  - `npx tsx scripts/capture-tactics-v5.ts`: tactics-1280.png (117.2 KB), tactics-1920.png (134.9 KB), tactics-2560.png (149.1 KB) recaptured PASS
+- Notes:
+  - Rebuilt Tactics screen from withdrawn v4 3-column layout to SPEC 1.7 v5 layout (two columns, no page scroll):
+    - Left column: Dominant sideways whiteboard (1050×790 aspect ratio, own goal on left, attacking right). Top frame tabs for Our Team and Opposition (with orders counter), With ball / Without ball switch. Pitch lines and markings: sliding vertical dashed Defensive line and Pressing line along x-axis, Width and Focus arrows, role run markers. Interactive 44px magnets on pitch (deriving defensive shape in withoutBall phase), bench strip (36px magnets at bottom) and injured corner (+ symbol). Interactive click-to-swap and drag-over comparison. Marker tray below frame with red and blue pens and eraser.
+    - Right column: Tall panel showing the Clipboard when nothing is selected (Plans A/B/C, formation dropdown with 4 familiarity bars, presets chips, 5 dividers for Build-up, Attack, Defend, Transition, Set pieces with takers, Opposition orders sheet under Opposition tab, readiness line, Assistant picks best XI, and Reset to club style). When a player is selected, his Manila file slides over the clipboard with header, condition/morale meters, 180px RadarChart always in view with key role attributes, and two tabs: Orders (roles with fit stars, Gives/Costs, player instructions with clash detection) and Profile (all attributes in two columns of compact bars, season stats, last-5 match rating sparkline).
+  - Applied SPEC 1.7 content rules to team talks in `src/content/talks.json`: all 54 context × tone combinations updated with structured `{ id, text, voText, nameSlot? }` objects, with shouted variants for HT deficit and player token slotting.
+  - Recaptured Tactics screenshots at 1280×720, 1920×1080, and 2560×1440 in `docs/screens/M3/`.
+
+
