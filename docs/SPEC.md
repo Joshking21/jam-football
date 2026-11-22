@@ -835,7 +835,7 @@ Each room is one small three.js set. Walls, floors, ceilings and windows are bui
 | **Corridor** | A short corridor with a door per room. Each door has a sign (text drawn by the game) and a lamp that lights on hover. | Between every two rooms |
 | **Office** | Desk, chair, lamp, phone, wall TV, a window onto the pitch, the sideways whiteboard (§11.8) on the wall, a second chair for Theo | Hub, Inbox, Club (finances), Transfers, and **Tactics** (the coach and Theo at the whiteboard, §14.11.4). **On-air screens (League, Fixtures, Week Summary) play on the wall TV:** the camera pushes into the TV and the broadcast UI fills the screen. Player conversations (§14.11.3). |
 | **Boardroom** | A long table, leather chairs, framed portraits of past chairmen (programme print, no text), the owner and 2 directors | Board Meeting (§11.4), board reviews (when §12.7 confidence crosses a band, and budget requests from Club), Sacked (§11.21) |
-| **Dressing room** | Lockers with the players' shirts (name and number drawn by the game, §14.2 kit), benches, a tactics board | **Squad**: click a locker to open that player's Profile. **Pre-Match briefing**: the coach presents Plan A on the board (key battles, takers, who marks whom) while the players listen. **Team talks** pre-match, at half-time and full-time (§12.8). Half-Time and Full-Time. |
+| **Dressing room** | **One big room with lockers and a bench running around the walls** (back wall and both sides, a U), so the squad sits in a ring facing the middle. The coach stands in the middle on a crest-pattern floor (pattern only), with Theo near the door and a tactics board on a stand. The players' shirts hang in the lockers (name and number drawn by the game, §14.2 kit). The default shot is from the front of the U, slightly raised, looking past the coach at the players. | **Squad**: click a locker to open that player's Profile. **Pre-Match briefing**: the coach presents Plan A on the board (key battles, takers, who marks whom) while the players listen. **Team talks** pre-match, at half-time and full-time (§12.8). Half-Time and Full-Time. |
 | **Tunnel** | Concrete walls, studs, the pitch light at the end | The walk-out after the pre-match talk, straight into the M4 match intro |
 | **Training ground** | A grey afternoon, cones, mannequins, a small stand, a clipboard in the foreground | Training (§11.9), with drills by focus (§14.11.4) |
 | **Press room** | A table with microphones, a club backdrop (pattern only), rows of reporters, camera flashes | Press Conference (§11.18 step 3, pre-match press) |
@@ -865,6 +865,25 @@ The Meshy sponsor track judges models "under a camera you do not control", so in
 - **First time in each room:** a small one-time hint "Right-drag to look around" (KeyHint style) shows for 4 s, then never again. This is not one of the seven tutorial coach-marks.
 - **Reduce motion:** the ease-back is instant.
 - **Craft:** because anyone can look at any prop from any side, every Meshy prop and person must hold up from every angle reachable inside these limits. Claude checks this in the M6b review.
+
+
+#### 11.25.5 Talk scenes: watch, then choose (the user, 22 Nov)
+**This is the one pattern for every moment in the game where people talk** (the user, 22 Nov): team talks, the pre-match briefing, press conferences, player conversations at the door or locker, board meetings and reviews, the sacking, one-to-one sessions, Theo's office visits and week plan, signing day (§24 extras), and any later scene. No screen ever shows choices while someone is speaking. (The only exception is the live match: touchline shouts use the HUD wheel, §13.21, because the match doesn't stop for them.) Every such moment is a scene made of two kinds of beat:
+- **Speaking beats** (someone talks): no menus or panels on screen, only the caption strip and the scene. The player can't act during them, except to skip:
+  - `Space` or a click skips the current line.
+  - `Esc` skips straight to the next choice, or to the end if there is none.
+  - The skip hint ("Space skip · Esc skip to choice") shows small in a corner.
+- **Choice beats** (your turn): the scene holds on an idle shot. The people keep breathing, blinking and glancing; nobody talks. The **choice card** slides up on screen with the options and nothing else: for a team talk, the 6 tones with each one's predicted reaction (§12.8); for press, the 3 answers; and so on. Pick with a click, number keys `1`–`6` or arrows and Enter. There is no timer.
+- **After the choice,** the card slides away and the scene continues: the coach says the chosen line (voiced), the room reacts (§14.11.2), and either more talk follows or the scene ends. A short "How they took it" summary (one line per group of players) shows for 3 s after a team talk, then fades. It is also kept in the Half-Time and Full-Time screen's history.
+- **Team talk order:**
+  1. The coach walks into the middle.
+  2. A short opener from Theo or the coach (speaking beat).
+  3. Choice.
+  4. The chosen line: if it names a player, he is the one looked at (§16.3).
+  5. Reactions.
+  6. For half-time only, Theo's analysis (§15.5) as a speaking beat with its Apply buttons on a small card.
+  7. Continue to the tunnel.
+- Reduce motion: cards appear without sliding. Keyboard-only play must reach every choice.
 
 ---
 
@@ -2070,7 +2089,7 @@ Resize the composer and every pass on window resize. Dispose all render targets 
 The coach (`manager.glb`), players (`player.glb`), and reporters, directors, the owner and Theo (`person.glb`) share one skeleton and one clip name list (§18.3), so any clip plays on anyone. Crossfade 0.25 s between clips. Each person gets a random clip time offset and a 0.95–1.05 playback rate so that groups never move in sync. In-place locomotion; paths move the root.
 
 #### 14.11.2 Team-talk reactions (dressing room)
-Players sit on the benches (`SitIdle`). After a talk, each player reacts according to **his real §12.8 result**, starting 0.1–0.6 s after the line ends (random per player):
+Players sit on the benches around the room (`SitIdle`), facing the middle. The scene follows §11.25.5. After a talk, each player reacts according to **his real §12.8 result**, starting 0.1–0.6 s after the line ends (random per player):
 
 | His morale change | Clip | Face mood |
 |---|---|---|
@@ -2681,7 +2700,7 @@ Build everything with fallbacks first (box rooms, capsule people, no faces, capt
 2. Room shells in code, and every screen re-framed in its room (§11.25.3). Frame cap and the Low-preset still frame (§21).
 3. People: shared rig loader, clip mixer with fallbacks, marks and paths, sitting (§14.11.1).
 4. Faces and mouths: `Face` shader, moods, blink, head tilt and gaze, audio-driven and caption-rhythm mouths (§14.11.6–14.11.7).
-5. Dressing room: Squad lockers, the pre-match briefing, team-talk reactions from real §12.8 results; Pre-Match, Half-Time and Full-Time here (§14.11.2). Boardroom: Board Meeting, reviews, Sacked.
+5. **Talk scenes (§11.25.5), used by every scene where people talk: speaking beats with Skip only, choice beats with the choice card.** Dressing room (the U of lockers, §11.25.1): Squad lockers, the pre-match briefing, team-talk reactions from real §12.8 results; Pre-Match, Half-Time and Full-Time here (§14.11.2). Boardroom: Board Meeting, reviews, Sacked.
 6. Players at the door: §12.9 conversations as office scenes, and "Talk to player" at the locker (§14.11.3).
 7. Theo in the office, at the whiteboard and in the dressing room (§14.11.4).
 8. Press room: reporters, the voiced question, raised hands, flashes (§14.11.4).
