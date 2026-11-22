@@ -1,8 +1,10 @@
 # TOUCHLINE (working title) — Complete Build Specification
 
-Version 1.6 · 20 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
+Version 1.7 · 22 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
+
+**Changes in 1.7 (22 Nov):** the game becomes a club you live in. Every screen sits in a room of one 3D club building (office, boardroom, dressing room, tunnel, training ground, press room), and the coach walks between rooms (§11.25). People share one rig and have painted face layers whose mouths move with their voices (§14.11). Players knock on the office door for conversations, Theo the assistant is a visible person, and the match gets touchline cuts of the coach and bench (§14.11). The coach is voiced (§17.4), and every room has its own sound (§17.5). New content file `club.json` (§16.9), asset contracts (§18.2, §18.3, §18.6), budgets (§21), and milestone **M6b** (§23). Depth still comes first: rooms frame the screens and never replace them. Proposal record: `docs/design/SPEC-1.7-PROPOSAL.md`.
 
 **Changes in 1.6 (20 Nov):** the sidebar is gone: navigation moves into the top bar as tabs (§11.0, §19.6) on **every** screen, on air and office alike, like Football Manager. Office work screens fit the window with no page scroll. Tactics becomes three columns around a vertical board: the player's file (who he is) on the left, his orders (what he's told) on the right (§11.8, layout in `docs/design/tactics/README.md` "v4 layout"). New component RadarChart: the player's shape against what his role needs (§19.5).
 
@@ -221,15 +223,16 @@ jam-football/
 │  │  ├─ people/  board.ts  fans.ts  talks.ts  press.ts  conversations.ts  assistant.ts  training.ts
 │  │  ├─ news/    news.ts
 │  │  └─ game/    newGame.ts  advance.ts  score.ts  migrations.ts
-│  ├─ content/  commentary.json  press.json  talks.json  conversations.json  news.json  assistant.json  injuries.json
+│  ├─ content/  commentary.json  press.json  talks.json  conversations.json  news.json  assistant.json  injuries.json  club.json (§16.9)
 │  │            tactics.json   (role/order/setting gain and cost lines, §13.17.6)
 │  ├─ workers/  match.worker.ts  season.worker.ts
 │  ├─ state/    store.ts  saves.ts  selectors.ts  settings.ts
 │  ├─ assets/   registry.ts  procedural/crest.ts  procedural/avatar.ts  procedural/kit.ts
-│  ├─ audio/    AudioEngine.ts  commentary.ts  crowd.ts  music.ts
+│  ├─ audio/    AudioEngine.ts  commentary.ts  crowd.ts  music.ts  ambience.ts (§17.5)
 │  ├─ render3d/ MatchScene.ts  pitch.ts  stadium.ts  crowd.ts  players.ts  ball.ts  cameras.ts
 │  │            choreographer.ts  replay.ts  quality.ts  weather.ts  topdown2d.ts
-│  │            post.ts  environment.ts  beams.ts   (§14.10)
+│  │            post.ts  environment.ts  beams.ts   (§14.10)  touchline.ts (§14.11.5)
+│  ├─ club3d/   ClubScene.ts  rooms.ts  walk.ts  people.ts  behaviours.ts  faces.ts  mouth.ts   (§11.25, §14.11)
 │  └─ ui/
 │     ├─ styles/ tokens.css  global.css
 │     ├─ components/  (Button, Card, Tabs, Table, Modal, Toast, Tooltip, Badge, AttrBar, OvrBadge,
@@ -693,6 +696,7 @@ Circle method for 10 teams, rounds 1–9; rounds 10–18 repeat rounds 1–9 in 
 
 ### 11.0 Global shell and keyboard map
 - **Top bar** (56 px, full width; there is no sidebar, v1.6): crest + club name (left); then the **navigation tabs** in two groups. On air: Hub, League, Fixtures. The office: Squad, Tactics, Training, Transfers (only enabled during windows; otherwise shows "Scouting" list read-only), Club (Finances + Board), Inbox (unread count as a badge on the tab). Right: status chip "MD 7/18 · 3rd · 14 pts", balance, settings gear, **Continue** button (accent, always visible, label changes: "Continue", "Go to Match", "Kick Off", "Next Round", "Finish Window"). Behaviour and widths in §19.6.
+- **Club spaces (v1.7):** each tab is also a place in the club building. A tab click makes the coach walk to that room, and the screen opens there (§11.25).
 - **Ticker** (36 px, bottom of on-air screens, §19.5).
 - **Keyboard:** `Space` Continue / confirm primary; `Esc` close modal / back / pause match; `1`–`9` navigation tabs in order (outside the match); in match: `P` pause, `1` `2` `3` speed (Key highlights, Extended, Full), `T` tactics panel, `S` substitutions, `C` cycle camera, `R` replay last goal, `H` hide HUD, `F` fullscreen, `I` instant result (with confirm). Show key hints (KeyHint component) next to every primary button.
 - Every list/table row is keyboard-focusable and opens with Enter.
@@ -713,6 +717,7 @@ Step 3 — Start: create the save (§20), go to BoardMeeting.
 
 ### 11.4 Board Meeting (once, at start)
 Full-screen card styled like a meeting room: chairman portrait (fictional, `images/people/chairman_{clubId}.webp`, fallback avatar), the expectation, transfer budget, wage budget, and three bullet "board notes" generated from club data (e.g. "We expect attacking football." from mentality; "Develop young players." if the club has ≥2 prospects with potential ≥ 75). Button: "Accept the job".
+**v1.7:** this takes place in the **Boardroom** (§11.25). The owner sits at the head of the table with 2 directors, speaks the welcome and the expectation (voiced, `club.json`), and the card above slides in on the table.
 
 ### 11.5 Hub (home screen)
 Grid of cards:
@@ -805,15 +810,47 @@ Sequence of full-screen cards (each Continue): Final table → Awards (§12.15) 
 
 ### 11.21 Sacked
 Dramatic card: "You have been relieved of your duties." Reason, record, grade F, score. Buttons: Load last save, New Game.
+**v1.7:** the coach is called to the **Boardroom**. The owner tells him to his face (voiced, `club.json`, mood angry or worried by the reason), then the card.
 
 ### 11.22 Settings (modal)
-Audio: master, music, crowd, commentary, effects (sliders 0–100), commentary voice on/off (captions stay). Gameplay: default match speed, auto-continue after highlights (on/off), confirm before Instant Result. Graphics: Quality Auto/Low/Medium/High, show FPS. Accessibility: reduce motion, larger UI text (+12.5%), colour-blind-friendly attribute colours (blue→orange scale). Data: export save (JSON download), import save, delete saves.
+Audio: master, music, crowd, commentary, effects (sliders 0–100), commentary voice on/off (captions stay). Gameplay: default match speed, auto-continue after highlights (on/off), confirm before Instant Result, **coach walks between rooms (on/off, §11.25.2)**. Graphics: Quality Auto/Low/Medium/High, show FPS. Accessibility: reduce motion, larger UI text (+12.5%), colour-blind-friendly attribute colours (blue→orange scale). Data: export save (JSON download), import save, delete saves.
 
 ### 11.23 Credits
 Game by [entrant name] — leave a placeholder constant `CREDITS` in `constants.ts` that the user fills in. Lists collaborators, "Voices: ElevenLabs", "Images: fal", "3D models: Meshy", fonts (Barlow Condensed, Inter — SIL OFL), three.js (MIT), React (MIT). Show license notices.
 
 ### 11.24 Tutorial (first season, can be turned off)
 Seven coach-marks shown by the assistant in a speech-bubble component, each once: (1) Hub overview, (2) Continue button, (3) Tactics: drag a player, (4) Assistant Apply button in Pre-Match, (5) Team talk, (6) Match HUD controls (speed, subs, camera), (7) Week summary and board meter. "Skip tutorial" always visible.
+
+### 11.25 Club spaces (v1.7, `src/club3d/`)
+The menus become places. Every screen in §11 keeps its content, rules and keyboard access, and is shown inside a room of one club building. You play the coach living the club's week, filmed like a TV documentary.
+
+#### 11.25.1 Rooms
+Each room is one small three.js set. Walls, floors, ceilings and windows are built in code (`rooms.ts`), with props from `models/club/*.glb` and window and backdrop images from `images/club/` (§18.2). Only the current room is drawn. The next room loads while the coach walks, and a room's props are kept in memory after its first visit.
+
+| Room | Set | Screens and moments |
+|---|---|---|
+| **Exterior** | The club at dusk: brick main stand, floodlights warming up, car park | Title, New Game. On Start, the camera flies in through the front doors. |
+| **Corridor** | A short corridor with a door per room. Each door has a sign (text drawn by the game) and a lamp that lights on hover. | Between every two rooms |
+| **Office** | Desk, chair, lamp, phone, wall TV, a window onto the pitch, the sideways whiteboard (§11.8) on the wall, a second chair for Theo | Hub, Inbox, Club (finances), Transfers, and **Tactics** (the coach and Theo at the whiteboard, §14.11.4). **On-air screens (League, Fixtures, Week Summary) play on the wall TV:** the camera pushes into the TV and the broadcast UI fills the screen. Player conversations (§14.11.3). |
+| **Boardroom** | A long table, leather chairs, framed portraits of past chairmen (programme print, no text), the owner and 2 directors | Board Meeting (§11.4), board reviews (when §12.7 confidence crosses a band, and budget requests from Club), Sacked (§11.21) |
+| **Dressing room** | Lockers with the players' shirts (name and number drawn by the game, §14.2 kit), benches, a tactics board | **Squad**: click a locker to open that player's Profile. **Pre-Match briefing**: the coach presents Plan A on the board (key battles, takers, who marks whom) while the players listen. **Team talks** pre-match, at half-time and full-time (§12.8). Half-Time and Full-Time. |
+| **Tunnel** | Concrete walls, studs, the pitch light at the end | The walk-out after the pre-match talk, straight into the M4 match intro |
+| **Training ground** | A grey afternoon, cones, mannequins, a small stand, a clipboard in the foreground | Training (§11.9), with drills by focus (§14.11.4) |
+| **Press room** | A table with microphones, a club backdrop (pattern only), rows of reporters, camera flashes | Press Conference (§11.18 step 3, pre-match press) |
+
+#### 11.25.2 Moving between rooms (`walk.ts`)
+- A tab click or a door click makes **the coach walk there** on a fixed path through the corridor. The camera follows behind him at shoulder height like a documentary shot, and he opens the door (`DoorOpen`). **A walk takes at most 2.5 s**; paths are timed to fit.
+- **Any click or key during a walk skips to arrival.** Number keys `1`–`9` cut straight to the room with the `ScreenTransition` wipe (§19.7) and no walk.
+- Setting **"Coach walks between rooms"** (§11.22), default **on**. When off, every move is a cut with a wipe.
+- The Continue button moves the story on through rooms by itself: Hub → (press, if pre-match press) → dressing room briefing and talk → tunnel → match → dressing room → press room → office.
+- **Budget:** walks add no more than 3 minutes to a full season with default settings (measure in M6b, §23).
+- Reduce motion (§11.22): walks become cuts; people still animate in place.
+
+#### 11.25.3 How screens sit in a room
+- When the camera settles on a room's mark, the screen arrives as an object in the shot: papers slide onto the desk, the board on the wall, the clipboard at training, cards on the boardroom table. Layout and content are the existing screen designs (§19, `docs/design/`), re-framed to sit in the shot.
+- **The room is the frame and the UI is the content.** The room stays visible around the edges. Panels behind text are opaque, so legibility never depends on the 3D. Office screens still fit the window with no page scroll (§19.6).
+- The top bar stays on every screen. On-air screens on the TV keep their broadcast look; office screens keep their paper and board look.
+- With no models or images, rooms are lit boxes in the ART-DIRECTION colours and people are capsules (§14.2 fallback). Every screen stays fully usable, and the game plays offline with nothing delivered.
 
 ---
 
@@ -1706,6 +1743,61 @@ Resize the composer and every pass on window resize. Dispose all render targets 
 
 **Budget guard**: if Medium misses the §21.1 frame budget on the target laptop, drop items in this order and record it in `DECISIONS.md`: bloom to quarter resolution → beams off → MSAA samples 2 → composer off. Never drop the environment map or the haze; they cost almost nothing.
 
+### 14.11 People and painted faces (v1.7, `src/club3d/people.ts`, `behaviours.ts`, `faces.ts`, `mouth.ts`)
+
+#### 14.11.1 One rig for everyone
+The coach (`manager.glb`), players (`player.glb`), and reporters, directors, the owner and Theo (`person.glb`) share one skeleton and one clip name list (§18.3), so any clip plays on anyone. Crossfade 0.25 s between clips. Each person gets a random clip time offset and a 0.95–1.05 playback rate so that groups never move in sync. In-place locomotion; paths move the root.
+
+#### 14.11.2 Team-talk reactions (dressing room)
+Players sit on the benches (`SitIdle`). After a talk, each player reacts according to **his real §12.8 result**, starting 0.1–0.6 s after the line ends (random per player):
+
+| His morale change | Clip | Face mood |
+|---|---|---|
+| ≥ +4 | `FistPump` (standing up) or `SitClap` | happy |
+| +1 to +3 | `SitNod` | happy |
+| 0 | `Listen` | neutral |
+| −1 to −3 | `SitHeadDown` | worried |
+| ≤ −4, or a Temperamental sign flip | `ArmsFolded`, eyes on the coach | angry |
+
+The briefing: players `Listen`, the 2–3 players named in key battles `SitNod` when named, and the coach `Point`s at the board. Reactions are presentation only; they never change a number.
+
+#### 14.11.3 Players at the door (conversations, §12.9)
+- When a §12.9 conversation triggers, there is a knock (`sfx/door_knock.mp3`) on the coach's next office visit. The player walks in and sits across the desk, and the conversation screen opens on the desk. His opening uses the type's mood: `playing_time` worried or angry, `contract` neutral, `unhappy` angry, `praise` happy.
+- After the reply, his face follows the reply's morale effect (+ happy, 0 neutral, − angry). If the effect is negative he leaves with `ArmsFolded`, otherwise with a `Nod`.
+- "Talk to player" from Squad or Profile plays the same scene by his locker in the dressing room.
+- The inbox item stays, as the record and for players who turn walks off.
+
+#### 14.11.4 Other rooms
+- **Theo** (`person.glb`, tracksuit tint, clipboard, his own face atlas): walks into the office with the week tips (§15.3). Sits with the coach at the whiteboard on Tactics and gives the opponent report (§15.2); he `Point`s at the board when an Apply suggestion is shown. Stands beside the coach for team talks and gives the §15.5 half-time analysis.
+- **Training ground:** 10–12 players do a drill matching the week's team focus (§12.3): a rondo for passing, a shooting drill, fitness runs, a set-piece walk-through. Movement reuses the §14.3 steering and the match clips. At most 12 animated people.
+- **Press room:** 6–8 seated reporters `Write` or idle. The journalist asking the question leans in or `RaiseHand`s and speaks (`vo/press/`). Camera flashes (white point lights, 80 ms) fire with `sfx/camera_shutter.mp3` after the coach answers.
+- **Boardroom:** the owner speaks, and the directors `Listen` and `Nod`. Faces follow board confidence: ≥ 60 happy, 30–59 neutral, < 30 worried, sacking angry.
+
+#### 14.11.5 The coach on the touchline (match, `render3d/touchline.ts`)
+- The M4 dugout area gets the coach, Theo, and at most 5 substitutes on view.
+- **Touchline cuts (about 2 s, broadcast-style, from a fixed touchline camera):**
+  - our goal: coach `Celebrate`, bench jumps up
+  - goal against: coach `HeadInHands`, bench still
+  - our red card and big misses: coach `Shout`
+  - our substitution: coach `Point`, the sub jogs to the line
+  - an assistant tip firing (§15.4): Theo leans in to whisper; the HUD card still appears with Apply
+- Cuts follow playback: Key highlights shows all of them, Full shows only goal cuts, Instant shows none. A cut plays after the goal replay, never instead of it, and never during live play near either box.
+- Bench people animate only while a cut is on screen; otherwise they are frozen at the low LOD.
+
+#### 14.11.6 Painted face layers (`faces.ts`)
+- Each speaking character's head carries a separate mesh `Face` (§18.6): a thin patch over the face, parented to the `Head` bone, with its own UVs. Its material samples a **face atlas** (§18.6) and draws three cells: eyes, brows and mouth. A small shader crossfades the old cell into the new one: mouth 60 ms, brows and expressions 150 ms. The features are dark and multiplied by the skin tone, so they sit on the skin rather than on top of it.
+- **Moods:** neutral, happy, angry, worried, shocked. Each mood is a preset of brows and the resting mouth.
+- **Always running:** a blink every 2–6 s (random), a 3–5° head tilt while listening, and eyes turning towards whoever is speaking (head bone yaw, ±25° max).
+- **Who gets faces:** the person speaking and the person being spoken to animate their face. Everyone else shows a static neutral face and uses body language only.
+
+#### 14.11.7 The mouth (`mouth.ts`)
+- **With audio:** an `AnalyserNode` on the voice's source reads its RMS loudness every frame and maps it to closed / small / open / wide. Use hysteresis (thresholds in `balance.ts → faces.*`) and a 70 ms minimum hold so it never flickers. This is not lip-sync and must not try to be.
+- **Without audio** (a missing file, or voice off in settings): the mouth opens and closes to the caption's rhythm, at about 5 syllables per second with pauses at commas (150 ms) and full stops (300 ms).
+- `TalkGesture` plays on the speaker every 3–5 s of speech.
+
+#### 14.11.8 Cameras for people
+Mid-distance shots only: waist-up at the closest, and faces never fill the screen. This is the main defence against uncanny faces (ART-DIRECTION §1).
+
 ---
 
 ## 15. The assistant coach
@@ -1766,14 +1858,16 @@ Two voices: **PBP** (play-by-play, "Callum") and **COL** (colour/co-commentator,
 { "questions": [ { "id": "pre_derby_01", "context": ["PRE_DERBY"], "text": "Big one against {opponent}. What does this derby mean to you?", "voText": "Big one this week. What does this derby mean to you?",
   "answers": [ { "id": "a", "tone": "Confident", "text": "We're going there to win. Simple.", "effects": { "fans": 3, "board": 0, "squadMorale": 2, "risk": "If we lose, fans −3 extra" } }, ... ] } ] }
 ```
-Contexts: PRE_DERBY, POST_WIN, POST_BIG_WIN, POST_DRAW, POST_LOSS, POST_BIG_LOSS, POST_UPSET_WIN (beat a team with rep ≥ ours + 2), STREAK_WIN, STREAK_LOSS, PLAYER_PRAISE (MOTM rating ≥ 8.5), PLAYER_CRITICISM (a starter rated ≤ 5.5), TRANSFER_RUMOUR, OPENING_DAY. At least 4 questions per context (≥ 52 total), 3 answers each with effects on fans (−5..+5), board (−3..+3), squad morale (−4..+4) or one player's morale (−8..+8), plus optional conditional effects resolved on the next match (e.g. Confident → if lost next match, fans −3). `voText` has no tokens (voice audio uses it).
+Contexts: PRE_DERBY, POST_WIN, POST_BIG_WIN, POST_DRAW, POST_LOSS, POST_BIG_LOSS, POST_UPSET_WIN (beat a team with rep ≥ ours + 2), STREAK_WIN, STREAK_LOSS, PLAYER_PRAISE (MOTM rating ≥ 8.5), PLAYER_CRITICISM (a starter rated ≤ 5.5), TRANSFER_RUMOUR, OPENING_DAY. At least 4 questions per context (≥ 52 total), 3 answers each with effects on fans (−5..+5), board (−3..+3), squad morale (−4..+4) or one player's morale (−8..+8), plus optional conditional effects resolved on the next match (e.g. Confident → if lost next match, fans −3). `voText` has no tokens (voice audio uses it). **v1.7:** each answer also gets a `voText` (no tokens) for the coach's voice; its audio is `vo/coach/press_{questionId}_{answerId}.mp3`.
 The journalist: 3 fictional journalists with names, outlets and portraits (`images/people/journalist_{1..3}.webp`), e.g. "Priya Natarajan, Meridian Sport", "Joe Kettering, The Saltmere Echo", "Femi Adebayo-Clarke, Coastline Radio".
 
 ### 16.3 Team talks (`talks.json`)
 For each context × tone: 3 alternative manager lines (what the manager says, shown in a speech bubble) and 4 player reaction lines (positive, neutral, negative, mixed). 9 contexts × 6 tones × 3 = 162 manager lines minimum.
+**v1.7 (voiced coach):** every manager line has an `id` and a `voText` with no tokens, as in §16.2 (`{ "id": "ht_lose_demand_02", "text": "...", "voText": "..." }`). If `text` has no tokens, `voText` may be left out and `text` is used. The half-time Demand and Disappointment lines are written to be shouted.
+**The coach calls players by name (v1.7):** a coach line may have `"nameSlot": "start"` or `"end"` with exactly one `{player}` token at the very start or very end of `text` (`"{player}, I need more from you."`, `"That's the standard. Well done, {player}."`). The audio is chained like commentary (§16.1): `vo/coach_names/{playerId}.mp3` + the line, or the line + the name, with a 120 ms gap. The `voText` leaves the name out. The same rule applies to coach lines in §16.4 and §16.9. Lines that name a player are spoken to one player: the reaction (§14.11.2) and the face gaze go to him. In team talks, at least 1 of the 3 alternatives per context × tone names a player (the player is the context's natural pick: the MOTM, the worst rated, the captain, or the scorer).
 
 ### 16.4 Conversations (`conversations.json`)
-Per §12.9: types `playing_time`, `contract`, `unhappy`, `praise`, each with ≥ 3 openings and 3 reply options with effects and follow-up lines.
+Per §12.9: types `playing_time`, `contract`, `unhappy`, `praise`, each with ≥ 3 openings and 3 reply options with effects and follow-up lines. **v1.7:** the coach's reply options and the players' lines each get an `id` and a token-free `voText` (players are voiced if credits allow, §17.4).
 
 ### 16.5 Assistant (`assistant.json`)
 Templates for §15.2–15.5: each rule id with ≥ 2 text variants and a reason line. Plus 30 generic remarks for idle moments in the Hub ("The squad looked sharp in training today").
@@ -1788,6 +1882,12 @@ Templates for §15.2–15.5: each rule id with ≥ 2 text variants and a reason 
 
 ### 16.8 Writing guidelines (all content)
 Tone: British/international football broadcast English, energetic but not cringe; no profanity; no real people, clubs or brands; vary sentence length; avoid repeated phrases; each line ≤ 120 characters (commentary ≤ 90).
+
+### 16.9 Club life (`club.json`, v1.7)
+Lines for §11.25 and §14.11, each with `id`, `speaker` (`coach`, `owner`, `director`, `assistant`), `text`, an optional `voText` (no tokens), and `mood`:
+- **owner**: welcome (Board Meeting) ≥ 3, board review by band (happy, neutral, worried) ≥ 3 each, budget request granted or refused ≥ 2 each, sacking ≥ 3.
+- **coach**: briefing lines by plan feature (mentality, press, key battle, set pieces, width) ≥ 3 each; short walk-in lines ("Right, lads.", "Sit down, son.") ≥ 8.
+- **assistant**: knock-and-enter lines ≥ 4, whiteboard lines while showing an Apply suggestion ≥ 6, touchline whispers ≥ 6.
 
 ---
 
@@ -1809,6 +1909,22 @@ Web Audio API. One `AudioContext` created on the first user gesture. Buses: mast
 - Duck crowd by −6 dB and music by −10 dB while voice plays.
 - Assistant stingers: `vo/assistant/stinger_{1..6}.mp3` ("Gaffer!", "Boss, a word.", …), and voiced fixed lines for greetings, half-time openers, post-match openers (ids in `assistant.json` with `"voiced": true`).
 - Press: `vo/press/{questionId}.mp3` from `voText`.
+- **v1.7, the coach is voiced:** `vo/coach/{lineId}.mp3` for team talks (§16.3), press answers (`press_{questionId}_{answerId}`), conversation replies (§16.4) and `club.json` coach lines. `vo/owner/{lineId}.mp3` covers the owner and directors, and `vo/assistant/{lineId}.mp3` covers Theo's `club.json` lines. `vo/players/{lineId}.mp3` (conversation lines, optional) uses 3 player voices, chosen by player id. `vo/coach_names/{playerId}.mp3` is each player's shirt name in the coach's voice (all 280, so it still works after transfers), chained before or after a line by `nameSlot` (§16.3). If a name file is missing, play the line alone; the caption still shows the name. Captions always show. A missing file falls back to the caption-rhythm mouth (§14.11.7), so every voice set is optional for the build.
+- Each voice file passes through an `AnalyserNode` that feeds the speaker's mouth (§14.11.7). Voice ducking as above.
+
+### 17.5 Room ambience (`ambience.ts`, v1.7)
+One loop per room on the effects bus, crossfaded over 0.6 s as the coach walks. One-shots play on events. Loops sit at −18 dB against UI sounds (§19.7), so the UI still reads clearly.
+
+| Room | Loop `ambience/{room}.mp3` | One-shots `sfx/` |
+|---|---|---|
+| exterior | Wind, distant traffic, a far-off gull | `car_door.mp3` |
+| corridor | Building hum | `footstep_{1..4}.mp3` (synced to `Walk`), `door_open.mp3`, `door_close.mp3` |
+| office | Clock tick; rain on the window in wet weeks (`ambience/office_rain.mp3`) | `phone_ring.mp3` (board messages), `door_knock.mp3`, `ui_paper.mp3` |
+| boardroom | Quiet room tone, a ticking clock | `chair_creak.mp3` |
+| dressing | Low chatter, a dripping shower | `studs_tile_{1..3}.mp3`, `locker_bang.mp3` |
+| tunnel | Crowd heard through concrete, rising | `studs_concrete_{1..3}.mp3` |
+| training | Wind, distant shouts, ball strikes | `whistle_short.mp3` (existing), `cone_hit.mp3` |
+| press | Murmur, chairs | `camera_shutter.mp3` (existing), `mic_tap.mp3` |
 
 ---
 
@@ -1837,6 +1953,12 @@ Claude produces assets in parallel with your work and drops them into `public/as
 | `images/ui/logo.webp` | transparent WebP | game logo when the name is final |
 | `audio/music/*.mp3`, `audio/crowd/*.mp3`, `audio/sfx/*.mp3` | MP3 128–192 kbps | names in §17 |
 | `audio/vo/commentary/{lineId}.mp3`, `audio/vo/names/{playerId}.mp3`, `audio/vo/clubs/{clubId}.mp3`, `audio/vo/assistant/{lineId}.mp3`, `audio/vo/press/{questionId}.mp3` | MP3 64–96 kbps mono | generated from your content files; ids MUST match |
+| `audio/vo/coach/{lineId}.mp3`, `audio/vo/coach_names/{playerId}.mp3`, `audio/vo/owner/{lineId}.mp3`, `audio/vo/players/{lineId}.mp3` (v1.7) | MP3 64–96 kbps mono | §17.4; every one optional |
+| `audio/ambience/{room}.mp3` (v1.7) | MP3 128 kbps, seamless loop, 30–60 s | §17.5 |
+| `models/person.glb` (v1.7) | GLB | contract §18.6 |
+| `models/club/{prop}.glb` (v1.7) | GLB, origin at floor centre, metres, +Z forward | desk, desk_chair, lamp, phone, tv, whiteboard, locker, bench, board_table, board_chair, frame, mic_table, press_chair, tripod, cone, mannequin, dugout_bench. Baked `aoMap` allowed (§14.10). Missing → coloured boxes |
+| `textures/faces/{coach,player,person,assistant,owner}.webp` (v1.7) | 1024² WebP, transparent | face atlases, §18.6 |
+| `images/club/{exterior,window_office,window_boardroom,training_bg,press_backdrop}.webp` (v1.7) | 1920×1080 WebP | backdrops seen through windows or behind sets; no readable text (ART-DIRECTION §2) |
 
 ### 18.3 Player model contract (`models/player.glb`)
 - Humanoid, 1.80 m tall, origin at the feet, facing +Z, ≤ 12,000 triangles, one skinned mesh (or a few sharing one skeleton), ≤ 60 bones.
@@ -1844,11 +1966,16 @@ Claude produces assets in parallel with your work and drops them into `public/as
 - Animation clips named exactly: `Idle`, `Jog`, `Run`, `Sprint`, `Pass`, `Shoot`, `Header`, `Tackle`, `Throw`, `Celebrate`, `Dejected`, `GK_Idle`, `GK_DiveLeft`, `GK_DiveRight`, `GK_Catch`. Missing clips fall back in this order: Sprint→Run→Jog→Idle; Shoot→Pass; Header→Idle; Tackle→Run; Throw→Idle; Celebrate→Idle; GK_*→Idle.
 - In-place locomotion (no root motion).
 - `models/manager.glb` follows the same rules (origin at the feet, +Z, ≤ 12,000 triangles, in place), 1.78 m tall, materials `Coat`, `Shirt`, `Tie`, `Trousers`, `Shoes`, `Skin`, `Hair` (`Tie` is tinted the club's primary colour, `Coat` stays as delivered), clips `Idle`, `Point`, `Clap`, `Celebrate`, `Dejected` (missing clips → `Idle`).
+- **v1.7: one shared skeleton.** `player.glb`, `manager.glb` and `person.glb` use the same bone names and rest pose, so any clip plays on any of them.
+  - **Clips added to all three:** `Walk`, `DoorOpen`, `Sit`, `SitIdle`, `SitNod`, `SitHeadDown`, `SitClap`, `Listen`, `Nod`, `TalkGesture`, `ArmsFolded`, `FistPump`, `HeadInHands`, `Shout`, `Write`, `RaiseHand`, plus `Point`, `Clap`, `Celebrate` and `Dejected` on everyone.
+  - **Fallbacks:** `Sit*` → `SitIdle` → `Idle`; `Walk` → `Jog` → `Idle`; `FistPump` → `Celebrate` → `Idle`; `HeadInHands` → `Dejected` → `Idle`; everything else → `Idle`.
+  - A bone named `Head` is required.
+  - Speaking characters carry a `Face` mesh (§18.6).
 
 ### 18.4 What you build vs what Claude builds
 | You (Gemini) | Claude |
 |---|---|
-| All code, content JSON text, procedural fallbacks (crest, avatar, kit, flags, pitch, stadium boxes, capsule players), registry, audio engine | Meshy models, fal images, ElevenLabs voices/SFX/music, `tools/` scripts, `asset-manifest.json` updates, art direction and UI design references |
+| All code, content JSON text, procedural fallbacks (crest, avatar, kit, flags, pitch, stadium boxes, capsule players, box rooms), registry, audio engine | Meshy models, fal images, ElevenLabs voices/SFX/music, `tools/` scripts, `asset-manifest.json` updates, art direction and UI design references |
 
 ### 18.5 Portrait tint (programme print)
 Portraits and people images arrive as greyscale halftone prints (black dots on white). The `Portrait` component prints them in two club colours at runtime, so a player who transfers is printed in his new club's colours and the assistant always wears yours:
@@ -1856,6 +1983,21 @@ Portraits and people images arrive as greyscale halftone prints (black dots on w
 - Implement as one inline SVG filter per club (`feColorMatrix` to luminance, then `feComponentTransfer` with `table` values mapping 0 → ink and 1 → paper per channel), referenced by `filter: url(#print-<clubId>)`. No canvas work per frame; filters are defined once in a hidden `<svg>` at app start.
 - Free agents and players with no club use ink `#141414`.
 - The procedural avatar fallback uses the same ink and paper colours, so missing images look like part of the same set.
+
+### 18.6 People and face atlases (v1.7)
+- **`models/person.glb`:** the shared rig and clips (§18.3), 1.78 m tall, ≤ 12,000 triangles, materials `Jacket`, `Shirt`, `Trousers`, `Shoes`, `Skin`, `Hair`. Tint per person for variety: reporters vary jacket, shirt and hair from seeds; Theo has a tracksuit tint in the user's club colours; the owner and directors wear dark suits. Skin tones come from the 6 presets.
+- **`Face` mesh:** a thin patch over the face (≤ 200 triangles), skinned only to `Head`, with its own 0–1 UVs and material `Face`. Claude fits it in `tools/`. Without a `Face` mesh, the character has no face animation; the body still works.
+- **Face atlas layout** (1024², 4×4 cells of 256², transparent background, dark features):
+
+| Row | Cells (left → right) |
+|---|---|
+| 0 | eyes open, eyes half, eyes closed, (spare) |
+| 1 | brows neutral, brows raised, brows angry, brows worried |
+| 2 | mouth closed, mouth small, mouth open, mouth wide |
+| 3 | mouth smile, mouth frown, mouth "O", (spare) |
+
+- **Moods** (`balance.ts → faces.moods`): neutral = brows neutral + mouth closed; happy = brows raised + smile; angry = brows angry + frown; worried = brows worried + mouth small; shocked = brows raised + "O". While speaking, the mouth row-2 cells override the mood's mouth.
+- Atlases: `coach`, `player` (shared by all players), `person` (reporters and directors), `assistant` (Theo), `owner`.
 
 Procedural fallbacks MUST look intentional: crest = shield SVG with the club's colours, a simple emblem from a set of 8 shapes (anchor, hammer, bird, wave, gate, flame, tree, crow) chosen per club, and the club code; avatar = head-and-shoulders silhouette in kit colours with initials.
 
@@ -2053,7 +2195,7 @@ After WeekSummary is generated, after each transfer window round, and at SeasonE
 Export: download `touchline-save-<club>-md<matchday>.json`. Import: file picker → validate shape (`version`, required keys) → write to a chosen slot.
 
 ### 20.5 Settings defaults
-master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key highlights, auto-continue off, confirm instant on, quality Auto, FPS off, reduce motion = system preference, larger text off, colour-blind off.
+master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key highlights, auto-continue off, confirm instant on, coach walks on, quality Auto, FPS off, reduce motion = system preference, larger text off, colour-blind off.
 
 ---
 
@@ -2070,6 +2212,10 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 | Frame rate in match, Medium, 1920×1080, Intel Iris Xe class | ≥ 55 fps average, never < 30 for > 1 s |
 | Instant sim of one match | < 30 ms; full round of 4 other matches < 150 ms in the worker |
 | Memory after 5 matches | no growth > 50 MB versus after the first |
+| Club rooms (v1.7), Medium, 1920×1080, same laptop | ≥ 55 fps during walks; 30 fps cap while a screen is open and nothing big moves |
+| Each room (v1.7) | ≤ 120k triangles, ≤ 120 draw calls, ≤ 40 MB GPU textures, ≤ 12 animated people |
+| Club spaces download (v1.7) | ≤ 12 MB, loaded lazily after the Title is interactive; never delays first paint or the Title |
+| Next room ready (v1.7) | before the walk ends (≤ 2.5 s); first-ever visit ≤ 1.0 s extra with a fade |
 | Total build size | < 150 MB |
 
 ### 21.2 Presets
@@ -2088,6 +2234,9 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 | Floodlight beams and glare | glare sprites only | yes | yes |
 | Colour grade and vignette | off | yes | yes |
 | Environment map, haze, grass normal map | yes | yes | yes |
+| Club rooms: people (v1.7) | still frame after the camera settles; walks become cuts | animated, ≤ 12 | animated, ≤ 12 |
+| Club rooms: shadows (v1.7) | off | 1024 map, 1 light | 2048 map, 1 light |
+| Touchline cuts (v1.7) | coach only | coach, Theo, bench | coach, Theo, bench |
 **Auto**: start Medium; measure the average frame time over the first 3 s of each match; if > 22 ms drop one level (toast "Graphics set to Low for smoother play"); if < 10 ms on Medium for 10 s, offer High (toast with a button), never switch up automatically.
 
 ---
@@ -2202,6 +2351,39 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 3. Commentary selection and caption strip; voice chaining (names + lines) with ducking.
 **Accept:** in a test match, at least 3 assistant advices fire and Apply changes the engine (visible in the next events); audio works with and without asset files; commentary captions never overlap or lag more than 1 s.
 
+### M6b — Club spaces (SPEC 1.7; starts when M6 is accepted, about 6–7 days; Gemini is ahead of schedule)
+Build everything with fallbacks first (box rooms, capsule people, no faces, caption-rhythm mouths), then switch to real assets as they appear in the manifest.
+1. `ClubScene` and scene manager, corridor, camera rails, the coach's walk with skip, tab and Continue routing through rooms, the walks setting (§11.25.1–11.25.2).
+2. Room shells in code, and every screen re-framed in its room (§11.25.3). Frame cap and the Low-preset still frame (§21).
+3. People: shared rig loader, clip mixer with fallbacks, marks and paths, sitting (§14.11.1).
+4. Faces and mouths: `Face` shader, moods, blink, head tilt and gaze, audio-driven and caption-rhythm mouths (§14.11.6–14.11.7).
+5. Dressing room: Squad lockers, the pre-match briefing, team-talk reactions from real §12.8 results; Pre-Match, Half-Time and Full-Time here (§14.11.2). Boardroom: Board Meeting, reviews, Sacked.
+6. Players at the door: §12.9 conversations as office scenes, and "Talk to player" at the locker (§14.11.3).
+7. Theo in the office, at the whiteboard and in the dressing room (§14.11.4).
+8. Press room: reporters, the voiced question, raised hands, flashes (§14.11.4).
+9. Tunnel walk-out into the M4 match intro.
+10. Touchline cuts in the match with Theo and the bench (§14.11.5).
+11. Training ground drills by focus (§14.11.4).
+12. Room ambience and one-shots (§17.5), and the coach, owner and Theo voices wired (§17.4).
+13. Capture `docs/screens/M6b/` (every room, at 1280×720 and 1920×1080, with assets and without) and a performance run. `REVIEW REQUESTED: M6b`: this is a Claude design gate.
+
+**Accept:**
+- Every screen is reachable by mouse and keyboard, and plays offline with no assets.
+- Budgets in §21.1 are met.
+- Walks add ≤ 3 min to a full season at default settings, measured in a scripted season.
+- A test shows each player's team-talk reaction matches the sign and size of his morale change.
+- No room ever delays the Title.
+
+**If time runs short, cut in this order** (record each in `DECISIONS.md`):
+1. training drills (players hold a still drill pose)
+2. press-room reporter animation (they stay seated; the question is still voiced)
+3. Theo in the match (his tips stay as HUD cards)
+4. the bench in touchline cuts
+5. the coach's walk (becomes a camera glide)
+6. faces on everyone but the coach
+
+Team-talk reactions, players at the door and room sound stay.
+
 ### M7 — Onboarding, polish, season end (10–12 Dec)
 1. Tutorial (§11.24). 2. Season End sequence complete with awards and share card (§11.20, §12.15–12.16). 3. Save slots, export/import, Load screen. 4. Credits. 5. Visual polish pass on every screen against §19 (spacing, empty states, loading states). 6. Run QA checklist §22.4 and fix.
 **Accept:** QA checklist all pass except items blocked by missing final assets; a new player can finish a season without reading any docs; M7 design review passed.
@@ -2221,6 +2403,12 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 ## 24. Out of scope (do not build) and stretch goals
 
 Out of scope for the jam build: online multiplayer, accounts, real-time "day/week" persistent modes, loans, youth academy intake, cups, staff hiring beyond §12.17.1, stadium upgrades, editor, mobile/touch, and the SPEC-1.4 Tier C items (full set-piece designer, contract clauses, social groups).
+
+**Club life extras (v1.7; only if time and credits allow, after M6b is accepted and M7 is on track, in this order):**
+1. **A club that changes over the season:** the trophy cabinet fills, the weather turns wintry by December, the office gets messier during a losing run, and fans outside cheer or boo by form as the coach arrives.
+2. **Signing day:** a new signing shakes the coach's hand and holds up the club scarf for the photographers in the press room.
+3. **The physio room:** injured players on a treatment table, and you can visit them (§12.5).
+4. **Big endings:** a trophy lift on the pitch if you win the league; packing a box after the boardroom sacking.
 
 Stretch (only after M8 passes, in this order):
 1. **Career mode**: continue to Season 2+ with ageing, retirements, contract expiries, regens (new fictional players generated with a separate seed and generic commentary lines), and the board's new expectation.
