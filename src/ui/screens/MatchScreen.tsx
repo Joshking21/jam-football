@@ -25,11 +25,13 @@ import { GoalBanner, ReplayOverlay } from './Match/GoalBanner';
 import { RadarOverlay } from './Match/RadarOverlay';
 import { HalfTimeModal } from './Match/HalfTimeModal';
 import { FullTimeModal } from './Match/FullTimeModal';
+import { TalkTone, getHalfTimeTalkContext } from '../../core/player/talks';
 import type { ClientToWorkerMessage, WorkerToClientMessage } from '../../workers/match.worker';
 
 export const MatchScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
   const advanceGame = useStore((state) => state.advanceGame);
+  const performTeamTalk = useStore((state) => state.performTeamTalk);
   const showToast = useStore((state) => state.showToast);
   const settings = useStore((state) => state.settings);
 
@@ -355,13 +357,20 @@ export const MatchScreen: React.FC = () => {
     showToast('Tactical substitution submitted', 'info');
   };
 
-  const handleResumeSecondHalf = (talkTone?: string) => {
+  const handleResumeSecondHalf = (talkTone?: TalkTone) => {
     setIsHalfTime(false);
+    if (talkTone && gameState) {
+      const isHome = gameState.userClubId === homeClub.id;
+      const userGoals = isHome ? playbackState.score.home : playbackState.score.away;
+      const oppGoals = isHome ? playbackState.score.away : playbackState.score.home;
+      const htContext = getHalfTimeTalkContext(userGoals, oppGoals);
+      const res = performTeamTalk(htContext, talkTone);
+      if (res) {
+        showToast(`Team Talk (${talkTone}): ${res.squadReaction}`, 'success');
+      }
+    }
     if (playbackRef.current) {
       playbackRef.current.resumeSecondHalf();
-    }
-    if (talkTone) {
-      showToast(`Team Talk (${talkTone}): Focus boosted for second half!`, 'success');
     }
   };
 

@@ -7,6 +7,8 @@ import { createNewGame, NewGameOptions } from '@/core/game/newGame';
 import { advance, validateLineup } from '@/core/game/advance';
 import { pickBestLineup } from '@/core/match/aiManager';
 import { applyClubTheme } from '@/config/clubThemes';
+import { TalkContext, TalkTone, TeamTalkResult, applyTeamTalk } from '@/core/player/talks';
+import { deriveSeed, createRng } from '@/core/rng';
 
 export type AppScreen =
   | 'title'
@@ -72,6 +74,7 @@ export interface AppState {
   swapLineupSlots: (slotA: number, slotB: number) => void;
   swapLineupWithBench: (lineupSlot: number, benchIndex: number) => void;
   markInboxRead: (id: string) => void;
+  performTeamTalk: (context: TalkContext, tone: TalkTone) => TeamTalkResult | null;
   saveAutosave: () => Promise<void>;
   checkAutosave: () => Promise<void>;
   continueAutosave: () => Promise<boolean>;
@@ -381,6 +384,30 @@ export const useStore = create<AppState>((set, get) => {
       const item = next.inbox.find((i) => i.id === id);
       if (item) item.read = true;
       set({ gameState: next });
+    },
+
+    performTeamTalk: (context: TalkContext, tone: TalkTone) => {
+      const state = get().gameState;
+      if (!state) return null;
+      const userClub = state.clubs[state.userClubId];
+      if (!userClub) return null;
+
+      const rng = createRng(
+        deriveSeed(state.seed, 'team-talk', `${state.matchday}-${context}-${tone}`),
+      );
+      const result = applyTeamTalk(state.players, userClub.squad, context, tone, rng);
+
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      for (const [pId, updatedPlayer] of Object.entries(result.updatedPlayers)) {
+        next.players[pId] = updatedPlayer;
+      }
+      if (result.focusBoost > 0) {
+        next.focusBoost = result.focusBoost;
+      }
+
+      set({ gameState: next });
+      triggerDebouncedAutosave(next);
+      return result;
     },
 
     saveAutosave: async () => {

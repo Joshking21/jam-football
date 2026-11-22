@@ -110,6 +110,7 @@ export function buildTeamSheet(
   club: Club,
   players: Record<PlayerId, Player>,
   side: 'home' | 'away',
+  focusBoost: number = 0,
 ): TeamSheet {
   const sheetPlayers: TeamSheet['players'] = {};
 
@@ -145,7 +146,7 @@ export function buildTeamSheet(
     areaFamiliarity: club.familiarity,
     players: sheetPlayers,
     trainingBonus,
-    focusBoost: 0,
+    focusBoost,
   };
 }
 
@@ -158,6 +159,7 @@ export function applyMatchResults(
 ): GameState {
   const next = JSON.parse(JSON.stringify(state)) as GameState;
   const currentMatchday = next.matchday;
+  next.focusBoost = 0; // Reset pre-match focus boost after match results are applied
 
   // Reset minutesLastMatch for all players before applying this round's minutes
   for (const p of Object.values(next.players)) {
@@ -409,6 +411,7 @@ export function applyMatchResults(
 export function runWeeklyProcessing(state: GameState): GameState {
   const next = JSON.parse(JSON.stringify(state)) as GameState;
   const currentMatchday = next.matchday;
+  next.focusBoost = 0; // Reset pre-match focus boost after match results are applied
 
   // 1. Process player weekly recovery, development, training injuries & healing
   for (const [idStr, p] of Object.entries(next.players)) {
@@ -769,8 +772,10 @@ export function advance(
           // Simulate instant AI match
           const homeClub = state.clubs[f.homeId]!;
           const awayClub = state.clubs[f.awayId]!;
-          const homeSheet = buildTeamSheet(homeClub, state.players, 'home');
-          const awaySheet = buildTeamSheet(awayClub, state.players, 'away');
+          const homeBoost = f.homeId === state.userClubId ? (state.focusBoost ?? 0) : 0;
+          const awayBoost = f.awayId === state.userClubId ? (state.focusBoost ?? 0) : 0;
+          const homeSheet = buildTeamSheet(homeClub, state.players, 'home', homeBoost);
+          const awaySheet = buildTeamSheet(awayClub, state.players, 'away', awayBoost);
 
           const input: MatchInput = {
             fixtureId: f.id,

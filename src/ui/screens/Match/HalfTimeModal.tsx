@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Club, TeamMatchStats } from '../../../core/types';
 import { Crest } from '../../components/Crest';
 import { ArrowRight, MessageSquare, Play, Sparkles } from 'lucide-react';
+import { TalkTone, predictTalkReaction, TALKS_DATA, TalkContext } from '@/core/player/talks';
 
 interface HalfTimeModalProps {
   isOpen: boolean;
@@ -13,7 +14,7 @@ interface HalfTimeModalProps {
   homeStats: TeamMatchStats;
   awayStats: TeamMatchStats;
   userClubId: string;
-  onSecondHalf: (talkTone?: string) => void;
+  onSecondHalf: (talkTone?: TalkTone) => void;
   onOpenSubs: () => void;
   onOpenTactics: () => void;
 }
@@ -31,7 +32,7 @@ export const HalfTimeModal: React.FC<HalfTimeModalProps> = ({
   onOpenSubs,
   onOpenTactics,
 }) => {
-  const [selectedTone, setSelectedTone] = useState<string>('Calm');
+  const [selectedTone, setSelectedTone] = useState<TalkTone>('Calm');
 
   if (!isOpen) return null;
 
@@ -40,16 +41,52 @@ export const HalfTimeModal: React.FC<HalfTimeModalProps> = ({
   const oppScore = isUserHome ? awayScore : homeScore;
 
   // Context: HT_WIN, HT_DRAW, HT_LOSE
-  const htContext =
+  const htContext: TalkContext =
     userScore > oppScore ? 'HT_WIN' : userScore === oppScore ? 'HT_DRAW' : 'HT_LOSE';
 
-  const tones = [
-    { id: 'Calm', label: 'Calm', desc: 'Keep our heads. Stay disciplined.' },
-    { id: 'Motivate', label: 'Motivate', desc: 'Give everything for the badge.' },
-    { id: 'Demand', label: 'Demand More', desc: 'That standard is unacceptable.' },
-    { id: 'Praise', label: 'Praise', desc: 'Brilliant half. Keep it up.' },
-    { id: 'Disappoint', label: 'Disappointment', desc: 'Letting ourselves down out there.' },
-    { id: 'Focus', label: 'Focus', desc: 'Concentrate on our tactical tasks.' },
+  const tones: { id: TalkTone; label: string; desc: string; reaction: string; quote: string }[] = [
+    {
+      id: 'Calm',
+      label: 'Calm',
+      desc: 'Keep our heads. Stay disciplined.',
+      reaction: predictTalkReaction(htContext, 'Calm'),
+      quote: TALKS_DATA[htContext].Calm.managerLines[0]!,
+    },
+    {
+      id: 'Motivate',
+      label: 'Motivate',
+      desc: 'Step up the tempo and win every duel.',
+      reaction: predictTalkReaction(htContext, 'Motivate'),
+      quote: TALKS_DATA[htContext].Motivate.managerLines[0]!,
+    },
+    {
+      id: 'Demand',
+      label: 'Demand More',
+      desc: 'Demand urgency and complete ruthlessness.',
+      reaction: predictTalkReaction(htContext, 'Demand'),
+      quote: TALKS_DATA[htContext].Demand.managerLines[0]!,
+    },
+    {
+      id: 'Praise',
+      label: 'Praise',
+      desc: 'Praise the graft and build confidence.',
+      reaction: predictTalkReaction(htContext, 'Praise'),
+      quote: TALKS_DATA[htContext].Praise.managerLines[0]!,
+    },
+    {
+      id: 'Disappoint',
+      label: 'Disappointment',
+      desc: 'Call out sub-par standards bluntly.',
+      reaction: predictTalkReaction(htContext, 'Disappoint'),
+      quote: TALKS_DATA[htContext].Disappoint.managerLines[0]!,
+    },
+    {
+      id: 'Focus',
+      label: 'Focus',
+      desc: 'Pinpoint tactical tweaks and game management.',
+      reaction: predictTalkReaction(htContext, 'Focus'),
+      quote: TALKS_DATA[htContext].Focus.managerLines[0]!,
+    },
   ];
 
   return (
@@ -273,6 +310,12 @@ export const HalfTimeModal: React.FC<HalfTimeModalProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {tones.map((t) => {
                 const isSelected = selectedTone === t.id;
+                const reactionColor =
+                  t.reaction === 'Most will respond well'
+                    ? '#10B981'
+                    : t.reaction === 'Mixed'
+                      ? '#94A3B8'
+                      : '#EF4444';
                 return (
                   <button
                     key={t.id}
@@ -308,7 +351,9 @@ export const HalfTimeModal: React.FC<HalfTimeModalProps> = ({
                       >
                         {t.label}
                       </span>
-                      {isSelected && <Sparkles size={14} color="#60A5FA" />}
+                      <span style={{ fontSize: 11, fontWeight: 700, color: reactionColor }}>
+                        {t.reaction}
+                      </span>
                     </div>
                     <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.5)', marginTop: 2 }}>
                       {t.desc}
@@ -317,6 +362,24 @@ export const HalfTimeModal: React.FC<HalfTimeModalProps> = ({
                 );
               })}
             </div>
+
+            {/* Speech Bubble */}
+            {selectedTone && (
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: '10px 14px',
+                  borderRadius: 6,
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  borderLeft: '3px solid #2563EB',
+                  fontSize: 12,
+                  fontStyle: 'italic',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                }}
+              >
+                "{tones.find((t) => t.id === selectedTone)?.quote}"
+              </div>
+            )}
           </div>
         </div>
 

@@ -511,6 +511,7 @@ export interface GameState {
   conversationsHistory: string[];
   tutorial: { step: number; done: boolean };
   pendingMatch: { fixtureId: FixtureId } | null;
+  focusBoost?: number; // team-wide z-unit boost from pre-match team talk (§12.8)
   awards: SeasonAwards | null;
   score: number; // leaderboard score, computed at season end
   counters: { news: number; inbox: number; offer: number };

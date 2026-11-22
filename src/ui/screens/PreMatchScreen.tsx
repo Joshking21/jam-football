@@ -19,7 +19,16 @@ import {
   CloudRain,
   Sun,
   Award,
+  MessageSquare,
 } from 'lucide-react';
+import {
+  TalkTone,
+  predictTalkReaction,
+  getPreMatchTalkContext,
+  TALKS_DATA,
+} from '@/core/player/talks';
+import { rawOvr } from '@/core/player/ratings';
+import { Player } from '@/core/types';
 
 type PreMatchStep = 1 | 2 | 3;
 
@@ -27,10 +36,11 @@ export const PreMatchScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
   const advanceGame = useStore((state) => state.advanceGame);
   const updateUserTactics = useStore((state) => state.updateUserTactics);
+  const performTeamTalk = useStore((state) => state.performTeamTalk);
   const showToast = useStore((state) => state.showToast);
 
   const [currentStep, setCurrentStep] = useState<PreMatchStep>(1);
-  const [selectedTone, setSelectedTone] = useState<string>('Assertive');
+  const [selectedTone, setSelectedTone] = useState<TalkTone>('Calm');
 
   if (!gameState) return null;
 
@@ -50,6 +60,30 @@ export const PreMatchScreen: React.FC = () => {
     : (userClub.rivals[0] ?? 'c02');
   const oppClub = gameState.clubs[oppId] ?? Object.values(gameState.clubs)[0]!;
 
+  const userStarters = userClub.tactics.lineup
+    .filter((id): id is string => Boolean(id))
+    .map((id) => gameState.players[id])
+    .filter((p): p is Player => Boolean(p));
+  const oppStarters = oppClub.tactics.lineup
+    .filter((id): id is string => Boolean(id))
+    .map((id) => gameState.players[id])
+    .filter((p): p is Player => Boolean(p));
+
+  const userAvgOvr =
+    userStarters.length > 0
+      ? userStarters.reduce(
+          (sum, p) => sum + rawOvr(p.attributes, p.positions[0]?.pos ?? 'CM'),
+          0,
+        ) / userStarters.length
+      : 70;
+  const oppAvgOvr =
+    oppStarters.length > 0
+      ? oppStarters.reduce((sum, p) => sum + rawOvr(p.attributes, p.positions[0]?.pos ?? 'CM'), 0) /
+        oppStarters.length
+      : 70;
+
+  const preMatchContext = getPreMatchTalkContext(userAvgOvr, oppAvgOvr);
+
   const handleApplySuggestedApproach = () => {
     // If opponent plays wide or direct, counter with balanced/pressing
     updateUserTactics({
@@ -57,46 +91,66 @@ export const PreMatchScreen: React.FC = () => {
         ...userClub.tactics.instructions,
         mentality: 'Balanced',
         pressing: 'Mid',
-        line: 'Normal',
       },
     });
     showToast('Applied assistant tactical adjustment', 'success');
   };
 
   const handleKickOff = async () => {
+    if (selectedTone) {
+      performTeamTalk(preMatchContext, selectedTone);
+    }
     await advanceGame();
   };
 
-  const tones = [
+  const tones: {
+    tone: TalkTone;
+    name: string;
+    desc: string;
+    reaction: string;
+    quote: string;
+  }[] = [
     {
-      name: 'Passionate',
-      desc: 'Rally the squad with emotional intensity.',
-      reaction: 'Most players will respond well.',
-    },
-    {
-      name: 'Assertive',
-      desc: 'Demand tactical focus and high work-rate.',
-      reaction: 'Leaders and ambitious players react positively.',
-    },
-    {
+      tone: 'Calm',
       name: 'Calm',
-      desc: 'Remind players to trust the match plan.',
-      reaction: 'Relieves pre-match pressure.',
+      desc: 'Keep composure and trust the tactical pattern.',
+      reaction: predictTalkReaction(preMatchContext, 'Calm'),
+      quote: TALKS_DATA[preMatchContext].Calm.managerLines[0]!,
     },
     {
-      name: 'Demanding',
-      desc: 'Nothing less than 3 points is acceptable.',
-      reaction: 'High risk / high reward.',
+      tone: 'Motivate',
+      name: 'Motivate',
+      desc: 'Rally the squad to win individual duels and take the initiative.',
+      reaction: predictTalkReaction(preMatchContext, 'Motivate'),
+      quote: TALKS_DATA[preMatchContext].Motivate.managerLines[0]!,
     },
     {
-      name: 'Encouraging',
-      desc: 'Express total faith in their capabilities.',
-      reaction: 'Boosts morale across young starters.',
+      tone: 'Demand',
+      name: 'Demand More',
+      desc: 'Uncompromising standards. Demand total ruthlessness.',
+      reaction: predictTalkReaction(preMatchContext, 'Demand'),
+      quote: TALKS_DATA[preMatchContext].Demand.managerLines[0]!,
     },
     {
-      name: 'Cautious',
-      desc: 'Stay compact and avoid early errors.',
-      reaction: 'Strengthens defensive positioning.',
+      tone: 'Praise',
+      name: 'Praise',
+      desc: 'Reinforce confidence and express total faith in their quality.',
+      reaction: predictTalkReaction(preMatchContext, 'Praise'),
+      quote: TALKS_DATA[preMatchContext].Praise.managerLines[0]!,
+    },
+    {
+      tone: 'Disappoint',
+      name: 'Disappointment',
+      desc: 'Challenge complacency and warn against letting standards slip.',
+      reaction: predictTalkReaction(preMatchContext, 'Disappoint'),
+      quote: TALKS_DATA[preMatchContext].Disappoint.managerLines[0]!,
+    },
+    {
+      tone: 'Focus',
+      name: 'Focus',
+      desc: 'Laser concentration on transitions, set pieces and game plan.',
+      reaction: predictTalkReaction(preMatchContext, 'Focus'),
+      quote: TALKS_DATA[preMatchContext].Focus.managerLines[0]!,
     },
   ];
 
@@ -460,11 +514,17 @@ export const PreMatchScreen: React.FC = () => {
                   }}
                 >
                   {tones.map((t) => {
-                    const isSelected = selectedTone === t.name;
+                    const isSelected = selectedTone === t.tone;
+                    const reactionColor =
+                      t.reaction === 'Most will respond well'
+                        ? 'var(--win)'
+                        : t.reaction === 'Mixed'
+                          ? 'var(--text-dim)'
+                          : 'var(--loss)';
                     return (
                       <div
-                        key={t.name}
-                        onClick={() => setSelectedTone(t.name)}
+                        key={t.tone}
+                        onClick={() => setSelectedTone(t.tone)}
                         style={{
                           padding: '16px',
                           borderRadius: 'var(--radius-s)',
@@ -496,7 +556,7 @@ export const PreMatchScreen: React.FC = () => {
                           className="broadcast-label"
                           style={{
                             fontSize: '11px',
-                            color: 'var(--win)',
+                            color: reactionColor,
                             marginTop: '8px',
                           }}
                         >
@@ -506,6 +566,39 @@ export const PreMatchScreen: React.FC = () => {
                     );
                   })}
                 </div>
+
+                {/* Manager Speech Preview Bubble */}
+                {selectedTone && (
+                  <div
+                    style={{
+                      marginTop: '18px',
+                      padding: '14px 18px',
+                      borderRadius: 'var(--radius-s)',
+                      backgroundColor: 'var(--surface-2)',
+                      borderLeft: '4px solid var(--accent)',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '12px',
+                    }}
+                  >
+                    <MessageSquare
+                      size={18}
+                      color="var(--accent)"
+                      style={{ flexShrink: 0, marginTop: '2px' }}
+                    />
+                    <div>
+                      <div
+                        className="broadcast-label"
+                        style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '2px' }}
+                      >
+                        WHAT YOU WILL SAY:
+                      </div>
+                      <div style={{ fontSize: '14px', fontStyle: 'italic', color: 'var(--text)' }}>
+                        "{tones.find((t) => t.tone === selectedTone)?.quote}"
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div
                   style={{

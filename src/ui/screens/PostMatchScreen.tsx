@@ -7,12 +7,19 @@ import { Button } from '../components/Button';
 import { Crest } from '../components/Crest';
 import { Ticker } from '../components/Ticker';
 import { Award, ArrowRight, TrendingUp } from 'lucide-react';
+import {
+  TalkTone,
+  getFullTimeTalkContext,
+  predictTalkReaction,
+  TALKS_DATA,
+} from '../../core/player/talks';
 
 export const PostMatchScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
   const advanceGame = useStore((state) => state.advanceGame);
+  const performTeamTalk = useStore((state) => state.performTeamTalk);
 
-  const [postMatchTalk, setPostMatchTalk] = useState<string>('Praise');
+  const [postMatchTalk, setPostMatchTalk] = useState<TalkTone>('Praise');
 
   if (!gameState) return null;
 
@@ -35,7 +42,12 @@ export const PostMatchScreen: React.FC = () => {
       (!isHome && result.awayGoals > result.homeGoals));
   const isDraw = result && result.homeGoals === result.awayGoals;
 
+  const userGoals = result ? (isHome ? result.homeGoals : result.awayGoals) : 0;
+  const oppGoals = result ? (isHome ? result.awayGoals : result.homeGoals) : 0;
+  const ftContext = getFullTimeTalkContext(userGoals, oppGoals);
+
   const handleContinueToWeekSummary = async () => {
+    performTeamTalk(ftContext, postMatchTalk);
     await advanceGame();
   };
 
@@ -199,26 +211,83 @@ export const PostMatchScreen: React.FC = () => {
             <div style={{ fontSize: '14px', marginBottom: '14px' }}>
               Address the squad following the full-time whistle:
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {['Praise', 'Demand More', 'Calm', 'Passionate'].map((tone) => (
-                <button
-                  key={tone}
-                  onClick={() => setPostMatchTalk(tone)}
-                  className="broadcast-label"
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px' }}>
+              {(['Praise', 'Demand', 'Calm', 'Motivate', 'Disappoint', 'Focus'] as TalkTone[]).map(
+                (tone) => (
+                  <button
+                    key={tone}
+                    onClick={() => setPostMatchTalk(tone)}
+                    className="broadcast-label"
+                    style={{
+                      padding: '10px 4px',
+                      borderRadius: 'var(--radius-s)',
+                      backgroundColor:
+                        postMatchTalk === tone ? 'var(--accent)' : 'var(--surface-2)',
+                      color: postMatchTalk === tone ? 'var(--accent-ink)' : 'var(--text)',
+                      border: `1px solid ${postMatchTalk === tone ? 'var(--accent)' : 'var(--border)'}`,
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {tone}
+                  </button>
+                ),
+              )}
+            </div>
+
+            {/* Expected reaction badge & manager speech preview */}
+            <div
+              style={{
+                marginTop: '14px',
+                padding: '12px 16px',
+                backgroundColor: 'var(--surface-2)',
+                borderRadius: 'var(--radius-m)',
+                border: '1px solid var(--border)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span
                   style={{
-                    flex: 1,
-                    padding: '10px',
-                    borderRadius: 'var(--radius-s)',
-                    backgroundColor: postMatchTalk === tone ? 'var(--accent)' : 'var(--surface-2)',
-                    color: postMatchTalk === tone ? 'var(--accent-ink)' : 'var(--text)',
-                    border: `1px solid ${postMatchTalk === tone ? 'var(--accent)' : 'var(--border)'}`,
-                    fontSize: '12px',
-                    fontWeight: 700,
+                    fontSize: '11px',
+                    color: 'var(--text-dim)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
                   }}
                 >
-                  {tone}
-                </button>
-              ))}
+                  Predicted Squad Reaction:
+                </span>
+                <span
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color:
+                      predictTalkReaction(ftContext, postMatchTalk) === 'Most will respond well'
+                        ? 'var(--win)'
+                        : predictTalkReaction(ftContext, postMatchTalk) === 'Mixed'
+                          ? 'var(--warning, #eab308)'
+                          : 'var(--loss)',
+                  }}
+                >
+                  {predictTalkReaction(ftContext, postMatchTalk)}
+                </span>
+              </div>
+              <div
+                style={{
+                  fontSize: '13px',
+                  fontStyle: 'italic',
+                  color: 'var(--text-dim)',
+                  borderLeft: '2px solid var(--accent)',
+                  paddingLeft: '10px',
+                }}
+              >
+                "
+                {TALKS_DATA[ftContext]?.[postMatchTalk]?.managerLines[0] ?? 'Well played everyone.'}
+                "
+              </div>
             </div>
           </Panel>
 

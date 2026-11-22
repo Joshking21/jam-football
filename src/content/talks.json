@@ -1,0 +1,722 @@
+{
+  "PRE_FAV": {
+    "Calm": {
+      "managerLines": [
+        "We are the better side, but only if we do the fundamentals. Play our game, stay patient.",
+        "Keep your heads, stick to our shape and let the quality show. Do not give them a sniff.",
+        "No complacency today. We have prepared well, so trust the pattern and execute cleanly."
+      ],
+      "reactions": {
+        "positive": "The squad looks composed and ready for business.",
+        "neutral": "Players nod quietly in agreement.",
+        "negative": "A couple of players seem overly relaxed.",
+        "mixed": "Most nod quietly, though a few seem almost too relaxed."
+      }
+    },
+    "Motivate": {
+      "managerLines": [
+        "Go out there and show this crowd why we're favourites. High tempo from the first whistle!",
+        "Take the initiative early! Put them under severe pressure and make them crack.",
+        "This is our pitch. Set the tone in the opening five minutes and dominate every duel."
+      ],
+      "reactions": {
+        "positive": "The squad roars in approval, ready to run through brick walls.",
+        "neutral": "Players clap their hands and look focused.",
+        "negative": "Some players look like they feel the weight of expectation.",
+        "mixed": "Energy levels rise across the room, with a few looking slightly tense."
+      }
+    },
+    "Demand": {
+      "managerLines": [
+        "I want complete professionalism today. Nothing less than three points is acceptable.",
+        "We are superior in every position on that pitch. Don't waste the advantage—bury them.",
+        "Standards cannot slip against these. Show ruthlessness from the very first whistle."
+      ],
+      "reactions": {
+        "positive": "The squad embraces the challenge with steely determination.",
+        "neutral": "The room falls dead silent as players take on the mandate.",
+        "negative": "A few look irritated by the unnecessary pressure.",
+        "mixed": "The ambitious starters look fired up, while younger players look uneasy."
+      }
+    },
+    "Praise": {
+      "managerLines": [
+        "You've earned the right to be called favourites. Go express yourselves and enjoy it.",
+        "The work in training this week was world class. Take that belief onto the pitch.",
+        "You're in sensational form. Keep playing with freedom and the result will follow."
+      ],
+      "reactions": {
+        "positive": "Chest out, heads high—the squad feels appreciated.",
+        "neutral": "Players smile and acknowledge the tribute.",
+        "negative": "Some players glance around, wondering if praise before kickoff is wise.",
+        "mixed": "Smiles all around, though the captain quickly reminds them to stay focused."
+      }
+    },
+    "Disappoint": {
+      "managerLines": [
+        "I'm hearing whispers that you think this will be a walkover. That attitude disgusts me.",
+        "Drop the egos right now. If any of you coast today, you won't wear the shirt next week.",
+        "Too many of you are reading your own press. You haven't won a single blade of grass yet."
+      ],
+      "reactions": {
+        "positive": "A few fiery leaders take the criticism and channel it into venom.",
+        "neutral": "Players look down at the floor, chastened.",
+        "negative": "Murmurs of frustration spread across the dressing room.",
+        "mixed": "Tension fills the air; some are stung while others look resentful."
+      }
+    },
+    "Focus": {
+      "managerLines": [
+        "Every dead ball, every second ball, every defensive transition. Do not switch off.",
+        "They will look to hit us on the break. Rest defence must be airtight at all times.",
+        "Laser discipline. Track the runners into our box and make zero careless giveaways."
+      ],
+      "reactions": {
+        "positive": "Players lock in completely, absorbing the tactical specifics.",
+        "neutral": "Heads nod in methodical understanding.",
+        "negative": "One or two players look burdened by the extra instructions.",
+        "mixed": "Defenders and midfielders look sharpened, while forwards look anxious."
+      }
+    }
+  },
+  "PRE_DOG": {
+    "Calm": {
+      "managerLines": [
+        "All the pressure is on them today. Play with freedom, stay compact and frustrate them.",
+        "Nobody outside this room gives us a prayer. Good. Keep our shape and take our moment.",
+        "Do not be overawed by their names. They put their boots on one foot at a time like you."
+      ],
+      "reactions": {
+        "positive": "A collective sigh of relief as pressure lifts off the squad.",
+        "neutral": "Players settle into a determined, grounded mood.",
+        "negative": "Some appear too passive for an underdog battle.",
+        "mixed": "The squad appears calm and quiet, absorbing the underdog mantle."
+      }
+    },
+    "Motivate": {
+      "managerLines": [
+        "This is why we play football! Go out there, shock the entire league and make history!",
+        "Fight for every inch of turf! Make them hate every second of playing against us!",
+        "Leave everything out on that pitch. Run harder than them, fight harder than them!"
+      ],
+      "reactions": {
+        "positive": "Thunderous applause and raised fists—the squad is pumped full of adrenaline.",
+        "neutral": "Players look fiercely motivated to cause an upset.",
+        "negative": "A couple of youngsters look overwhelmed by the intensity.",
+        "mixed": "Passionate energy sweeps the room, with only a few showing nerves."
+      }
+    },
+    "Demand": {
+      "managerLines": [
+        "I don't care how much they earn—you match their work rate or you come off after twenty minutes.",
+        "No hiding today! If you back down from a tackle against their stars, you're done here.",
+        "You owe the travelling support blood and sweat today. Anything less is a betrayal."
+      ],
+      "reactions": {
+        "positive": "A handful of fighters nod aggressively, relish the fight.",
+        "neutral": "Stiff postures and grim faces take in the harsh demands.",
+        "negative": "Heads drop; the pressure feels suffocating given the odds.",
+        "mixed": "The tough tacklers embrace it, but morale takes a slight knock overall."
+      }
+    },
+    "Praise": {
+      "managerLines": [
+        "You've shown tremendous resilience this season. You belong on the same pitch as them.",
+        "Believe in your own ability. You have the tools to hurt them if we back ourselves.",
+        "I trust every single man in this XI. Go out there and play with pride."
+      ],
+      "reactions": {
+        "positive": "Players stand taller, bolstered by the manager's faith.",
+        "neutral": "A warm, appreciative murmur ripples through the squad.",
+        "negative": "A few look sceptical given the gulf in reputation.",
+        "mixed": "Heartfelt nods from veterans, though some still look cautious."
+      }
+    },
+    "Disappoint": {
+      "managerLines": [
+        "I can see defeat in your eyes already. Have some pride in that badge on your chest!",
+        "If you're already beaten before we leave the tunnel, tell me now and I'll play the reserves.",
+        "Too many of you are acting like tourists. You're footballers—act like it!"
+      ],
+      "reactions": {
+        "positive": "Defiant glares from proud leaders who refuse to be insulted.",
+        "neutral": "A sullen, uncomfortable silence hangs over the room.",
+        "negative": "Morale plummets as players feel completely abandoned before kickoff.",
+        "mixed": "Some simmer with angry defiance; others look utterly deflated."
+      }
+    },
+    "Focus": {
+      "managerLines": [
+        "Stick to the low block. Deny them space between the lines and strike on the break.",
+        "Organisation is everything today. If one man breaks the line, the whole structure fails.",
+        "Discipline on defensive transitions. Stop their counter-attacks before they start."
+      ],
+      "reactions": {
+        "positive": "Players lock in mentally, ready to execute the defensive plan.",
+        "neutral": "The squad reviews positional assignments with serious intent.",
+        "negative": "Attacking players look discouraged by the conservative remit.",
+        "mixed": "Defenders relish the tactical drill while forwards look slightly isolated."
+      }
+    }
+  },
+  "PRE_EVEN": {
+    "Calm": {
+      "managerLines": [
+        "It's an even contest on paper, but we have the discipline to tilt it. Steady minds.",
+        "Trust the process. No rash challenges early on; let the game come to us.",
+        "Relax and play our football. When the chances come, we take them with clarity."
+      ],
+      "reactions": {
+        "positive": "The squad appears composed, collected and confident.",
+        "neutral": "Quiet focus settles across the dressing room.",
+        "negative": "A slight lack of urgency creeps in.",
+        "mixed": "Players seem relaxed, though the leaders keep the tempo up."
+      }
+    },
+    "Motivate": {
+      "managerLines": [
+        "This is our level—now prove we belong in the tier above them! Win your individual battles!",
+        "Tight games are won in the heart and the lungs. Outwork them from minute one!",
+        "Give the supporters something to roar about! Take the game by the throat!"
+      ],
+      "reactions": {
+        "positive": "Shouts of encouragement bounce off the dressing room walls.",
+        "neutral": "Determined looks all around as players pump each other up.",
+        "negative": "One or two players look overstimulated.",
+        "mixed": "A strong positive response across the board with plenty of fire."
+      }
+    },
+    "Demand": {
+      "managerLines": [
+        "These are our direct rivals in the table. Dropping points here is simply not an option.",
+        "I want to see ruthlessness today. Win every 50-50 and impose our will on them.",
+        "Don't give them an inch. Stand up, be counted and show them who rules this pitch."
+      ],
+      "reactions": {
+        "positive": "The squad braces itself with tough, uncompromising focus.",
+        "neutral": "Firm nods of agreement from the key players.",
+        "negative": "A few look tense under the uncompromising burden.",
+        "mixed": "Most respond to the challenge with fierce grit."
+      }
+    },
+    "Praise": {
+      "managerLines": [
+        "You've worked tirelessly to get into this position. Play with joy and trust each other.",
+        "We have more chemistry and hunger than this lot. Go out there and show it.",
+        "I'm proud of the togetherness in this group. Back your teammates on every phase."
+      ],
+      "reactions": {
+        "positive": "Squad camaraderie surges with players sharing fist-bumps.",
+        "neutral": "Warm appreciation and positive body language.",
+        "negative": "One or two seem to think the praise is premature.",
+        "mixed": "A genuine boost to team spirit and mutual trust."
+      }
+    },
+    "Disappoint": {
+      "managerLines": [
+        "I wasn't happy with the warm-up. Too sloppy, too casual. Fix it right now.",
+        "If you carry that half-hearted attitude into kickoff, we will be two down in ten minutes.",
+        "Wake up! This is a massive match and half of you look half asleep!"
+      ],
+      "reactions": {
+        "positive": "Spurred into action, players suddenly snap into gear.",
+        "neutral": "Shocked silence as the squad snaps to attention.",
+        "negative": "Frustration boils over as players feel unfairly scolded.",
+        "mixed": "A sharp shock to the system that rouses some and angers others."
+      }
+    },
+    "Focus": {
+      "managerLines": [
+        "Matches like this turn on a single mistake or set piece. Do not switch off for a second.",
+        "Manage the game phases intelligently. When we have the momentum, twist the knife.",
+        "Tactical discipline wins tight fixtures. Know your triggers and execute cleanly."
+      ],
+      "reactions": {
+        "positive": "The entire room locks into professional tactical alignment.",
+        "neutral": "Attentive faces absorbing every instruction.",
+        "negative": "Some players look rigid and overly cautious.",
+        "mixed": "Excellent concentration across midfielders and back line."
+      }
+    }
+  },
+  "HT_WIN": {
+    "Calm": {
+      "managerLines": [
+        "Good first half, but the job is only half done. Keep our structure and stay in control.",
+        "Keep doing what got us ahead. Don't get frantic, don't invite pressure.",
+        "Nice and steady. Keep circulating the ball and make them chase shadows."
+      ],
+      "reactions": {
+        "positive": "Players sip their water and absorb the calming instructions.",
+        "neutral": "Composed nods from the back four and goalkeeper.",
+        "negative": "A faint hint of complacency appears in body language.",
+        "mixed": "The squad stays grounded, keeping their emotions in check."
+      }
+    },
+    "Motivate": {
+      "managerLines": [
+        "Don't let them back into this! Come out flying and kill the game off with a second!",
+        "They are reeling! Go finish them off in the first fifteen minutes of the half!",
+        "Keep the foot on the gas! The next goal decides this match—make sure it's ours!"
+      ],
+      "reactions": {
+        "positive": "Eager nods and high-fives as the XI prepares to storm out.",
+        "neutral": "Positive energy maintained across the room.",
+        "negative": "Some defenders look concerned about over-committing.",
+        "mixed": "High morale and eagerness to attack from the forwards."
+      }
+    },
+    "Demand": {
+      "managerLines": [
+        "We are ahead, but the standards dropped in the last ten minutes. Tighten up!",
+        "Don't you dare get comfortable! Two-goal leads are dangerous if you stop running.",
+        "I want clean sheets and total dominance. Stop showboating and be ruthless."
+      ],
+      "reactions": {
+        "positive": "Leaders like the captain reinforce the warning emphatically.",
+        "neutral": "Players straighten up and shake off any lingering casualness.",
+        "negative": "A few look peeved to be scolded while leading.",
+        "mixed": "Experienced players nod in agreement while younger attackers grumble."
+      }
+    },
+    "Praise": {
+      "managerLines": [
+        "Superb forty-five minutes. That was football of the highest order. Keep it going!",
+        "Brilliant execution, every single one of you. The fans are loving every minute.",
+        "First class work rate and quality. More of the same and the points are ours."
+      ],
+      "reactions": {
+        "positive": "Broad smiles and soaring morale throughout the dressing room.",
+        "neutral": "Players beam with pride at the manager's endorsement.",
+        "negative": "Danger of overconfidence creeping into key positions.",
+        "mixed": "Immense confidence boost, though complacency risk lingers."
+      }
+    },
+    "Disappoint": {
+      "managerLines": [
+        "Yes, we're winning, but that performance was nowhere near our benchmark.",
+        "We got lucky to be ahead. If we play like that in the second half, we lose this.",
+        "Stop patting yourselves on the back! You know as well as I do that was sloppy."
+      ],
+      "reactions": {
+        "positive": "A couple of perfectionist leaders agree and demand more.",
+        "neutral": "Bewildered looks given the scoreline.",
+        "negative": "Angry whispers; players feel disrespected despite leading.",
+        "mixed": "Dampens the celebratory mood sharply, causing friction."
+      }
+    },
+    "Focus": {
+      "managerLines": [
+        "They will come out aggressive and throw bodies forward. Protect the half-spaces.",
+        "Game management now. Draw their fouls, manage the tempo, kill their momentum.",
+        "Clean sheet second half. If we don't concede, we win this match. Stay alert."
+      ],
+      "reactions": {
+        "positive": "The back line and deep midfielders nod with steely focus.",
+        "neutral": "Tactical responsibilities reaffirmed cleanly.",
+        "negative": "Winger looks disappointed not to have license to break freely.",
+        "mixed": "Strong professional reaction that locks in game management."
+      }
+    }
+  },
+  "HT_DRAW": {
+    "Calm": {
+      "managerLines": [
+        "It's tight, as expected. Don't rush, don't get frustrated. Our moment will come.",
+        "Breathe. We are well in this game. Stick to the plan and let their patience wear thin.",
+        "Keep our defensive shape solid. The spaces will open up after the hour mark."
+      ],
+      "reactions": {
+        "positive": "Anxiety dissipates, replaced by measured self-belief.",
+        "neutral": "The room calms down after an intense first half.",
+        "negative": "A few players feel the gaffer is being too passive.",
+        "mixed": "Tension subsides and players regain their tactical composure."
+      }
+    },
+    "Motivate": {
+      "managerLines": [
+        "This game is there for the taking! Who wants to be the hero today?!",
+        "Step up the tempo! Another ten percent effort will break this deadlock!",
+        "Look at them—they're tiring! Go out there, grab the initiative and win this!"
+      ],
+      "reactions": {
+        "positive": "Sparks fly in the room as players gear up for a big second half push.",
+        "neutral": "Players stand up and shake their legs out with renewed hunger.",
+        "negative": "Tired legs look slightly apprehensive about a high press.",
+        "mixed": "Passionate response that lights a fire under the forward line."
+      }
+    },
+    "Demand": {
+      "managerLines": [
+        "That was far too tame. I need to see more urgency, more hunger in the final third!",
+        "Stop waiting for things to happen! Make them happen or I'll make substitutions!",
+        "We are letting them dictate terms. Take control of this match right now!"
+      ],
+      "reactions": {
+        "positive": "Stung by the manager's words, key players demand more of each other.",
+        "neutral": "Heads snap up with sharpened intent.",
+        "negative": "Some look stressed under the ultimatum.",
+        "mixed": "Creates a sharp competitive edge, shaking off any sluggishness."
+      }
+    },
+    "Praise": {
+      "managerLines": [
+        "Solid shift so far. We've matched them physically and tactically. Good job.",
+        "I'm pleased with the effort against a tricky opponent. Keep believing.",
+        "You've shown great discipline out there. The breakthrough is coming."
+      ],
+      "reactions": {
+        "positive": "Players feel encouraged and sustained by the boss's support.",
+        "neutral": "Warm nods of reassurance.",
+        "negative": "A few wonder why we're praising a deadlock.",
+        "mixed": "Decent reassurance, though lacking that extra spark of motivation."
+      }
+    },
+    "Disappoint": {
+      "managerLines": [
+        "That was forty-five minutes wasted. No spark, no creativity, no desire.",
+        "Is this the best we can produce? I expected so much more from this team today.",
+        "You are playing well within yourselves. It's frustrating to watch from the bench."
+      ],
+      "reactions": {
+        "positive": "Pride wounded, several players vow to prove the gaffer wrong.",
+        "neutral": "Quiet, stung expressions fill the room.",
+        "negative": "Heads drop into towels; morale takes a noticeable hit.",
+        "mixed": "Divisive reaction—some fire up, but morale suffers slightly."
+      }
+    },
+    "Focus": {
+      "managerLines": [
+        "Notice how they leave space behind their right back? Exploit it on transition.",
+        "Win the second balls in midfield. That is where this match will be won or lost.",
+        "Watch their set pieces at the near post. One lapse will cost us points."
+      ],
+      "reactions": {
+        "positive": "Players immediately identify tactical solutions and feel empowered.",
+        "neutral": "Nods of tactical agreement from the spine of the team.",
+        "negative": "Some players look like they wanted emotion, not diagrams.",
+        "mixed": "High tactical clarity that sharpens execution for the restart."
+      }
+    }
+  },
+  "HT_LOSE": {
+    "Calm": {
+      "managerLines": [
+        "Do not panic. One goal changes everything in football. Stay composed and work back.",
+        "Keep your heads up. We gave away a cheap one, but we have forty-five minutes to fix it.",
+        "No wild lunges. We get the next goal by following the game plan, not by chasing shadows."
+      ],
+      "reactions": {
+        "positive": "Panic is averted; players regroup with mature determination.",
+        "neutral": "The room steadies its breath after a difficult half.",
+        "negative": "Some hotheads look frustrated that the manager isn't shouting.",
+        "mixed": "Restores order to a dressing room that was on the verge of frustration."
+      }
+    },
+    "Motivate": {
+      "managerLines": [
+        "Show some character! We have forty-five minutes to turn this around—believe in it!",
+        "Nobody leaves this pitch with regret today! Fight for every ball and turn the tide!",
+        "I know what this team is capable of when our backs are against the wall! Now go do it!"
+      ],
+      "reactions": {
+        "positive": "Electrifying rally cry—players shout in defiance and slap hands.",
+        "neutral": "Energy levels surge back from the deficit.",
+        "negative": "A couple of dejected starters still look crestfallen.",
+        "mixed": "Brings the fight right back into the squad, lifting morale."
+      }
+    },
+    "Demand": {
+      "managerLines": [
+        "That was totally unacceptable! You were soft in the tackle and sloppy in possession!",
+        "Sort it out! I will not sit here and watch you throw away ninety minutes of hard work!",
+        "Where is the pride?! You are getting outfought and outplayed! Show me something!"
+      ],
+      "reactions": {
+        "positive": "Stung to their core, leaders shout back that they will fix it.",
+        "neutral": "Grim silence as the hair-dryer treatment lands.",
+        "negative": "Some players shrink into their seats, intimidated.",
+        "mixed": "High risk—hard men fire up with fury while fragile players wilt."
+      }
+    },
+    "Praise": {
+      "managerLines": [
+        "Unlucky to be trailing. The performance has been decent—keep knocking on the door.",
+        "Don't let the score fool you, we are playing good football. Keep faith.",
+        "You've shown courage out there. Keep creating chances and they will break."
+      ],
+      "reactions": {
+        "positive": "A small comfort to know the boss isn't turning on them.",
+        "neutral": "Polite nods, but players know they are behind.",
+        "negative": "Players look bewildered—why are we being praised when losing?",
+        "mixed": "Mildly soothing, but risks sounding disconnected from reality."
+      }
+    },
+    "Disappoint": {
+      "managerLines": [
+        "I feel sorry for the fans who travelled to watch that rubbish. Utterly pathetic.",
+        "You've let yourselves down, you've let the club down, and you've let me down.",
+        "I thought I could rely on you in big moments. Clearly I was mistaken."
+      ],
+      "reactions": {
+        "positive": "Proud players stew with bitter rage, desperate to make amends.",
+        "neutral": "Heavy, suffocating gloom descends on the bench.",
+        "negative": "Morale takes a nosedive; heads drop completely.",
+        "mixed": "Harsh medicine that divides the room—anger vs despair."
+      }
+    },
+    "Focus": {
+      "managerLines": [
+        "Stop forcing the long ball. Work the overloads out wide and get bodies in the box.",
+        "We need to stop their counter-attacks at source. Tactical fouls if necessary.",
+        "Change of emphasis: press their center backs on receipt and force errors."
+      ],
+      "reactions": {
+        "positive": "Clear actionable plan gives the team a concrete path back into the game.",
+        "neutral": "Players lean in to inspect the whiteboard adjustments.",
+        "negative": "A few look too emotionally deflated to process the details.",
+        "mixed": "Provides constructive direction rather than emotional noise."
+      }
+    }
+  },
+  "FT_WIN": {
+    "Calm": {
+      "managerLines": [
+        "Good professional win. Enjoy the evening, but recovery starts tomorrow morning.",
+        "Three points in the bag. Keep your feet on the ground—plenty of football left.",
+        "Well done. We did the job we came to do. Rest up and focus on the next matchday."
+      ],
+      "reactions": {
+        "positive": "Satisfied, mature atmosphere as the squad celebrates quietly.",
+        "neutral": "Players nod and head for the ice baths.",
+        "negative": "Some wanted to celebrate more after a big effort.",
+        "mixed": "Calm, businesslike completion of a successful matchday."
+      }
+    },
+    "Motivate": {
+      "managerLines": [
+        "That's the benchmark! Now let's build a real run of momentum off this result!",
+        "Look around this room—that's what victory feels like! Let's get addicted to it!",
+        "Outstanding spirit today! Keep this hunger and no one in this division can stop us!"
+      ],
+      "reactions": {
+        "positive": "Roars of delight! Squad cohesion and belief hit top gear.",
+        "neutral": "Great high-spirited banter among teammates.",
+        "negative": "None—hard to complain after a passionate victory speech.",
+        "mixed": "Tremendous energy and enthusiasm for upcoming fixtures."
+      }
+    },
+    "Demand": {
+      "managerLines": [
+        "We won, but you made heavy weather of it. You must manage the final minutes better.",
+        "I'm happy with the points, but don't think for a second that was a flawless display.",
+        "Enjoy the win, but we've got plenty of footage to review on Monday morning."
+      ],
+      "reactions": {
+        "positive": "Perfectionists respect the manager's refusal to accept mediocrity.",
+        "neutral": "A slightly muted reaction as the mood is tempered.",
+        "negative": "Frustration that a hard-fought win isn't being enjoyed.",
+        "mixed": "Keeps feet firmly on the ground, though slightly buzzkilling."
+      }
+    },
+    "Praise": {
+      "managerLines": [
+        "Sensational performance from every single one of you! Absolutely magnificent!",
+        "Take a bow, lads! That was a masterclass and you deserved every bit of it!",
+        "Proud of each and every one of you. Go out and celebrate with your families!"
+      ],
+      "reactions": {
+        "positive": "Euphoric scenes in the dressing room! Morale reaches peak levels.",
+        "neutral": "Rapturous applause and smiles across all squad members.",
+        "negative": "None—pure unadulterated post-match joy.",
+        "mixed": "Universal morale boost across starters and substitutes alike."
+      }
+    },
+    "Disappoint": {
+      "managerLines": [
+        "I cannot believe how lucky we got. You were awful despite the scoreline.",
+        "If you celebrate that sloppy nonsense, you have no standards. Disgraceful finish.",
+        "That performance was an accident waiting to happen. Wipe those smiles off your faces."
+      ],
+      "reactions": {
+        "positive": "Only the grumpiest veteran agrees.",
+        "neutral": "Shocked looks as music gets cut off.",
+        "negative": "Fury and resentment—ruining a victory speech creates deep unrest.",
+        "mixed": "Dressing room atmosphere turns icy; players feel completely cheated."
+      }
+    },
+    "Focus": {
+      "managerLines": [
+        "Good win. Ice baths, hydration, nutrition. Our next opponent is already watching tape.",
+        "Take the three points, but note the mistakes we got away with. We move on to next week.",
+        "Discipline carried us through the final whistle. Maintain those habits in training."
+      ],
+      "reactions": {
+        "positive": "Professional, methodical squad culture reinforced.",
+        "neutral": "Players nod and begin post-match recovery protocols.",
+        "negative": "A little dry for a post-match victory celebration.",
+        "mixed": "Solid professional closure to a positive matchday."
+      }
+    }
+  },
+  "FT_DRAW": {
+    "Calm": {
+      "managerLines": [
+        "A point gained in a hard-fought contest. Keep your heads up and move forward.",
+        "We didn't lose, and in this division every point counts over eighteen rounds.",
+        "Good battle today. We'll take the point, learn the lessons and prepare for next week."
+      ],
+      "reactions": {
+        "positive": "Squad accepts the pragmatic reality with quiet resilience.",
+        "neutral": "Tired players accept the draw constructively.",
+        "negative": "Some strikers look frustrated not to have stolen the win.",
+        "mixed": "Sensible, balanced response that protects morale."
+      }
+    },
+    "Motivate": {
+      "managerLines": [
+        "We showed heart to hold on, but next time we turn that draw into three points!",
+        "That effort proved we can compete with anyone! Keep that hunger burning!",
+        "Hold your heads high! We showed grit and we take that fight into next matchday!"
+      ],
+      "reactions": {
+        "positive": "Spirited encouragement lifts tired legs.",
+        "neutral": "Players nod, ready to bounce back with a win next time.",
+        "negative": "Some players feel the pep talk masks a missed opportunity.",
+        "mixed": "Constructive morale boost that reframes the draw positively."
+      }
+    },
+    "Demand": {
+      "managerLines": [
+        "Two points dropped against a side we should be beating. Totally unacceptable.",
+        "You lacked the killer instinct to finish them off. We must be more clinical.",
+        "If we want to hit our board objectives, drawing matches like that will kill us."
+      ],
+      "reactions": {
+        "positive": "Ambitious players agree and express frustration at the result.",
+        "neutral": "Players sit with bowed heads, acknowledging the missed chance.",
+        "negative": "Defenders who put in a massive shift feel unfairly blamed.",
+        "mixed": "Stings the attackers who missed chances, but fuels determination."
+      }
+    },
+    "Praise": {
+      "managerLines": [
+        "Tremendous effort out there today against a tough opponent. Proud of the graft.",
+        "You gave everything you had on that pitch. No manager can ask for more than that.",
+        "Great resilience under pressure. We earned that point through sheer hard work."
+      ],
+      "reactions": {
+        "positive": "Players appreciate the acknowledgement after an exhausting afternoon.",
+        "neutral": "Tired smiles and pats on the back.",
+        "negative": "Ambitious stars feel slightly embarrassed to praise a draw.",
+        "mixed": "Warm appreciation across the squad, sustaining morale."
+      }
+    },
+    "Disappoint": {
+      "managerLines": [
+        "That was two points thrown away through sheer lack of composure and desire.",
+        "I am bitterly disappointed by what I saw in key moments today. We choked.",
+        "You had the chance to make a statement in the table and you fluffed it."
+      ],
+      "reactions": {
+        "positive": "A couple of leaders take it on the chin and resolve to fix it.",
+        "neutral": "Heavy, sombre atmosphere settles in.",
+        "negative": "Players look resentful after battling hard for ninety minutes.",
+        "mixed": "Cuts deep and damages morale, though highlights missed standards."
+      }
+    },
+    "Focus": {
+      "managerLines": [
+        "We'll review the tape on Tuesday and see where the final pass broke down.",
+        "Small margins decided that draw. Work on our final third execution starts now.",
+        "Good structure, but we need more ruthlessness in transition. Rest up."
+      ],
+      "reactions": {
+        "positive": "Players appreciate the analytical, objective approach.",
+        "neutral": "Heads nod; minds shift to video analysis and training ground fixes.",
+        "negative": "A few look too drained for tactical debriefs.",
+        "mixed": "Constructive, professional and keeps the squad grounded."
+      }
+    }
+  },
+  "FT_LOSE": {
+    "Calm": {
+      "managerLines": [
+        "Tough result to swallow, but we do not unravel. We stick together, learn and bounce back.",
+        "Keep your chins up. One defeat does not define this season. We react on Monday.",
+        "Painful, but there were positive moments. Rest well, clear your heads and come back ready."
+      ],
+      "reactions": {
+        "positive": "The squad appreciates the manager shielding them after a loss.",
+        "neutral": "A quiet, reflective atmosphere as players take the defeat calmly.",
+        "negative": "One or two feel the manager is being too lenient on a bad day.",
+        "mixed": "Stops the bleeding and prevents panic after a loss."
+      }
+    },
+    "Motivate": {
+      "managerLines": [
+        "Use this agony! Remember how this feels right now and make sure it never happens again!",
+        "We are down, but we are not out! We come back twice as hungry next matchday!",
+        "Character is revealed in defeat! Let's see who has the stomach for the fight!"
+      ],
+      "reactions": {
+        "positive": "Fists clench and eyes narrow—the squad is eager to make amends.",
+        "neutral": "Players shake off the sorrow and rally around each other.",
+        "negative": "Tired, dejected players struggle to summon the energy to fire back.",
+        "mixed": "Replaces sorrow with determination for the vast majority."
+      }
+    },
+    "Demand": {
+      "managerLines": [
+        "That performance was nowhere near the standard required for this football club.",
+        "I expect an immediate reaction in training this week. Places are on the line.",
+        "No excuses. You were second to every loose ball and you got what you deserved."
+      ],
+      "reactions": {
+        "positive": "Proud professionals accept the rebuke and demand better of themselves.",
+        "neutral": "Stunned silence in the dressing room.",
+        "negative": "Frustration boils over; players feel scapegoated.",
+        "mixed": "High tension; puts the squad on alert that sub-par displays have consequences."
+      }
+    },
+    "Praise": {
+      "managerLines": [
+        "You gave everything you had against a top side. The score didn't do you justice.",
+        "Hold your heads high. You fought until the final whistle and I'm proud of the effort.",
+        "Unlucky today. Keep that commitment and the results will turn around quickly."
+      ],
+      "reactions": {
+        "positive": "Comforting words that lift the heavy weight of defeat.",
+        "neutral": "Slightly consoled, though still hurting from the score.",
+        "negative": "Some players find it hard to take comfort in defeat.",
+        "mixed": "Protects fragile morale, though some would prefer honest critique."
+      }
+    },
+    "Disappoint": {
+      "managerLines": [
+        "I am furious with what I just witnessed. You threw that match away with zero heart.",
+        "You gave up in the second half. That is the one thing I will never tolerate as manager.",
+        "Every single supporter in the away end deserves an apology for that shambles."
+      ],
+      "reactions": {
+        "positive": "Fiery players burn with embarrassment and want redemption.",
+        "neutral": "Heads buried in hands; nobody dares speak.",
+        "negative": "Deep dressing room depression; morale hits rock bottom.",
+        "mixed": "Brutal wake-up call that stings everyone to the marrow."
+      }
+    },
+    "Focus": {
+      "managerLines": [
+        "We conceded from simple tactical errors. We go back to basics on the training pitch.",
+        "Clear your heads tonight. On Monday, we dissect every goal conceded and fix it.",
+        "Discipline broke down and cost us. We rebuild our defensive foundation this week."
+      ],
+      "reactions": {
+        "positive": "Analytical players appreciate focusing on tangible solutions.",
+        "neutral": "Heads nod silently in recognition of the mistakes.",
+        "negative": "Some players are too emotionally bruised for technical advice.",
+        "mixed": "Provides a clear road map out of the disappointment."
+      }
+    }
+  }
+}

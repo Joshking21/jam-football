@@ -534,3 +534,21 @@ REVIEW REQUESTED: M4
   - Implemented SPEC §12.6 Discipline in `src/core/player/discipline.ts`: 5 accumulated yellows trigger 1-match ban and reset, second yellow triggers 1-match ban, direct red triggers 2-match ban, and post-match press conference trigger rules.
   - Integrated into `src/core/game/advance.ts` for both matchday results resolution and weekly cycle transitions.
   - Added 26 unit tests across 4 test suites covering all M5.1 requirements.
+
+## 2026-11-22 · M5.2 Morale dynamics, team talks, and in-match focus boost
+- Changed: src/content/talks.json, src/core/player/talks.ts, src/core/types.ts, src/core/game/advance.ts, src/state/store.ts, src/ui/screens/PreMatchScreen.tsx, src/ui/screens/Match/HalfTimeModal.tsx, src/ui/screens/MatchScreen.tsx, src/ui/screens/PostMatchScreen.tsx, tests/core/player/talks.test.ts
+- Ran:
+  - `npm run check`:
+    - `prettier --check .` PASS
+    - `tsc --noEmit` PASS
+    - `vitest run`: 28 test files passed (166 tests passed in 18.26s) PASS
+    - `vite build`: main chunk 1,124 kB / three.js chunk 490 kB, built in 8.75s PASS
+- Notes:
+  - Implemented SPEC §12.8 & §16.3 Morale & Team Talks:
+    - Authored comprehensive `src/content/talks.json` covering all 54 context × tone combinations (9 contexts: `PRE_FAV`, `PRE_DOG`, `PRE_EVEN`, `HT_WIN`, `HT_DRAW`, `HT_LOSE`, `FT_WIN`, `FT_DRAW`, `FT_LOSE`; 6 tones: `Calm`, `Motivate`, `Demand`, `Praise`, `Disappoint`, `Focus`), each with 3 manager speech lines and 4 reaction lines.
+    - Implemented `src/core/player/talks.ts` with base morale effects matrix and personality multipliers: Professional (never drops below 0 for Demand/Focus), Ambitious (×1.2 for Demand/Focus, ×0.8 for Calm), Leader (×1.3 for all positive), Relaxed (negative ×0.5, positive ×0.8), Temperamental (Demand and Disappoint flip sign with 40% chance per player, all ×1.3), Loyal (Praise ×1.3).
+    - Calculated in-match `focusBoost = max(0, avgDelta / 100)` applied in match simulation and cleared post-match.
+    - Added squad reaction prediction ('Most will respond well' / 'Mixed' / 'Likely to backfire') with color-coded UI badges and manager speech previews.
+    - Integrated team talks across PreMatchScreen (Kick Off flow), MatchScreen HalfTimeModal (tactical talk and resume second half with toast), and PostMatchScreen (dressing room debrief before advancing to Week Summary).
+    - Added 14 unit tests in `tests/core/player/talks.test.ts` covering context deduction, reaction predictions, personality multipliers, and squad application.
+
