@@ -1,6 +1,6 @@
 # Tactics reference
 
-> **v4 layout (20 Nov, SPEC 1.6): build this.** No new mock-up was made. `index.html` (v3) is still the reference for how every object looks and moves (magnets, paper, marker, fit stars, attribute bars, dividers, the file's contents). The **v4 layout** section below says where those objects now sit, and it wins over v3 wherever they differ.
+> **v5 layout (22 Nov): build this.** The user preferred v3, so `index.html` (v3) is the reference again for layout and look: the sideways board on the left and the tall panel on the right. The **v5 layout** section below says where v4's additions (the RadarChart, the Orders/Profile split, plans and familiarity) sit within v3. The v4 vertical layout is withdrawn.
 >
 > **v3 (20 Nov):** full-width work mode (board left, tall panel right; the sidebar it shows is replaced by top-bar tabs in v4), attacking and defensive roles (SPEC §13.19), instructions offered by role with fit stars and the deciding attribute, the player's file with condition, morale, season stats and last-5 ratings, a With ball / Without ball switch that slides the magnets into the defensive shape, and a comparison card while dragging one player over another. Open `index.html#file` or `#file-without` to land on Calder's file.
 >
@@ -46,7 +46,30 @@ Tab to a magnet. **Enter** picks it and opens his file; **Enter** on a second ma
 - **New board marks:** offside trap = a zig-zag on the Line marker (label "Line · trap"); force them = arrows on both flanks in our third; crosses = an arrow from the wing into the box whose curve shows Low, Whipped or Floated; final third = a shot arrow or short pass arrows at their box; on the Set pieces divider, men back as Xs in our half and men on the posts as red Xs at our goal. Each mark draws on only when its own option changes.
 - **The 6 new player instructions** in the player's file, with clashes blocked and the reason shown (e.g. "Clashes with “Cross early, from deep”").
 
-## v4 layout (build this)
+## v5 layout (22 Nov, build this): back to the v3 sideways board
+The user prefers v3's look: the board lying sideways and dominant on the left, with a tall panel on the right. The v4 vertical three-column layout is **withdrawn**; its notes stay below only as the record. Everything v4 added is kept, but placed in the v3 layout. In SPEC 1.7 this screen hangs on the office wall (§11.25), where a sideways board fits better too.
+
+**Two columns** (grid `minmax(0,1fr) minmax(400px,34%)`, gap 16, the full height under the top bar, no page scroll):
+
+**Left: the whiteboard, sideways** (own goal on the left, attacking right; v3 difference 1 is back).
+- It is as in v3: folder tabs (Our team, Opposition) and the With ball / Without ball switch on the frame's top edge; the bench strip and the Injured corner under the pitch; the marker tray under the frame.
+- At 1280×720 the pitch is about 800 × 520 px. The marker tray and props show only when the window is 900 px tall or more.
+- All board marks are as in v3 (Line and Pressing as vertical dashed lines that slide left and right, runs pointing right).
+
+**Right: the panel.**
+- **Nothing selected: the clipboard** (v3): Plans A/B/C tabs, the formation dropdown with the four familiarity bars, the presets, the five dividers (Build-up, Attack, Defend, Transition, Set pieces), the opposition orders sheet under the Opposition folder tab, then the readiness line, Assistant picks best XI and Reset to club style.
+- **Player selected: his file slides over the clipboard** (v3 manila name tab), from top to bottom:
+  - Header: portrait 64 px, name, number, age, position chips, foot, OVR at this slot; condition and morale meters on one row.
+  - The **RadarChart** (§19.5), 180 px square (150 px under 800 px tall), beside a compact list of the selected role's key attributes. **It always stays in view**, so changing his role below redraws the red dashed shape at once. This keeps v4's link.
+  - Two paper tabs: **Orders** (open by default: the With ball / Without ball switch linked to the board's, his roles with fit stars and the deciding attribute, the chosen role open with Gives you / Costs you, and the instructions offered by the role with fit, reasons, clashes and the §13.19 limits) and **Profile** (all attributes in two columns of compact bars, season stats, the last-5 sparkline).
+  - **Esc** closes the file and returns to the clipboard.
+- **While dragging one magnet over another:** the other player's shape appears in pencil grey on the radar and the header shows both OVRs at that slot (from v4; replaces the v3 floating card).
+
+**Motion:** as in v3. The file comes in from 40 px to the right (180 ms) and paper settles with the spring. **Keyboard:** as in v3; Tab order: top bar, board, panel.
+
+**Other office screens** follow the same pattern: the main object large on the left, and on the right the tall panel that becomes the selected player's file (the same component, with the radar).
+
+## v4 layout (withdrawn 22 Nov, kept as the record)
 Goal: the whole tactics screen in one view. No page scroll, no sidebar, and what a player **is** kept apart from what he's **told**.
 
 **Shell.** The sidebar is gone. Navigation is tabs in the 56 px top bar next to "MD 7/18" (SPEC §11.0, §19.6). Below the bar, the screen uses the full width.
