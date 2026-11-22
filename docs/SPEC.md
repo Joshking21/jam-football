@@ -4,7 +4,7 @@ Version 1.7 · 22 November 2026 · Target: OpenGame Game Jam #1 (entries close *
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
 
-**Changes in 1.7 (22 Nov):** the game becomes a club you live in. Every screen sits in a room of one 3D club building (office, boardroom, dressing room, tunnel, training ground, press room). The coach walks between rooms, and the player can look around each room with the mouse (§11.25). People share one rig and have painted face layers whose mouths move with their voices (§14.11). Players knock on the office door for conversations, Theo the assistant is a visible person, and the match gets touchline cuts of the coach and bench (§14.11). The coach is voiced (§17.4), and every room has its own sound (§17.5). New content file `club.json` (§16.9), asset contracts (§18.2, §18.3, §18.6), budgets (§21), and milestone **M6b** (§23). Depth still comes first: rooms frame the screens and never replace them. **Training in detail** (§12.18, M5 task 8): a planned week of sessions, personal plans, one-to-ones, training ratings and progress. **Set pieces in detail** (§13.20, M5 task 9): player jobs, routines, takers by foot, free kicks by area, defending corners and free kicks. **Tactics returns to the sideways board** (v3 look, "v5 layout", §11.8); the v1.6 vertical three-column layout is withdrawn. Proposal record: `docs/design/SPEC-1.7-PROPOSAL.md`.
+**Changes in 1.7 (22 Nov):** the game becomes a club you live in. Every screen sits in a room of one 3D club building (office, boardroom, dressing room, tunnel, training ground, press room). The coach walks between rooms, and the player can look around each room with the mouse (§11.25). People share one rig and have painted face layers whose mouths move with their voices (§14.11). Players knock on the office door for conversations, Theo the assistant is a visible person, and the match gets touchline cuts of the coach and bench (§14.11). The coach is voiced (§17.4), and every room has its own sound (§17.5). New content file `club.json` (§16.9), asset contracts (§18.2, §18.3, §18.6), budgets (§21), and milestone **M6b** (§23). Depth still comes first: rooms frame the screens and never replace them. **Training in detail** (§12.18, M5 task 8): a planned week of sessions, personal plans, one-to-ones, training ratings and progress. **Set pieces in detail** (§13.20, M5 task 9): player jobs, routines, takers by foot, free kicks by area, defending corners and free kicks. **Touchline shouts, match plans and player traits** (§13.21–13.23, M5 task 10). A separate shape without the ball is listed in §24 as one of the last items. **Tactics returns to the sideways board** (v3 look, "v5 layout", §11.8); the v1.6 vertical three-column layout is withdrawn. Proposal record: `docs/design/SPEC-1.7-PROPOSAL.md`.
 
 **Changes in 1.6 (20 Nov):** the sidebar is gone: navigation moves into the top bar as tabs (§11.0, §19.6) on **every** screen, on air and office alike, like Football Manager. Office work screens fit the window with no page scroll. Tactics becomes three columns around a vertical board: the player's file (who he is) on the left, his orders (what he's told) on the right (§11.8, layout in `docs/design/tactics/README.md` "v4 layout"). New component RadarChart: the player's shape against what his role needs (§19.5).
 
@@ -1886,6 +1886,74 @@ At corners and free kicks, the choreographer places players at their job spots: 
 - **No dominant choice:** the ±6-point rule covers every routine, job layout, wall and forwards-up setting. The best "all headers in one zone" layout must not beat auto jobs by more than +4 points.
 - **Unit tests:** job weights, Rotate order, the predictability cap, the familiarity split, swing from the foot, each free-kick area, the wall and line options, and the forwards-up counters.
 
+### 13.21 Touchline shouts (v1.7, approved by the user 22 Nov)
+Short instructions shouted from the touchline during a match. They use the §13.17.1 modifier vocabulary and last **10 match minutes**.
+- **Command:** `{ kind: 'shout'; side; shout: ShoutId; issuedAtT }` takes effect at the first step at or after `issuedAtT + 10`. It is faster than other commands (30 s, §13.12) because it's a shout, not a tactics change.
+- **One shout active at a time;** a new shout replaces the old one. The same shout again within 15 minutes of its last end has **half the effect** ("They've heard it").
+- **In the HUD:** a Shout button and key `Y` open a wheel of the 7 shouts, each with its gain and cost line. The active shout shows as a chip with a 10-minute ring.
+- **Presentation:** a touchline cut (§14.11.5) with `Shout` and a voiced line (`club.json`, ≥ 3 per shout, `nameSlot` none).
+
+| Shout | Wording | Gain | Cost |
+|---|---|---|---|
+| `pushForward` | "Push forward!" | mentality one step up (§13.18.1) | fatigue drain ×1.1; their Counter phases +20% |
+| `keepTight` | "Keep it tight!" | mentality one step down; their shot ctx −0.04 | our shot utility −0.2 |
+| `getStuckIn` | "Get stuck in!" | as D tackle ctx +0.1 for all | fouls ×1.4; Temperamental players' card chance ×1.3 |
+| `calmDown` | "Calm down!" | fouls ×0.7; Temperamental card chance ×0.7 | as D tackle ctx −0.05 |
+| `concentrate` | "Concentrate!" | their shot ctx −0.03 and our pass ctx +0.02 | only after 75' or within 5' of conceding; once per half |
+| `encourage` | "Well done, keep going!" | `focusBoost` +0.02 for the 10' (§12.8); morale +1 for anyone rated ≥ 7 | when winning by 2+: complacency, so `focusBoost` −0.01 instead |
+| `demandMore` | "That's not good enough!" | `focusBoost` +0.03 when drawing or losing; Ambitious and Leader ×1.3 | Relaxed ×0.5; Temperamental: 40% chance it flips to −0.02; when winning: morale −1 for all |
+
+- **AI managers:** `pushForward` when losing at 75'+, `keepTight` when winning by 1 at 80'+, `calmDown` when a player is on a yellow card and the foul rate is high. These are only for clubs rated reputation ≥ 3.
+- **Assistant (§15.4):** suggests a shout when its rule fits, for example "Two of ours on yellows, calm them down?". Apply sends the shout.
+- **Calibration:** no shout moves the equal-team win rate by more than ±3 points over a match. `pushForward` from 75' when losing raises our late goals ≥ +15% and their late goals ≥ +15%.
+
+### 13.22 Match plans (v1.7, approved by the user 22 Nov)
+Automatic changes set before the match, so your plans still work in Instant result and fast-forward.
+- **Rules:** up to **4** per match, each `{ when, after, then }`:
+  - `when`: Losing · Drawing · Winning by 1 · Winning by 2+ · We go down to 10 · They go down to 10
+  - `after`: 0' · 45' · 60' · 70' · 75' · 80' · 85'
+  - `then`: switch to Plan A, B or C (§13.18.10), or a shout (§13.21)
+- **How they fire:** the engine checks the rules at every step. A rule fires the first time its condition holds after its minute, and then issues the command itself (`issuedAtT` = now), so it is deterministic. Each rule fires at most once per match. If two rules match at the same step, the higher one in the list wins. The others wait until their condition holds again.
+- **"Ask me first" (on or off, default on):** in live playback, a firing rule pauses the match with a card: "Losing after 70'. Switch to Plan B?" (Apply or Skip, 6 s, then it applies). In Instant result, or when off, it applies silently and shows in the commentary and HUD feed ("Plan B on, as planned").
+- **UI:** a **Match plan** sheet on the Tactics clipboard, with rows like "If [we're losing] after [70'], [switch to Plan B]". Theo proposes a default set (losing at 70' → the most attacking plan; winning by 1 at 80' → the most defensive plan) with Apply.
+- **Cost:** no extra cost. The switched-to plan still pays its own familiarity (§13.18.11), so a rule that switches to a plan you never use is weaker than it looks.
+- **AI managers** keep their own §13.13 rules.
+- **Tests:** firing order, fire-once, determinism (the same seed and rules give the same events), the Instant result path, and the 10-men conditions.
+
+### 13.23 Player traits (v1.7, approved by the user 22 Nov)
+Habits that make players play differently. **0–3 per player**, as `Player.traits: TraitId[]`, using the §13.17.1 modifier vocabulary. Traits apply in full (not scaled by role fit). They stack with role and instructions, and don't count toward the 2-instruction cap.
+
+| Trait | Wording | Who can have it (needs) | Effect | Cost |
+|---|---|---|---|---|
+| `cutsInside` | "Cuts inside from the wing" | wide players (dribbling ≥ 60) | inv ATT `lane→C` 20%; use shot +0.2 from ATT wide | his crosses −40% |
+| `shootsFromDistance` | "Shoots from distance" | longShots ≥ 60 | use shot +0.3 outside the box | low-xG shots; possession lost on misses |
+| `getsForward` | "Gets forward whenever possible" | DEF and MID (stamina ≥ 60) | inv DEF→ATT 10% | their Counter shot ctx +0.05 down his side |
+| `staysBack` | "Stays back at all times" | DEF and DM | inv ATT→DEF 15%; their Counter ctx −0.04 | fewer attacking touches |
+| `playsOneTwos` | "Plays one-twos" | passing ≥ 60 | after his short pass, the receiver's return pass to him recv ×1.4, pass ctx +0.05 | dribble use −0.2 |
+| `killerBalls` | "Tries killer balls often" | passing ≥ 65 | use through +0.3 | interceptions +15% on his passes |
+| `runsWithBall` | "Runs with the ball often" | dribbling ≥ 60 | use dribble +0.25 in MID | ball lost in MID +10% |
+| `arrivesLate` | "Arrives late in the box" | CM and AM (offTheBall ≥ 60) | recv ×1.3 on cutbacks and `BOX_CENTRAL` | his DEF cover −10% |
+| `holdsUp` | "Holds up the ball" | ST (strength ≥ 65) | as R firstTouch +0.15 on long balls; next step recycle +0.2 | through-ball receptions −20% |
+| `comesDeep` | "Comes deep to get the ball" | ST and AM | inv ATT→MID 15% | box receptions −15% |
+| `attacksAir` | "Attacks the ball in the air" | heading ≥ 65 | `S_air` +0.1 at corners and crosses | fouls in aerial duels ×1.2 |
+| `divesIn` | "Dives into tackles" | any outfield | as D `S_tkl` +0.15 | fouls ×1.4 |
+
+- **World generation (§9):** each eligible trait is rolled once, with chance `0.08 + 0.25 × clamp((keyAttr − needs) / 20, 0, 1)` (cap 3, the best-matching kept). About 55–65% of players get at least one. AI players' traits apply too; they're cheap to simulate.
+- **Clashes:**
+  - With an instruction that opposes a trait (`shootsFromDistance` + `shootLess`, `getsForward` + `holdPosition`, `divesIn` + `stayOnFeet`), the **instruction wins** and the trait's effect is off.
+  - Each week he plays against his trait, morale −1 ("Doesn't like being told"), and a memo after 3 weeks.
+  - A trait that matches his role (`cutsInside` on an inside forward) gives +0.05 to that role's gain modifiers.
+- **Learning and unlearning (training):** a fourth individual focus type, **Trait** (§12.17.4, §12.18.5). You pick a trait to learn (he must meet its needs) or one to unlearn.
+  - Progress per week: `8 + (age ≤ 23 ? 4 : age ≥ 30 ? −3 : 0) + (decisions ≥ 70 ? 2 : 0)`, times the coach factor (§12.17.1). It completes at 100.
+  - **Cost:** his development that week × 0.8, the same as position training.
+  - An inbox memo on completion: "Mensah now plays one-twos."
+- **Where you see them:**
+  - trait chips in the player's file (they also explain clashes)
+  - in Squad, as a filter
+  - in the opponent report ("Their 7 cuts inside, show him outside?")
+  - in scouting, only once knowledge ≥ 50 (§12.12)
+- **Calibration:** with world-gen traits on, every §13.16 target still holds. No single trait moves an equal-team win rate by more than ±2 points.
+
 
 ---
 
@@ -2598,6 +2666,7 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 7. Club depth (§12.17): staff and replacing them, match preparation, rest days, role and position training, dressing room (leaders, cohesion), injury risk column.
 8. **Training in detail (§12.18, v1.7):** the planned week and session library, templates, Theo's week, personal plans (workload, extra sessions, mentoring), one-to-one sessions (screen flow now, the 3D scene in M6b), training ratings and the new conversation trigger, progress arrows and the OVR line, overload memos, `training.json`, the Training screen (§11.9 v1.7) as a 2D screen until M6b frames it. Run the §12.18.12 checks. §12.18.11 (coaches per area) only after M7 is on track.
 9. **Set pieces in detail (§13.20, v1.7):** corner jobs and routines (Rotate, predictability, sharpness from training), takers and swing from the foot, free kicks by area, defending corners and free kicks, set-piece mode on the whiteboard, 3D placement, analysis, AI and assistant rules. Run the §13.20.10 checks.
+10. **Touchline shouts, match plans and player traits (§13.21–13.23, v1.7):** the shout command and HUD wheel, the match-plan sheet and engine rules with "Ask me first", traits in the data, world gen, engine, clashes, learning in training, and UI. The touchline cut for shouts comes in M6b. Re-run the §13.16 and §13.18.13 calibration with traits on.
 **Accept:** every system visibly changes something the player can see within a season; transfer window rounds behave per the tests; content files meet minimum counts.
 
 ### M6 — Assistant and audio (8–10 Dec)
@@ -2658,6 +2727,8 @@ Team-talk reactions, players at the door and room sound stay.
 ## 24. Out of scope (do not build) and stretch goals
 
 Out of scope for the jam build: online multiplayer, accounts, real-time "day/week" persistent modes, loans, youth academy intake, cups, staff hiring beyond §12.17.1, stadium upgrades, editor, mobile/touch, and the SPEC-1.4 Tier C items (a free-draw set-piece designer; the job-based one is §13.20; contract clauses, social groups).
+
+**Separate shape without the ball (v1.7, approved by the user 22 Nov as one of the last items):** start only when M5, M6, M6b and the club life extras below are done and M7 is on track. A plan can have a second formation for defending (for example, attack in 4-3-3 and defend in 4-4-2). The engine uses the defending formation's anchors and involvement when out of possession (§13.5, §14.3 out-of-possession shape), with defensive roles per its slots (§13.19.2). Familiarity is tracked for each formation pair. The switch costs a transition-shape penalty for the first 6 s after a turnover (their Counter ctx +0.05). Write the full rules as a SPEC addition before starting; a Claude design review is needed for the board's two-shape view.
 
 **Club life extras (v1.7; only if time and credits allow, after M6b is accepted and M7 is on track, in this order):**
 1. **A club that changes over the season:** the trophy cabinet fills, the weather turns wintry by December, the office gets messier during a losing run, and fans outside cheer or boo by form as the coach arrives.
