@@ -4,7 +4,7 @@ Version 1.7 · 22 November 2026 · Target: OpenGame Game Jam #1 (entries close *
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
 
-**Changes in 1.7 (22 Nov):** the game becomes a club you live in. Every screen sits in a room of one 3D club building (office, boardroom, dressing room, tunnel, training ground, press room), and the coach walks between rooms (§11.25). People share one rig and have painted face layers whose mouths move with their voices (§14.11). Players knock on the office door for conversations, Theo the assistant is a visible person, and the match gets touchline cuts of the coach and bench (§14.11). The coach is voiced (§17.4), and every room has its own sound (§17.5). New content file `club.json` (§16.9), asset contracts (§18.2, §18.3, §18.6), budgets (§21), and milestone **M6b** (§23). Depth still comes first: rooms frame the screens and never replace them. **Tactics returns to the sideways board** (v3 look, "v5 layout", §11.8); the v1.6 vertical three-column layout is withdrawn. Proposal record: `docs/design/SPEC-1.7-PROPOSAL.md`.
+**Changes in 1.7 (22 Nov):** the game becomes a club you live in. Every screen sits in a room of one 3D club building (office, boardroom, dressing room, tunnel, training ground, press room). The coach walks between rooms, and the player can look around each room with the mouse (§11.25). People share one rig and have painted face layers whose mouths move with their voices (§14.11). Players knock on the office door for conversations, Theo the assistant is a visible person, and the match gets touchline cuts of the coach and bench (§14.11). The coach is voiced (§17.4), and every room has its own sound (§17.5). New content file `club.json` (§16.9), asset contracts (§18.2, §18.3, §18.6), budgets (§21), and milestone **M6b** (§23). Depth still comes first: rooms frame the screens and never replace them. **Tactics returns to the sideways board** (v3 look, "v5 layout", §11.8); the v1.6 vertical three-column layout is withdrawn. Proposal record: `docs/design/SPEC-1.7-PROPOSAL.md`.
 
 **Changes in 1.6 (20 Nov):** the sidebar is gone: navigation moves into the top bar as tabs (§11.0, §19.6) on **every** screen, on air and office alike, like Football Manager. Office work screens fit the window with no page scroll. Tactics becomes three columns around a vertical board: the player's file (who he is) on the left, his orders (what he's told) on the right (§11.8, layout in `docs/design/tactics/README.md` "v4 layout"). New component RadarChart: the player's shape against what his role needs (§19.5).
 
@@ -851,6 +851,18 @@ Each room is one small three.js set. Walls, floors, ceilings and windows are bui
 - **The room is the frame and the UI is the content.** The room stays visible around the edges. Panels behind text are opaque, so legibility never depends on the 3D. Office screens still fit the window with no page scroll (§19.6).
 - The top bar stays on every screen. On-air screens on the TV keep their broadcast look; office screens keep their paper and board look.
 - With no models or images, rooms are lit boxes in the ART-DIRECTION colours and people are capsules (§14.2 fallback). Every screen stays fully usable, and the game plays offline with nothing delivered.
+
+#### 11.25.4 Look around (the player controls the camera)
+The Meshy sponsor track judges models "under a camera you do not control", so in every room the player can move the camera.
+- **Mouse:** hold the right mouse button and drag to turn the camera around the room's mark: yaw ±60°, pitch −20° to +15°. The scroll wheel leans in or out by up to 1.5 m along the view. **Keyboard:** `Shift` + arrow keys turn, and `Shift` + `+`/`−` lean.
+- **Limits:**
+  - The camera never passes through walls or props (clamp against the room's bounding box minus 0.3 m).
+  - It never gets closer than 1.2 m to any person's head, so the §14.11.8 framing rule still holds.
+- **Release:** let go and the camera eases back to the room's normal shot over 600 ms (spring, §19.7). A screen panel stays where it is while you look; panels fade to 30% while the button is held, so the room can be seen behind them.
+- **Not available during a walk, a cutscene or a touchline cut.** In the match, the existing Free camera (§14.4) does this job.
+- **First time in each room:** a small one-time hint "Right-drag to look around" (KeyHint style) shows for 4 s, then never again. This is not one of the seven tutorial coach-marks.
+- **Reduce motion:** the ease-back is instant.
+- **Craft:** because anyone can look at any prop from any side, every Meshy prop and person must hold up from every angle reachable inside these limits. Claude checks this in the M6b review.
 
 ---
 
@@ -2353,7 +2365,7 @@ master 80, music 50, crowd 70, commentary 85, effects 70, voice on, speed Key hi
 
 ### M6b — Club spaces (SPEC 1.7; starts when M6 is accepted, about 6–7 days; Gemini is ahead of schedule)
 Build everything with fallbacks first (box rooms, capsule people, no faces, caption-rhythm mouths), then switch to real assets as they appear in the manifest.
-1. `ClubScene` and scene manager, corridor, camera rails, the coach's walk with skip, tab and Continue routing through rooms, the walks setting (§11.25.1–11.25.2).
+1. `ClubScene` and scene manager, corridor, camera rails, the coach's walk with skip, tab and Continue routing through rooms, the walks setting, and look-around in every room (§11.25.1–11.25.2, §11.25.4).
 2. Room shells in code, and every screen re-framed in its room (§11.25.3). Frame cap and the Low-preset still frame (§21).
 3. People: shared rig loader, clip mixer with fallbacks, marks and paths, sitting (§14.11.1).
 4. Faces and mouths: `Face` shader, moods, blink, head tilt and gaze, audio-driven and caption-rhythm mouths (§14.11.6–14.11.7).
