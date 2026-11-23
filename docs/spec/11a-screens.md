@@ -12,6 +12,7 @@
 Plain HTML/CSS splash inside `index.html` (no JS needed): dark background, game logo text in the heading font, a thin progress bar. It MUST paint within 300 ms of navigation. React replaces it when ready. Then preload the title assets (logo, title background image, music) and prefetch the three.js chunk in idle time.
 
 ### 11.2 Title
+**Design reference: `docs/design/title/` (approved 23 Nov; it wins over the bullets below on layout and look).**
 - Background: title image `images/ui/title_bg.webp` (fallback: CSS gradient + animated pitch lines). If three.js chunk is loaded and quality ≥ Medium, MAY show a slow 3D stadium flyover instead.
 - Logo text: `GAME_TITLE` in Barlow Condensed 700, 96 px.
 - Buttons: **Continue** (only if an autosave exists, shows club + matchday), **New Game**, **Load**, **Settings**, **Credits**.

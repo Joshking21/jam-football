@@ -1,0 +1,149 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1920px;height:1080px;overflow:hidden;background:#05070b;font-family:Inter,system-ui,sans-serif;color:#F2F4F7}
+svg.scene{position:absolute;inset:0}
+.ui{position:absolute;left:96px;top:0;bottom:0;width:640px;display:flex;flex-direction:column;justify-content:center}
+.mark{font:800 168px/.82 'Barlow Condensed';letter-spacing:.01em;text-transform:uppercase;color:#F4F1EA;text-shadow:0 6px 30px rgba(0,0,0,.6)}
+.mark span{display:block;height:6px;width:220px;background:#F2B705;margin:22px 0 0}
+.tag{font:600 18px/1 'Barlow Condensed';letter-spacing:.32em;text-transform:uppercase;color:#c9c2b4;margin-top:18px}
+.cont{margin-top:64px;display:grid;grid-template-columns:64px 1fr auto;gap:18px;align-items:center;background:rgba(8,10,14,.72);border-left:6px solid #F2B705;padding:18px 22px;backdrop-filter:blur(6px)}
+.cont .k{font:800 28px/1 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase}
+.cont .d{font:500 15px/1.35 Inter;color:#cfd5de;margin-top:6px}.cont .d b{color:#F2B705;font-weight:600}
+.cont kbd,.menu kbd{font:600 12px/1 Inter;border:1px solid #4a5260;border-radius:2px;padding:4px 7px;color:#F2F4F7}
+.menu{margin-top:22px;display:flex;flex-direction:column}
+.menu div{display:flex;align-items:center;gap:16px;padding:13px 0 12px 28px;border-bottom:1px solid rgba(255,255,255,.08);font:700 24px/1 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;color:#d9dde3}
+.menu div i{font-style:normal;font:600 14px/1 'Barlow Condensed';color:#6f7886;width:18px}
+.menu div.hov{color:#fff;padding-left:36px}
+.menu div.hov:before{content:"";width:10px;height:10px;background:#F2B705;transform:rotate(45deg);margin-left:-24px}
+.menu div kbd{margin-left:auto}
+.foot{position:absolute;left:96px;bottom:40px;font:500 13px/1 Inter;color:#7d8696;letter-spacing:.02em}
+.tonight{position:absolute;right:64px;bottom:44px;display:flex;align-items:center;gap:14px;background:rgba(8,10,14,.72);padding:12px 18px;border-top:3px solid #F2B705}
+.tonight b{font:700 13px/1 'Barlow Condensed';letter-spacing:.18em;color:#F2B705}
+.tonight span{font:600 18px/1 'Barlow Condensed';letter-spacing:.06em;text-transform:uppercase}
+.tonight small{font:500 13px/1 Inter;color:#A3ACBA}
+</style></head><body>
+<svg class="scene" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+ <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070c18"/><stop offset=".38" stop-color="#13203a"/><stop offset=".56" stop-color="#3a3540"/><stop offset=".62" stop-color="#7a5038"/><stop offset=".66" stop-color="#3a2a22"/></linearGradient>
+ <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a5a3a"/><stop offset="1" stop-color="#1d1b1e"/></linearGradient>
+ <linearGradient id="brick" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a2a20"/><stop offset=".6" stop-color="#3a2019"/><stop offset="1" stop-color="#241410"/></linearGradient>
+ <pattern id="bricks" width="22" height="10" patternUnits="userSpaceOnUse"><rect width="22" height="10" fill="none"/><path d="M0 9.5h22M11 0v4.75M0 4.75h22M0 4.75v4.75" stroke="#1d0f0b" stroke-opacity=".55" stroke-width="1"/></pattern>
+ <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b1a1c"/><stop offset="1" stop-color="#0a0a0c"/></linearGradient>
+ <radialGradient id="lamp" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF0DA" stop-opacity="1"/><stop offset=".18" stop-color="#FFE7C4" stop-opacity=".55"/><stop offset="1" stop-color="#FFE7C4" stop-opacity="0"/></radialGradient>
+ <radialGradient id="warm" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffb860" stop-opacity=".5"/><stop offset="1" stop-color="#ffb860" stop-opacity="0"/></radialGradient>
+ <linearGradient id="beam" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#FFF0DA" stop-opacity=".22"/><stop offset="1" stop-color="#FFF0DA" stop-opacity="0"/></linearGradient>
+ <linearGradient id="fog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a8a7a" stop-opacity="0"/><stop offset=".5" stop-color="#9a8a7a" stop-opacity=".16"/><stop offset="1" stop-color="#9a8a7a" stop-opacity="0"/></linearGradient>
+ <linearGradient id="left" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#04060a" stop-opacity=".92"/><stop offset=".33" stop-color="#04060a" stop-opacity=".7"/><stop offset=".55" stop-color="#04060a" stop-opacity="0"/></linearGradient>
+ <radialGradient id="vig" cx="55%" cy="45%" r="75%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></radialGradient>
+ <filter id="b4"><feGaussianBlur stdDeviation="4"/></filter><filter id="b12"><feGaussianBlur stdDeviation="12"/></filter><filter id="b30"><feGaussianBlur stdDeviation="30"/></filter>
+ <filter id="grain"><feTurbulence baseFrequency=".9" numOctaves="2" seed="5"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .08 0"/></filter>
+</defs>
+<rect width="1920" height="1080" fill="url(#sky)"/>
+<g id="stars"></g>
+<!-- distant headland + sea -->
+<path d="M0 600 L0 572 Q120 548 260 560 Q380 540 520 566 Q640 552 760 590 L760 600 Z" fill="#1a1f2b"/>
+<rect x="0" y="598" width="1920" height="40" fill="url(#sea)" opacity=".9"/>
+<g stroke="#ffcf8a" stroke-opacity=".25" stroke-width="2"><line x1="200" y1="606" x2="260" y2="606"/><line x1="320" y1="614" x2="410" y2="614"/><line x1="120" y1="622" x2="160" y2="622"/></g>
+<!-- harbour cranes far right -->
+<g fill="none" stroke="#151a24" stroke-width="5"><path d="M1640 600 V470 h120 M1660 600 V490 M1700 470 l-60 -30 h170"/><path d="M1780 600 V500 h80 M1800 500 l-40 -20 h120"/></g>
+<circle cx="1810" cy="440" r="3" fill="#ff4a3a"/><circle cx="1880" cy="480" r="3" fill="#ff4a3a"/>
+<!-- town terraces left -->
+<g id="town"></g>
+<!-- floodlight beams in the haze -->
+<polygon points="770,150 600,-40 960,-40" fill="url(#beam)" opacity=".9"/>
+<polygon points="1790,150 1620,-40 1980,-40" fill="url(#beam)" opacity=".9"/>
+<!-- stand roof behind -->
+<polygon points="640,352 1920,322 1920,346 640,372" fill="#1b1f27"/>
+<g stroke="#2a303b" stroke-width="3">${''}<line x1="700" y1="352" x2="700" y2="372"/></g>
+<!-- main stand brick facade -->
+<polygon points="640,372 1920,346 1920,780 640,770" fill="url(#brick)"/>
+<polygon points="640,372 1920,346 1920,780 640,770" fill="url(#bricks)" opacity=".7"/>
+<g id="windows"></g>
+<!-- central gable entrance -->
+<polygon points="1110,392 1290,300 1470,386 1470,770 1110,770" fill="#40241b"/>
+<polygon points="1110,392 1290,300 1470,386 1470,770 1110,770" fill="url(#bricks)" opacity=".7"/>
+<polygon points="1110,392 1290,300 1470,386 1460,392 1290,312 1120,398" fill="#d8c9a8" opacity=".55"/>
+<!-- crest on gable (shape only, no text) -->
+<g transform="translate(1250,330) scale(2.6)"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#F2B705" stroke="#0B1F3A" stroke-width="1"/><path d="M15 8 v18 M9 13 h12 M8.5 20 q6.5 7 13 0" stroke="#0B1F3A" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
+<!-- turnstile doors lit -->
+<g id="doors"></g>
+<ellipse cx="1290" cy="770" rx="260" ry="40" fill="url(#warm)" opacity=".9"/>
+<!-- floodlight pylons -->
+<g stroke="#2b313c" stroke-width="4" fill="none"><path d="M760 760 L770 150 M780 760 L770 150"/><path d="M1780 760 L1790 150 M1800 760 L1790 150"/></g>
+<g stroke="#2b313c" stroke-width="2" id="lattice"></g>
+<rect x="728" y="122" width="84" height="40" fill="#2b313c"/><rect x="1748" y="122" width="84" height="40" fill="#2b313c"/>
+<g id="lamps"></g>
+<circle cx="770" cy="142" r="140" fill="url(#lamp)"/><circle cx="1790" cy="142" r="140" fill="url(#lamp)"/>
+<!-- ground / car park -->
+<polygon points="0,770 1920,776 1920,1080 0,1080" fill="url(#ground)"/>
+<rect x="0" y="700" width="1920" height="160" fill="url(#fog)"/>
+<g id="lot"></g>
+<!-- wet reflections -->
+<g opacity=".35" filter="url(#b4)"><rect x="740" y="800" width="60" height="180" fill="#FFF0DA" opacity=".25"/><rect x="1760" y="800" width="60" height="200" fill="#FFF0DA" opacity=".25"/><rect x="1150" y="790" width="280" height="120" fill="#ffb860" opacity=".35"/></g>
+<g id="people"></g>
+<!-- gulls -->
+<g fill="none" stroke="#c9c2b4" stroke-width="2.2" stroke-linecap="round" opacity=".7"><path d="M1060 210 q10 -8 18 0 q8 -8 18 0"/><path d="M1130 250 q7 -6 13 0 q6 -6 13 0"/></g>
+<rect width="1920" height="1080" fill="url(#left)"/>
+<rect width="1920" height="1080" filter="url(#grain)"/>
+<rect width="1920" height="1080" fill="url(#vig)"/>
+</svg>
+
+<div class="ui">
+  <div class="mark">Touchline<span></span></div>
+  <div class="tag">A season in the dugout</div>
+  <div class="cont">
+    <svg width="58" height="66" viewBox="0 0 30 34"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#F2B705" stroke="#0B1F3A" stroke-width="1"/><path d="M15 8 v18 M9 13 h12 M8.5 20 q6.5 7 13 0" stroke="#0B1F3A" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+    <div><div class="k">Continue</div><div class="d">Port Calloway FC · Matchday 8 · <b>3rd, 14 pts</b><br>Saved 2 hours ago</div></div>
+    <kbd>Space</kbd>
+  </div>
+  <div class="menu">
+    <div class="hov"><i>01</i>New game<kbd>N</kbd></div>
+    <div><i>02</i>Load<kbd>L</kbd></div>
+    <div><i>03</i>Settings<kbd>S</kbd></div>
+    <div><i>04</i>Credits</div>
+  </div>
+</div>
+<div class="foot">Desktop · mouse and keyboard</div>
+<div class="tonight"><b>TONIGHT</b><span>Port Calloway v Corvallen</span><small>The Lanternworks · 19:45 · floodlights on</small></div>
+
+<script>
+// stars
+let st='';for(let i=0;i<70;i++){const x=(i*397)%1920,y=(i*131)%300;st+=`<circle cx="${x}" cy="${y}" r="${(i%3)*0.4+0.5}" fill="#fff" opacity="${0.15+(i%5)*0.08}"/>`}
+document.getElementById('stars').innerHTML=st;
+// town terraces
+let t='';let x=0;const rnd=i=>((i*9301+49297)%233280)/233280;
+for(let i=0;x<720;i++){const w=50+rnd(i)*40,h=40+rnd(i+7)*50,y=640-h;t+=`<rect x="${x}" y="${y}" width="${w}" height="${h+40}" fill="${i%2?'#15171c':'#181a20'}"/><polygon points="${x},${y} ${x+w/2},${y-18} ${x+w},${y}" fill="#121419"/>`;
+ if(rnd(i+3)>.5)t+=`<rect x="${x+w*0.6}" y="${y-30}" width="8" height="22" fill="#121419"/>`;
+ for(let k=0;k<2;k++)if(rnd(i*3+k)>.55)t+=`<rect x="${x+10+k*22}" y="${y+14}" width="9" height="12" fill="#ffc57a" opacity=".8"/>`;x+=w+2}
+document.getElementById('town').innerHTML=t;
+// stand windows: two rows of arched lit windows following the facade perspective
+let wv='';const topY=(xx)=>372-(xx-640)*26/1280;
+for(let xx=670;xx<1900;xx+=56){if(xx>1090&&xx<1490)continue;const ty=topY(xx);
+ for(const r of[0,1]){const y=ty+40+r*130;const lit=((xx/56|0)+r)%5!==0;
+  wv+=`<path d="M${xx} ${y+70} v-50 a16 16 0 0 1 32 0 v50 z" fill="${lit?'#ffcf8a':'#1a1210'}" opacity="${lit?0.85:1}"/>`;
+  if(lit)wv+=`<path d="M${xx} ${y+70} v-50 a16 16 0 0 1 32 0 v50 z" fill="#ff9e45" opacity=".25" filter="url(#b4)"/>`;
+  wv+=`<line x1="${xx+16}" y1="${y+6}" x2="${xx+16}" y2="${y+70}" stroke="#2a1812" stroke-width="2"/>`}}
+document.getElementById('windows').innerHTML=wv;
+// doors
+let d='';[1150,1230,1310,1390].forEach(x=>{d+=`<rect x="${x}" y="660" width="54" height="110" fill="#ffcf8a" opacity=".9"/><rect x="${x}" y="660" width="54" height="110" fill="none" stroke="#2a1812" stroke-width="4"/><line x1="${x+27}" y1="660" x2="${x+27}" y2="770" stroke="#2a1812" stroke-width="3"/>`});
+d+=`<rect x="1140" y="620" width="320" height="26" fill="#0B1F3A"/><rect x="1140" y="644" width="320" height="4" fill="#F2B705"/>`;
+document.getElementById('doors').innerHTML=d;
+// lattice
+let l='';for(let y=180;y<760;y+=40){l+=`<line x1="${762+ (760-y)/60}" y1="${y}" x2="${778-(760-y)/60}" y2="${y+40}"/><line x1="${1782+(760-y)/60}" y1="${y}" x2="${1798-(760-y)/60}" y2="${y+40}"/>`}
+document.getElementById('lattice').innerHTML=l;
+// lamps
+let lp='';for(const bx of[732,1752])for(let r=0;r<2;r++)for(let c=0;c<4;c++)lp+=`<rect x="${bx+4+c*19}" y="${126+r*17}" width="14" height="12" fill="#FFF0DA"/>`;
+document.getElementById('lamps').innerHTML=lp;
+// car park: lamp posts, cars
+let lo='';[[300,1],[980,1],[1600,1]].forEach(([x])=>{lo+=`<line x1="${x}" y1="1000" x2="${x}" y2="720" stroke="#2b313c" stroke-width="6"/><path d="M${x} 722 h26" stroke="#2b313c" stroke-width="6"/><circle cx="${x+26}" cy="726" r="60" fill="url(#lamp)" opacity=".6"/><ellipse cx="${x+20}" cy="990" rx="160" ry="30" fill="#ffd9a0" opacity=".08"/>`});
+[[520,900,1],[860,930,0],[1520,920,1],[1700,960,0]].forEach(([x,y,lit])=>{lo+=`<path d="M${x} ${y} q8 -40 60 -44 h80 q50 4 64 44 v26 h-204z" fill="#0d0e11"/><rect x="${x+6}" y="${y+18}" width="16" height="7" fill="${lit?'#ff3b2e':'#2a0f0d'}"/><rect x="${x+182}" y="${y+18}" width="16" height="7" fill="${lit?'#ff3b2e':'#2a0f0d'}"/>${lit?`<ellipse cx="${x+102}" cy="${y+40}" rx="110" ry="10" fill="#ff3b2e" opacity=".12"/>`:''}`});
+document.getElementById('lot').innerHTML=lo;
+// fans walking to the turnstiles (silhouettes, gold scarves)
+let pp='';[[1030,870,1],[1080,850,.92],[1180,840,.88],[1350,846,.9],[1420,880,1.02],[1500,860,.95],[960,900,1.08],[1600,890,1.04]].forEach(([x,y,s],i)=>{
+ pp+=`<g transform="translate(${x},${y}) scale(${s})"><ellipse cx="0" cy="60" rx="18" ry="4" fill="#000" opacity=".5"/><path d="M-9 60 l3 -34 h12 l3 34 h-6 l-3 -26 l-3 26 z" fill="#0b0c0f"/><path d="M-12 28 q12 -8 24 0 l-2 -30 q-10 -6 -20 0 z" fill="#101218"/><circle cx="0" cy="-8" r="8" fill="#101218"/>${i%2?'<path d="M-8 -1 q8 4 16 0 v4 q-8 4 -16 0 z" fill="#F2B705"/><path d="M-5 2 l-3 15 h4 l2 -14 z" fill="#F2B705"/><path d="M-6 9 h5 M-6.6 13 h5" stroke="#0B1F3A" stroke-width="1.4"/>':''}</g>`});
+document.getElementById('people').innerHTML=pp;
+</script>
+</body></html>
