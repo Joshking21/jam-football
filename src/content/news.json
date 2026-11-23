@@ -650,5 +650,57 @@
         "body": "The panel has confirmed {manager} of {team} as Manager of the Month after steering his squad through an unbeaten sequence of fixtures."
       }
     ]
+  },
+  "papers": {
+    "c01": {
+      "town": "Port Calloway",
+      "name": "The Calloway Gazette",
+      "reporter": "Ellis Marr"
+    },
+    "c02": {
+      "town": "Ironvale",
+      "name": "Ironvale Evening Post",
+      "reporter": "Dana Whitcombe"
+    },
+    "c03": {
+      "town": "Kestrel Bay",
+      "name": "The Bay Herald",
+      "reporter": "Hana Brodsky"
+    },
+    "c04": {
+      "town": "Saltmere",
+      "name": "The Saltmere Echo",
+      "reporter": "Joe Kettering"
+    },
+    "c05": {
+      "town": "Brightwater",
+      "name": "The Brightwater Lamp",
+      "reporter": "Callum Reid"
+    },
+    "c06": {
+      "town": "Northgate",
+      "name": "Northgate Chronicle",
+      "reporter": "Sofia Lindqvist"
+    },
+    "c07": {
+      "town": "Ashcombe",
+      "name": "Ashcombe Advertiser",
+      "reporter": "Tom Harrow"
+    },
+    "c08": {
+      "town": "Veldmoor",
+      "name": "The Moorland Mercury",
+      "reporter": "Agnes Penhale"
+    },
+    "c09": {
+      "town": "Lindenfield",
+      "name": "Lindenfield Times",
+      "reporter": "Marco Ferri"
+    },
+    "c10": {
+      "town": "Corvallen",
+      "name": "The Corvallen Courier",
+      "reporter": "Ruth Okonkwo"
+    }
   }
 }

@@ -258,3 +258,19 @@ export function checkRivalRumour(state: GameState): InboxItem | null {
     requiresAction: false,
   };
 }
+
+export interface LocalPaper {
+  town: string;
+  name: string;
+  reporter: string;
+}
+
+export function getLocalPaper(clubId: ClubId): LocalPaper {
+  const paper = (newsData as any).papers?.[clubId];
+  if (paper) return paper;
+  return {
+    town: 'Port Calloway',
+    name: 'The Calloway Gazette',
+    reporter: 'Ellis Marr',
+  };
+}
