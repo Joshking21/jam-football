@@ -5,26 +5,8 @@
       "speaker": "owner",
       "set": "welcome",
       "mood": "neutral",
-      "text": "Welcome to the club. Sit down. Let's talk about what we expect.",
-      "voText": "Welcome to the club. Sit down. Let's talk about what we expect.",
-      "voiced": true
-    },
-    {
-      "id": "owner_welcome_02",
-      "speaker": "owner",
-      "set": "welcome",
-      "mood": "neutral",
-      "text": "Thank you for coming. This club has waited a long time for the right person.",
-      "voText": "Thank you for coming. This club has waited a long time for the right person.",
-      "voiced": true
-    },
-    {
-      "id": "owner_welcome_03",
-      "speaker": "owner",
-      "set": "welcome",
-      "mood": "neutral",
-      "text": "Come in. You've seen the stadium. Now let me tell you what it needs.",
-      "voText": "Come in. You've seen the stadium. Now let me tell you what it needs.",
+      "text": "Sit down. I don't do speeches.",
+      "voText": "Sit down. I don't do speeches.",
       "voiced": true
     },
     {
@@ -32,17 +14,8 @@
       "speaker": "owner",
       "set": "offer_close",
       "mood": "neutral",
-      "text": "Those are our terms. So, will you take the job?",
-      "voText": "Those are our terms. So, will you take the job?",
-      "voiced": true
-    },
-    {
-      "id": "owner_offer_close_02",
-      "speaker": "owner",
-      "set": "offer_close",
-      "mood": "neutral",
-      "text": "That's the offer. Are you our manager?",
-      "voText": "That's the offer. Are you our manager?",
+      "text": "Those are the terms. Yes or no?",
+      "voText": "Those are the terms. Yes or no?",
       "voiced": true
     },
     {
@@ -50,8 +23,8 @@
       "speaker": "owner",
       "set": "review_happy",
       "mood": "happy",
-      "text": "The board is pleased. Keep doing exactly this.",
-      "voText": "The board is pleased. Keep doing exactly this.",
+      "text": "Good. Keep it boring.",
+      "voText": "Good. Keep it boring.",
       "voiced": true
     },
     {
@@ -59,17 +32,8 @@
       "speaker": "owner",
       "set": "review_happy",
       "mood": "happy",
-      "text": "Good work. The town is talking about us again.",
-      "voText": "Good work. The town is talking about us again.",
-      "voiced": true
-    },
-    {
-      "id": "owner_review_happy_03",
-      "speaker": "owner",
-      "set": "review_happy",
-      "mood": "happy",
-      "text": "We're where we hoped to be. Don't let it slip.",
-      "voText": "We're where we hoped to be. Don't let it slip.",
+      "text": "The town's talking again. I like that.",
+      "voText": "The town's talking again. I like that.",
       "voiced": true
     },
     {
@@ -77,8 +41,8 @@
       "speaker": "owner",
       "set": "review_neutral",
       "mood": "neutral",
-      "text": "It's been steady. Steady won't be enough by May.",
-      "voText": "It's been steady. Steady won't be enough by May.",
+      "text": "Fine isn't the same as good.",
+      "voText": "Fine isn't the same as good.",
       "voiced": true
     },
     {
@@ -86,17 +50,8 @@
       "speaker": "owner",
       "set": "review_neutral",
       "mood": "neutral",
-      "text": "We're watching. We need more than this.",
-      "voText": "We're watching. We need more than this.",
-      "voiced": true
-    },
-    {
-      "id": "owner_review_neutral_03",
-      "speaker": "owner",
-      "set": "review_neutral",
-      "mood": "neutral",
-      "text": "Not bad. Not good enough yet.",
-      "voText": "Not bad. Not good enough yet.",
+      "text": "We're watching. That's all.",
+      "voText": "We're watching. That's all.",
       "voiced": true
     },
     {
@@ -104,8 +59,8 @@
       "speaker": "owner",
       "set": "review_worried",
       "mood": "worried",
-      "text": "I'll be honest. The board is getting nervous.",
-      "voText": "I'll be honest. The board is getting nervous.",
+      "text": "I don't like where this is going.",
+      "voText": "I don't like where this is going.",
       "voiced": true
     },
     {
@@ -113,17 +68,8 @@
       "speaker": "owner",
       "set": "review_worried",
       "mood": "worried",
-      "text": "This can't go on much longer. You know that.",
-      "voText": "This can't go on much longer. You know that.",
-      "voiced": true
-    },
-    {
-      "id": "owner_review_worried_03",
-      "speaker": "owner",
-      "set": "review_worried",
-      "mood": "worried",
-      "text": "We backed you. We need to see something back.",
-      "voText": "We backed you. We need to see something back.",
+      "text": "Fix it. Soon.",
+      "voText": "Fix it. Soon.",
       "voiced": true
     },
     {
@@ -131,17 +77,8 @@
       "speaker": "owner",
       "set": "budget_granted",
       "mood": "happy",
-      "text": "Fine. You've earned it. Spend it wisely.",
-      "voText": "Fine. You've earned it. Spend it wisely.",
-      "voiced": true
-    },
-    {
-      "id": "owner_budget_granted_02",
-      "speaker": "owner",
-      "set": "budget_granted",
-      "mood": "happy",
-      "text": "The board has agreed. Don't make me regret it.",
-      "voText": "The board has agreed. Don't make me regret it.",
+      "text": "You've earned it. Don't waste it.",
+      "voText": "You've earned it. Don't waste it.",
       "voiced": true
     },
     {
@@ -149,17 +86,8 @@
       "speaker": "owner",
       "set": "budget_refused",
       "mood": "neutral",
-      "text": "No. Not until the results justify it.",
-      "voText": "No. Not until the results justify it.",
-      "voiced": true
-    },
-    {
-      "id": "owner_budget_refused_02",
-      "speaker": "owner",
-      "set": "budget_refused",
-      "mood": "neutral",
-      "text": "The money isn't there. Work with what you have.",
-      "voText": "The money isn't there. Work with what you have.",
+      "text": "Win something first.",
+      "voText": "Win something first.",
       "voiced": true
     },
     {
@@ -167,8 +95,8 @@
       "speaker": "owner",
       "set": "sacking",
       "mood": "angry",
-      "text": "I'm sorry. The board has decided to make a change.",
-      "voText": "I'm sorry. The board has decided to make a change.",
+      "text": "I'm sorry. It's over.",
+      "voText": "I'm sorry. It's over.",
       "voiced": true
     },
     {
@@ -176,17 +104,8 @@
       "speaker": "owner",
       "set": "sacking",
       "mood": "angry",
-      "text": "We can't wait any longer. We're letting you go.",
-      "voText": "We can't wait any longer. We're letting you go.",
-      "voiced": true
-    },
-    {
-      "id": "owner_sacking_03",
-      "speaker": "owner",
-      "set": "sacking",
-      "mood": "angry",
-      "text": "This is the hardest part of my job. You're relieved of your duties.",
-      "voText": "This is the hardest part of my job. You're relieved of your duties.",
+      "text": "We're making a change. Today.",
+      "voText": "We're making a change. Today.",
       "voiced": true
     },
     {
@@ -194,17 +113,8 @@
       "speaker": "owner",
       "set": "verdict_great",
       "mood": "happy",
-      "text": "You gave this town a season to remember. We want you here for years.",
-      "voText": "You gave this town a season to remember. We want you here for years.",
-      "voiced": true
-    },
-    {
-      "id": "owner_verdict_great_02",
-      "speaker": "owner",
-      "set": "verdict_great",
-      "mood": "happy",
-      "text": "That's beyond what we asked for. Thank you.",
-      "voText": "That's beyond what we asked for. Thank you.",
+      "text": "You gave this town a season. Thank you.",
+      "voText": "You gave this town a season. Thank you.",
       "voiced": true
     },
     {
@@ -212,17 +122,8 @@
       "speaker": "owner",
       "set": "verdict_ok",
       "mood": "neutral",
-      "text": "A solid first season. Next year, we push on.",
-      "voText": "A solid first season. Next year, we push on.",
-      "voiced": true
-    },
-    {
-      "id": "owner_verdict_ok_02",
-      "speaker": "owner",
-      "set": "verdict_ok",
-      "mood": "neutral",
-      "text": "You did what we asked. Now let's ask for more.",
-      "voText": "You did what we asked. Now let's ask for more.",
+      "text": "A start. Next year, more.",
+      "voText": "A start. Next year, more.",
       "voiced": true
     },
     {
@@ -230,44 +131,8 @@
       "speaker": "owner",
       "set": "verdict_poor",
       "mood": "worried",
-      "text": "That wasn't good enough, and you know it.",
-      "voText": "That wasn't good enough, and you know it.",
-      "voiced": true
-    },
-    {
-      "id": "owner_verdict_poor_02",
-      "speaker": "owner",
-      "set": "verdict_poor",
-      "mood": "worried",
-      "text": "We expected more. Much more.",
-      "voText": "We expected more. Much more.",
-      "voiced": true
-    },
-    {
-      "id": "director_aside_01",
-      "speaker": "director",
-      "set": "aside",
-      "mood": "neutral",
-      "text": "The finances are sound, for now.",
-      "voText": "The finances are sound, for now.",
-      "voiced": true
-    },
-    {
-      "id": "director_aside_02",
-      "speaker": "director",
-      "set": "aside",
-      "mood": "neutral",
-      "text": "The supporters' groups want a word at some point.",
-      "voText": "The supporters' groups want a word at some point.",
-      "voiced": true
-    },
-    {
-      "id": "director_aside_03",
-      "speaker": "director",
-      "set": "aside",
-      "mood": "neutral",
-      "text": "We'll need the stadium full every week to make the numbers work.",
-      "voText": "We'll need the stadium full every week to make the numbers work.",
+      "text": "Not good enough. You know that.",
+      "voText": "Not good enough. You know that.",
       "voiced": true
     },
     {
@@ -275,8 +140,8 @@
       "speaker": "coach",
       "set": "walk_in",
       "mood": "neutral",
-      "text": "Right, lads.",
-      "voText": "Right, lads.",
+      "text": "Right. Listen in.",
+      "voText": "Right. Listen in.",
       "voiced": true
     },
     {
@@ -284,8 +149,8 @@
       "speaker": "coach",
       "set": "walk_in",
       "mood": "neutral",
-      "text": "Sit down, everyone.",
-      "voText": "Sit down, everyone.",
+      "text": "Eyes on me.",
+      "voText": "Eyes on me.",
       "voiced": true
     },
     {
@@ -293,53 +158,8 @@
       "speaker": "coach",
       "set": "walk_in",
       "mood": "neutral",
-      "text": "Listen in.",
-      "voText": "Listen in.",
-      "voiced": true
-    },
-    {
-      "id": "coach_walk_in_04",
-      "speaker": "coach",
-      "set": "walk_in",
-      "mood": "neutral",
-      "text": "Okay. Eyes on me.",
-      "voText": "Okay. Eyes on me.",
-      "voiced": true
-    },
-    {
-      "id": "coach_walk_in_05",
-      "speaker": "coach",
-      "set": "walk_in",
-      "mood": "neutral",
-      "text": "Morning, all.",
-      "voText": "Morning, all.",
-      "voiced": true
-    },
-    {
-      "id": "coach_walk_in_06",
-      "speaker": "coach",
-      "set": "walk_in",
-      "mood": "neutral",
-      "text": "Phones away.",
-      "voText": "Phones away.",
-      "voiced": true
-    },
-    {
-      "id": "coach_walk_in_07",
-      "speaker": "coach",
-      "set": "walk_in",
-      "mood": "neutral",
-      "text": "Gather round.",
-      "voText": "Gather round.",
-      "voiced": true
-    },
-    {
-      "id": "coach_walk_in_08",
-      "speaker": "coach",
-      "set": "walk_in",
-      "mood": "neutral",
-      "text": "Right, let's go.",
-      "voText": "Right, let's go.",
+      "text": "Sit down, lads.",
+      "voText": "Sit down, lads.",
       "voiced": true
     },
     {
@@ -347,8 +167,8 @@
       "speaker": "coach",
       "set": "briefing_mentality",
       "mood": "neutral",
-      "text": "We go at them from the first whistle. No respect.",
-      "voText": "We go at them from the first whistle. No respect.",
+      "text": "We go at them. From the first whistle.",
+      "voText": "We go at them. From the first whistle.",
       "voiced": true
     },
     {
@@ -356,17 +176,8 @@
       "speaker": "coach",
       "set": "briefing_mentality",
       "mood": "neutral",
-      "text": "Patient today. We let them come and we hit them on the break.",
-      "voText": "Patient today. We let them come and we hit them on the break.",
-      "voiced": true
-    },
-    {
-      "id": "coach_briefing_mentality_03",
-      "speaker": "coach",
-      "set": "briefing_mentality",
-      "mood": "neutral",
-      "text": "Balanced. Win our battles and the game opens up.",
-      "voText": "Balanced. Win our battles and the game opens up.",
+      "text": "Patient today. Let them come.",
+      "voText": "Patient today. Let them come.",
       "voiced": true
     },
     {
@@ -374,8 +185,8 @@
       "speaker": "coach",
       "set": "briefing_press",
       "mood": "neutral",
-      "text": "We press high. Their centre-backs don't like the ball.",
-      "voText": "We press high. Their centre-backs don't like the ball.",
+      "text": "Press high. They hate the ball.",
+      "voText": "Press high. They hate the ball.",
       "voiced": true
     },
     {
@@ -383,17 +194,8 @@
       "speaker": "coach",
       "set": "briefing_press",
       "mood": "neutral",
-      "text": "No pressing up top today. Mid-block, and we stay compact.",
-      "voText": "No pressing up top today. Mid-block, and we stay compact.",
-      "voiced": true
-    },
-    {
-      "id": "coach_briefing_press_03",
-      "speaker": "coach",
-      "set": "briefing_press",
-      "mood": "neutral",
-      "text": "When we lose it, we win it back in five seconds. That's the rule.",
-      "voText": "When we lose it, we win it back in five seconds. That's the rule.",
+      "text": "Sit in. Stay compact. Pick them off.",
+      "voText": "Sit in. Stay compact. Pick them off.",
       "voiced": true
     },
     {
@@ -401,28 +203,18 @@
       "speaker": "coach",
       "set": "briefing_key_battle",
       "mood": "neutral",
-      "text": "{player}, their winger is quick. Stay on your feet.",
-      "voText": "Their winger is quick. Stay on your feet.",
+      "text": "Their winger's quick. Stay on your feet, {player}.",
+      "voText": "Their winger's quick. Stay on your feet.",
       "voiced": true,
-      "nameSlot": "start"
+      "nameSlot": "end"
     },
     {
       "id": "coach_briefing_key_battle_02",
       "speaker": "coach",
       "set": "briefing_key_battle",
       "mood": "neutral",
-      "text": "This game is won in midfield. You run it, {player}.",
-      "voText": "This game is won in midfield. You run it.",
-      "voiced": true,
-      "nameSlot": "end"
-    },
-    {
-      "id": "coach_briefing_key_battle_03",
-      "speaker": "coach",
-      "set": "briefing_key_battle",
-      "mood": "neutral",
-      "text": "Their number nine is the danger. Don't give him a yard, {player}.",
-      "voText": "Their number nine is the danger. Don't give him a yard.",
+      "text": "That's the game. Win your battle, {player}.",
+      "voText": "That's the game. Win your battle.",
       "voiced": true,
       "nameSlot": "end"
     },
@@ -431,8 +223,8 @@
       "speaker": "coach",
       "set": "briefing_set_pieces",
       "mood": "neutral",
-      "text": "Corners: big men to the far post. We've practised it.",
-      "voText": "Corners: big men to the far post. We've practised it.",
+      "text": "Corners: big men far post. Like we practised.",
+      "voText": "Corners: big men far post. Like we practised.",
       "voiced": true
     },
     {
@@ -440,27 +232,17 @@
       "speaker": "coach",
       "set": "briefing_set_pieces",
       "mood": "neutral",
-      "text": "Their set pieces are dangerous. Everyone picks up a man.",
-      "voText": "Their set pieces are dangerous. Everyone picks up a man.",
+      "text": "Their corners are dangerous. Pick up a man.",
+      "voText": "Their corners are dangerous. Pick up a man.",
       "voiced": true
-    },
-    {
-      "id": "coach_briefing_set_pieces_03",
-      "speaker": "coach",
-      "set": "briefing_set_pieces",
-      "mood": "neutral",
-      "text": "{player}, you're on the free kicks today.",
-      "voText": "You're on the free kicks today.",
-      "voiced": true,
-      "nameSlot": "start"
     },
     {
       "id": "coach_briefing_width_01",
       "speaker": "coach",
       "set": "briefing_width",
       "mood": "neutral",
-      "text": "Stay wide. Stretch them and the gaps will come.",
-      "voText": "Stay wide. Stretch them and the gaps will come.",
+      "text": "Stay wide. Stretch them.",
+      "voText": "Stay wide. Stretch them.",
       "voiced": true
     },
     {
@@ -468,17 +250,8 @@
       "speaker": "coach",
       "set": "briefing_width",
       "mood": "neutral",
-      "text": "Narrow today. Crowd the middle and make them go round.",
-      "voText": "Narrow today. Crowd the middle and make them go round.",
-      "voiced": true
-    },
-    {
-      "id": "coach_briefing_width_03",
-      "speaker": "coach",
-      "set": "briefing_width",
-      "mood": "neutral",
-      "text": "Full-backs, you're our width. Get forward.",
-      "voText": "Full-backs, you're our width. Get forward.",
+      "text": "Narrow. Make them go round us.",
+      "voText": "Narrow. Make them go round us.",
       "voiced": true
     },
     {
@@ -486,8 +259,8 @@
       "speaker": "coach",
       "set": "shout_pushForward",
       "mood": "neutral",
-      "text": "Push up! Get forward!",
-      "voText": "Push up! Get forward!",
+      "text": "Up! Get up the pitch!",
+      "voText": "Up! Get up the pitch!",
       "voiced": true
     },
     {
@@ -495,17 +268,8 @@
       "speaker": "coach",
       "set": "shout_pushForward",
       "mood": "neutral",
-      "text": "Up the pitch! Go on!",
-      "voText": "Up the pitch! Go on!",
-      "voiced": true
-    },
-    {
-      "id": "coach_shout_pushForward_03",
-      "speaker": "coach",
-      "set": "shout_pushForward",
-      "mood": "neutral",
-      "text": "Higher! Get after them!",
-      "voText": "Higher! Get after them!",
+      "text": "Go on, push!",
+      "voText": "Go on, push!",
       "voiced": true
     },
     {
@@ -513,8 +277,8 @@
       "speaker": "coach",
       "set": "shout_keepTight",
       "mood": "neutral",
-      "text": "Keep it tight! Stay in shape!",
-      "voText": "Keep it tight! Stay in shape!",
+      "text": "Tight! Hold your shape!",
+      "voText": "Tight! Hold your shape!",
       "voiced": true
     },
     {
@@ -522,17 +286,8 @@
       "speaker": "coach",
       "set": "shout_keepTight",
       "mood": "neutral",
-      "text": "Compact! Nothing through the middle!",
-      "voText": "Compact! Nothing through the middle!",
-      "voiced": true
-    },
-    {
-      "id": "coach_shout_keepTight_03",
-      "speaker": "coach",
-      "set": "shout_keepTight",
-      "mood": "neutral",
-      "text": "Hold it! Keep your shape!",
-      "voText": "Hold it! Keep your shape!",
+      "text": "Compact! Nothing through!",
+      "voText": "Compact! Nothing through!",
       "voiced": true
     },
     {
@@ -549,17 +304,8 @@
       "speaker": "coach",
       "set": "shout_getStuckIn",
       "mood": "angry",
-      "text": "Win your battles! Get in their faces!",
-      "voText": "Win your battles! Get in their faces!",
-      "voiced": true
-    },
-    {
-      "id": "coach_shout_getStuckIn_03",
-      "speaker": "coach",
-      "set": "shout_getStuckIn",
-      "mood": "angry",
-      "text": "Tackle! Make it hurt!",
-      "voText": "Tackle! Make it hurt!",
+      "text": "Win it! Get in there!",
+      "voText": "Win it! Get in there!",
       "voiced": true
     },
     {
@@ -576,15 +322,6 @@
       "speaker": "coach",
       "set": "shout_calmDown",
       "mood": "neutral",
-      "text": "Easy! No silly fouls!",
-      "voText": "Easy! No silly fouls!",
-      "voiced": true
-    },
-    {
-      "id": "coach_shout_calmDown_03",
-      "speaker": "coach",
-      "set": "shout_calmDown",
-      "mood": "neutral",
       "text": "Heads! Keep your heads!",
       "voText": "Heads! Keep your heads!",
       "voiced": true
@@ -594,8 +331,8 @@
       "speaker": "coach",
       "set": "shout_concentrate",
       "mood": "neutral",
-      "text": "Concentrate! Ten more minutes!",
-      "voText": "Concentrate! Ten more minutes!",
+      "text": "Switch on! Every ball!",
+      "voText": "Switch on! Every ball!",
       "voiced": true
     },
     {
@@ -603,17 +340,8 @@
       "speaker": "coach",
       "set": "shout_concentrate",
       "mood": "neutral",
-      "text": "Switch on! Nobody switches off!",
-      "voText": "Switch on! Nobody switches off!",
-      "voiced": true
-    },
-    {
-      "id": "coach_shout_concentrate_03",
-      "speaker": "coach",
-      "set": "shout_concentrate",
-      "mood": "neutral",
-      "text": "Focus! Every ball!",
-      "voText": "Focus! Every ball!",
+      "text": "Focus! Nearly there!",
+      "voText": "Focus! Nearly there!",
       "voiced": true
     },
     {
@@ -621,8 +349,8 @@
       "speaker": "coach",
       "set": "shout_encourage",
       "mood": "happy",
-      "text": "Well done! Keep going!",
-      "voText": "Well done! Keep going!",
+      "text": "That's it! Keep going!",
+      "voText": "That's it! Keep going!",
       "voiced": true
     },
     {
@@ -630,17 +358,8 @@
       "speaker": "coach",
       "set": "shout_encourage",
       "mood": "happy",
-      "text": "Brilliant! More of that!",
-      "voText": "Brilliant! More of that!",
-      "voiced": true
-    },
-    {
-      "id": "coach_shout_encourage_03",
-      "speaker": "coach",
-      "set": "shout_encourage",
-      "mood": "happy",
-      "text": "That's it, lads! Keep it up!",
-      "voText": "That's it, lads! Keep it up!",
+      "text": "Lovely! More of that!",
+      "voText": "Lovely! More of that!",
       "voiced": true
     },
     {
@@ -648,8 +367,8 @@
       "speaker": "coach",
       "set": "shout_demandMore",
       "mood": "angry",
-      "text": "That's not good enough!",
-      "voText": "That's not good enough!",
+      "text": "Not good enough!",
+      "voText": "Not good enough!",
       "voiced": true
     },
     {
@@ -657,17 +376,8 @@
       "speaker": "coach",
       "set": "shout_demandMore",
       "mood": "angry",
-      "text": "Wake up! Come on!",
-      "voText": "Wake up! Come on!",
-      "voiced": true
-    },
-    {
-      "id": "coach_shout_demandMore_03",
-      "speaker": "coach",
-      "set": "shout_demandMore",
-      "mood": "angry",
-      "text": "More! I want more!",
-      "voText": "More! I want more!",
+      "text": "More! Come on!",
+      "voText": "More! Come on!",
       "voiced": true
     },
     {
@@ -675,17 +385,8 @@
       "speaker": "coach",
       "set": "accept_job",
       "mood": "happy",
-      "text": "I'll take it. We'll win it.",
-      "voText": "I'll take it. We'll win it.",
-      "voiced": true
-    },
-    {
-      "id": "coach_accept_job_02",
-      "speaker": "coach",
-      "set": "accept_job",
-      "mood": "happy",
-      "text": "Count me in. Let's get to work.",
-      "voText": "Count me in. Let's get to work.",
+      "text": "I'm in.",
+      "voText": "I'm in.",
       "voiced": true
     },
     {
@@ -693,74 +394,35 @@
       "speaker": "coach",
       "set": "discipline_fine",
       "mood": "neutral",
-      "text": "That's a week's wages. Don't let it happen again.",
-      "voText": "That's a week's wages. Don't let it happen again.",
+      "text": "A week's wages. Don't make me do it again.",
+      "voText": "A week's wages. Don't make me do it again.",
       "voiced": true
-    },
-    {
-      "id": "coach_discipline_fine_02",
-      "speaker": "coach",
-      "set": "discipline_fine",
-      "mood": "neutral",
-      "text": "You're fined. You let the lads down, {player}.",
-      "voText": "You're fined. You let the lads down.",
-      "voiced": true,
-      "nameSlot": "end"
     },
     {
       "id": "coach_discipline_drop_01",
       "speaker": "coach",
       "set": "discipline_drop",
       "mood": "neutral",
-      "text": "You're not in the squad on Saturday.",
-      "voText": "You're not in the squad on Saturday.",
+      "text": "You're not in the squad Saturday.",
+      "voText": "You're not in the squad Saturday.",
       "voiced": true
-    },
-    {
-      "id": "coach_discipline_drop_02",
-      "speaker": "coach",
-      "set": "discipline_drop",
-      "mood": "neutral",
-      "text": "Sit this one out. Think about it, {player}.",
-      "voText": "Sit this one out. Think about it.",
-      "voiced": true,
-      "nameSlot": "end"
     },
     {
       "id": "coach_discipline_warn_01",
       "speaker": "coach",
       "set": "discipline_warn",
       "mood": "neutral",
-      "text": "Consider this a warning. There won't be another.",
-      "voText": "Consider this a warning. There won't be another.",
+      "text": "That's your warning. Your only one.",
+      "voText": "That's your warning. Your only one.",
       "voiced": true
-    },
-    {
-      "id": "coach_discipline_warn_02",
-      "speaker": "coach",
-      "set": "discipline_warn",
-      "mood": "neutral",
-      "text": "That's your one warning, {player}.",
-      "voText": "That's your one warning.",
-      "voiced": true,
-      "nameSlot": "end"
     },
     {
       "id": "coach_discipline_let_go_01",
       "speaker": "coach",
       "set": "discipline_let_go",
       "mood": "neutral",
-      "text": "Forget it. Just don't do it again.",
-      "voText": "Forget it. Just don't do it again.",
-      "voiced": true
-    },
-    {
-      "id": "coach_discipline_let_go_02",
-      "speaker": "coach",
-      "set": "discipline_let_go",
-      "mood": "neutral",
-      "text": "We'll leave it there.",
-      "voText": "We'll leave it there.",
+      "text": "Forget it. Once.",
+      "voText": "Forget it. Once.",
       "voiced": true
     },
     {
@@ -768,17 +430,8 @@
       "speaker": "coach",
       "set": "discipline_answer_public",
       "mood": "angry",
-      "text": "If he has something to say, he can say it to me.",
-      "voText": "If he has something to say, he can say it to me.",
-      "voiced": true
-    },
-    {
-      "id": "coach_discipline_answer_public_02",
-      "speaker": "coach",
-      "set": "discipline_answer_public",
-      "mood": "angry",
-      "text": "Nobody is bigger than this club. Nobody.",
-      "voText": "Nobody is bigger than this club. Nobody.",
+      "text": "Nobody's bigger than this club.",
+      "voText": "Nobody's bigger than this club.",
       "voiced": true
     },
     {
@@ -786,55 +439,27 @@
       "speaker": "coach",
       "set": "discipline_talk_private",
       "mood": "neutral",
-      "text": "Come and see me after training. Just us.",
-      "voText": "Come and see me after training. Just us.",
+      "text": "My office. After training.",
+      "voText": "My office. After training.",
       "voiced": true
-    },
-    {
-      "id": "coach_discipline_talk_private_02",
-      "speaker": "coach",
-      "set": "discipline_talk_private",
-      "mood": "neutral",
-      "text": "My door's open. Let's talk, {player}.",
-      "voText": "My door's open. Let's talk.",
-      "voiced": true,
-      "nameSlot": "end"
     },
     {
       "id": "coach_discipline_side_senior_01",
       "speaker": "coach",
       "set": "discipline_side_senior",
       "mood": "neutral",
-      "text": "He's been here longer. Listen to him.",
-      "voText": "He's been here longer. Listen to him.",
-      "voiced": true
-    },
-    {
-      "id": "coach_discipline_side_senior_02",
-      "speaker": "coach",
-      "set": "discipline_side_senior",
-      "mood": "neutral",
-      "text": "{player}, you're out of line. Apologise.",
-      "voText": "You're out of line. Apologise.",
+      "text": "He's right. Apologise, {player}.",
+      "voText": "He's right. Apologise.",
       "voiced": true,
-      "nameSlot": "start"
+      "nameSlot": "end"
     },
     {
       "id": "coach_discipline_team_meeting_01",
       "speaker": "coach",
       "set": "discipline_team_meeting",
       "mood": "neutral",
-      "text": "Everybody in. We sort this now, together.",
-      "voText": "Everybody in. We sort this now, together.",
-      "voiced": true
-    },
-    {
-      "id": "coach_discipline_team_meeting_02",
-      "speaker": "coach",
-      "set": "discipline_team_meeting",
-      "mood": "neutral",
-      "text": "Both of you. In the middle. We clear the air.",
-      "voText": "Both of you. In the middle. We clear the air.",
+      "text": "Both of you. Middle of the room. Now.",
+      "voText": "Both of you. Middle of the room. Now.",
       "voiced": true
     },
     {
@@ -842,17 +467,8 @@
       "speaker": "coach",
       "set": "injury_take_off",
       "mood": "neutral",
-      "text": "Get him off. Not worth the risk.",
-      "voText": "Get him off. Not worth the risk.",
-      "voiced": true
-    },
-    {
-      "id": "coach_injury_take_off_02",
-      "speaker": "coach",
-      "set": "injury_take_off",
-      "mood": "neutral",
-      "text": "Bring him off. Warm up the sub.",
-      "voText": "Bring him off. Warm up the sub.",
+      "text": "Get him off.",
+      "voText": "Get him off.",
       "voiced": true
     },
     {
@@ -860,17 +476,8 @@
       "speaker": "coach",
       "set": "injury_carry_on",
       "mood": "neutral",
-      "text": "He stays on. He's tougher than that.",
-      "voText": "He stays on. He's tougher than that.",
-      "voiced": true
-    },
-    {
-      "id": "coach_injury_carry_on_02",
-      "speaker": "coach",
-      "set": "injury_carry_on",
-      "mood": "neutral",
-      "text": "Strap it up. He's carrying on.",
-      "voText": "Strap it up. He's carrying on.",
+      "text": "He stays on.",
+      "voText": "He stays on.",
       "voiced": true
     },
     {
@@ -878,17 +485,8 @@
       "speaker": "coach",
       "set": "injury_rush_yes",
       "mood": "neutral",
-      "text": "Get him ready. We need him on Saturday.",
-      "voText": "Get him ready. We need him on Saturday.",
-      "voiced": true
-    },
-    {
-      "id": "coach_injury_rush_yes_02",
-      "speaker": "coach",
-      "set": "injury_rush_yes",
-      "mood": "neutral",
-      "text": "If he says he's fine, he plays.",
-      "voText": "If he says he's fine, he plays.",
+      "text": "He plays.",
+      "voText": "He plays.",
       "voiced": true
     },
     {
@@ -896,17 +494,8 @@
       "speaker": "coach",
       "set": "injury_rush_wait",
       "mood": "neutral",
-      "text": "No. Another week. I'm not losing him for a month.",
-      "voText": "No. Another week. I'm not losing him for a month.",
-      "voiced": true
-    },
-    {
-      "id": "coach_injury_rush_wait_02",
-      "speaker": "coach",
-      "set": "injury_rush_wait",
-      "mood": "neutral",
-      "text": "Give him the time. He'll be back when he's back.",
-      "voText": "Give him the time. He'll be back when he's back.",
+      "text": "Another week. I'm not losing him.",
+      "voText": "Another week. I'm not losing him.",
       "voiced": true
     },
     {
@@ -914,17 +503,8 @@
       "speaker": "coach",
       "set": "warmup_start",
       "mood": "neutral",
-      "text": "He starts. Keep an eye on him.",
-      "voText": "He starts. Keep an eye on him.",
-      "voiced": true
-    },
-    {
-      "id": "coach_warmup_start_02",
-      "speaker": "coach",
-      "set": "warmup_start",
-      "mood": "neutral",
-      "text": "He plays. Tell me if it gets worse.",
-      "voText": "He plays. Tell me if it gets worse.",
+      "text": "He starts. Watch him.",
+      "voText": "He starts. Watch him.",
       "voiced": true
     },
     {
@@ -932,17 +512,17 @@
       "speaker": "coach",
       "set": "warmup_leave_out",
       "mood": "neutral",
-      "text": "Leave him out. Don't risk it.",
-      "voText": "Leave him out. Don't risk it.",
+      "text": "Leave him out.",
+      "voText": "Leave him out.",
       "voiced": true
     },
     {
-      "id": "coach_warmup_leave_out_02",
-      "speaker": "coach",
-      "set": "warmup_leave_out",
-      "mood": "neutral",
-      "text": "Change it. He's on the bench.",
-      "voText": "Change it. He's on the bench.",
+      "id": "assistant_welcome_after_job_01",
+      "speaker": "assistant",
+      "set": "welcome_after_job",
+      "mood": "happy",
+      "text": "Theo Vance. Eight years here, three managers. Let's make you the last one.",
+      "voText": "Theo Vance. Eight years here, three managers. Let's make you the last one.",
       "voiced": true
     },
     {
@@ -950,8 +530,8 @@
       "speaker": "assistant",
       "set": "knock_enter",
       "mood": "neutral",
-      "text": "Gaffer, got a minute?",
-      "voText": "Gaffer, got a minute?",
+      "text": "Got a minute, gaffer?",
+      "voText": "Got a minute, gaffer?",
       "voiced": true
     },
     {
@@ -959,26 +539,8 @@
       "speaker": "assistant",
       "set": "knock_enter",
       "mood": "neutral",
-      "text": "Morning, boss. I've got the week's notes.",
-      "voText": "Morning, boss. I've got the week's notes.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_knock_enter_03",
-      "speaker": "assistant",
-      "set": "knock_enter",
-      "mood": "neutral",
-      "text": "Knock knock. Bad time?",
-      "voText": "Knock knock. Bad time?",
-      "voiced": true
-    },
-    {
-      "id": "assistant_knock_enter_04",
-      "speaker": "assistant",
-      "set": "knock_enter",
-      "mood": "neutral",
-      "text": "Boss. Quick one.",
-      "voText": "Boss. Quick one.",
+      "text": "Gaffer. Bit of news.",
+      "voText": "Gaffer. Bit of news.",
       "voiced": true
     },
     {
@@ -986,8 +548,8 @@
       "speaker": "assistant",
       "set": "whiteboard",
       "mood": "neutral",
-      "text": "Look here. That's where they're weak.",
-      "voText": "Look here. That's where they're weak.",
+      "text": "Look. There. That's the gap.",
+      "voText": "Look. There. That's the gap.",
       "voiced": true
     },
     {
@@ -995,21 +557,12 @@
       "speaker": "assistant",
       "set": "whiteboard",
       "mood": "neutral",
-      "text": "If we shift this one across, the gap closes.",
-      "voText": "If we shift this one across, the gap closes.",
+      "text": "Their full-back never tracks back. Never.",
+      "voText": "Their full-back never tracks back. Never.",
       "voiced": true
     },
     {
       "id": "assistant_whiteboard_03",
-      "speaker": "assistant",
-      "set": "whiteboard",
-      "mood": "neutral",
-      "text": "Their full-back gets caught upfield. Every time.",
-      "voText": "Their full-back gets caught upfield. Every time.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_whiteboard_04",
       "speaker": "assistant",
       "set": "whiteboard",
       "mood": "neutral",
@@ -1019,30 +572,12 @@
       "nameSlot": "end"
     },
     {
-      "id": "assistant_whiteboard_05",
-      "speaker": "assistant",
-      "set": "whiteboard",
-      "mood": "neutral",
-      "text": "Here's the problem, gaffer. Look at the space.",
-      "voText": "Here's the problem, gaffer. Look at the space.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_whiteboard_06",
-      "speaker": "assistant",
-      "set": "whiteboard",
-      "mood": "neutral",
-      "text": "That's how they scored last week. Same pattern.",
-      "voText": "That's how they scored last week. Same pattern.",
-      "voiced": true
-    },
-    {
       "id": "assistant_touchline_whisper_01",
       "speaker": "assistant",
       "set": "touchline_whisper",
       "mood": "neutral",
-      "text": "Gaffer. Look at their left side.",
-      "voText": "Gaffer. Look at their left side.",
+      "text": "Gaffer. Their left side.",
+      "voText": "Gaffer. Their left side.",
       "voiced": true
     },
     {
@@ -1050,8 +585,8 @@
       "speaker": "assistant",
       "set": "touchline_whisper",
       "mood": "neutral",
-      "text": "Their nine is tiring. Push up on him.",
-      "voText": "Their nine is tiring. Push up on him.",
+      "text": "Their nine's blowing. Push up.",
+      "voText": "Their nine's blowing. Push up.",
       "voiced": true
     },
     {
@@ -1064,39 +599,12 @@
       "voiced": true
     },
     {
-      "id": "assistant_touchline_whisper_04",
-      "speaker": "assistant",
-      "set": "touchline_whisper",
-      "mood": "neutral",
-      "text": "They've switched to a back three.",
-      "voText": "They've switched to a back three.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_touchline_whisper_05",
-      "speaker": "assistant",
-      "set": "touchline_whisper",
-      "mood": "neutral",
-      "text": "Their keeper's coming for everything. Shoot early.",
-      "voText": "Their keeper's coming for everything. Shoot early.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_touchline_whisper_06",
-      "speaker": "assistant",
-      "set": "touchline_whisper",
-      "mood": "neutral",
-      "text": "Ten minutes left. We need to decide.",
-      "voText": "Ten minutes left. We need to decide.",
-      "voiced": true
-    },
-    {
       "id": "assistant_talk_opener_pre_01",
       "speaker": "assistant",
       "set": "talk_opener_pre",
       "mood": "neutral",
-      "text": "Right, gaffer. The lads are ready.",
-      "voText": "Right, gaffer. The lads are ready.",
+      "text": "They're ready, gaffer.",
+      "voText": "They're ready, gaffer.",
       "voiced": true
     },
     {
@@ -1104,30 +612,12 @@
       "speaker": "assistant",
       "set": "talk_opener_pre",
       "mood": "neutral",
-      "text": "They're quiet. Might need waking up.",
-      "voText": "They're quiet. Might need waking up.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_talk_opener_pre_03",
-      "speaker": "assistant",
-      "set": "talk_opener_pre",
-      "mood": "neutral",
-      "text": "Good mood in here. Use it.",
-      "voText": "Good mood in here. Use it.",
+      "text": "Quiet lot today. Wake them up.",
+      "voText": "Quiet lot today. Wake them up.",
       "voiced": true
     },
     {
       "id": "assistant_talk_opener_ht_01",
-      "speaker": "assistant",
-      "set": "talk_opener_ht",
-      "mood": "neutral",
-      "text": "Gaffer. A few things before you start.",
-      "voText": "Gaffer. A few things before you start.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_talk_opener_ht_02",
       "speaker": "assistant",
       "set": "talk_opener_ht",
       "mood": "neutral",
@@ -1136,12 +626,12 @@
       "voiced": true
     },
     {
-      "id": "assistant_talk_opener_ht_03",
+      "id": "assistant_talk_opener_ht_02",
       "speaker": "assistant",
       "set": "talk_opener_ht",
       "mood": "neutral",
-      "text": "We've had the better chances. They know it.",
-      "voText": "We've had the better chances. They know it.",
+      "text": "We're better than this, and they know it.",
+      "voText": "We're better than this, and they know it.",
       "voiced": true
     },
     {
@@ -1149,8 +639,8 @@
       "speaker": "assistant",
       "set": "talk_opener_ft",
       "mood": "neutral",
-      "text": "Your call, gaffer. They're all yours.",
-      "voText": "Your call, gaffer. They're all yours.",
+      "text": "All yours, gaffer.",
+      "voText": "All yours, gaffer.",
       "voiced": true
     },
     {
@@ -1158,35 +648,8 @@
       "speaker": "assistant",
       "set": "talk_opener_ft",
       "mood": "neutral",
-      "text": "Heads are down in here.",
-      "voText": "Heads are down in here.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_talk_opener_ft_03",
-      "speaker": "assistant",
-      "set": "talk_opener_ft",
-      "mood": "neutral",
-      "text": "They've given everything. Let them hear it.",
-      "voText": "They've given everything. Let them hear it.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_welcome_after_job_01",
-      "speaker": "assistant",
-      "set": "welcome_after_job",
-      "mood": "happy",
-      "text": "Theo Vance. Assistant. I've been here eight years. I know where the bodies are buried.",
-      "voText": "Theo Vance. Assistant. I've been here eight years. I know where the bodies are buried.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_welcome_after_job_02",
-      "speaker": "assistant",
-      "set": "welcome_after_job",
-      "mood": "happy",
-      "text": "Welcome, gaffer. Let's get to work.",
-      "voText": "Welcome, gaffer. Let's get to work.",
+      "text": "Heads are down.",
+      "voText": "Heads are down.",
       "voiced": true
     },
     {
@@ -1194,18 +657,8 @@
       "speaker": "assistant",
       "set": "incident_open_late",
       "mood": "worried",
-      "text": "{player} was late again this morning. Twenty minutes.",
-      "voText": "Was late again this morning. Twenty minutes.",
-      "voiced": true,
-      "nameSlot": "start"
-    },
-    {
-      "id": "assistant_incident_open_late_02",
-      "speaker": "assistant",
-      "set": "incident_open_late",
-      "mood": "worried",
-      "text": "{player} turned up halfway through the warm-up, boss.",
-      "voText": "Turned up halfway through the warm-up, boss.",
+      "text": "{player} was late again. Twenty minutes.",
+      "voText": "Was late again. Twenty minutes.",
       "voiced": true,
       "nameSlot": "start"
     },
@@ -1214,17 +667,8 @@
       "speaker": "assistant",
       "set": "incident_open_sent_off",
       "mood": "worried",
-      "text": "About that red card. The lads are waiting to see what you do.",
-      "voText": "About that red card. The lads are waiting to see what you do.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_incident_open_sent_off_02",
-      "speaker": "assistant",
-      "set": "incident_open_sent_off",
-      "mood": "worried",
-      "text": "That sending off cost us. People want to know what happens now.",
-      "voText": "That sending off cost us. People want to know what happens now.",
+      "text": "That red card. Everyone's waiting to see what you do.",
+      "voText": "That red card. Everyone's waiting to see what you do.",
       "voiced": true
     },
     {
@@ -1232,18 +676,8 @@
       "speaker": "assistant",
       "set": "incident_open_press",
       "mood": "worried",
-      "text": "{player} has been talking to the papers. Have you seen it?",
-      "voText": "Has been talking to the papers. Have you seen it?",
-      "voiced": true,
-      "nameSlot": "start"
-    },
-    {
-      "id": "assistant_incident_open_press_02",
-      "speaker": "assistant",
-      "set": "incident_open_press",
-      "mood": "worried",
-      "text": "{player} gave an interview. It's not pretty.",
-      "voText": "Gave an interview. It's not pretty.",
+      "text": "{player} has been talking to the papers. It's not pretty.",
+      "voText": "Has been talking to the papers. It's not pretty.",
       "voiced": true,
       "nameSlot": "start"
     },
@@ -1252,30 +686,12 @@
       "speaker": "assistant",
       "set": "incident_open_bustup",
       "mood": "worried",
-      "text": "We had a bust-up in training. Two of them had to be pulled apart.",
-      "voText": "We had a bust-up in training. Two of them had to be pulled apart.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_incident_open_bustup_02",
-      "speaker": "assistant",
-      "set": "incident_open_bustup",
-      "mood": "worried",
-      "text": "It kicked off on the pitch today. Not good.",
-      "voText": "It kicked off on the pitch today. Not good.",
+      "text": "Bit of a dust-up in training. Two of them.",
+      "voText": "Bit of a dust-up in training. Two of them.",
       "voiced": true
     },
     {
       "id": "assistant_incident_advice_late_01",
-      "speaker": "assistant",
-      "set": "incident_advice_late",
-      "mood": "neutral",
-      "text": "A fine sends a message. The lads notice.",
-      "voText": "A fine sends a message. The lads notice.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_incident_advice_late_02",
       "speaker": "assistant",
       "set": "incident_advice_late",
       "mood": "neutral",
@@ -1288,17 +704,8 @@
       "speaker": "assistant",
       "set": "incident_advice_sent_off",
       "mood": "neutral",
-      "text": "He cost us the game. A fine would be fair.",
-      "voText": "He cost us the game. A fine would be fair.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_incident_advice_sent_off_02",
-      "speaker": "assistant",
-      "set": "incident_advice_sent_off",
-      "mood": "neutral",
-      "text": "He knows he was daft. Maybe a word is enough.",
-      "voText": "He knows he was daft. Maybe a word is enough.",
+      "text": "He cost us. A fine would be fair.",
+      "voText": "He cost us. A fine would be fair.",
       "voiced": true
     },
     {
@@ -1306,17 +713,8 @@
       "speaker": "assistant",
       "set": "incident_advice_press",
       "mood": "neutral",
-      "text": "Answer him in public and you'll lose him.",
-      "voText": "Answer him in public and you'll lose him.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_incident_advice_press_02",
-      "speaker": "assistant",
-      "set": "incident_advice_press",
-      "mood": "neutral",
-      "text": "Talk to him first. You can always fine him later.",
-      "voText": "Talk to him first. You can always fine him later.",
+      "text": "Go public and you lose him. Talk first.",
+      "voText": "Go public and you lose him. Talk first.",
       "voiced": true
     },
     {
@@ -1324,17 +722,8 @@
       "speaker": "assistant",
       "set": "incident_advice_bustup",
       "mood": "neutral",
-      "text": "Get everybody in a room. Clear the air.",
-      "voText": "Get everybody in a room. Clear the air.",
-      "voiced": true
-    },
-    {
-      "id": "assistant_incident_advice_bustup_02",
-      "speaker": "assistant",
-      "set": "incident_advice_bustup",
-      "mood": "neutral",
-      "text": "Back the senior lad. The young one needs to learn.",
-      "voText": "Back the senior lad. The young one needs to learn.",
+      "text": "Clear the air. All of them.",
+      "voText": "Clear the air. All of them.",
       "voiced": true
     },
     {
@@ -1342,8 +731,8 @@
       "speaker": "physio",
       "set": "knock_read",
       "mood": "neutral",
-      "text": "He can carry on, gaffer. He's not at a hundred percent.",
-      "voText": "He can carry on, gaffer. He's not at a hundred percent.",
+      "text": "He can carry on. He's not right, though.",
+      "voText": "He can carry on. He's not right, though.",
       "voiced": true
     },
     {
@@ -1351,17 +740,8 @@
       "speaker": "physio",
       "set": "knock_read",
       "mood": "neutral",
-      "text": "It's a knock. He can run it off, but it'll hurt.",
-      "voText": "It's a knock. He can run it off, but it'll hurt.",
-      "voiced": true
-    },
-    {
-      "id": "physio_knock_read_03",
-      "speaker": "physio",
-      "set": "knock_read",
-      "mood": "neutral",
-      "text": "He wants to stay on. Your call.",
-      "voText": "He wants to stay on. Your call.",
+      "text": "It's a knock. It'll hurt. He'll live.",
+      "voText": "It's a knock. It'll hurt. He'll live.",
       "voiced": true
     },
     {
@@ -1369,8 +749,8 @@
       "speaker": "physio",
       "set": "rush_offer",
       "mood": "neutral",
-      "text": "He's close, gaffer. We could risk him this week.",
-      "voText": "He's close, gaffer. We could risk him this week.",
+      "text": "He's close. We could risk him.",
+      "voText": "He's close. We could risk him.",
       "voiced": true
     },
     {
@@ -1378,17 +758,8 @@
       "speaker": "physio",
       "set": "rush_offer",
       "mood": "neutral",
-      "text": "Another week would be safer, but he says he's ready.",
-      "voText": "Another week would be safer, but he says he's ready.",
-      "voiced": true
-    },
-    {
-      "id": "physio_rush_offer_03",
-      "speaker": "physio",
-      "set": "rush_offer",
-      "mood": "neutral",
-      "text": "He's done the tests. He could play, if you need him.",
-      "voText": "He's done the tests. He could play, if you need him.",
+      "text": "He says he's ready. His hamstring hasn't decided.",
+      "voText": "He says he's ready. His hamstring hasn't decided.",
       "voiced": true
     },
     {
@@ -1396,8 +767,8 @@
       "speaker": "physio",
       "set": "warmup_scare",
       "mood": "worried",
-      "text": "{player} felt something tight in the warm-up, gaffer.",
-      "voText": "Felt something tight in the warm-up, gaffer.",
+      "text": "{player}'s hamstring is tight. Your call.",
+      "voText": "'s hamstring is tight. Your call.",
       "voiced": true,
       "nameSlot": "start"
     },
@@ -1406,18 +777,8 @@
       "speaker": "physio",
       "set": "warmup_scare",
       "mood": "worried",
-      "text": "{player} has pulled up in the warm-up. Hamstring's tight.",
-      "voText": "Has pulled up in the warm-up. Hamstring's tight.",
-      "voiced": true,
-      "nameSlot": "start"
-    },
-    {
-      "id": "physio_warmup_scare_03",
-      "speaker": "physio",
-      "set": "warmup_scare",
-      "mood": "worried",
-      "text": "{player}'s calf is tight. He says he's fine.",
-      "voText": "'s calf is tight. He says he's fine.",
+      "text": "{player} felt something in the warm-up.",
+      "voText": "Felt something in the warm-up.",
       "voiced": true,
       "nameSlot": "start"
     },
@@ -1426,17 +787,8 @@
       "speaker": "physio",
       "set": "outcome_good",
       "mood": "happy",
-      "text": "He came through it. No reaction.",
-      "voText": "He came through it. No reaction.",
-      "voiced": true
-    },
-    {
-      "id": "physio_outcome_good_02",
-      "speaker": "physio",
-      "set": "outcome_good",
-      "mood": "happy",
-      "text": "Good news. He's fine after ninety minutes.",
-      "voText": "Good news. He's fine after ninety minutes.",
+      "text": "Came through it. No reaction.",
+      "voText": "Came through it. No reaction.",
       "voiced": true
     },
     {
@@ -1444,17 +796,8 @@
       "speaker": "physio",
       "set": "outcome_bad",
       "mood": "worried",
-      "text": "It's gone again. Longer this time, I'm afraid.",
-      "voText": "It's gone again. Longer this time, I'm afraid.",
-      "voiced": true
-    },
-    {
-      "id": "physio_outcome_bad_02",
-      "speaker": "physio",
-      "set": "outcome_bad",
-      "mood": "worried",
-      "text": "He's broken down. We pushed him too soon.",
-      "voText": "He's broken down. We pushed him too soon.",
+      "text": "It's gone again. Longer this time.",
+      "voText": "It's gone again. Longer this time.",
       "voiced": true
     },
     {
@@ -1462,17 +805,8 @@
       "speaker": "player",
       "set": "reply_fine_calm",
       "mood": "neutral",
-      "text": "Fair enough, boss. It won't happen again.",
-      "voText": "Fair enough, boss. It won't happen again.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_fine_calm_02",
-      "speaker": "player",
-      "set": "reply_fine_calm",
-      "mood": "neutral",
-      "text": "I deserved that. Sorry.",
-      "voText": "I deserved that. Sorry.",
+      "text": "Fair enough. Won't happen again.",
+      "voText": "Fair enough. Won't happen again.",
       "voiced": true
     },
     {
@@ -1485,30 +819,12 @@
       "voiced": true
     },
     {
-      "id": "player_reply_fine_hot_02",
-      "speaker": "player",
-      "set": "reply_fine_hot",
-      "mood": "angry",
-      "text": "Fine. Whatever.",
-      "voText": "Fine. Whatever.",
-      "voiced": true
-    },
-    {
       "id": "player_reply_drop_calm_01",
       "speaker": "player",
       "set": "reply_drop_calm",
       "mood": "neutral",
-      "text": "I understand. I'll be ready next week.",
-      "voText": "I understand. I'll be ready next week.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_drop_calm_02",
-      "speaker": "player",
-      "set": "reply_drop_calm",
-      "mood": "neutral",
-      "text": "Okay. I'll earn it back.",
-      "voText": "Okay. I'll earn it back.",
+      "text": "Understood. I'll earn it back.",
+      "voText": "Understood. I'll earn it back.",
       "voiced": true
     },
     {
@@ -1516,17 +832,8 @@
       "speaker": "player",
       "set": "reply_drop_hot",
       "mood": "angry",
-      "text": "You're dropping me? Seriously?",
-      "voText": "You're dropping me? Seriously?",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_drop_hot_02",
-      "speaker": "player",
-      "set": "reply_drop_hot",
-      "mood": "angry",
-      "text": "Unbelievable.",
-      "voText": "Unbelievable.",
+      "text": "You're dropping me?",
+      "voText": "You're dropping me?",
       "voiced": true
     },
     {
@@ -1534,30 +841,12 @@
       "speaker": "player",
       "set": "reply_warn_calm",
       "mood": "neutral",
-      "text": "Understood, boss.",
-      "voText": "Understood, boss.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_warn_calm_02",
-      "speaker": "player",
-      "set": "reply_warn_calm",
-      "mood": "neutral",
-      "text": "It won't happen again.",
-      "voText": "It won't happen again.",
+      "text": "Got it, boss.",
+      "voText": "Got it, boss.",
       "voiced": true
     },
     {
       "id": "player_reply_warn_hot_01",
-      "speaker": "player",
-      "set": "reply_warn_hot",
-      "mood": "angry",
-      "text": "Yeah, yeah. Got it.",
-      "voText": "Yeah, yeah. Got it.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_warn_hot_02",
       "speaker": "player",
       "set": "reply_warn_hot",
       "mood": "angry",
@@ -1570,17 +859,8 @@
       "speaker": "player",
       "set": "reply_let_go_calm",
       "mood": "neutral",
-      "text": "Thanks, boss. I appreciate it.",
-      "voText": "Thanks, boss. I appreciate it.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_let_go_calm_02",
-      "speaker": "player",
-      "set": "reply_let_go_calm",
-      "mood": "neutral",
-      "text": "Cheers. Won't let you down.",
-      "voText": "Cheers. Won't let you down.",
+      "text": "Cheers, boss.",
+      "voText": "Cheers, boss.",
       "voiced": true
     },
     {
@@ -1588,17 +868,8 @@
       "speaker": "player",
       "set": "reply_let_go_hot",
       "mood": "angry",
-      "text": "Good. It wasn't a big deal anyway.",
-      "voText": "Good. It wasn't a big deal anyway.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_let_go_hot_02",
-      "speaker": "player",
-      "set": "reply_let_go_hot",
-      "mood": "angry",
-      "text": "Told you.",
-      "voText": "Told you.",
+      "text": "Told you it was nothing.",
+      "voText": "Told you it was nothing.",
       "voiced": true
     },
     {
@@ -1606,30 +877,12 @@
       "speaker": "player",
       "set": "reply_answer_public_calm",
       "mood": "neutral",
-      "text": "That's fair. I shouldn't have said it.",
-      "voText": "That's fair. I shouldn't have said it.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_answer_public_calm_02",
-      "speaker": "player",
-      "set": "reply_answer_public_calm",
-      "mood": "neutral",
-      "text": "I was out of order. I'll apologise.",
-      "voText": "I was out of order. I'll apologise.",
+      "text": "I was out of order.",
+      "voText": "I was out of order.",
       "voiced": true
     },
     {
       "id": "player_reply_answer_public_hot_01",
-      "speaker": "player",
-      "set": "reply_answer_public_hot",
-      "mood": "angry",
-      "text": "So that's how it is.",
-      "voText": "So that's how it is.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_answer_public_hot_02",
       "speaker": "player",
       "set": "reply_answer_public_hot",
       "mood": "angry",
@@ -1642,17 +895,8 @@
       "speaker": "player",
       "set": "reply_talk_private_calm",
       "mood": "neutral",
-      "text": "Thanks for hearing me out.",
-      "voText": "Thanks for hearing me out.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_talk_private_calm_02",
-      "speaker": "player",
-      "set": "reply_talk_private_calm",
-      "mood": "neutral",
-      "text": "I just want to play, boss. That's all.",
-      "voText": "I just want to play, boss. That's all.",
+      "text": "Thanks for listening.",
+      "voText": "Thanks for listening.",
       "voiced": true
     },
     {
@@ -1660,17 +904,8 @@
       "speaker": "player",
       "set": "reply_talk_private_hot",
       "mood": "angry",
-      "text": "Finally, someone listens.",
-      "voText": "Finally, someone listens.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_talk_private_hot_02",
-      "speaker": "player",
-      "set": "reply_talk_private_hot",
-      "mood": "angry",
-      "text": "About time we talked.",
-      "voText": "About time we talked.",
+      "text": "About time.",
+      "voText": "About time.",
       "voiced": true
     },
     {
@@ -1678,17 +913,8 @@
       "speaker": "player",
       "set": "reply_side_senior_calm",
       "mood": "neutral",
-      "text": "He's right. I'm sorry.",
-      "voText": "He's right. I'm sorry.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_side_senior_calm_02",
-      "speaker": "player",
-      "set": "reply_side_senior_calm",
-      "mood": "neutral",
-      "text": "Okay. I'll learn from it.",
-      "voText": "Okay. I'll learn from it.",
+      "text": "He's right. Sorry.",
+      "voText": "He's right. Sorry.",
       "voiced": true
     },
     {
@@ -1696,17 +922,8 @@
       "speaker": "player",
       "set": "reply_side_senior_hot",
       "mood": "angry",
-      "text": "Of course you side with him.",
-      "voText": "Of course you side with him.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_side_senior_hot_02",
-      "speaker": "player",
-      "set": "reply_side_senior_hot",
-      "mood": "angry",
-      "text": "Brilliant. Thanks a lot.",
-      "voText": "Brilliant. Thanks a lot.",
+      "text": "Course you side with him.",
+      "voText": "Course you side with him.",
       "voiced": true
     },
     {
@@ -1714,17 +931,8 @@
       "speaker": "player",
       "set": "reply_team_meeting_calm",
       "mood": "neutral",
-      "text": "Good. Let's sort it out.",
-      "voText": "Good. Let's sort it out.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_team_meeting_calm_02",
-      "speaker": "player",
-      "set": "reply_team_meeting_calm",
-      "mood": "neutral",
-      "text": "Fair. We needed that.",
-      "voText": "Fair. We needed that.",
+      "text": "We needed that.",
+      "voText": "We needed that.",
       "voiced": true
     },
     {
@@ -1732,17 +940,8 @@
       "speaker": "player",
       "set": "reply_team_meeting_hot",
       "mood": "angry",
-      "text": "Fine. Let's get it over with.",
-      "voText": "Fine. Let's get it over with.",
-      "voiced": true
-    },
-    {
-      "id": "player_reply_team_meeting_hot_02",
-      "speaker": "player",
-      "set": "reply_team_meeting_hot",
-      "mood": "angry",
-      "text": "Waste of time, but okay.",
-      "voText": "Waste of time, but okay.",
+      "text": "Waste of time.",
+      "voText": "Waste of time.",
       "voiced": true
     }
   ]

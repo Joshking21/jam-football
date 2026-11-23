@@ -251,11 +251,11 @@ Morale numbers are scaled by personality: Professional ×0.5 on negatives, Tempe
 - **Tests:** incident chances, the one-per-week priority, each choice's effects, the personality scaling, the consistency rule, the fine to the balance, and the Continue block.
 
 #### 12.20.3 Content (`club.json` additions)
-- **Physio:** knock reads, rush-back offers, warm-up scares, outcomes. ≥ 3 lines each, voiced.
-- **Incidents:** the opener, per kind, ≥ 3 each.
+- **Physio:** knock reads, rush-back offers, warm-up scares, outcomes. 1–2 short lines each, voiced.
+- **Incidents:** the opener, per kind, 1 line each.
 - **Coach lines** for every choice, voiced, `nameSlot` allowed.
-- **Player replies** per choice × personality group (calm, hot-headed): ≥ 2 each.
-- **Theo's advice** per incident: ≥ 2 each.
+- **Player replies** per choice × personality group (calm, hot-headed): 1 each.
+- **Theo's advice** per incident: 1 each.
 
 ---
 

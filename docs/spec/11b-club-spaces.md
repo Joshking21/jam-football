@@ -54,6 +54,7 @@ Concepts: `docs/design/dressing-room/` (team talk) and `docs/design/press/` (pre
   - The skip hint ("Space skip · Esc skip to choice") shows small in a corner.
 - **Choice beats** (your turn): the scene holds on an idle shot. The people keep breathing, blinking and glancing; nobody talks. The **choice card** slides up on screen with the options and nothing else: for a team talk, the 6 tones with each one's predicted reaction (§12.8); for press, the 3 answers; and so on. Pick with a click, number keys `1`–`6` or arrows and Enter. There is no timer.
 - **After the choice,** the card slides away and the scene continues: the coach says the chosen line (voiced), the room reacts (§14.11.2), and either more talk follows or the scene ends. A short "How they took it" summary (one line per group of players) shows for 3 s after a team talk, then fades. It is also kept in the Half-Time and Full-Time screen's history.
+- **Scenes talk less (the user, 23 Nov):** at most **one** speaking line before a choice (an opener from whoever matters most) and **one** after it (the reaction), plus the chosen line itself. Lines are short (usually under 12 words). The Board Meeting is: owner's welcome → the offer card (expectation, budgets and notes are on the card, not read aloud) → choice → Theo's one-line welcome outside.
 - **Team talk order:**
   1. The coach walks into the middle.
   2. A short opener from Theo or the coach (speaking beat).
