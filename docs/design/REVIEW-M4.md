@@ -73,3 +73,62 @@ The HUD shell is a good start: the scoreboard bug, the control strip and the tim
 Everything that depends on lighting: the grade, haze, beams over the pitch, grass and stripes, the wet pitch, kits and skin, contact shadows, and the goal replays. They're reviewed in the second pass, from the B3 capture states.
 
 The non-match screens changed after these captures (Tactics v5, M5 screens). They're covered by the M3 second pass and the M7 review, not here.
+
+---
+
+# Second pass (23 Nov)
+
+Screens: the new `docs/screens/M4/` captures from 4a84c2f (13 match states plus all screens, at 1280 and 1920).
+
+## Verdict: not passed yet, but big progress
+**Fixed:**
+- **B1 lighting:** the pitch is lit and players are visible.
+- **B2 clock:** reads `00:00`, and has a formatter with tests.
+- **B3 capture pipeline:** it overwrites, uses WebGL, has a brightness guard, and captures 2 sizes and the new match states.
+- **M2 Pre-Match:** Matchday 1, named key battles with numbers, Os with numbers and surnames, Theo's line with a reason, and better composition.
+- **M3 ticker:** now carries real fixtures, form and medical news.
+
+**Order for Gemini:** fix S1–S4 as one task now (before M5.6 continues), then S5–S10. Recapture, then write `REVIEW REQUESTED: M4 (third pass)`.
+
+## Blockers
+**S1. Kits aren't the clubs' colours.** In every capture, both teams wear white or grey, so you can't tell them apart. Apply §9.2 club kits through §14.2 (recolour `Shirt`, `Shorts`, `Socks`; pattern and number canvas). Port Calloway is navy and gold. Use the away kit when the colours clash (§9.2). The capsule/procedural fallback must use the same colours (ART-DIRECTION §3.6). Add a check that the two teams' shirt colours differ by ΔE ≥ 25.
+
+**S2. Players are in the wrong places, and never move.**
+- At kick-off, both teams are mixed across both halves. They must stand in their own halves in formation (§14.3 kick-off).
+- The 22 players are in **exactly the same spots** in kick-off, goal, replay, afternoon, rain and time-lapse. Either the capture freezes the first frame, or the choreographer isn't driving positions. Check it in live play.
+- Captures must show the moment they're named for: players in shape at kick-off, a goalmouth scramble for a goal, and so on.
+
+**S3. Capture states still don't show what they claim.**
+- **"goal":** the score is 0–0 and there's no goal banner.
+- **"replay":** no letterbox and no replay badge.
+- **Half-time:** 1–0, but 0 shots and 0.00 xG.
+- **Full-time:** 6–3, 29 shots, man of the match rated 10.0.
+
+These are faked or mismatched states. As asked twice before: **play a real seeded match with the engine, then jump to the event** (the first goal's event time for "goal", its replay for "replay", HT and FT from the same match). The banner, letterbox and stats must come from that match.
+
+**S4. SPEC references are printed in the game's text.** Full-time shows "Match Analysis (SPEC §13.18.12)", and Pre-Match shows "DECISIVE MATCHUPS (SPEC §13.17.7)". Never show spec references, task ids or dev labels to the player ("SHOT MAP (2D PITCH)" too). `grep -rn "SPEC" src/ui` must return only code comments.
+
+## Major
+**S5. The floodlight pools show as hard shapes.** The cones draw visible geometric edges and dark wedges on the grass.
+- Soften: penumbra 0.35 → about 0.85, widen the angle so the four pools overlap, and raise the hemisphere fill a little.
+- The target is even TV lighting, brightest in the middle and slightly darker in the corners (ART-DIRECTION §3.3).
+- At night, **a black triangle sits in the middle of the far stand** (between the two blocks under the roof line). Close the gap with stand or roof geometry, or a back wall.
+
+**S6. Grass colour.** It's light lime at night and minty-cyan in the afternoon. ART-DIRECTION §3.5 wants a deep pitch averaging `#3E6B2F` dry, with visible mowing stripes (±6%).
+- Check whether the grade gain or saturation is applied twice (the composer plus ACES on the renderer, §14.10), and whether the grass albedo is sRGB-tagged.
+- Measure the mean pitch colour in a capture and log it.
+
+**S7. Rain washes out the whole frame.** Grey haze covers everything. Rain adds only `+0.0008` haze density (ART-DIRECTION §3.2). Keep the far stand visible, and the floodlights should streak on the wet grass (§14.10), not fog the air.
+
+**S8. Half-time and full-time are small cards in a big empty dark screen.**
+- They're on-air moments. Make them full-height broadcast panels: a score band with scorers and minutes, the stats in large type, the shot map and the xG timeline side by side, and a man-of-the-match card with his printed portrait.
+- Don't over-build: in M6b these move into the dressing room as the panel that sits in the scene (§11.25), so build them as one reusable panel component.
+
+**S9. Name tags on the tactical camera are still unreadable,** about 6 px. Minimum 12 px (Barlow Condensed 600) on a kit-colour chip; on the tactical camera, all players show tags.
+
+**S10. Labels and names:**
+- On Pre-Match, "THROUGH THE MIDDLE" still covers a red O (#5): move it into clear space.
+- The right drawer is titled "Touchline Intelligence". Call it what it is: **"Theo"**, with his portrait and role.
+
+## Minor
+- **N3. Ratings:** a 10.0 rating should be almost impossible (§13.14). Check the rating cap and its spread over a calibration run: the max should be about 9.5, and a 10 very rare.
