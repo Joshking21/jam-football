@@ -8,7 +8,11 @@ import {
   Player,
   SquadRole,
   TransferOffer,
+  MatchPrep,
+  IndividualFocus,
+  StaffMember,
 } from '@/core/types';
+import { replaceStaffMember } from '@/core/club/clubDepth';
 import { GameSettings, loadSettings, saveSettings } from './settings';
 import { getSaveMeta, loadGame, saveGame, SaveMeta, triggerDebouncedAutosave } from './saves';
 import { createNewGame, NewGameOptions } from '@/core/game/newGame';
@@ -124,6 +128,10 @@ export interface AppState {
   requestBoardWageIncrease: () => { success: boolean; message: string };
   toggleShortlist: (id: PlayerId) => void;
   isShortlisted: (id: PlayerId) => boolean;
+  setMatchPrep: (prep: MatchPrep) => void;
+  setPlayerRest: (playerId: PlayerId, rest: boolean) => void;
+  setPlayerIndividualFocus: (playerId: PlayerId, focus: IndividualFocus | null) => void;
+  hireStaffMember: (newStaff: StaffMember) => { success: boolean; message: string };
 }
 
 export const useStore = create<AppState>((set, get) => {
@@ -801,6 +809,95 @@ export const useStore = create<AppState>((set, get) => {
     isShortlisted: (id: PlayerId) => {
       const state = get().gameState;
       return state?.shortlist?.includes(id) ?? false;
+    },
+
+    setMatchPrep: (prep: MatchPrep) => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const club = next.clubs[next.userClubId];
+      if (!club) return;
+      club.prep = prep;
+      club.trainingPlan.prep = prep;
+      set({ gameState: next });
+      get().showToast(
+        prep === 'None' ? 'Match preparation cleared' : `Match preparation set: ${prep}`,
+        'info',
+      );
+      triggerDebouncedAutosave(next);
+    },
+
+    setPlayerRest: (playerId: PlayerId, rest: boolean) => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const player = next.players[playerId];
+      if (!player) return;
+      player.rest = rest;
+      set({ gameState: next });
+      get().showToast(
+        rest
+          ? `${player.knownAs ?? player.lastName} scheduled for rest days (+8 cond / -6 fat)`
+          : `${player.knownAs ?? player.lastName} returned to full training schedule`,
+        'info',
+      );
+      triggerDebouncedAutosave(next);
+    },
+
+    setPlayerIndividualFocus: (playerId: PlayerId, focus: IndividualFocus | null) => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const club = next.clubs[next.userClubId];
+      if (!club) return;
+      if (!club.trainingPlan.individualFocus) club.trainingPlan.individualFocus = {};
+      club.trainingPlan.individualFocus[playerId] = focus;
+
+      if (focus?.type === 'attribute') {
+        club.trainingPlan.individual[playerId] = focus.attribute;
+      } else {
+        club.trainingPlan.individual[playerId] = null;
+      }
+
+      set({ gameState: next });
+      const player = next.players[playerId];
+      const pName = player?.knownAs ?? player?.lastName ?? 'Player';
+      get().showToast(
+        focus
+          ? `Individual focus set for ${pName}: ${focus.type === 'attribute' ? focus.attribute : focus.type === 'role' ? focus.roleId : focus.position}`
+          : `Individual focus cleared for ${pName}`,
+        'success',
+      );
+      triggerDebouncedAutosave(next);
+    },
+
+    hireStaffMember: (newStaff: StaffMember) => {
+      const state = get().gameState;
+      if (!state) return { success: false, message: 'No game state' };
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const club = next.clubs[next.userClubId];
+      if (!club) return { success: false, message: 'Club not found' };
+
+      if (club.staffReplacedThisRound) {
+        get().showToast('Staff replacements are limited to one per window round.', 'warning');
+        return {
+          success: false,
+          message: 'Staff replacements are limited to one per window round.',
+        };
+      }
+
+      const res = replaceStaffMember(club, newStaff, next.matchday);
+      next.clubs[next.userClubId] = res.club;
+      next.counters.inbox++;
+      next.inbox.unshift(res.memo);
+
+      set({ gameState: next });
+      get().showToast(
+        `Appointed ${newStaff.name} as ${newStaff.role}. Severance paid: ${formatMoney(res.cost)}.`,
+        'success',
+      );
+      triggerDebouncedAutosave(next);
+      return { success: true, message: `Appointed ${newStaff.name} successfully.` };
     },
   };
 });

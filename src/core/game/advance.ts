@@ -40,6 +40,12 @@ import {
 import { checkConversationTriggers, evaluatePromisesAfterMatch } from '../player/conversations';
 import { generateMatchNews, checkRivalRumour } from '../news/news';
 import { advanceWindowRound } from '../transfers/transfers';
+import {
+  applyPositionTraining,
+  computeWeeklyCohesion,
+  applyMoraleSpread,
+  initClubStaff,
+} from '../club/clubDepth';
 
 export interface LineupValidationResult {
   valid: boolean;
@@ -138,24 +144,33 @@ export function buildTeamSheet(
     };
   }
 
+  const prep = club.prep ?? 'None';
+  let familiarity = club.formationFamiliarity[club.tactics.formation] ?? 70;
+  if (prep === 'Shape') {
+    familiarity = Math.min(100, familiarity + BALANCE.club.prepBonusShapeFamiliarity);
+  }
+
   let trainingBonus = { attack: 0, defence: 0, setPieces: 0 };
+  const bonusMultiplier = prep !== 'None' ? 0.5 : 1.0;
   if (club.trainingPlan.focus === 'Attacking') {
-    trainingBonus.attack = 0.08;
+    trainingBonus.attack = 0.08 * bonusMultiplier;
   } else if (club.trainingPlan.focus === 'Defending') {
-    trainingBonus.defence = 0.08;
+    trainingBonus.defence = 0.08 * bonusMultiplier;
   } else if (club.trainingPlan.focus === 'SetPieces') {
-    trainingBonus.setPieces = 0.12;
+    trainingBonus.setPieces = 0.12 * bonusMultiplier;
   }
 
   return {
     clubId: club.id,
     side,
     tactics: JSON.parse(JSON.stringify(club.tactics)),
-    familiarity: club.formationFamiliarity[club.tactics.formation] ?? 70,
+    familiarity,
     areaFamiliarity: club.familiarity,
     players: sheetPlayers,
     trainingBonus,
     focusBoost,
+    cohesion: club.cohesion ?? 55,
+    prep,
   };
 }
 
@@ -618,19 +633,46 @@ export function runWeeklyProcessing(state: GameState): GameState {
     const focus = club?.trainingPlan.focus ?? 'Balanced';
     const playedMinutes = p.stats.minutesLastMatch ?? 0;
 
-    // Condition recovery (§12.1, §12.2)
-    const condRec = calculateWeeklyConditionRecovery({
-      stamina: p.attributes.stamina,
-      intensity,
-      focus,
-      playedMinutes,
-      fatigue: p.fatigue,
-    });
-    p.condition = clamp(Math.round(p.condition + condRec), 0, 100);
+    // Condition recovery (§12.1, §12.2, §12.17.3)
+    if (p.rest) {
+      p.condition = clamp(p.condition + BALANCE.club.restConditionGain, 0, 100);
+      p.fatigue = clamp(p.fatigue - BALANCE.club.restFatigueReduction, 0, 100);
+      if (p.condition >= 90) {
+        p.consecutiveRestWeeks = (p.consecutiveRestWeeks ?? 0) + 1;
+        if (p.consecutiveRestWeeks >= 3) {
+          p.morale = clamp(p.morale + BALANCE.club.restConsecutiveWeeksMoralePenalty, 0, 100);
+          if (p.clubId === next.userClubId) {
+            next.counters.inbox++;
+            const pName = p.knownAs ?? `${p.firstName} ${p.lastName}`;
+            next.inbox.unshift({
+              id: `inbox_${next.counters.inbox}`,
+              matchday: currentMatchday,
+              kind: 'Player',
+              title: `Player Discontent: ${pName}`,
+              body: `${pName} is fully fit but has been given rest days for three consecutive weeks. He has expressed frustration at missing regular training sessions.`,
+              read: false,
+              requiresAction: false,
+            });
+          }
+        }
+      } else {
+        p.consecutiveRestWeeks = 0;
+      }
+    } else {
+      p.consecutiveRestWeeks = 0;
+      const condRec = calculateWeeklyConditionRecovery({
+        stamina: p.attributes.stamina,
+        intensity,
+        focus,
+        playedMinutes,
+        fatigue: p.fatigue,
+      });
+      p.condition = clamp(Math.round(p.condition + condRec), 0, 100);
 
-    // Fatigue recovery (§12.2)
-    const fatRec = calculateWeeklyFatigueRecovery(intensity);
-    p.fatigue = clamp(Math.round(p.fatigue - fatRec), 0, 100);
+      // Fatigue recovery (§12.2)
+      const fatRec = calculateWeeklyFatigueRecovery(intensity);
+      p.fatigue = clamp(Math.round(p.fatigue - fatRec), 0, 100);
+    }
 
     // Training injury check per SPEC §12.3 (only for healthy players)
     if (!p.injury && p.clubId) {
@@ -639,6 +681,10 @@ export function runWeeklyProcessing(state: GameState): GameState {
       );
       const trainingInj = checkTrainingInjury(trainRng, intensity, p.fatigue);
       if (trainingInj) {
+        const physioStars = club?.staff?.physio.stars ?? 3;
+        const physioFactor =
+          BALANCE.club.physioInjuryLenBase - BALANCE.club.physioInjuryLenPerStar * physioStars;
+        trainingInj.matchdaysOut = Math.max(1, Math.round(trainingInj.matchdaysOut * physioFactor));
         p.injury = trainingInj;
         if (p.clubId === next.userClubId) {
           next.counters.inbox++;
@@ -681,16 +727,52 @@ export function runWeeklyProcessing(state: GameState): GameState {
       p.suspendedMatches = Math.max(0, p.suspendedMatches - 1);
     }
 
-    // Fractional Development & Age Decline (§12.4)
-    const devRng = createRng(deriveSeed(next.seed, 'player-dev', `${currentMatchday}-${p.id}`));
-    const devRes = processPlayerDevelopment(p, {
-      focus,
-      intensity,
-      minutesLastMatch: playedMinutes,
-      individualFocus: club?.trainingPlan.individual[p.id] ?? null,
-      rng: devRng,
-    });
-    next.players[id] = devRes.player;
+    // Fractional Development & Age Decline (§12.4, §12.17.4)
+    if (!p.rest) {
+      const coachStars = club?.staff?.coach.stars ?? 3;
+      let coachDevFactor = BALANCE.club.coachDevBase + BALANCE.club.coachDevPerStar * coachStars;
+      if (club?.prep && club.prep !== 'None') {
+        coachDevFactor *= BALANCE.club.prepDevPenalty;
+      }
+
+      // Individual Position Training (SPEC §12.17.4)
+      const indFocus = club?.trainingPlan.individualFocus?.[p.id];
+      let positionTrained = false;
+      if (indFocus?.type === 'position') {
+        const posRes = applyPositionTraining(p, indFocus.position, coachStars, playedMinutes > 0);
+        p.positions = posRes.player.positions;
+        positionTrained = true;
+        if (posRes.reachedThreshold && p.clubId === next.userClubId) {
+          next.counters.inbox++;
+          const pName = p.knownAs ?? `${p.firstName} ${p.lastName}`;
+          next.inbox.unshift({
+            id: `inbox_${next.counters.inbox}`,
+            matchday: currentMatchday,
+            kind: 'Player',
+            title: `Position Mastery: ${pName}`,
+            body: `${pName} has adapted to playing at ${indFocus.position} and is now fully comfortable in that role (familiarity 85+).`,
+            read: false,
+            requiresAction: false,
+          });
+        }
+      }
+
+      const devRng = createRng(deriveSeed(next.seed, 'player-dev', `${currentMatchday}-${p.id}`));
+      const devRes = processPlayerDevelopment(p, {
+        focus,
+        intensity,
+        minutesLastMatch: playedMinutes,
+        individualFocus: positionTrained ? null : (club?.trainingPlan.individual[p.id] ?? null),
+        rng: devRng,
+      });
+
+      if (positionTrained) coachDevFactor *= 0.8;
+      if (devRes.player.growth > p.growth) {
+        const gained = devRes.player.growth - p.growth;
+        devRes.player.growth = p.growth + gained * coachDevFactor;
+      }
+      next.players[id] = devRes.player;
+    }
   }
 
   // 2. Club Weekly Finances & Fan Mood Drift (§12.10, §12.14)
@@ -701,15 +783,23 @@ export function runWeeklyProcessing(state: GameState): GameState {
     club.seasonStats.tvIncome += BALANCE.finances.tvIncomeWeekly;
     club.seasonStats.sponsorIncome += sponsor;
 
-    // Expenses: wages + operating
+    // Expenses: wages + operating + staff
     let squadWages = 0;
     for (const pId of club.squad) {
       const p = next.players[pId];
       if (p?.contract) squadWages += p.contract.wagePerWeek;
     }
     const operating = BALANCE.finances.operatingCostPerReputation * club.reputation;
-    club.balance -= squadWages + operating;
-    club.seasonStats.wagesPaid += squadWages;
+    let staffWages = 0;
+    if (club.staff) {
+      staffWages =
+        club.staff.assistant.wage +
+        club.staff.coach.wage +
+        club.staff.scout.wage +
+        club.staff.physio.wage;
+    }
+    club.balance -= squadWages + operating + staffWages;
+    club.seasonStats.wagesPaid += squadWages + staffWages;
     club.seasonStats.operating += operating;
 
     // Fan mood drift towards 60 by 1 per week (§12.14)
@@ -729,6 +819,26 @@ export function runWeeklyProcessing(state: GameState): GameState {
         club.boardConfidence + BALANCE.board.balanceNegativePenalty,
       );
     }
+
+    // Dressing room cohesion & morale spread (§12.17.5)
+    const cohRes = computeWeeklyCohesion(club, next.players);
+    club.cohesion = cohRes.newCohesion;
+    if (!club.cohesionHistory) club.cohesionHistory = [];
+    for (const r of cohRes.reasons) {
+      club.cohesionHistory.unshift({
+        matchday: currentMatchday,
+        reason: r,
+        delta: cohRes.delta,
+      });
+    }
+    if (club.cohesionHistory.length > 5) {
+      club.cohesionHistory = club.cohesionHistory.slice(0, 5);
+    }
+    next.players = applyMoraleSpread(club, next.players);
+
+    // Reset match prep and staff replacement for the new week
+    club.prep = 'None';
+    club.staffReplacedThisRound = false;
   }
 
   // 3. User Club Sacking & Board Warnings (§12.7, §12.11)

@@ -143,6 +143,8 @@ export interface Player {
   history: { matchday: number; event: string }[]; // e.g. 'Signed from Ironvale for €4.2M'
   promise?: PlayerPromise | null; // active promise (§12.9)
   traits?: string[];
+  rest?: boolean; // rested this week (§12.17.3)
+  consecutiveRestWeeks?: number;
 }
 
 // --- 8.4 Tactics ---
@@ -318,10 +320,36 @@ export interface Kit {
 
 export type Intensity = 'Light' | 'Normal' | 'Hard';
 
+export type MatchPrep = 'None' | 'SetPieces' | 'Press' | 'Wingers' | 'Shape';
+
+export type IndividualFocus =
+  | { type: 'attribute'; attribute: AttributeKey }
+  | { type: 'role'; roleId: RoleId }
+  | { type: 'position'; position: Position };
+
+export type StaffRole = 'assistant' | 'coach' | 'scout' | 'physio';
+
+export interface StaffMember {
+  id: string;
+  role: StaffRole;
+  name: string;
+  stars: 1 | 2 | 3 | 4 | 5;
+  wage: number;
+}
+
+export interface ClubStaff {
+  assistant: StaffMember;
+  coach: StaffMember;
+  scout: StaffMember;
+  physio: StaffMember;
+}
+
 export interface TrainingPlan {
   focus: 'Balanced' | 'Attacking' | 'Defending' | 'Fitness' | 'SetPieces' | 'Tactical';
   intensity: Intensity;
   individual: Record<PlayerId, AttributeKey | null>;
+  individualFocus?: Record<PlayerId, IndividualFocus | null>;
+  prep?: MatchPrep;
 }
 
 export interface Club {
@@ -350,6 +378,11 @@ export interface Club {
   tactics: Tactics;
   squad: PlayerId[];
   trainingPlan: TrainingPlan;
+  staff?: ClubStaff;
+  cohesion?: number; // 0–100, default 55 (§12.17.5)
+  cohesionHistory?: { matchday: number; reason: string; delta: number }[];
+  prep?: MatchPrep; // for next match only (§12.17.2)
+  staffReplacedThisRound?: boolean;
   seasonStats: {
     gateIncome: number;
     tvIncome: number;
@@ -630,6 +663,8 @@ export interface TeamSheet {
   >;
   trainingBonus: { attack: number; defence: number; setPieces: number }; // z-units, §12.3
   focusBoost: number; // from team talk, §12.8
+  cohesion?: number; // §12.17.5
+  prep?: MatchPrep; // §12.17.2
 }
 
 export interface MatchInput {

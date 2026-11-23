@@ -9,6 +9,7 @@ import { Portrait } from '../components/Portrait';
 import { formatMoney } from '../../core/math';
 import { Stamp } from '../components/Stamp';
 import { Star, AlertTriangle, ShieldAlert, HeartCrack, Search } from 'lucide-react';
+import { getClubLeaders, getInjuryRisk } from '../../core/club/clubDepth';
 
 type SquadFilter = 'ALL' | 'GK' | 'DEF' | 'MID' | 'FWD' | 'INJURED' | 'UNHAPPY';
 
@@ -25,6 +26,9 @@ export const SquadScreen: React.FC = () => {
 
   const userClub = gameState.clubs[gameState.userClubId];
   if (!userClub) return null;
+
+  const leaders = getClubLeaders(userClub, gameState.players);
+  const leaderIds = useMemo(() => new Set(leaders.map((l) => l.id)), [leaders]);
 
   const squadPlayers: Player[] = userClub.squad
     .map((id) => gameState.players[id])
@@ -321,6 +325,7 @@ export const SquadScreen: React.FC = () => {
                 >
                   Cond
                 </th>
+                <th style={{ padding: '12px 14px', width: '65px' }}>Risk</th>
                 <th style={{ padding: '12px 14px', width: '70px' }}>Morale</th>
                 <th style={{ padding: '12px 14px', width: '90px' }}>Form</th>
                 <th
@@ -425,8 +430,26 @@ export const SquadScreen: React.FC = () => {
                           size={32}
                         />
                         <div>
-                          <div style={{ fontWeight: 600, color: 'var(--text)' }}>
-                            {player.knownAs ?? `${player.firstName} ${player.lastName}`}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ fontWeight: 600, color: 'var(--text)' }}>
+                              {player.knownAs ?? `${player.firstName} ${player.lastName}`}
+                            </div>
+                            {leaderIds.has(player.id) && (
+                              <span
+                                title="Dressing Room Leader (§12.17.5)"
+                                className="broadcast-label"
+                                style={{
+                                  backgroundColor: 'rgba(235, 175, 40, 0.2)',
+                                  color: 'var(--gold)',
+                                  padding: '1px 5px',
+                                  borderRadius: '2px',
+                                  fontSize: '9px',
+                                  fontWeight: 700,
+                                }}
+                              >
+                                LEADER
+                              </span>
+                            )}
                           </div>
                           <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
                             {player.nationality} · {player.foot} footed
@@ -520,6 +543,45 @@ export const SquadScreen: React.FC = () => {
                           {player.condition}%
                         </span>
                       </div>
+                    </td>
+
+                    {/* Injury Risk */}
+                    <td style={{ padding: '10px 14px' }}>
+                      {(() => {
+                        const risk = getInjuryRisk(player, userClub.staff?.physio.stars ?? 3);
+                        const badgeColor =
+                          risk.level === 'High'
+                            ? 'var(--loss)'
+                            : risk.level === 'Medium'
+                              ? 'var(--warning)'
+                              : 'var(--win)';
+                        const badgeBg =
+                          risk.level === 'High'
+                            ? 'rgba(255, 77, 94, 0.15)'
+                            : risk.level === 'Medium'
+                              ? 'rgba(255, 176, 32, 0.15)'
+                              : 'rgba(56, 176, 0, 0.15)';
+                        return (
+                          <span
+                            title={risk.reasons.join(', ') || 'Normal physical load'}
+                            className="broadcast-label"
+                            style={{
+                              backgroundColor: badgeBg,
+                              color: badgeColor,
+                              padding: '2px 5px',
+                              borderRadius: '2px',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                            }}
+                          >
+                            {risk.level === 'High'
+                              ? 'HIGH'
+                              : risk.level === 'Medium'
+                                ? 'MED'
+                                : 'LOW'}
+                          </span>
+                        );
+                      })()}
                     </td>
 
                     {/* Morale */}

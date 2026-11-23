@@ -120,6 +120,28 @@ REVIEW REQUESTED: M4 (third pass)
     - **Right Rail & Board Requests:** Live window status panel (Closed / Day 1-2 / Deadline Day), advance day action, board wage budget request button (+10% wage budget per §12.13.6), budget meters, active scout assignments with free slot dispatch, and Theo Vance's contextual advice.
     - Added unit tests in `tests/core/transfers/transfers.test.ts` verifying knowledge percentage calculation, new game shortlist initialization, and board wage budget request behavior.
 
+## 2026-11-23 · M5.7 Club depth: staff, match prep, rest days, dressing room, and injury risk
+- Changed: src/config/balance.ts, src/core/club/clubDepth.ts, src/core/game/advance.ts, src/core/game/newGame.ts, src/core/match/engine.ts, src/core/types.ts, src/state/store.ts, src/ui/screens/ClubScreen.tsx, src/ui/screens/SquadScreen.tsx, src/ui/screens/TrainingScreen.tsx, tests/core/club/clubDepth.test.ts, tests/core/game/financesAndBoard.test.ts
+- Ran:
+  - `npm run check`:
+    - `prettier --check .` PASS
+    - `tsc --noEmit` PASS
+    - `vitest run`: 36 test files passed (245 tests passed in 51.67s) PASS
+    - `vite build`: main chunk 1,368.11 kB (gzip 298.82 kB <= 350 kB budget) / three.js chunk 489.80 kB, built in 23.66s PASS
+- Notes:
+  - Implemented Milestone M5 Task 7 (SPEC §12.17 Club Depth):
+    - **Staff System (§12.17.1):** 4 technical staff members per club (assistant Theo Vance fixed at 3★, first-team coach, head of scouting, club physio). Starting stars scaled with reputation. Staff wages computed as `1,500 * stars^2` and deducted weekly in finances. Staff replacement flow active during transfer window rounds with candidate generation (3 options per role) and 4 weeks' severance pay to departing staff member.
+    - **Match Preparation (§12.17.2):** `SetPieces`, `Press`, `Wingers`, `Shape` options in training schedule. Applies opposition-tailored tactical modifiers during match engine resolution (SetPieces duel modifier -0.12, Press passing bonus +0.15 against High/Mid press, Wingers containment -0.12, Shape formation familiarity +8). Active prep halves team focus bonus and reduces weekly development by 15%.
+    - **Rest Days Regime (§12.17.3):** Per-player weekly rest toggle granting +8 condition and -6 fatigue with development paused. Tracks consecutive rest weeks; fit players (condition >= 90) rested 3 consecutive weeks receive morale -5 penalty ("Wants to train") and an inbox memo.
+    - **Individual Training (§12.17.4):** Single focus selectable as Attribute (+focus growth), Role (40% development redirected to role key attributes), or Position retraining (familiarity gain per week scaled by coach stars, capped at 95, triggering inbox memo on reaching 85).
+    - **Dressing Room Atmosphere & Hierarchy (§12.17.5):** Evaluates top 3 squad leaders by `leaderScore = (Leader ? 30 : 0) + (captain ? 20 : 0) + (Professional ? 8 : 0) + age * 0.8 + min(apps, 40) * 0.5`. Weekly cohesion (0-100, starting at 55 for user) clamped to `[-6, +6]` change, driven by leader morale drift `(mean - 55) / 10`, match results (win +1, loss -1), broken promises (-5), and new signings (-2). Weekly morale spread pulls non-leaders 10% toward leaders' mean morale. In-match execution modifier `(cohesion - 50) / 1000` scales tactical performance across all phases.
+    - **Injury Risk Assessment (§12.17.6):** Display-only Low / Medium / High hazard calculation derived from condition deficit, fatigue load, and physio stars, displaying specific risk factors (Age 30+ load recovery, high fatigue, match conditioning deficit). Rendered as chips in Squad and Training screens.
+    - **UI Screen Updates:**
+      - `ClubScreen.tsx`: Added `DRESSING_ROOM` tab (cohesion meter, tactical execution modifier, 3 leaders cards, cohesion event history) and `STAFF` tab (4 staff cards with star ratings, wage breakdown, perks, and interactive replacement candidate modal). Included staff payroll in `FINANCES` tab ledger.
+      - `TrainingScreen.tsx`: Integrated interactive Match Preparation selector with mechanic breakdown and cost warning, squad individual training table with rest day toggles, grouped focus select (Attribute, Role, Position with current familiarity), and injury risk chips.
+      - `SquadScreen.tsx`: Added `LEADER` badge on top 3 squad leaders and dedicated `Risk` column with Low/Med/High chips and hover reasons.
+    - Added comprehensive unit test suite in `tests/core/club/clubDepth.test.ts` (16 tests covering all pure logic, formulas, clamping, and edge cases).
+
 
 
 

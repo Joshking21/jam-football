@@ -79,10 +79,23 @@ describe('Finances, Board and Fans System (SPEC §12.7, §12.10, §12.14)', () =
         const p = state.players[pId];
         if (p?.contract) squadWages += p.contract.wagePerWeek;
       }
+      let staffWages = 0;
+      if (club.staff) {
+        staffWages =
+          club.staff.assistant.wage +
+          club.staff.coach.wage +
+          club.staff.scout.wage +
+          club.staff.physio.wage;
+      }
       const operating = BALANCE.finances.operatingCostPerReputation * club.reputation;
       const sponsor = BALANCE.finances.sponsorIncomeWeekly[club.reputation] ?? 400_000;
       const expectedBalance =
-        initialBalance + BALANCE.finances.tvIncomeWeekly + sponsor - squadWages - operating;
+        initialBalance +
+        BALANCE.finances.tvIncomeWeekly +
+        sponsor -
+        squadWages -
+        staffWages -
+        operating;
 
       const processed = runWeeklyProcessing(state);
       const updatedClub = processed.clubs['c01']!;
@@ -90,7 +103,7 @@ describe('Finances, Board and Fans System (SPEC §12.7, §12.10, §12.14)', () =
       expect(updatedClub.balance).toBe(expectedBalance);
       expect(updatedClub.seasonStats.tvIncome).toBe(BALANCE.finances.tvIncomeWeekly);
       expect(updatedClub.seasonStats.sponsorIncome).toBe(sponsor);
-      expect(updatedClub.seasonStats.wagesPaid).toBe(squadWages);
+      expect(updatedClub.seasonStats.wagesPaid).toBe(squadWages + staffWages);
       expect(updatedClub.seasonStats.operating).toBe(operating);
     });
 

@@ -20,10 +20,10 @@
         }
       ],
       "reactions": {
-        "positive": "The squad looks composed and ready for business.",
-        "neutral": "Players nod quietly in agreement.",
-        "negative": "A couple of players seem overly relaxed.",
-        "mixed": "Most nod quietly, though a few seem almost too relaxed."
+        "positive": "Settled. Quiet, but switched on.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Too flat. Somebody yawns.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Motivate": {
@@ -46,10 +46,10 @@
         }
       ],
       "reactions": {
-        "positive": "The squad roars in approval, ready to run through brick walls.",
-        "neutral": "Players clap their hands and look focused.",
-        "negative": "Some players look like they feel the weight of expectation.",
-        "mixed": "Energy levels rise across the room, with a few looking slightly tense."
+        "positive": "Buzzing. Studs drumming on the floor.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Polite nods. Nobody quite buys it.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Demand": {
@@ -72,10 +72,10 @@
         }
       ],
       "reactions": {
-        "positive": "The squad embraces the challenge with steely determination.",
-        "neutral": "The room falls dead silent as players take on the mandate.",
-        "negative": "A few look irritated by the unnecessary pressure.",
-        "mixed": "The ambitious starters look fired up, while younger players look uneasy."
+        "positive": "Jaws set. They're ready.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Too much. The room's gone tight.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Praise": {
@@ -98,10 +98,10 @@
         }
       ],
       "reactions": {
-        "positive": "Chest out, heads high—the squad feels appreciated.",
-        "neutral": "Players smile and acknowledge the tribute.",
-        "negative": "Some players glance around, wondering if praise before kickoff is wise.",
-        "mixed": "Smiles all around, though the captain quickly reminds them to stay focused."
+        "positive": "Buzzing. Studs drumming on the floor.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Polite nods. Nobody quite buys it.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Disappoint": {
@@ -124,10 +124,10 @@
         }
       ],
       "reactions": {
-        "positive": "A few fiery leaders take the criticism and channel it into venom.",
-        "neutral": "Players look down at the floor, chastened.",
-        "negative": "Murmurs of frustration spread across the dressing room.",
-        "mixed": "Tension fills the air; some are stung while others look resentful."
+        "positive": "Jaws set. They're ready.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Too much. The room's gone tight.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Focus": {
@@ -150,10 +150,10 @@
         }
       ],
       "reactions": {
-        "positive": "Players lock in completely, absorbing the tactical specifics.",
-        "neutral": "Heads nod in methodical understanding.",
-        "negative": "One or two players look burdened by the extra instructions.",
-        "mixed": "Defenders and midfielders look sharpened, while forwards look anxious."
+        "positive": "Settled. Quiet, but switched on.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Too flat. Somebody yawns.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     }
   },
@@ -178,10 +178,10 @@
         }
       ],
       "reactions": {
-        "positive": "A collective sigh of relief as pressure lifts off the squad.",
-        "neutral": "Players settle into a determined, grounded mood.",
-        "negative": "Some appear too passive for an underdog battle.",
-        "mixed": "The squad appears calm and quiet, absorbing the underdog mantle."
+        "positive": "Settled. Quiet, but switched on.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Too flat. Somebody yawns.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Motivate": {
@@ -204,10 +204,10 @@
         }
       ],
       "reactions": {
-        "positive": "Thunderous applause and raised fists—the squad is pumped full of adrenaline.",
-        "neutral": "Players look fiercely motivated to cause an upset.",
-        "negative": "A couple of youngsters look overwhelmed by the intensity.",
-        "mixed": "Passionate energy sweeps the room, with only a few showing nerves."
+        "positive": "Buzzing. Studs drumming on the floor.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Polite nods. Nobody quite buys it.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Demand": {
@@ -230,10 +230,10 @@
         }
       ],
       "reactions": {
-        "positive": "A handful of fighters nod aggressively, relish the fight.",
-        "neutral": "Stiff postures and grim faces take in the harsh demands.",
-        "negative": "Heads drop; the pressure feels suffocating given the odds.",
-        "mixed": "The tough tacklers embrace it, but morale takes a slight knock overall."
+        "positive": "Jaws set. They're ready.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Too much. The room's gone tight.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Praise": {
@@ -256,10 +256,10 @@
         }
       ],
       "reactions": {
-        "positive": "Players stand taller, bolstered by the manager's faith.",
-        "neutral": "A warm, appreciative murmur ripples through the squad.",
-        "negative": "A few look sceptical given the gulf in reputation.",
-        "mixed": "Heartfelt nods from veterans, though some still look cautious."
+        "positive": "Buzzing. Studs drumming on the floor.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Polite nods. Nobody quite buys it.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Disappoint": {
@@ -282,10 +282,10 @@
         }
       ],
       "reactions": {
-        "positive": "Defiant glares from proud leaders who refuse to be insulted.",
-        "neutral": "A sullen, uncomfortable silence hangs over the room.",
-        "negative": "Morale plummets as players feel completely abandoned before kickoff.",
-        "mixed": "Some simmer with angry defiance; others look utterly deflated."
+        "positive": "Jaws set. They're ready.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Too much. The room's gone tight.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Focus": {
@@ -308,10 +308,10 @@
         }
       ],
       "reactions": {
-        "positive": "Players lock in mentally, ready to execute the defensive plan.",
-        "neutral": "The squad reviews positional assignments with serious intent.",
-        "negative": "Attacking players look discouraged by the conservative remit.",
-        "mixed": "Defenders relish the tactical drill while forwards look slightly isolated."
+        "positive": "Settled. Quiet, but switched on.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Too flat. Somebody yawns.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     }
   },
@@ -336,10 +336,10 @@
         }
       ],
       "reactions": {
-        "positive": "The squad appears composed, collected and confident.",
-        "neutral": "Quiet focus settles across the dressing room.",
-        "negative": "A slight lack of urgency creeps in.",
-        "mixed": "Players seem relaxed, though the leaders keep the tempo up."
+        "positive": "Settled. Quiet, but switched on.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Too flat. Somebody yawns.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Motivate": {
@@ -362,10 +362,10 @@
         }
       ],
       "reactions": {
-        "positive": "Shouts of encouragement bounce off the dressing room walls.",
-        "neutral": "Determined looks all around as players pump each other up.",
-        "negative": "One or two players look overstimulated.",
-        "mixed": "A strong positive response across the board with plenty of fire."
+        "positive": "Buzzing. Studs drumming on the floor.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Polite nods. Nobody quite buys it.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Demand": {
@@ -388,10 +388,10 @@
         }
       ],
       "reactions": {
-        "positive": "The squad braces itself with tough, uncompromising focus.",
-        "neutral": "Firm nods of agreement from the key players.",
-        "negative": "A few look tense under the uncompromising burden.",
-        "mixed": "Most respond to the challenge with fierce grit."
+        "positive": "Jaws set. They're ready.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Too much. The room's gone tight.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Praise": {
@@ -414,10 +414,10 @@
         }
       ],
       "reactions": {
-        "positive": "Squad camaraderie surges with players sharing fist-bumps.",
-        "neutral": "Warm appreciation and positive body language.",
-        "negative": "One or two seem to think the praise is premature.",
-        "mixed": "A genuine boost to team spirit and mutual trust."
+        "positive": "Buzzing. Studs drumming on the floor.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Polite nods. Nobody quite buys it.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Disappoint": {
@@ -440,10 +440,10 @@
         }
       ],
       "reactions": {
-        "positive": "Spurred into action, players suddenly snap into gear.",
-        "neutral": "Shocked silence as the squad snaps to attention.",
-        "negative": "Frustration boils over as players feel unfairly scolded.",
-        "mixed": "A sharp shock to the system that rouses some and angers others."
+        "positive": "Jaws set. They're ready.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Too much. The room's gone tight.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     },
     "Focus": {
@@ -466,10 +466,10 @@
         }
       ],
       "reactions": {
-        "positive": "The entire room locks into professional tactical alignment.",
-        "neutral": "Attentive faces absorbing every instruction.",
-        "negative": "Some players look rigid and overly cautious.",
-        "mixed": "Excellent concentration across midfielders and back line."
+        "positive": "Settled. Quiet, but switched on.",
+        "neutral": "They listen. Nods. Studs on the floor.",
+        "negative": "Too flat. Somebody yawns.",
+        "mixed": "Split. Half fired up, half nervous."
       }
     }
   },
@@ -494,10 +494,10 @@
         }
       ],
       "reactions": {
-        "positive": "Players sip their water and absorb the calming instructions.",
-        "neutral": "Composed nods from the back four and goalkeeper.",
-        "negative": "A faint hint of complacency appears in body language.",
-        "mixed": "The squad stays grounded, keeping their emotions in check."
+        "positive": "Calm and sure. Same again.",
+        "neutral": "Water bottles, nods, a few words.",
+        "negative": "Comfortable. Too comfortable.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Motivate": {
@@ -520,10 +520,10 @@
         }
       ],
       "reactions": {
-        "positive": "Eager nods and high-fives as the XI prepares to storm out.",
-        "neutral": "Positive energy maintained across the room.",
-        "negative": "Some defenders look concerned about over-committing.",
-        "mixed": "High morale and eagerness to attack from the forwards."
+        "positive": "Grins. They want another.",
+        "neutral": "Water bottles, nods, a few words.",
+        "negative": "Too pleased with themselves.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Demand": {
@@ -546,10 +546,10 @@
         }
       ],
       "reactions": {
-        "positive": "Leaders like the captain reinforce the warning emphatically.",
-        "neutral": "Players straighten up and shake off any lingering casualness.",
-        "negative": "A few look peeved to be scolded while leading.",
-        "mixed": "Experienced players nod in agreement while younger attackers grumble."
+        "positive": "Nobody's relaxing now.",
+        "neutral": "Water bottles, nods, a few words.",
+        "negative": "They think they've done nothing wrong.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Praise": {
@@ -572,10 +572,10 @@
         }
       ],
       "reactions": {
-        "positive": "Broad smiles and soaring morale throughout the dressing room.",
-        "neutral": "Players beam with pride at the manager's endorsement.",
-        "negative": "Danger of overconfidence creeping into key positions.",
-        "mixed": "Immense confidence boost, though complacency risk lingers."
+        "positive": "Grins. They want another.",
+        "neutral": "Water bottles, nods, a few words.",
+        "negative": "Too pleased with themselves.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Disappoint": {
@@ -598,10 +598,10 @@
         }
       ],
       "reactions": {
-        "positive": "A couple of perfectionist leaders agree and demand more.",
-        "neutral": "Bewildered looks given the scoreline.",
-        "negative": "Angry whispers; players feel disrespected despite leading.",
-        "mixed": "Dampens the celebratory mood sharply, causing friction."
+        "positive": "Nobody's relaxing now.",
+        "neutral": "Water bottles, nods, a few words.",
+        "negative": "They think they've done nothing wrong.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Focus": {
@@ -624,10 +624,10 @@
         }
       ],
       "reactions": {
-        "positive": "The back line and deep midfielders nod with steely focus.",
-        "neutral": "Tactical responsibilities reaffirmed cleanly.",
-        "negative": "Winger looks disappointed not to have license to break freely.",
-        "mixed": "Strong professional reaction that locks in game management."
+        "positive": "Calm and sure. Same again.",
+        "neutral": "Water bottles, nods, a few words.",
+        "negative": "Comfortable. Too comfortable.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     }
   },
@@ -652,10 +652,10 @@
         }
       ],
       "reactions": {
-        "positive": "Anxiety dissipates, replaced by measured self-belief.",
-        "neutral": "The room calms down after an intense first half.",
-        "negative": "A few players feel the gaffer is being too passive.",
-        "mixed": "Tension subsides and players regain their tactical composure."
+        "positive": "Clear heads. They know the job.",
+        "neutral": "Quiet. Bottles passed round.",
+        "negative": "Too calm. Nobody's angry about it.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Motivate": {
@@ -678,10 +678,10 @@
         }
       ],
       "reactions": {
-        "positive": "Sparks fly in the room as players gear up for a big second half push.",
-        "neutral": "Players stand up and shake their legs out with renewed hunger.",
-        "negative": "Tired legs look slightly apprehensive about a high press.",
-        "mixed": "Passionate response that lights a fire under the forward line."
+        "positive": "Belief. They can win this.",
+        "neutral": "Quiet. Bottles passed round.",
+        "negative": "Nobody's sure what's changed.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Demand": {
@@ -704,10 +704,10 @@
         }
       ],
       "reactions": {
-        "positive": "Stung by the manager's words, key players demand more of each other.",
-        "neutral": "Heads snap up with sharpened intent.",
-        "negative": "Some look stressed under the ultimatum.",
-        "mixed": "Creates a sharp competitive edge, shaking off any sluggishness."
+        "positive": "Stung. They're up and talking.",
+        "neutral": "Quiet. Bottles passed round.",
+        "negative": "Shoulders drop. One answers back.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Praise": {
@@ -730,10 +730,10 @@
         }
       ],
       "reactions": {
-        "positive": "Players feel encouraged and sustained by the boss's support.",
-        "neutral": "Warm nods of reassurance.",
-        "negative": "A few wonder why we're praising a deadlock.",
-        "mixed": "Decent reassurance, though lacking that extra spark of motivation."
+        "positive": "Belief. They can win this.",
+        "neutral": "Quiet. Bottles passed round.",
+        "negative": "Nobody's sure what's changed.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Disappoint": {
@@ -756,10 +756,10 @@
         }
       ],
       "reactions": {
-        "positive": "Pride wounded, several players vow to prove the gaffer wrong.",
-        "neutral": "Quiet, stung expressions fill the room.",
-        "negative": "Heads drop into towels; morale takes a noticeable hit.",
-        "mixed": "Divisive reaction—some fire up, but morale suffers slightly."
+        "positive": "Stung. They're up and talking.",
+        "neutral": "Quiet. Bottles passed round.",
+        "negative": "Shoulders drop. One answers back.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Focus": {
@@ -782,10 +782,10 @@
         }
       ],
       "reactions": {
-        "positive": "Players immediately identify tactical solutions and feel empowered.",
-        "neutral": "Nods of tactical agreement from the spine of the team.",
-        "negative": "Some players look like they wanted emotion, not diagrams.",
-        "mixed": "High tactical clarity that sharpens execution for the restart."
+        "positive": "Clear heads. They know the job.",
+        "neutral": "Quiet. Bottles passed round.",
+        "negative": "Too calm. Nobody's angry about it.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     }
   },
@@ -810,10 +810,10 @@
         }
       ],
       "reactions": {
-        "positive": "Panic is averted; players regroup with mature determination.",
-        "neutral": "The room steadies its breath after a difficult half.",
-        "negative": "Some hotheads look frustrated that the manager isn't shouting.",
-        "mixed": "Restores order to a dressing room that was on the verge of frustration."
+        "positive": "Breathing again. Heads clear.",
+        "neutral": "Silence. Long stares at the floor.",
+        "negative": "They wanted fire. They got a cuddle.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Motivate": {
@@ -836,10 +836,10 @@
         }
       ],
       "reactions": {
-        "positive": "Electrifying rally cry—players shout in defiance and slap hands.",
-        "neutral": "Energy levels surge back from the deficit.",
-        "negative": "A couple of dejected starters still look crestfallen.",
-        "mixed": "Brings the fight right back into the squad, lifting morale."
+        "positive": "Chins up. They believe again.",
+        "neutral": "Silence. Long stares at the floor.",
+        "negative": "Nobody buys it. They're losing.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Demand": {
@@ -862,10 +862,10 @@
         }
       ],
       "reactions": {
-        "positive": "Stung to their core, leaders shout back that they will fix it.",
-        "neutral": "Grim silence as the hair-dryer treatment lands.",
-        "negative": "Some players shrink into their seats, intimidated.",
-        "mixed": "High risk—hard men fire up with fury while fragile players wilt."
+        "positive": "Fury. The good kind.",
+        "neutral": "Silence. Long stares at the floor.",
+        "negative": "Some fire back. Some shrink.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Praise": {
@@ -888,10 +888,10 @@
         }
       ],
       "reactions": {
-        "positive": "A small comfort to know the boss isn't turning on them.",
-        "neutral": "Polite nods, but players know they are behind.",
-        "negative": "Players look bewildered—why are we being praised when losing?",
-        "mixed": "Mildly soothing, but risks sounding disconnected from reality."
+        "positive": "Chins up. They believe again.",
+        "neutral": "Silence. Long stares at the floor.",
+        "negative": "Nobody buys it. They're losing.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Disappoint": {
@@ -914,10 +914,10 @@
         }
       ],
       "reactions": {
-        "positive": "Proud players stew with bitter rage, desperate to make amends.",
-        "neutral": "Heavy, suffocating gloom descends on the bench.",
-        "negative": "Morale takes a nosedive; heads drop completely.",
-        "mixed": "Harsh medicine that divides the room—anger vs despair."
+        "positive": "Fury. The good kind.",
+        "neutral": "Silence. Long stares at the floor.",
+        "negative": "Some fire back. Some shrink.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     },
     "Focus": {
@@ -940,10 +940,10 @@
         }
       ],
       "reactions": {
-        "positive": "Clear actionable plan gives the team a concrete path back into the game.",
-        "neutral": "Players lean in to inspect the whiteboard adjustments.",
-        "negative": "A few look too emotionally deflated to process the details.",
-        "mixed": "Provides constructive direction rather than emotional noise."
+        "positive": "Breathing again. Heads clear.",
+        "neutral": "Silence. Long stares at the floor.",
+        "negative": "They wanted fire. They got a cuddle.",
+        "mixed": "Split. Some fired up, some sulking."
       }
     }
   },
@@ -968,10 +968,10 @@
         }
       ],
       "reactions": {
-        "positive": "Satisfied, mature atmosphere as the squad celebrates quietly.",
-        "neutral": "Players nod and head for the ice baths.",
-        "negative": "Some wanted to celebrate more after a big effort.",
-        "mixed": "Calm, businesslike completion of a successful matchday."
+        "positive": "Happy, tired, quiet.",
+        "neutral": "Boots off. Small smiles.",
+        "negative": "Flat, for a win.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Motivate": {
@@ -994,10 +994,10 @@
         }
       ],
       "reactions": {
-        "positive": "Roars of delight! Squad cohesion and belief hit top gear.",
-        "neutral": "Great high-spirited banter among teammates.",
-        "negative": "None—hard to complain after a passionate victory speech.",
-        "mixed": "Tremendous energy and enthusiasm for upcoming fixtures."
+        "positive": "Music on. Somebody's dancing.",
+        "neutral": "Boots off. Small smiles.",
+        "negative": "Some think it was a bit lucky.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Demand": {
@@ -1020,10 +1020,10 @@
         }
       ],
       "reactions": {
-        "positive": "Perfectionists respect the manager's refusal to accept mediocrity.",
-        "neutral": "A slightly muted reaction as the mood is tempered.",
-        "negative": "Frustration that a hard-fought win isn't being enjoyed.",
-        "mixed": "Keeps feet firmly on the ground, though slightly buzzkilling."
+        "positive": "Nobody's celebrating. Good.",
+        "neutral": "Boots off. Small smiles.",
+        "negative": "They won. They wanted a smile.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Praise": {
@@ -1046,10 +1046,10 @@
         }
       ],
       "reactions": {
-        "positive": "Euphoric scenes in the dressing room! Morale reaches peak levels.",
-        "neutral": "Rapturous applause and smiles across all squad members.",
-        "negative": "None—pure unadulterated post-match joy.",
-        "mixed": "Universal morale boost across starters and substitutes alike."
+        "positive": "Music on. Somebody's dancing.",
+        "neutral": "Boots off. Small smiles.",
+        "negative": "Some think it was a bit lucky.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Disappoint": {
@@ -1072,10 +1072,10 @@
         }
       ],
       "reactions": {
-        "positive": "Only the grumpiest veteran agrees.",
-        "neutral": "Shocked looks as music gets cut off.",
-        "negative": "Fury and resentment—ruining a victory speech creates deep unrest.",
-        "mixed": "Dressing room atmosphere turns icy; players feel completely cheated."
+        "positive": "Nobody's celebrating. Good.",
+        "neutral": "Boots off. Small smiles.",
+        "negative": "They won. They wanted a smile.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Focus": {
@@ -1098,10 +1098,10 @@
         }
       ],
       "reactions": {
-        "positive": "Professional, methodical squad culture reinforced.",
-        "neutral": "Players nod and begin post-match recovery protocols.",
-        "negative": "A little dry for a post-match victory celebration.",
-        "mixed": "Solid professional closure to a positive matchday."
+        "positive": "Happy, tired, quiet.",
+        "neutral": "Boots off. Small smiles.",
+        "negative": "Flat, for a win.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     }
   },
@@ -1126,10 +1126,10 @@
         }
       ],
       "reactions": {
-        "positive": "Squad accepts the pragmatic reality with quiet resilience.",
-        "neutral": "Tired players accept the draw constructively.",
-        "negative": "Some strikers look frustrated not to have stolen the win.",
-        "mixed": "Sensible, balanced response that protects morale."
+        "positive": "Tired. Fair enough.",
+        "neutral": "Ice packs. Not much said.",
+        "negative": "Too relaxed about it.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Motivate": {
@@ -1152,10 +1152,10 @@
         }
       ],
       "reactions": {
-        "positive": "Spirited encouragement lifts tired legs.",
-        "neutral": "Players nod, ready to bounce back with a win next time.",
-        "negative": "Some players feel the pep talk masks a missed opportunity.",
-        "mixed": "Constructive morale boost that reframes the draw positively."
+        "positive": "Gutted, but up for next week.",
+        "neutral": "Ice packs. Not much said.",
+        "negative": "A draw's a draw. Nobody's lifted.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Demand": {
@@ -1178,10 +1178,10 @@
         }
       ],
       "reactions": {
-        "positive": "Ambitious players agree and express frustration at the result.",
-        "neutral": "Players sit with bowed heads, acknowledging the missed chance.",
-        "negative": "Defenders who put in a massive shift feel unfairly blamed.",
-        "mixed": "Stings the attackers who missed chances, but fuels determination."
+        "positive": "They know it. Two points dropped.",
+        "neutral": "Ice packs. Not much said.",
+        "negative": "They think a point was fair.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Praise": {
@@ -1204,10 +1204,10 @@
         }
       ],
       "reactions": {
-        "positive": "Players appreciate the acknowledgement after an exhausting afternoon.",
-        "neutral": "Tired smiles and pats on the back.",
-        "negative": "Ambitious stars feel slightly embarrassed to praise a draw.",
-        "mixed": "Warm appreciation across the squad, sustaining morale."
+        "positive": "Gutted, but up for next week.",
+        "neutral": "Ice packs. Not much said.",
+        "negative": "A draw's a draw. Nobody's lifted.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Disappoint": {
@@ -1230,10 +1230,10 @@
         }
       ],
       "reactions": {
-        "positive": "A couple of leaders take it on the chin and resolve to fix it.",
-        "neutral": "Heavy, sombre atmosphere settles in.",
-        "negative": "Players look resentful after battling hard for ninety minutes.",
-        "mixed": "Cuts deep and damages morale, though highlights missed standards."
+        "positive": "They know it. Two points dropped.",
+        "neutral": "Ice packs. Not much said.",
+        "negative": "They think a point was fair.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Focus": {
@@ -1256,10 +1256,10 @@
         }
       ],
       "reactions": {
-        "positive": "Players appreciate the analytical, objective approach.",
-        "neutral": "Heads nod; minds shift to video analysis and training ground fixes.",
-        "negative": "A few look too drained for tactical debriefs.",
-        "mixed": "Constructive, professional and keeps the squad grounded."
+        "positive": "Tired. Fair enough.",
+        "neutral": "Ice packs. Not much said.",
+        "negative": "Too relaxed about it.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     }
   },
@@ -1284,10 +1284,10 @@
         }
       ],
       "reactions": {
-        "positive": "The squad appreciates the manager shielding them after a loss.",
-        "neutral": "A quiet, reflective atmosphere as players take the defeat calmly.",
-        "negative": "One or two feel the manager is being too lenient on a bad day.",
-        "mixed": "Stops the bleeding and prevents panic after a loss."
+        "positive": "Hurting, but steady.",
+        "neutral": "Nobody speaks. Boots come off slowly.",
+        "negative": "They wanted somebody to be angry.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Motivate": {
@@ -1310,10 +1310,10 @@
         }
       ],
       "reactions": {
-        "positive": "Fists clench and eyes narrow—the squad is eager to make amends.",
-        "neutral": "Players shake off the sorrow and rally around each other.",
-        "negative": "Tired, dejected players struggle to summon the energy to fire back.",
-        "mixed": "Replaces sorrow with determination for the vast majority."
+        "positive": "Heads come up, slowly.",
+        "neutral": "Nobody speaks. Boots come off slowly.",
+        "negative": "Praise, after that? Nobody looks up.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Demand": {
@@ -1336,10 +1336,10 @@
         }
       ],
       "reactions": {
-        "positive": "Proud professionals accept the rebuke and demand better of themselves.",
-        "neutral": "Stunned silence in the dressing room.",
-        "negative": "Frustration boils over; players feel scapegoated.",
-        "mixed": "High tension; puts the squad on alert that sub-par displays have consequences."
+        "positive": "Silent. Taking it. They'll answer it.",
+        "neutral": "Nobody speaks. Boots come off slowly.",
+        "negative": "The room turns on itself.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Praise": {
@@ -1362,10 +1362,10 @@
         }
       ],
       "reactions": {
-        "positive": "Comforting words that lift the heavy weight of defeat.",
-        "neutral": "Slightly consoled, though still hurting from the score.",
-        "negative": "Some players find it hard to take comfort in defeat.",
-        "mixed": "Protects fragile morale, though some would prefer honest critique."
+        "positive": "Heads come up, slowly.",
+        "neutral": "Nobody speaks. Boots come off slowly.",
+        "negative": "Praise, after that? Nobody looks up.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Disappoint": {
@@ -1388,10 +1388,10 @@
         }
       ],
       "reactions": {
-        "positive": "Fiery players burn with embarrassment and want redemption.",
-        "neutral": "Heads buried in hands; nobody dares speak.",
-        "negative": "Deep dressing room depression; morale hits rock bottom.",
-        "mixed": "Brutal wake-up call that stings everyone to the marrow."
+        "positive": "Silent. Taking it. They'll answer it.",
+        "neutral": "Nobody speaks. Boots come off slowly.",
+        "negative": "The room turns on itself.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     },
     "Focus": {
@@ -1414,10 +1414,10 @@
         }
       ],
       "reactions": {
-        "positive": "Analytical players appreciate focusing on tangible solutions.",
-        "neutral": "Heads nod silently in recognition of the mistakes.",
-        "negative": "Some players are too emotionally bruised for technical advice.",
-        "mixed": "Provides a clear road map out of the disappointment."
+        "positive": "Hurting, but steady.",
+        "neutral": "Nobody speaks. Boots come off slowly.",
+        "negative": "They wanted somebody to be angry.",
+        "mixed": "Split. Some nod. Some won't look at you."
       }
     }
   }

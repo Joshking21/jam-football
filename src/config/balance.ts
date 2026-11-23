@@ -132,6 +132,36 @@ export const BALANCE = {
     driftTarget: 60,
     driftStep: 1,
   },
+  // Club Depth (SPEC §12.17)
+  club: {
+    staffWage: 1500, // per week * stars^2
+    coachDevBase: 0.85,
+    coachDevPerStar: 0.06,
+    physioInjuryLenBase: 1.2,
+    physioInjuryLenPerStar: 0.08,
+    physioHazardBase: 1.1,
+    physioHazardPerStar: 0.04,
+    scoutKnowledgeBase: 0.6,
+    scoutKnowledgePerStar: 0.15,
+    prepBonusSetPieces: -0.12,
+    prepBonusPress: 0.15,
+    prepBonusWingers: -0.12,
+    prepBonusShapeFamiliarity: 8,
+    prepDevPenalty: 0.85,
+    restConditionGain: 8,
+    restFatigueReduction: 6,
+    restConsecutiveWeeksMoralePenalty: -5,
+    cohesionInitial: 55,
+    cohesionWinBonus: 1,
+    cohesionLossPenalty: -1,
+    cohesionLeaderSoldPenalty: -8,
+    cohesionPromiseBrokenPenalty: -5,
+    cohesionSigningPenalty: -2,
+    cohesionMaxWeeklyDelta: 6,
+    cohesionMatchExecutionFactor: 0.001, // (cohesion - 50) / 1000
+    injuryRiskLowThreshold: 1.2,
+    injuryRiskMedThreshold: 1.6,
+  },
   // Transfers (SPEC §12.13)
   transfers: {
     roundsPerWindow: 3,

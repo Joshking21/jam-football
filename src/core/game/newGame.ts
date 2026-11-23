@@ -5,6 +5,7 @@ import worldSnapshot from '../world/world.snapshot.json';
 import { WorldSnapshot } from '../world/generateWorld';
 import { migrateTactics } from './migrations';
 import { createStartingFamiliarity } from './familiarity';
+import { initClubStaff } from '../club/clubDepth';
 
 export interface NewGameOptions {
   seed: number;
@@ -78,6 +79,16 @@ export function createNewGame(options: NewGameOptions): GameState {
       playerIds: [],
     },
   ];
+
+  // Initialize club depth (staff, cohesion) per SPEC §12.17
+  let cIdx = 0;
+  for (const c of Object.values(snapshot.clubs)) {
+    c.staff = initClubStaff(c.reputation, seed + cIdx * 17);
+    c.cohesion = c.id === userClubId ? 55 : 50;
+    c.cohesionHistory = [];
+    c.prep = 'None';
+    cIdx++;
+  }
 
   // Pre-seed an initial shortlist of scout targets from other clubs/free agents
   const otherPlayers = Object.values(snapshot.players).filter((p) => p.clubId !== userClubId);

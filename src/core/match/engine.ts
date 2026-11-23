@@ -3639,8 +3639,19 @@ export class MatchEngine implements MatchSim {
 
   private getTrainingBonus(side: Side, type: 'attack' | 'defence' | 'setPieces'): number {
     const sheet = side === 'home' ? this.input.home : this.input.away;
+    const oppSheet = side === 'home' ? this.input.away : this.input.home;
     let bonus = sheet.trainingBonus[type] || 0;
     bonus += this.getFamiliarityCtxPenalty(side);
+
+    // SPEC §12.17.5 Cohesion match effect: all execution ctx + (cohesion - 50) / 1000
+    const cohesion = sheet.cohesion ?? 50;
+    bonus += (cohesion - 50) * BALANCE.club.cohesionMatchExecutionFactor;
+
+    // SPEC §12.17.2 Match Prep effects
+    if (type === 'setPieces') {
+      if (sheet.prep === 'SetPieces') bonus += 0.12;
+      if (oppSheet.prep === 'SetPieces') bonus += BALANCE.club.prepBonusSetPieces;
+    }
 
     const oppSide: Side = side === 'home' ? 'away' : 'home';
     const oppTeam = oppSide === 'home' ? this.homeTeam : this.awayTeam;
