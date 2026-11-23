@@ -1,0 +1,101 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{background:#070b14}
+.kick{position:absolute;left:56px;top:40px;display:flex;align-items:center;gap:14px;font:600 15px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;color:var(--dim);z-index:3}
+.kick .c{background:var(--acc);color:#141000;font:800 16px/1 'Barlow Condensed';letter-spacing:.18em;padding:7px 12px 6px;clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.kick b{color:#fff;font-weight:600}
+h1{position:absolute;left:56px;top:78px;font:800 56px/1 'Barlow Condensed';text-transform:uppercase;z-index:3}
+h1 em{font-style:normal;color:var(--acc)}
+.key{position:absolute;right:56px;top:40px;z-index:3;background:rgba(8,10,14,.8);border:1px solid #2A313D;padding:14px 18px;font:500 13.5px/1.6 Inter;color:#cfd5de;max-width:520px}
+.key b{font:700 12px/1 'Barlow Condensed';letter-spacing:.16em;color:var(--acc);display:block;margin-bottom:6px}
+.key i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:8px}
+</style></head><body>
+<svg id="s" width="1920" height="1080" style="position:absolute;inset:0"></svg>
+<div class="kick"><span class="c">THE CLUB</span><b>Port Calloway FC</b> · The Lanternworks and the training ground · dusk, matchday</div>
+<h1>One stadium. <em>One short walk.</em></h1>
+<div class="key"><b>HOW THE COACH MOVES</b><i style="background:#F2B705"></i>The coach's walk: corridor inside the main stand, out past the car park, to the training ground.<br><i style="background:#9fb8e0;height:2px"></i>Fast travel (tabs and Continue) still cuts straight to any room.</div>
+<script>
+const s=document.getElementById('s');let g='';
+const S=3.3,OX=840,OY=250,C=Math.cos(Math.PI/6),N=Math.sin(Math.PI/6);
+const P=(x,y,z=0)=>[ (x-y)*C*S+OX, (x+y)*N*S-z*S+OY ];
+const pts=a=>a.map(p=>P(...p).map(v=>v.toFixed(1)).join(',')).join(' ');
+const poly=(a,fill,extra='')=>`<polygon points="${pts(a)}" fill="${fill}" ${extra}/>`;
+function box(x0,y0,x1,y1,h,top,left,right,z0=0){
+ return poly([[x0,y1,z0],[x1,y1,z0],[x1,y1,z0+h],[x0,y1,z0+h]],left)+poly([[x1,y0,z0],[x1,y1,z0],[x1,y1,z0+h],[x1,y0,z0+h]],right)+poly([[x0,y0,z0+h],[x1,y0,z0+h],[x1,y1,z0+h],[x0,y1,z0+h]],top)}
+g+=`<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070b16"/><stop offset=".45" stop-color="#16233d"/><stop offset=".62" stop-color="#4a3a3c"/><stop offset=".7" stop-color="#1a1a20"/></linearGradient>
+<radialGradient id="lamp" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF0DA" stop-opacity=".95"/><stop offset=".2" stop-color="#FFF0DA" stop-opacity=".35"/><stop offset="1" stop-color="#FFF0DA" stop-opacity="0"/></radialGradient>
+<radialGradient id="pool" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff3d6" stop-opacity=".35"/><stop offset="1" stop-color="#fff3d6" stop-opacity="0"/></radialGradient>
+<radialGradient id="vig" cx="55%" cy="50%" r="75%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></radialGradient>
+<filter id="b8"><feGaussianBlur stdDeviation="8"/></filter><filter id="grain"><feTurbulence baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .07 0"/></filter></defs>`;
+g+=`<rect width="1920" height="1080" fill="url(#sky)"/>`;
+// ground plane
+g+=poly([[-160,-120],[330,-120],[330,250],[-160,250]],'#1b2219');
+// sea + harbour far (top-left = small x+y)
+g+=poly([[-160,-120],[40,-120],[-40,-60],[-160,-40]],'#24304a');
+for(let i=0;i<6;i++){const a=P(-150+i*25,-110+i*8),b=P(-130+i*25,-104+i*8);g+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#c9a77a" stroke-opacity=".35" stroke-width="2"/>`}
+// crane
+{const a=P(10,-100),b=P(10,-100,40),c=P(30,-100,40);g+=`<path d="M${a} L${b} L${c}" stroke="#2b313c" stroke-width="4" fill="none"/><circle cx="${c[0]}" cy="${c[1]}" r="3" fill="#ff4a3a"/>`}
+// town terraces (far)
+for(let i=0;i<14;i++){const x=-140+i*14,y=-30+((i*37)%20);g+=box(x,y,x+11,y+9,9+(i%3)*4,'#2a2420','#1c1815','#15120f');const w=P(x+4,y+9,5);if(i%3)g+=`<rect x="${w[0]}" y="${w[1]}" width="5" height="5" fill="#ffc57a" opacity=".8"/>`}
+// roads
+g+=poly([[-160,150],[330,150],[330,162],[-160,162]],'#14171b');
+g+=poly([[125,-20],[135,-20],[135,162],[125,162]],'#14171b');
+// car park
+g+=poly([[136,100],[230,100],[230,148],[136,148]],'#202428');
+for(let r=0;r<2;r++)for(let c=0;c<9;c++){const x=140+c*10,y=106+r*22;g+=box(x,y,x+6,y+12,3,['#c9ccd1','#7a1f22','#1d2a44','#2b2b2b','#d8d2c4'][(c+r)%5],'#111','#0b0b0b');}
+// lamps in car park
+[[150,124],[190,124],[225,124]].forEach(([x,y])=>{const a=P(x,y),b=P(x,y,14);g+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#3a404b" stroke-width="2"/><circle cx="${b[0]}" cy="${b[1]}" r="26" fill="url(#lamp)"/><ellipse cx="${a[0]}" cy="${a[1]}" rx="40" ry="20" fill="url(#pool)"/>`});
+// ---------- training ground (east, x 150..300, y -30..90) ----------
+function pitch(x0,y0,L,W,stripes){let o=poly([[x0,y0],[x0+L,y0],[x0+L,y0+W],[x0,y0+W]],'#2f5a2c');
+ for(let i=0;i<stripes;i++)if(i%2)o+=poly([[x0+i*L/stripes,y0],[x0+(i+1)*L/stripes,y0],[x0+(i+1)*L/stripes,y0+W],[x0+i*L/stripes,y0+W]],'#356632');
+ const ln=(a,b)=>{const p=P(...a),q=P(...b);return `<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="#e8efe6" stroke-opacity=".8" stroke-width="1.4"/>`};
+ o+=ln([x0,y0],[x0+L,y0])+ln([x0+L,y0],[x0+L,y0+W])+ln([x0+L,y0+W],[x0,y0+W])+ln([x0,y0+W],[x0,y0])+ln([x0+L/2,y0],[x0+L/2,y0+W]);
+ const bx=L*0.16,bw=W*0.44;o+=ln([x0,y0+(W-bw)/2],[x0+bx,y0+(W-bw)/2])+ln([x0+bx,y0+(W-bw)/2],[x0+bx,y0+(W+bw)/2])+ln([x0+bx,y0+(W+bw)/2],[x0,y0+(W+bw)/2]);
+ o+=ln([x0+L,y0+(W-bw)/2],[x0+L-bx,y0+(W-bw)/2])+ln([x0+L-bx,y0+(W-bw)/2],[x0+L-bx,y0+(W+bw)/2])+ln([x0+L-bx,y0+(W+bw)/2],[x0+L,y0+(W+bw)/2]);
+ return o}
+g+=pitch(160,-28,80,52,10)+pitch(160,34,80,52,10);
+// small pavilion / clubhouse at training ground
+g+=box(246,20,262,44,8,'#3a3330','#5a2e22','#3a2019');{const w=P(254,44,4);g+=`<rect x="${w[0]-12}" y="${w[1]}" width="24" height="6" fill="#ffcf8a" opacity=".85"/>`}
+// training floodlights (smaller)
+[[160,-28],[240,-28],[160,86],[240,86]].forEach(([x,y])=>{const a=P(x,y),b=P(x,y,22);g+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#3a404b" stroke-width="2.5"/><circle cx="${b[0]}" cy="${b[1]}" r="30" fill="url(#lamp)" opacity=".7"/>`});
+// players training: small dots in a rondo + cones
+for(let i=0;i<8;i++){const a=2*Math.PI*i/8,p=P(185+Math.cos(a)*7,0+Math.sin(a)*7);g+=`<circle cx="${p[0]}" cy="${p[1]-3}" r="2.6" fill="#F2B705"/><circle cx="${p[0]}" cy="${p[1]-6}" r="1.6" fill="#c68b63"/>`}
+for(let i=0;i<10;i++){const p=P(210+i*2.5,60);g+=`<path d="M${p[0]-2} ${p[1]} l2 -4 l2 4z" fill="#ff7a2a"/>`}
+// ---------- stadium (pitch 0..105 x 0..68) ----------
+// far stand (y -26..0) and end stands
+g+=box(-6,-26,111,-2,16,'#3b3f47','#2b2f36','#22252b');
+g+=box(-26,-6,-4,74,14,'#3b3f47','#2b2f36','#22252b');
+// pitch
+g+=pitch(0,0,105,68,12);
+g+=`<ellipse cx="${P(52,34)[0]}" cy="${P(52,34)[1]}" rx="330" ry="170" fill="url(#pool)"/>`;
+// near end stand (x 109..131)
+g+=box(109,-6,131,74,14,'#3b3f47','#2b2f36','#22252b');
+// main stand (near side, y 72..98): brick, tall, with roof
+g+=box(-10,72,115,100,26,'#2a2f37','#4a2a20','#3a2019');
+// brick windows on +y facade
+for(let i=0;i<18;i++){const x=-4+i*6.6;for(const z of [8,17]){const p=P(x,100,z),q=P(x+3.4,100,z);const lit=(i+z)%5!==0;g+=`<polygon points="${p[0]},${p[1]} ${q[0]},${q[1]} ${q[0]},${q[1]+9} ${p[0]},${p[1]+9}" fill="${lit?'#ffcf8a':'#1a1210'}" opacity="${lit?.9:1}"/>`}}
+// entrance gable with crest
+{const a=P(46,100,26),b=P(64,100,26),c=P(55,100,36);g+=`<polygon points="${a} ${c} ${b}" fill="#4a2a20" stroke="#d8c9a8" stroke-opacity=".6"/>`;const k=P(55,100,29);g+=`<g transform="translate(${k[0]-11},${k[1]-12}) scale(.75)"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#F2B705" stroke="#0B1F3A"/></g>`;
+ const d=P(50,100,0),e=P(60,100,0);g+=`<polygon points="${d[0]},${d[1]} ${e[0]},${e[1]} ${e[0]},${e[1]-22} ${d[0]},${d[1]-22}" fill="#ffcf8a" opacity=".9"/>`}
+// floodlight pylons at stadium corners
+[[-14,-14],[119,-14],[-14,84],[119,84]].forEach(([x,y])=>{const a=P(x,y),b=P(x,y,58);g+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#3a404b" stroke-width="4"/><rect x="${b[0]-14}" y="${b[1]-8}" width="28" height="12" fill="#FFF0DA"/><circle cx="${b[0]}" cy="${b[1]}" r="90" fill="url(#lamp)"/>`});
+// the coach's walk: inside main stand (dashed) -> out east side -> car park edge -> training ground
+const walk=[[20,86,2],[100,86,2],[118,96,0],[133,96,0],[136,90,0],[150,78,0],[160,60,0],[176,50,0]];
+g+=`<polyline points="${walk.map(p=>P(...p).join(',')).join(' ')}" fill="none" stroke="#F2B705" stroke-width="5" stroke-dasharray="12 8" stroke-linecap="round"/>`;
+{const p=P(176,50);g+=`<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="#F2B705"/>`}
+// fans walking to the gates
+for(let i=0;i<22;i++){const p=P(30+i*3.5,108+(i%4)*3);g+=`<circle cx="${p[0]}" cy="${p[1]-3}" r="1.8" fill="${i%3?'#0b0c0f':'#F2B705'}"/>`}
+// ---------- labels with leader lines ----------
+function label(x,y,z,lx,ly,title,sub,acc){const p=P(x,y,z);g+=`<line x1="${p[0]}" y1="${p[1]}" x2="${lx}" y2="${ly}" stroke="${acc?'#F2B705':'#cfd5de'}" stroke-width="1.5"/><circle cx="${p[0]}" cy="${p[1]}" r="4" fill="${acc?'#F2B705':'#fff'}"/>`;
+ g+=`<foreignObject x="${lx-(lx<p[0]?300:0)}" y="${ly-22}" width="300" height="80"><div xmlns="http://www.w3.org/1999/xhtml" style="text-align:${lx<p[0]?'right':'left'};font:700 19px/1.1 'Barlow Condensed';letter-spacing:.06em;text-transform:uppercase;color:${acc?'#F2B705':'#fff'}">${title}<div style="font:500 13px/1.35 Inter;letter-spacing:0;text-transform:none;color:#cfd5de;margin-top:3px">${sub}</div></div></foreignObject>`}
+label(30,90,18,300,840,'Main stand','Office · boardroom · press room · the corridor',1);
+label(80,88,6,760,930,'Dressing room and tunnel','Lockers in a U · straight out onto the pitch',1);
+label(52,34,0,560,380,'The Lanternworks','52,000 · floodlit for tonight');
+label(200,30,0,1500,330,'Training ground','Two pitches · the week\'s sessions · physio on the touchline',1);
+label(254,32,8,1640,520,'Pavilion','Changing rooms and the kit store');
+label(180,124,0,1180,960,'Car park','Staff and players · fans on matchday');
+label(150,78,0,1560,800,'The coach\'s walk','About 40 seconds of real walking (2.5 s in game)',1);
+label(-120,-20,10,250,250,'Port Calloway','Harbour town behind the stadium');
+g+=`<rect width="1920" height="1080" filter="url(#grain)"/><rect width="1920" height="1080" fill="url(#vig)"/>`;
+s.innerHTML=g;
+</script></body></html>

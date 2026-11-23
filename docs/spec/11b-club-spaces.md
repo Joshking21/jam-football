@@ -3,7 +3,7 @@
 The menus become places. Every screen in §11 keeps its content, rules and keyboard access, and is shown inside a room of one club building. You play the coach living the club's week, filmed like a TV documentary.
 
 #### 11.25.1 Rooms
-**The site (the user, 23 Nov):** the club is **its stadium with the training ground right beside it**, not a whole campus. The stadium's main stand holds the office, boardroom, dressing room, press room and tunnel, joined by the corridor. The **training ground** sits next to the stadium and is reached by a short outdoor path past the side of the stand and the car park; the walk outside is part of the coach's walk (§11.25.2). The Exterior shot shows both the stand and the training pitches behind it. Free walking (§24, top extra) uses this same site.
+**The site (the user, 23 Nov):** the club is **its stadium with the training ground right beside it**, not a whole campus. The stadium's main stand holds the office, boardroom, dressing room, press room and tunnel, joined by the corridor. The **training ground** sits next to the stadium and is reached by a short outdoor path past the side of the stand and the car park; the walk outside is part of the coach's walk (§11.25.2). The Exterior shot shows both the stand and the training pitches behind it. Free walking (§24, top extra) uses this same site. Layout concept: `docs/design/site/`.
 
 Each room is one small three.js set. Walls, floors, ceilings and windows are built in code (`rooms.ts`), with props from `models/club/*.glb` and window and backdrop images from `images/club/` (§18.2). Only the current room is drawn. The next room loads while the coach walks, and a room's props are kept in memory after its first visit.
 
