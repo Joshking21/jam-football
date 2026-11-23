@@ -115,6 +115,7 @@ Stats comparison, assistant's half-time analysis (2–3 bullets with Apply butto
 5. Continue → WeekSummary.
 
 ### 11.19 Week Summary
+**Design reference: `docs/design/week-summary/` (approved 23 Nov; it wins on layout and look). Its "Local papers" table also applies to the Hub newspaper and the match back page.**
 One screen: other results of the round, updated table excerpt, injuries/returns, training growth highlights, finance line (wages paid, gate income), board/fan changes with reasons, inbox items that need action. Continue → next PreMatch.
 
 ### 11.20 Season End
