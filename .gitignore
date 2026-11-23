@@ -13,3 +13,4 @@ tools/voice/models/
 
 # raw downloads from Meshy before cleanup
 tools/meshy/raw/
+__pycache__/
