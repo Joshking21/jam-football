@@ -16,3 +16,5 @@
   - **Tags:** `DERBY` (red) on derbies. `NEXT` on the next fixture, whose tile gets an accent outline and glow, plus one scouting line from §15.2 ("They're unbeaten in 4. Gil has 6 goals.").
 - **Clicking** a played tile opens that match's full-time screen (`docs/design/fulltime/`) as a read-only replay of the result. Clicking an upcoming tile opens the opponent's club page.
 - **Ticker:** derbies, the hardest runs, and fixture news.
+
+All names, numbers and colours in the image are **sample data**. Always use the game's real data (club colours from `clubs.data.ts`, targets from the board, and so on).

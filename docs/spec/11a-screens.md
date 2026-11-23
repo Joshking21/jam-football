@@ -19,6 +19,7 @@ Plain HTML/CSS splash inside `index.html` (no JS needed): dark background, game 
 - Music: `music/title_theme.mp3` loop (starts after the first user gesture, per browser autoplay rules: show "Click anywhere to start" overlay on first visit).
 
 ### 11.3 New Game
+**Design reference: `docs/design/new-game/` (approved 23 Nov; it wins on layout and look).**
 Step 1 — **Choose your club**: a carousel of 10 club cards (crest, name, nickname, stadium, stars for reputation, board expectation, transfer budget, "Difficulty: Easy/Normal/Hard/Very Hard" where rep 5 = Easy, 4 = Normal, 3 = Hard, 2 = Very Hard), plus a squad preview (best XI on a mini pitch with OVRs). Arrow keys/clicks change the club. Enter confirms.
 Step 2 — **Your name** (text input, default "The Gaffer") and **Tutorial on/off** (default on).
 Step 3 — Start: create the save (§20), go to BoardMeeting.
@@ -121,6 +122,7 @@ Stats comparison, assistant's half-time analysis (2–3 bullets with Apply butto
 One screen: other results of the round, updated table excerpt, injuries/returns, training growth highlights, finance line (wages paid, gate income), board/fan changes with reasons, inbox items that need action. Continue → next PreMatch.
 
 ### 11.20 Season End
+**Design reference: `docs/design/season-end/` (approved 23 Nov; it wins on layout and look).**
 Sequence of full-screen cards (each Continue): Final table → Awards (§12.15) → Your season in numbers (W/D/L, goals, best win, top scorer, signings) → Board verdict with grade (§12.16) and score → "Share card" (a 1200×630 canvas image the user can download as PNG, with club crest, final position, grade, top scorer) → buttons: New Game, Title.
 
 ### 11.21 Sacked

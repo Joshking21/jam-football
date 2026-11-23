@@ -37,3 +37,5 @@ The team talk is its own scene (§11.25.5), not a panel here.
 
 ## Never
 SPEC references or dev labels in the UI ("SPEC §…", "2D pitch"). Fake numbers. A small card in an empty screen.
+
+All names, numbers and colours in the image are **sample data**. Always use the game's real data (club colours from `clubs.data.ts`, targets from the board, and so on).

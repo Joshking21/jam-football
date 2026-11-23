@@ -1,0 +1,148 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{--acc:#F2B705;--text:#F2F4F7;--dim:#A3ACBA;--faint:#6f7886;--line:rgba(255,255,255,.08);--panel:rgba(12,16,22,.86);--win:#3fd38b;--loss:#ff5d6c}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1920px;height:1080px;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:var(--text);
+ background:radial-gradient(ellipse at 30% 20%,rgba(242,183,5,.12),transparent 45%),radial-gradient(ellipse at 90% 90%,rgba(11,31,58,.9),transparent 55%),linear-gradient(160deg,#0b1220 0%,#070a10 60%,#05070b 100%)}
+.lines{position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.018) 0 2px,transparent 2px 28px)}
+.conf{position:absolute;inset:0;pointer-events:none}
+.kick{position:absolute;left:64px;top:40px;display:flex;align-items:center;gap:14px;font:600 15px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.chip{background:var(--acc);color:#141000;font:800 16px/1 'Barlow Condensed';letter-spacing:.18em;padding:7px 12px 6px;clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.kick b{color:#fff;font-weight:600}
+.steps{position:absolute;right:64px;top:36px;display:flex;gap:4px}
+.steps span{font:700 13px/1 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase;padding:9px 12px;background:rgba(255,255,255,.05);color:var(--faint)}
+.steps span.done{color:var(--dim)}.steps span.on{background:#F4F1EA;color:#0a0d12}
+/* souvenir paper */
+.paper{position:absolute;left:64px;top:96px;width:720px;height:900px;background:#EDE8DC;color:#141414;transform:rotate(-1.4deg);box-shadow:0 30px 60px rgba(0,0,0,.65);padding:20px 26px;
+ background-image:radial-gradient(ellipse at 80% 20%,rgba(120,100,60,.08),transparent 50%),radial-gradient(ellipse at 10% 90%,rgba(120,100,60,.07),transparent 40%)}
+.paper:after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:linear-gradient(90deg,transparent,rgba(0,0,0,.08),transparent)}
+.ed{display:flex;justify-content:space-between;font:700 12px/1 'Barlow Condensed';letter-spacing:.18em;text-transform:uppercase;color:#a0221a;border-bottom:1px solid #141414;padding-bottom:6px}
+.mast{text-align:center;font:900 58px/1 'Playfair Display',serif;margin-top:8px}
+.dl{display:flex;justify-content:space-between;font:600 11px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:#3a3630;border-top:3px double #141414;border-bottom:3px double #141414;padding:6px 0;margin-top:6px}
+.paper h1{font:800 104px/.84 'Barlow Condensed';text-transform:uppercase;text-align:center;margin-top:16px;letter-spacing:-.01em}
+.paper .sf{font:600 21px/1.25 'Source Serif 4',serif;text-align:center;margin-top:10px}
+.photo{height:330px;margin-top:16px;background:#efe3bd;overflow:hidden;position:relative}
+.cap{font:italic 400 12.5px/1.3 'Source Serif 4',serif;margin-top:6px}.cap b{font-style:normal;font-weight:600}
+.cols{columns:3;column-gap:16px;column-rule:1px solid #cfc6b6;font:400 12.5px/1.42 'Source Serif 4',serif;margin-top:12px;text-align:justify}
+.cols:first-letter{font:900 36px/.8 'Playfair Display',serif;float:left;margin:4px 6px 0 0}
+/* right side */
+.right{position:absolute;left:850px;right:64px;top:100px;bottom:64px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto 1fr auto;gap:18px}
+.hero{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:30px;background:var(--panel);padding:20px 28px;border-left:6px solid var(--acc)}
+.pos{font:800 150px/.8 'Barlow Condensed';color:#fff}.pos sup{font-size:58px;vertical-align:66px;color:var(--acc)}
+.hero .t1{font:800 40px/1 'Barlow Condensed';text-transform:uppercase}
+.hero .t2{font:500 17px/1.4 Inter;color:#cfd5de;margin-top:8px}.hero .t2 b{color:var(--acc);font-weight:600}
+.grade{width:168px;height:168px;border-radius:50%;border:6px solid var(--acc);outline:2px solid var(--acc);outline-offset:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-10deg)}
+.grade b{font:800 96px/.8 'Barlow Condensed';color:var(--acc)}.grade span{font:700 13px/1 'Barlow Condensed';letter-spacing:.24em;color:var(--acc);margin-top:6px}
+.card{background:var(--panel);padding:16px 20px}
+.h3{font:700 13px/1 'Barlow Condensed';letter-spacing:.18em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.h3:before{content:"";width:16px;height:3px;background:var(--acc)}
+.verdict{display:grid;grid-template-columns:86px 1fr;gap:16px;align-items:start}
+.verdict .ph{width:86px;height:100px;background:#efe3bd;overflow:hidden}
+.verdict q{display:block;font:italic 400 18px/1.4 'Source Serif 4',serif;color:#e9e4da}
+.verdict small{display:block;font:600 12px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:10px}
+.meter{display:flex;align-items:center;gap:12px;margin-top:14px;font:700 13px/1 'Barlow Condensed';letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+.meter i{flex:1;height:8px;background:#1f2630;position:relative}.meter i u{position:absolute;left:0;top:0;bottom:0;background:var(--acc)}
+.meter b{color:#fff;font-size:18px}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 18px}
+.nums div span{display:block;font:700 11px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.nums div b{display:block;font:800 34px/1 'Barlow Condensed';margin-top:5px}
+.nums div small{display:block;font:500 12px/1.3 Inter;color:#cfd5de;margin-top:3px}
+.aw{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.aw div{background:var(--panel);padding:14px 14px 12px;border-top:4px solid var(--c)}
+.aw span{display:block;font:700 11px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.aw b{display:block;font:800 24px/1 'Barlow Condensed';text-transform:uppercase;margin-top:8px}
+.aw small{display:block;font:500 12px/1.3 Inter;color:#cfd5de;margin-top:4px}
+.aw .us b{color:var(--acc)}
+.foot{grid-column:1/-1;display:flex;gap:14px;justify-content:flex-end;align-items:stretch}
+.btn{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);font:700 18px/1 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;padding:0 22px}
+.go{display:flex;align-items:center;gap:14px;background:var(--acc);color:#141000;font:800 24px/1 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase;padding:18px 34px 18px 26px;clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%)}
+.go kbd,.btn kbd{font:600 12px/1 Inter;border:1px solid currentColor;border-radius:2px;padding:4px 6px;opacity:.7}
+</style></head><body>
+<div class="lines"></div>
+<svg class="conf" id="conf" width="1920" height="1080"></svg>
+<div class="kick"><span class="chip">SEASON 2026/27</span><b>Port Calloway FC</b> · the final whistle on your first season</div>
+<div class="steps"><span class="done">Final table</span><span class="done">Awards</span><span class="done">In numbers</span><span class="on">The verdict</span><span>Share</span></div>
+
+<div class="paper">
+  <div class="ed"><span>Souvenir edition</span><span>Season 2026/27 · pull-out</span></div>
+  <div class="mast">The Calloway Gazette</div>
+  <div class="dl"><span>Monday 17 May 2027</span><span>No. 41,233</span><span>Free with today's paper</span></div>
+  <h1>Second best,<br>first class</h1>
+  <div class="sf">Mariners finish runners-up, their highest place in 31 years, after a final-day win at The Lanternworks</div>
+  <div class="photo"><svg id="ph" width="668" height="330"></svg></div>
+  <div class="cap"><b>Lap of honour:</b> the squad salute the North Stand after the final whistle. Picture: Gazette staff</div>
+  <div class="cols">Nobody at The Lanternworks will forget this one. Written off in August as a mid-table side with a new manager and a thin squad, Port Calloway were in the title race until the final fortnight, and finished with a 3–1 win over Ironvale. Bankole's 16 league goals and Calder's 11 assists did the damage, but the story was the defence: only Saltmere conceded fewer. "We did this together," said the manager. "Now we go again."</div>
+</div>
+
+<div class="right">
+  <div class="hero">
+    <div class="pos">2<sup>nd</sup></div>
+    <div><div class="t1">Runners-up · 37 points</div><div class="t2">The board asked for <b>top 3</b>, and you beat it by one place. Two points behind champions Saltmere.</div></div>
+    <div class="grade"><b>A</b><span>GRADE</span></div>
+  </div>
+  <div class="card"><div class="h3">The board's verdict</div>
+    <div class="verdict"><div class="ph"><svg id="own" width="86" height="100"></svg></div><div><q>You were brought in to steady us. You gave this town a title race. We want you here for a long time.</q><small>Margaret Holloway · Owner</small></div></div>
+    <div class="meter">Board <i><u style="width:86%"></u></i><b>86</b></div>
+    <div class="meter">Fans <i><u style="width:91%"></u></i><b>91</b></div>
+  </div>
+  <div class="card"><div class="h3">Your season in numbers</div>
+    <div class="nums">
+      <div><span>Record</span><b>W11 D4 L3</b></div>
+      <div><span>Goals</span><b>34 – 17</b><small>2nd-best defence</small></div>
+      <div><span>Best win</span><b>4–0</b><small>v Lindenfield, MD15</small></div>
+      <div><span>Top scorer</span><b>Bankole 16</b></div>
+      <div><span>Biggest crowd</span><b>51,840</b><small>final day</small></div>
+      <div><span>Signings</span><b>3</b><small>Nwosu the pick</small></div>
+    </div>
+  </div>
+  <div class="aw">
+    <div style="--c:#0f7a6e"><span>Player of the season</span><b>Escalante</b><small>Kestrel Bay · 7.62</small></div>
+    <div class="us" style="--c:#F2B705"><span>Playmaker</span><b>Calder · 11</b><small>Your midfielder, the league's best</small></div>
+    <div style="--c:#0f7a6e"><span>Golden Boot</span><b>Escalante · 18</b><small>Bankole 2nd with 16</small></div>
+    <div class="us" style="--c:#F2B705"><span>Young player</span><b>Nwosu</b><small>19, your centre-back</small></div>
+    <div style="--c:#0d4a5a"><span>Manager of the season</span><b>Saltmere</b><small>You were runner-up</small></div>
+  </div>
+  <div class="card" style="grid-column:1/-1;padding-bottom:8px"><div class="h3">The season, matchday by matchday<span style="margin-left:auto;color:#6f7886;letter-spacing:.1em">League position</span></div><svg id="race" width="1000" height="150"></svg></div>
+  <div class="foot">
+    <div class="btn">Download share card <kbd>D</kbd></div>
+    <div class="btn">Title screen</div>
+    <div class="go">New game <kbd>Space</kbd></div>
+  </div>
+</div>
+
+<script>
+// confetti in club colours, falling only at the top
+let c='';for(let i=0;i<90;i++){const x=(i*211)%1920,y=(i*97)%170+(i%7)*6,r=(i*37)%180;c+=`<rect x="${x}" y="${y}" width="${6+(i%3)*2}" height="${3+(i%2)*2}" fill="${i%3?'#F2B705':i%5?'#0B1F3A':'#F4F1EA'}" opacity="${.35+(i%4)*.12}" transform="rotate(${r} ${x} ${y})"/>`}
+document.getElementById('conf').innerHTML=c;
+// season line
+(function(){const pos=[6,7,5,4,3,3,3,2,2,1,2,2,3,2,2,1,2,2],sal=[3,2,1,1,2,1,1,1,1,2,1,1,1,1,1,2,1,1];
+ const W=1000,H=150,l=30,r=20,X=i=>l+i*(W-l-r)/17,Y=p=>10+(p-1)*(H-34)/9;let s='';
+ for(let p=1;p<=10;p+=3)s+=`<text x="${l-12}" y="${Y(p)+4}" text-anchor="end" font-family="Barlow Condensed" font-weight="700" font-size="12" fill="#6f7886">${p}</text><line x1="${l}" y1="${Y(p)}" x2="${W-r}" y2="${Y(p)}" stroke="rgba(255,255,255,.05)"/>`;
+ s+=`<line x1="${X(8.5)}" y1="4" x2="${X(8.5)}" y2="${H-22}" stroke="#F2B705" stroke-opacity=".4" stroke-dasharray="4 4"/><text x="${X(8.5)+6}" y="${H-28}" text-anchor="start" font-family="Barlow Condensed" font-weight="600" font-size="12" fill="#A3ACBA" letter-spacing="1">WINDOW</text>`;
+ for(let i=0;i<18;i+=3)s+=`<text x="${X(i)}" y="${H-6}" text-anchor="middle" font-family="Barlow Condensed" font-weight="600" font-size="12" fill="#6f7886">MD${i+1}</text>`;
+ s+=`<path d="${sal.map((p,i)=>`${i?'L':'M'}${X(i)} ${Y(p)}`).join(' ')}" fill="none" stroke="#0d4a5a" stroke-width="3" stroke-opacity=".9"/><text x="${X(17)+6}" y="${Y(1)+4}" font-family="Barlow Condensed" font-weight="700" font-size="13" fill="#5f9fbf">SAL</text>`;
+ s+=`<path d="${pos.map((p,i)=>`${i?'L':'M'}${X(i)} ${Y(p)}`).join(' ')}" fill="none" stroke="#F2B705" stroke-width="5" stroke-linejoin="round"/>`+pos.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p)}" r="4.5" fill="#0a0d12" stroke="#F2B705" stroke-width="2.5"/>`).join('');
+ s+=`<text x="${X(9)}" y="${Y(1)-2}" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" font-size="13" fill="#F2B705" letter-spacing=".5">TOP AT MD10</text><text x="${X(15)}" y="${Y(1)-2}" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" font-size="13" fill="#F2B705" letter-spacing=".5">TOP AGAIN, MD16</text>`;
+ document.getElementById('race').innerHTML=s;})();
+// halftone helper
+function halftone(id,W,H,st,lum){let o='';for(let y=st/2,r=0;y<H;y+=st,r++)for(let x=st/2+(r%2?st/2:0);x<W;x+=st){const rr=(1-lum(x,y))*st*0.62;if(rr>.3)o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rr.toFixed(2)}" fill="#141414"/>`}document.getElementById(id).innerHTML=o}
+const sm=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t)};
+const seg=(px,py,ax,ay,bx,by)=>{const vx=bx-ax,vy=by-ay,t=Math.max(0,Math.min(1,((px-ax)*vx+(py-ay)*vy)/(vx*vx+vy*vy)));return Math.hypot(px-ax-t*vx,py-ay-t*vy)};
+// lap of honour: floodlit stand behind, a row of players with arms up
+halftone('ph',668,330,4.4,(x,y)=>{let l=0.25+0.55*Math.max(0,1-Math.hypot(x-560,y-20)/320);
+ if(y>120&&y<205) l=0.32+0.14*Math.sin(x*1.1)*Math.sin(y*1.5); if(y>=205) l=0.5+0.12*sm(205,330,y);
+ for(const [cx,s] of [[110,.9],[215,1],[330,1.08],[445,1],[555,.92]]){const hy=150*s+40*(1-s)+20;
+  const head=Math.hypot((x-cx)/(13*s),(y-(150-60*s))/(15*s))<1;
+  const body=seg(x,y,cx,150-40*s,cx,150+40*s)<22*s||seg(x,y,cx-10*s,150+40*s,cx-14*s,330)<9*s||seg(x,y,cx+10*s,150+40*s,cx+14*s,330)<9*s;
+  const arms=seg(x,y,cx-18*s,150-36*s,cx-44*s,150-100*s)<7*s||seg(x,y,cx+18*s,150-36*s,cx+44*s,150-100*s)<7*s;
+  if(body||arms) l=0.12+0.1*sm(cx-30,cx+30,x); if(head) l=0.25+0.25*(1-sm(cx-12,cx+12,x));}
+ return Math.max(.03,Math.min(.97,l))});
+// owner portrait
+halftone('own',86,100,3.2,(x,y)=>{const cx=43;let l=0.92-0.1*(y/100);const head=Math.hypot((x-cx)/17,(y-40)/21)<1;
+ const sh=y>62&&Math.abs(x-cx)<20+(y-62)*1.1; if(sh) l=0.18+0.1*sm(0,86,x); if(Math.abs(x-cx)<7&&y>62&&y<84) l=0.85;
+ if(head) l=0.8-0.4*sm(cx-17,cx+17,x); const hair=Math.hypot((x-cx)/20,(y-34)/22)<1&&y<34+Math.abs(x-cx)*0.5; if(hair) l=0.35;
+ return Math.max(.03,Math.min(.97,l))});
+</script>
+</body></html>

@@ -55,3 +55,5 @@ Put these in `content/news.json` as `papers`, keyed by club id. The §16.2 press
 4. The meters ease.
 
 Reduce motion: everything at rest.
+
+All names, numbers and colours in the image are **sample data**. Always use the game's real data (club colours from `clubs.data.ts`, targets from the board, and so on).

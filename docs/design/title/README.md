@@ -21,3 +21,5 @@
 - **Continue or New game:** the camera flies through the front doors (1.2 s) into the corridor (§11.25.2), with no loading screen in between.
 - **Reduce motion:** a still frame, and a cut instead of the fly-in.
 - **Audio:** `ambience/exterior.mp3` under `music/title_theme.mp3`.
+
+All names, numbers and colours in the image are **sample data**. Always use the game's real data (club colours from `clubs.data.ts`, targets from the board, and so on).

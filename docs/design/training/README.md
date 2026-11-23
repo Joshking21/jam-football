@@ -39,3 +39,5 @@ Reduce motion: everything is placed instantly.
 
 ## Never
 A list of radio buttons for the week. Generic cards. A page scroll at 1280×720 (shrink the magnets' "grows" line before anything else).
+
+All names, numbers and colours in the image are **sample data**. Always use the game's real data (club colours from `clubs.data.ts`, targets from the board, and so on).

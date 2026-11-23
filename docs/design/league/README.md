@@ -12,3 +12,5 @@
 - **Leaders:** Golden Boot, Assists and Clean sheets, top 3 each, with a club colour tick and code. The user's players get accent numbers.
 - **Next round:** all fixtures of the next matchday with the kick-off slot. The user's fixture is in accent; the biggest game gets a note ("top-of-table", "derby", "relegation six-pointer").
 - **Ticker:** as on other on-air screens.
+
+All names, numbers and colours in the image are **sample data**. Always use the game's real data (club colours from `clubs.data.ts`, targets from the board, and so on).
