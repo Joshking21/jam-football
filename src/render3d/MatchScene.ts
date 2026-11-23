@@ -44,6 +44,8 @@ export class MatchScene {
   private currentEvent: MatchEvent | null = null;
   private currentHalf: 1 | 2 = 1;
   private lastTriggeredGoalSeq = -1;
+  private ballInNet = false;
+  private pendingGoalSide: 'home' | 'away' | null = null;
 
   constructor(ctx: Match3DContext) {
     this.container = ctx.container;
@@ -88,7 +90,7 @@ export class MatchScene {
     this.scene.add(this.goals.group);
 
     // 6. Stadium (Stands, Floodlights, Sponsors)
-    this.stadium = createStadium(ctx.homeClub, this.quality);
+    this.stadium = createStadium(ctx.homeClub, this.quality, ctx.awayClub);
     this.scene.add(this.stadium.group);
 
     // 7. Crowd
@@ -228,6 +230,20 @@ export class MatchScene {
     this.ball.setPosition(bPos.x, bPos.y, bPos.z);
     this.ball.updateRotation(this.choreographer.ballVelocity, delta);
 
+    // The net bulges and the crowd goes up when the ball actually crosses the line.
+    const inNet = Math.abs(bPos.x) > 52.7 && Math.abs(bPos.z) < 3.66 && bPos.y < 2.44;
+    if (inNet && !this.ballInNet) {
+      this.goals.hitNet(
+        Math.sign(bPos.x) * 52.5,
+        bPos.z,
+        bPos.y,
+        this.choreographer.ballVelocity.length(),
+      );
+      if (this.pendingGoalSide) this.crowd.triggerGoal(this.pendingGoalSide);
+      this.pendingGoalSide = null;
+    }
+    this.ballInNet = inNet;
+
     // Update 3D player figures from steering states
     this.players.allPlayers.forEach((visual, pid) => {
       const state = this.choreographer.getPlayerState(pid);
@@ -281,6 +297,16 @@ export class MatchScene {
     }
   };
 
+  /** The full event list so far; the director builds one continuous ball timeline from it. */
+  public setEvents(events: MatchEvent[]) {
+    this.choreographer.setEvents(events);
+  }
+
+  /** Replays use the behind-goal camera (§14.7). */
+  public setReplay(on: boolean, attackingGoalX: number) {
+    this.cameras.setReplay(on, attackingGoalX);
+  }
+
   public updatePlayback(pt: number, event: MatchEvent | null, half: 1 | 2) {
     this.currentPt = pt;
     this.currentEvent = event;
@@ -309,8 +335,8 @@ export class MatchScene {
   }
 
   public triggerGoalEvent(scoringSide: 'home' | 'away') {
-    this.goals.triggerRipple(scoringSide);
-    this.crowd.triggerGoal(scoringSide);
+    // The net and the crowd react when the ball crosses the line (see animate).
+    this.pendingGoalSide = scoringSide;
   }
 
   public dispose() {

@@ -70,6 +70,11 @@ export class MatchPlayback {
     this.recomputeHighlights();
   }
 
+  /** All events received so far, sorted by time (read by the 3D director). */
+  public getEvents(): MatchEvent[] {
+    return this.events;
+  }
+
   public setMode(mode: PlaybackMode) {
     this.mode = mode;
     this.recomputeHighlights();

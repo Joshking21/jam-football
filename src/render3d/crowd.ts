@@ -1,13 +1,41 @@
-// Implements SPEC §14.2 3D Crowd with InstancedMesh & Celebrations
+// Implements SPEC §14.2 crowd (v1.8 rebuild, REVIEW-M4 T14).
+// Supporters are instanced billboards seated on the stand rakes (standLayout.ts), tinted in club
+// colours (home 65%, away in their block, the rest dark coats). They bob gently, and the scoring
+// side's sections jump for 3 s. All motion runs in the vertex shader: no per-frame CPU work.
 import * as THREE from 'three';
 import { Club, Side } from '../core/types';
 import { QualityPreset } from './types';
+import { createSafeCanvas } from './canvasHelper';
+import { STANDS, treadY, standToWorld, isAwayBlock, hash01 } from './standLayout';
 
 export interface CrowdBundle {
   group: THREE.Group;
   triggerGoal: (side: Side) => void;
   update: (delta: number) => void;
   dispose: () => void;
+}
+
+function supporterSprite(): THREE.CanvasTexture {
+  const c = createSafeCanvas(64, 96);
+  const ctx = c.getContext('2d');
+  if (ctx) {
+    ctx.clearRect(0, 0, 64, 96);
+    ctx.fillStyle = '#ffffff';
+    // Shoulders and torso.
+    ctx.beginPath();
+    ctx.moveTo(8, 96);
+    ctx.quadraticCurveTo(8, 50, 32, 48);
+    ctx.quadraticCurveTo(56, 50, 56, 96);
+    ctx.fill();
+    // Head (slightly darker so the tint reads as a face over a shirt).
+    ctx.fillStyle = '#c9b4a0';
+    ctx.beginPath();
+    ctx.arc(32, 32, 14, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
 }
 
 export function createCrowd(
@@ -18,187 +46,129 @@ export function createCrowd(
   const group = new THREE.Group();
   group.name = 'Crowd';
 
-  // In Low quality, skip crowd for maximum frame rates
-  if (quality === 'Low') {
-    return {
-      group,
-      triggerGoal: () => {},
-      update: () => {},
-      dispose: () => {},
-    };
-  }
+  const cap = quality === 'High' ? 12000 : quality === 'Medium' ? 6000 : 2000;
 
-  const countPerSide = quality === 'High' ? 1200 : 600;
-  const countPerEnd = quality === 'High' ? 800 : 400;
-  const totalCount = countPerSide * 2 + countPerEnd * 2;
-
-  // Simple stylized spectator block (head + torso)
-  const geom = new THREE.BoxGeometry(0.5, 0.9, 0.4);
-  geom.translate(0, 0.45, 0);
-
-  const mat = new THREE.MeshStandardMaterial({
-    roughness: 0.8,
-    metalness: 0.1,
-  });
-
-  const mesh = new THREE.InstancedMesh(geom, mat, totalCount);
-  mesh.castShadow = false;
-  mesh.receiveShadow = false;
-
-  const homeColor1 = new THREE.Color(homeClub.colors.primary);
-  const homeColor2 = new THREE.Color(homeClub.colors.secondary);
-  const awayColor1 = new THREE.Color(awayClub.colors.primary);
-  const neutralColors = [
-    new THREE.Color(0x22262e),
-    new THREE.Color(0x363d4a),
-    new THREE.Color(0x191e24),
-    new THREE.Color(0x4a4742),
-  ];
-
-  interface SpectatorData {
-    baseY: number;
-    team: 'home' | 'away' | 'neutral';
-    pos: THREE.Vector3;
-    rotY: number;
-    phase: number;
-  }
-
-  const spectators: SpectatorData[] = [];
-  const dummy = new THREE.Object3D();
-  let instanceIdx = 0;
-
-  const populateStand = (
-    length: number,
-    depth: number,
-    height: number,
-    tiers: number,
-    standPos: THREE.Vector3,
-    rotY: number,
-    count: number,
-    isAwaySection: boolean,
-  ) => {
-    const tierDepth = depth / tiers;
-    const tierHeight = height / tiers;
-
-    for (let i = 0; i < count; i++) {
-      const tier = Math.floor(Math.random() * (tiers - 1));
-      const rowX = (Math.random() - 0.5) * (length - 4);
-      const rowZ = tier * tierDepth + tierDepth / 2;
-      const rowY = tierHeight * (tier + 1) + 0.35;
-
-      // Transform to world coordinates
-      dummy.position.set(rowX, rowY, rowZ);
-      dummy.rotation.set(0, 0, 0);
-      dummy.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY);
-      dummy.position.add(standPos);
-
-      // Look slightly toward pitch center
-      dummy.rotation.y = rotY + (Math.random() - 0.5) * 0.2;
-
-      // Color selection (SPEC §14.2: 65% home, 15% away, rest neutral)
-      let col: THREE.Color;
-      let team: 'home' | 'away' | 'neutral';
-
-      if (isAwaySection && Math.random() < 0.75) {
-        col = awayColor1;
-        team = 'away';
-      } else {
-        const roll = Math.random();
-        if (roll < 0.65) {
-          col = Math.random() < 0.7 ? homeColor1 : homeColor2;
-          team = 'home';
-        } else if (roll < 0.8) {
-          col = awayColor1;
-          team = 'away';
-        } else {
-          const nIdx = Math.floor(Math.random() * neutralColors.length);
-          col = neutralColors[nIdx] ?? neutralColors[0]!;
-          team = 'neutral';
-        }
+  // Collect candidate seats.
+  const seats: { pos: THREE.Vector3; yaw: number; away: boolean; phase: number }[] = [];
+  const tmp = new THREE.Vector3();
+  STANDS.forEach((s, sIdx) => {
+    const spacing = 0.6;
+    const n = Math.floor(s.length / spacing);
+    for (let r = 0; r < s.rows; r++) {
+      for (let i = 0; i < n; i++) {
+        const x = -s.length / 2 + (i + 0.5) * spacing;
+        const z = r * s.rowDepth + s.rowDepth * 0.55;
+        standToWorld(s, x, treadY(s, r), z, tmp);
+        seats.push({
+          pos: tmp.clone(),
+          yaw: s.yaw + Math.PI,
+          away: isAwayBlock(s, x),
+          phase: hash01(sIdx, r, i),
+        });
       }
-
-      dummy.scale.set(
-        0.85 + Math.random() * 0.3,
-        0.85 + Math.random() * 0.3,
-        0.85 + Math.random() * 0.3,
-      );
-      dummy.updateMatrix();
-
-      mesh.setMatrixAt(instanceIdx, dummy.matrix);
-      mesh.setColorAt(instanceIdx, col);
-
-      spectators.push({
-        baseY: dummy.position.y,
-        team,
-        pos: dummy.position.clone(),
-        rotY: dummy.rotation.y,
-        phase: Math.random() * Math.PI * 2,
-      });
-
-      instanceIdx++;
     }
+  });
+  const keep = Math.min(1, cap / seats.length);
+  const chosen = seats.filter((_, i) => hash01(i, 3, 11) < keep).slice(0, cap);
+  const count = chosen.length;
+
+  const geom = new THREE.PlaneGeometry(0.55, 0.82);
+  geom.translate(0, 0.41, 0);
+  const tex = supporterSprite();
+  const mat = new THREE.MeshLambertMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide });
+
+  const uniforms = {
+    uTime: { value: 0 },
+    uJumpTeam: { value: 0 }, // 1 home, 2 away
+    uJump: { value: 0 },
+  };
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = uniforms.uTime;
+    shader.uniforms.uJumpTeam = uniforms.uJumpTeam;
+    shader.uniforms.uJump = uniforms.uJump;
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+        attribute float aPhase;
+        attribute float aTeam;
+        uniform float uTime;
+        uniform float uJumpTeam;
+        uniform float uJump;`,
+      )
+      .replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>
+        float ph = aPhase * 6.2831;
+        transformed.y += sin(uTime * 1.7 + ph) * 0.035;
+        float jumping = step(0.5, uJump) * (1.0 - step(0.5, abs(aTeam - uJumpTeam)));
+        transformed.y += jumping * abs(sin(uTime * 10.5 + ph)) * 0.42 * uJump;
+        transformed.x += jumping * sin(uTime * 7.0 + ph) * 0.06;`,
+      );
   };
 
-  // Two Side Stands
-  populateStand(110, 14, 12, 8, new THREE.Vector3(0, 0, 40), 0, countPerSide, false);
-  populateStand(110, 14, 12, 8, new THREE.Vector3(0, 0, -40), Math.PI, countPerSide, false);
+  const mesh = new THREE.InstancedMesh(geom, mat, Math.max(1, count));
+  mesh.count = count;
+  mesh.frustumCulled = false;
+  const phases = new Float32Array(Math.max(1, count));
+  const teams = new Float32Array(Math.max(1, count));
 
-  // Two End Stands (one corner assigned as away block)
-  populateStand(72, 12, 10, 7, new THREE.Vector3(59, 0, 0), -Math.PI / 2, countPerEnd, true);
-  populateStand(72, 12, 10, 7, new THREE.Vector3(-59, 0, 0), Math.PI / 2, countPerEnd, false);
-
+  const home1 = new THREE.Color(homeClub.colors.primary);
+  const home2 = new THREE.Color(homeClub.colors.secondary);
+  const away1 = new THREE.Color(awayClub.colors.primary);
+  const away2 = new THREE.Color(awayClub.colors.secondary);
+  const coats = [
+    new THREE.Color(0x2a2e36),
+    new THREE.Color(0x3b342e),
+    new THREE.Color(0x1e2533),
+    new THREE.Color(0x4a4a4a),
+  ];
+  const dummy = new THREE.Object3D();
+  const col = new THREE.Color();
+  chosen.forEach((seat, i) => {
+    dummy.position.copy(seat.pos);
+    dummy.rotation.set(0, seat.yaw + (seat.phase - 0.5) * 0.3, 0);
+    const sc = 0.9 + seat.phase * 0.22;
+    dummy.scale.set(sc, sc, sc);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
+    const roll = hash01(i, 5, 2);
+    let team = 1;
+    if (seat.away) {
+      team = 2;
+      col.copy(roll < 0.75 ? away1 : roll < 0.9 ? away2 : coats[0]!);
+    } else if (roll < 0.65) {
+      col.copy(roll < 0.45 ? home1 : home2);
+    } else {
+      team = 0;
+      col.copy(coats[Math.floor(roll * 997) % coats.length]!);
+    }
+    mesh.setColorAt(i, col);
+    phases[i] = seat.phase;
+    teams[i] = team;
+  });
+  geom.setAttribute('aPhase', new THREE.InstancedBufferAttribute(phases, 1));
+  geom.setAttribute('aTeam', new THREE.InstancedBufferAttribute(teams, 1));
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   group.add(mesh);
 
-  let celebrationTimer = 0;
-  let celebratingSide: Side | null = null;
-  let totalTime = 0;
-
+  let celebration = 0;
   return {
     group,
     triggerGoal: (side: Side) => {
-      celebrationTimer = 3.0; // 3 seconds jump celebration per SPEC §14.2
-      celebratingSide = side;
+      celebration = 3.0;
+      uniforms.uJumpTeam.value = side === 'home' ? 1 : 2;
     },
     update: (delta: number) => {
-      totalTime += delta;
-      if (celebrationTimer > 0) {
-        celebrationTimer = Math.max(0, celebrationTimer - delta);
-      }
-
-      let matricesNeedUpdate = false;
-
-      // Update bobbing and jumps
-      for (let i = 0; i < spectators.length; i++) {
-        const spec = spectators[i];
-        if (!spec) continue;
-        let jumpY = 0;
-
-        // Goal jump wave
-        if (celebrationTimer > 0 && spec.team === celebratingSide) {
-          jumpY = Math.abs(Math.sin(totalTime * 12 + spec.phase)) * 0.5;
-        } else {
-          // Idle ambient sway/bob
-          jumpY = Math.sin(totalTime * 1.8 + spec.phase) * 0.04;
-        }
-
-        dummy.position.copy(spec.pos);
-        dummy.position.y = spec.baseY + jumpY;
-        dummy.rotation.set(0, spec.rotY, 0);
-        dummy.updateMatrix();
-
-        mesh.setMatrixAt(i, dummy.matrix);
-        matricesNeedUpdate = true;
-      }
-
-      if (matricesNeedUpdate) {
-        mesh.instanceMatrix.needsUpdate = true;
-      }
+      uniforms.uTime.value += delta;
+      celebration = Math.max(0, celebration - delta);
+      uniforms.uJump.value = celebration > 0 ? Math.min(1, celebration) : 0;
     },
     dispose: () => {
       geom.dispose();
       mat.dispose();
+      tex.dispose();
     },
   };
 }
