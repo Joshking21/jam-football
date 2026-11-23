@@ -75,6 +75,7 @@ In-match effect: pre-match and half-time talks also grant a team-wide `focusBoos
 UI shows each tone's predicted reaction as "Most will respond well / Mixed / Likely to backfire" from the sign and size of the expected average.
 
 ### 12.9 Player conversations (`conversations.ts`, `content/conversations.json`)
+Design reference (office scene, M6b): `docs/design/door-knock/`.
 Triggers (checked at WeekSummary, at most 1 new conversation per week):
 - **Playing time**: role Star/Starter or promisedRole Starter, started < 50% of the last 4 matches while fit → 60% chance.
 - **New contract**: Ambitious or OVR rose by ≥ 3 this season and yearsLeft = 1 → 30% chance.

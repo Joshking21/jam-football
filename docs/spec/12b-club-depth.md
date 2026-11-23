@@ -126,6 +126,7 @@ In the Players tab of Training, and in the player's file:
   - **Cost:** the mentor's own development ×0.9. If the mentor is sold or loses his place for 3 matches running, the mentee's morale −6.
 
 #### 12.18.6 One-to-one sessions
+Design reference: `docs/design/one-to-one/`.
 Once per week the coach takes **one player** for a personal session on the training ground. It is a scene with that player, with faces and voices (§11.25, §14.11), and the coach's lines come from `training.json`. Pick one type:
 
 | Type | Effect | When it's offered |

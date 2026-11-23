@@ -9,9 +9,11 @@
 - Every list/table row is keyboard-focusable and opens with Enter.
 
 ### 11.1 Boot / loading
+**Design reference: `docs/design/extras/` (loading panel).**
 Plain HTML/CSS splash inside `index.html` (no JS needed): dark background, game logo text in the heading font, a thin progress bar. It MUST paint within 300 ms of navigation. React replaces it when ready. Then preload the title assets (logo, title background image, music) and prefetch the three.js chunk in idle time.
 
 ### 11.2 Title
+**Load screen design reference: `docs/design/load/`.**
 **Design reference: `docs/design/title/` (approved 23 Nov; it wins over the bullets below on layout and look).**
 - Background: title image `images/ui/title_bg.webp` (fallback: CSS gradient + animated pitch lines). If three.js chunk is loaded and quality ≥ Medium, MAY show a slow 3D stadium flyover instead.
 - Logo text: `GAME_TITLE` in Barlow Condensed 700, 96 px.
@@ -25,10 +27,12 @@ Step 2 — **Your name** (text input, default "The Gaffer") and **Tutorial on/of
 Step 3 — Start: create the save (§20), go to BoardMeeting.
 
 ### 11.4 Board Meeting (once, at start)
+**Design reference (M6b talk scene): `docs/design/boardroom/`.**
 Full-screen card styled like a meeting room: chairman portrait (fictional, `images/people/chairman_{clubId}.webp`, fallback avatar), the expectation, transfer budget, wage budget, and three bullet "board notes" generated from club data (e.g. "We expect attacking football." from mentality; "Develop young players." if the club has ≥2 prospects with potential ≥ 75). Button: "Accept the job".
 **v1.7:** this takes place in the **Boardroom** (§11.25). The owner sits at the head of the table with 2 directors, speaks the welcome and the expectation (voiced, `club.json`), and the card above slides in on the table.
 
 ### 11.5 Hub (home screen)
+**M6b office version: `docs/design/hub-desk/` (23 Nov). The 2D Hub stays `docs/design/hub/` until then.**
 Grid of cards:
 - **Next match** (large): opponent crest, venue, matchday, kickoff, weather icon, opponent form (last 5), table positions, the assistant's one-line preview. Buttons: Go to match (Continue), Opponent report.
 - **League snapshot**: top 3, your row, bottom 2, with movement arrows.
@@ -136,11 +140,14 @@ Dramatic card: "You have been relieved of your duties." Reason, record, grade F,
 **v1.7:** the coach is called to the **Boardroom**. The owner tells him to his face (voiced, `club.json`, mood angry or worried by the reason), then the card.
 
 ### 11.22 Settings (modal)
+**Design reference: `docs/design/settings/`.**
 Audio: master, music, crowd, commentary, effects (sliders 0–100), commentary voice on/off (captions stay). Gameplay: default match speed, auto-continue after highlights (on/off), confirm before Instant Result, **coach walks between rooms (on/off, §11.25.2)**. Graphics: Quality Auto/Low/Medium/High, show FPS. Accessibility: reduce motion, larger UI text (+12.5%), colour-blind-friendly attribute colours (blue→orange scale). Data: export save (JSON download), import save, delete saves.
 
 ### 11.23 Credits
+**Design reference: `docs/design/extras/` (credits panel).**
 Game by [entrant name] — leave a placeholder constant `CREDITS` in `constants.ts` that the user fills in. Lists collaborators, "Voices: ElevenLabs", "Images: fal", "3D models: Meshy", fonts (Barlow Condensed, Inter — SIL OFL), three.js (MIT), React (MIT). Show license notices.
 
 ### 11.24 Tutorial (first season, can be turned off)
+**Design reference: `docs/design/extras/` (tutorial hint).**
 Seven coach-marks shown by the assistant in a speech-bubble component, each once: (1) Hub overview, (2) Continue button, (3) Tactics: drag a player, (4) Assistant Apply button in Pre-Match, (5) Team talk, (6) Match HUD controls (speed, subs, camera), (7) Week summary and board meter. "Skip tutorial" always visible.
 

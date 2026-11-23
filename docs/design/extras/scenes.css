@@ -1,0 +1,21 @@
+.room{position:absolute;left:28px;top:76px;z-index:5;font:700 15px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(10,12,16,.72);border:1px solid #2A313D;padding:10px 14px}.room span{color:var(--dim);margin-left:8px}
+.hint{position:absolute;right:28px;top:76px;z-index:5;font:500 13px/1 Inter;color:#cfd5de;background:rgba(10,12,16,.72);border:1px solid #2A313D;padding:9px 12px;display:flex;gap:8px;align-items:center}
+.q{position:absolute;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:14px;align-items:center;background:rgba(8,10,14,.86);border-left:4px solid var(--acc);padding:14px 22px 14px 16px;font:500 22px/1.3 Inter;max-width:1200px}
+.q b{font:700 15px/1 'Barlow Condensed';letter-spacing:.12em;color:var(--acc);white-space:nowrap;text-transform:uppercase}
+.q small{display:block;font:500 12px/1 Inter;color:var(--dim);margin-top:4px;letter-spacing:0;text-transform:none}
+.choice{position:absolute;left:50%;bottom:30px;transform:translateX(-50%) rotate(-.3deg);z-index:5;background:#EFEBE3;color:var(--ink);box-shadow:0 24px 60px rgba(0,0,0,.7);padding:22px 26px 24px}
+.ch{display:flex;align-items:baseline;gap:18px;margin-bottom:14px}
+.ch h3{font:800 32px/1 'Barlow Condensed';text-transform:uppercase}
+.ch span{font:500 14px/1 Inter;color:var(--pdim)}
+.ch .theo{margin-left:auto;font:italic 400 15px/1.3 'Source Serif 4',serif}.ch .theo b{font:700 12px/1 'Barlow Condensed';letter-spacing:.14em;font-style:normal;color:var(--pdim);margin-right:6px}
+.opts{display:grid;gap:14px}
+.opt{position:relative;border:2px solid var(--ink);padding:16px 16px 14px}
+.opt .k{position:absolute;top:10px;right:10px;font:600 11px/1 Inter;border:1px solid #9a9184;border-radius:2px;padding:2px 5px;color:var(--pdim)}
+.opt .tn{font:700 12px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;color:var(--pdim)}
+.opt .ln{font:600 18px/1.3 'Source Serif 4',serif;margin-top:8px}
+.opt .fx{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.opt .fx span{font:700 12px/1 'Barlow Condensed';letter-spacing:.08em;padding:5px 7px 4px;border:1.5px solid currentColor}
+.opt .risk{font:500 12px/1.35 Inter;color:var(--red);margin-top:8px}
+.opt.hov{background:var(--ink);color:var(--paper);transform:translateY(-6px);box-shadow:0 10px 0 -4px var(--acc)}
+.opt.hov .tn,.opt.hov .k{color:#cfc6b6}.opt.hov .risk{color:#ff8a8a}
+.g{color:#1E7B3C}.b{color:#C42B2B}.n{color:#5E574E}.opt.hov .g{color:#5fd08e}.opt.hov .b{color:#ff8a8a}.opt.hov .n{color:#cfc6b6}

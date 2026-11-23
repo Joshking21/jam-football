@@ -1,0 +1,49 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{background:#05070b}
+.p{position:absolute;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.6)}
+.lbl{position:absolute;z-index:5;font:700 13px/1 'Barlow Condensed';letter-spacing:.2em;text-transform:uppercase;color:#05070b;background:var(--acc);padding:6px 10px 5px}
+/* credits */
+.cr{left:40px;top:40px;width:900px;height:1000px;background:#0B1F3A}
+.cr .in{position:absolute;left:50%;top:60px;transform:translateX(-50%);width:640px;background:#EFEBE3;color:var(--ink);padding:36px 46px 30px;box-shadow:0 20px 40px rgba(0,0,0,.5)}
+.cr h2{font:900 34px/1 'Playfair Display',serif;text-align:center}
+.cr .sub{text-align:center;font:600 12px/1 'Barlow Condensed';letter-spacing:.2em;text-transform:uppercase;color:var(--pdim);margin-top:8px;border-bottom:3px double var(--ink);padding-bottom:14px}
+.cr h4{font:700 12px/1 'Barlow Condensed';letter-spacing:.2em;text-transform:uppercase;color:var(--pdim);margin:18px 0 8px;text-align:center}
+.cr .ts{display:grid;grid-template-columns:40px 1fr auto;gap:6px 10px;font:600 16px/1.4 'Barlow Condensed';letter-spacing:.04em;text-transform:uppercase}
+.cr .ts b{color:var(--pdim)}.cr .ts .r{font:500 13px/1.6 Inter;text-transform:none;letter-spacing:0;color:var(--pdim)}
+.cr .lic{font:400 12px/1.5 'Source Serif 4',serif;color:var(--pdim);text-align:center;margin-top:16px}
+/* splash */
+.sp{left:980px;top:40px;width:900px;height:480px;background:#07090D;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.sp .w{font:800 96px/.9 'Barlow Condensed';text-transform:uppercase;color:#F4F1EA;letter-spacing:.01em}
+.sp .bar{width:360px;height:3px;background:#1d232c;margin-top:28px;position:relative}.sp .bar i{position:absolute;left:0;top:0;bottom:0;width:62%;background:var(--acc)}
+.sp small{font:600 13px/1 'Barlow Condensed';letter-spacing:.22em;text-transform:uppercase;color:#6f7886;margin-top:16px}
+.sp .tip{position:absolute;bottom:30px;font:italic 400 15px/1.4 'Source Serif 4',serif;color:#a3acba}
+/* tutorial */
+.tu{left:980px;top:560px;width:900px;height:480px;background:url('tactics_v5.png') -90px -40px/1150px auto}
+.tu .dim{position:absolute;inset:0;background:rgba(5,7,11,.55)}
+.tu .hole{position:absolute;left:243px;top:157px;width:90px;height:90px;border-radius:50%;box-shadow:0 0 0 2000px rgba(5,7,11,.5),0 0 0 4px var(--acc);z-index:2}
+.tu .bub{position:absolute;left:372px;top:128px;width:380px;background:#EFEBE3;color:var(--ink);padding:16px 18px 14px;z-index:3;box-shadow:0 14px 30px rgba(0,0,0,.6)}
+.tu .bub:before{content:"";position:absolute;left:-14px;top:40px;border:14px solid transparent;border-right-color:#EFEBE3;border-left:0}
+.tu .who{display:flex;gap:12px;align-items:center}
+.tu .who .ph{width:48px;height:56px;background:#efe3bd;overflow:hidden}
+.tu .who b{font:700 14px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase}.tu .who small{display:block;font:500 11px/1 Inter;color:var(--pdim);margin-top:3px}
+.tu p{font:500 15px/1.45 Inter;margin-top:10px}
+.tu .f{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font:600 12px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--pdim)}
+.tu .f span.n{background:var(--ink);color:var(--paper);padding:7px 12px}
+</style></head><body>
+<div class="p cr"><span class="lbl" style="left:0;top:0">Credits</span>
+ <div class="in"><h2>Today's team sheet</h2><div class="sub">A Port Calloway production · OpenGame Game Jam #1</div>
+  <h4>The starting eleven</h4>
+  <div class="ts"><b>1</b><span>[Entrant name]</span><span class="r">Game design, direction</span><b>2</b><span>[Collaborator]</span><span class="r">Credited helper</span><b>3</b><span>Gemini</span><span class="r">Code, from the spec</span><b>4</b><span>Claude</span><span class="r">Design, art direction, assets</span></div>
+  <h4>On the bench (tools)</h4>
+  <div class="ts"><b>12</b><span>ElevenLabs</span><span class="r">Voices, commentary, sound, music</span><b>14</b><span>fal</span><span class="r">Portraits, backdrops, press photos</span><b>16</b><span>Meshy</span><span class="r">Players, the stadium, the club</span><b>18</b><span>three.js · React</span><span class="r">MIT licence</span><b>20</b><span>Barlow Condensed · Inter · Playfair Display · Source Serif 4</span><span class="r">SIL Open Font Licence</span></div>
+  <h4>Thanks</h4><div class="lic">Every club, player, paper and town in this game is made up. Any likeness to a real one is a coincidence. Full licence texts are below the team sheet.</div>
+ </div></div>
+<div class="p sp"><span class="lbl" style="left:0;top:0">Loading (HTML/CSS only, paints in under 300 ms)</span><div class="w">Touchline</div><div class="bar"><i></i></div><small>Floodlights warming up</small><div class="tip">"Set-piece practice sharpens the routine you rotate least." — Theo</div></div>
+<div class="p tu"><span class="lbl" style="left:0;top:0;z-index:6">Tutorial hint (Theo)</span><div class="hole"></div>
+ <div class="bub"><div class="who"><div class="ph"><svg id="th" width="48" height="56"></svg></div><div><b>Theo</b><small>Assistant manager · tip 3 of 7</small></div></div>
+  <p>Drag a magnet onto another player to swap them. Click one to open his file and change his role.</p>
+  <div class="f"><span>Skip the tutorial</span><span class="n">Got it · Enter</span></div></div></div>
+<script src="base.js"></script>
+<script>halftone('th',48,56,2.4,portraitLum(48,56,0),'#0B1F3A');</script>
+</body></html>

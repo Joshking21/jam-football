@@ -1,0 +1,104 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{background:#1a120b}
+.desk{position:absolute;inset:56px 0 0 0;background:
+ linear-gradient(115deg,rgba(255,236,200,.16) 0%,rgba(255,236,200,.06) 22%,transparent 23%,transparent 30%,rgba(255,236,200,.07) 31%,rgba(255,236,200,.03) 48%,transparent 49%),
+ repeating-linear-gradient(92deg,rgba(0,0,0,.08) 0 2px,transparent 2px 7px,rgba(255,255,255,.02) 7px 9px,transparent 9px 23px),
+ linear-gradient(180deg,#5a3a22,#3d2614)}
+.chipt{position:absolute;left:50%;top:68px;transform:translateX(-50%);z-index:6;display:flex;gap:10px;align-items:center;background:rgba(8,10,14,.8);border:1px solid #2A313D;padding:8px 14px;font:700 14px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase}
+.chipt b{color:var(--acc)}
+.o{position:absolute;box-shadow:0 2px 0 rgba(0,0,0,.25),0 16px 30px rgba(0,0,0,.45)}
+/* programme */
+.prog{left:70px;top:120px;width:640px;height:880px;background:#0B1F3A;color:#fff;transform:rotate(-2deg);padding:0;overflow:hidden}
+.prog .band{height:12px;background:var(--acc)}
+.prog .top{display:flex;justify-content:space-between;padding:16px 24px 0;font:700 13px/1 'Barlow Condensed';letter-spacing:.2em;color:var(--acc)}
+.prog .mid{text-align:center;padding:26px 20px 0}
+.prog .crests{display:flex;justify-content:center;align-items:center;gap:40px;margin-top:20px}
+.prog .v{font:800 34px/1 'Barlow Condensed';color:var(--acc)}
+.prog h2{font:800 66px/.9 'Barlow Condensed';text-transform:uppercase;margin-top:22px;letter-spacing:.005em}
+.prog .when{font:600 17px/1.3 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:#cfd5de;margin-top:12px}
+.prog .when b{color:#fff;font-size:30px;display:block;letter-spacing:.04em;margin-top:4px}
+.prog .form{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:26px 24px 0;font:600 13px/1 'Barlow Condensed';letter-spacing:.12em;color:#cfd5de;text-transform:uppercase}
+.prog .form div{background:rgba(255,255,255,.06);padding:10px 12px}
+.prog .form span{display:flex;gap:4px;margin-top:8px}.prog .form span b{width:18px;height:18px;font:700 11px/18px 'Barlow Condensed';text-align:center;color:#0a0d12}
+.W{background:#3fd38b}.D{background:#a3acba}.L{background:#ff5d6c}
+.prog .rep{margin:18px 24px 0;background:#EFEBE3;color:var(--ink);padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.prog .rep p{font:500 14px/1.4 Inter}.prog .rep b{font:700 11px/1 'Barlow Condensed';letter-spacing:.14em;display:block;color:var(--pdim);margin-bottom:4px}
+.prog .stripe{position:absolute;left:0;right:0;bottom:0;height:120px;background:repeating-linear-gradient(115deg,#0B1F3A 0 22px,#0f2850 22px 44px)}
+.prog .price{position:absolute;right:20px;bottom:18px;font:700 13px/1 'Barlow Condensed';letter-spacing:.14em;color:var(--acc);background:#0B1F3A;padding:6px 8px}
+/* paper */
+.paper2{left:760px;top:110px;width:600px;height:400px;background:#EDE8DC;color:#141414;transform:rotate(1.6deg);padding:16px 22px}
+.paper2 .mast{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px double #141414;padding-bottom:6px}
+.paper2 .mast b{font:900 30px/1 'Playfair Display',serif}.paper2 .mast span{font:600 10.5px/1.3 'Barlow Condensed';letter-spacing:.14em;color:#3a3630;text-transform:uppercase;text-align:right}
+.paper2 h3{font:800 44px/.88 'Barlow Condensed';text-transform:uppercase;margin-top:12px}
+.paper2 .sf{font:600 15px/1.3 'Source Serif 4',serif;margin-top:6px}
+.paper2 .row{display:grid;grid-template-columns:1fr 200px;gap:14px;margin-top:10px}
+.paper2 .cols{columns:2;column-gap:12px;font:400 11.5px/1.4 'Source Serif 4',serif;text-align:justify}
+.paper2 .ph{height:150px;background:#efe3bd;overflow:hidden}
+/* table card */
+.tbl{left:1410px;top:120px;width:440px;height:350px;background:#fbf8f1;color:var(--ink);transform:rotate(-1.2deg);padding:18px 20px}
+.tbl .r{display:grid;grid-template-columns:28px 1fr 40px 40px;padding:6px 0;border-bottom:1px solid #e0d8c8;font:600 16px/1 'Barlow Condensed';letter-spacing:.04em;text-transform:uppercase}
+.tbl .r.us{background:rgba(242,183,5,.25);box-shadow:inset 4px 0 0 var(--acc)}
+.tbl .r span:nth-child(3),.tbl .r span:nth-child(4){text-align:right}
+/* inbox stack */
+.inb{position:absolute;left:1420px;top:520px;width:430px}
+.inb .m{background:#fbf8f1;color:var(--ink);padding:12px 16px;margin-bottom:-14px;border-left:6px solid var(--c);box-shadow:0 8px 16px rgba(0,0,0,.35);position:relative}
+.inb .m b{font:700 17px/1.15 'Barlow Condensed';text-transform:uppercase;display:block}
+.inb .m small{font:500 12px/1.3 Inter;color:var(--pdim)}
+.inb .m .st{position:absolute;right:12px;top:10px;font:800 10px/1 'Barlow Condensed';letter-spacing:.16em;color:var(--red);border:2px solid var(--red);padding:3px 5px 2px;transform:rotate(-6deg)}
+/* squad notepad */
+.pad{left:770px;top:570px;width:300px;height:330px;background:#fff9df;color:var(--ink);transform:rotate(-3deg);padding:44px 20px 16px;background-image:repeating-linear-gradient(0deg,transparent 0 25px,rgba(31,79,191,.18) 25px 26px)}
+.pad:before{content:"";position:absolute;left:0;right:0;top:0;height:26px;background:#C42B2B}
+.pad div{display:flex;justify-content:space-between;font:italic 400 17px/26px 'Source Serif 4',serif}
+.pad b{font:700 18px/26px 'Barlow Condensed';font-style:normal}
+/* board letter */
+.brd{left:1100px;top:560px;width:280px;height:250px;background:#f6f2e8;color:var(--ink);transform:rotate(2.4deg);padding:16px 18px}
+.mt{margin-top:10px}.mt span{display:block;font:700 11px/1 'Barlow Condensed';letter-spacing:.14em;color:var(--pdim);text-transform:uppercase}
+.mt b{font:800 28px/1 'Barlow Condensed'}.mt i{display:block;height:6px;background:#ddd6c8;margin-top:4px;position:relative}.mt i u{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+/* theo sticky */
+.note{left:430px;top:830px;width:300px;background:#fff3a8;color:#2a2410;padding:14px 16px;transform:rotate(3deg);z-index:4}
+.note b{font:700 12px/1 'Barlow Condensed';letter-spacing:.14em;display:block;margin-bottom:6px}
+.note p{font:500 14px/1.4 Inter}
+.note span{display:inline-block;margin-top:10px;background:#2a2410;color:#fff3a8;font:700 13px/1 'Barlow Condensed';letter-spacing:.12em;padding:7px 12px}
+.note:before{content:"";position:absolute;top:-8px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e05a4a,#8a1f17)}
+/* props */
+.mug{position:absolute;left:1180px;top:880px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,#3a2414 0 44%,#e9e4da 45% 58%,rgba(0,0,0,.35) 60%,transparent 70%)}
+.phone{position:absolute;left:1600px;top:930px;width:200px;height:110px;background:#1a1a1a;border-radius:12px;transform:rotate(-8deg);box-shadow:0 10px 20px rgba(0,0,0,.5)}
+.phone i{position:absolute;right:16px;top:14px;width:12px;height:12px;border-radius:50%;background:#ff3b2e;box-shadow:0 0 12px #ff3b2e}
+.phone small{position:absolute;left:16px;bottom:12px;font:700 11px/1 'Barlow Condensed';letter-spacing:.14em;color:#ff8a7a}
+.pen{position:absolute;left:1060px;top:930px;width:180px;height:12px;background:linear-gradient(#1B1A17,#3a3630);border-radius:6px;transform:rotate(24deg)}
+.cont{position:absolute;right:40px;bottom:24px;z-index:6}
+</style></head><body>
+<div class="desk"></div>
+<div class="chipt">Mon · <b>Morning</b> · Matchday 9 is Saturday</div>
+<div class="o prog"><div class="band"></div>
+ <div class="top"><span>Official matchday programme</span><span>No. 9 · 2026/27</span></div>
+ <div class="mid"><div class="crests"><svg width="120" height="136" viewBox="0 0 30 34"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#2B2B2B" stroke="#FF6A13" stroke-width="1.4"/><path d="M9 22 h12 M11 22 v-7 h8 v7 M13 15 v-5 h4 v5" stroke="#FF6A13" stroke-width="1.6" fill="none"/></svg><div class="v">v</div><svg width="120" height="136" viewBox="0 0 30 34"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#F2B705" stroke="#fff" stroke-width="1"/><path d="M15 8 v18 M9 13 h12 M8.5 20 q6.5 7 13 0" stroke="#0B1F3A" stroke-width="2.2" fill="none"/></svg></div>
+  <h2>Ironvale<br>v Port Calloway</h2>
+  <div class="when">Saturday · Furnace Park · afternoon<b>15:00 · 5th v 2nd</b></div></div>
+ <div class="form"><div>Ironvale · last 5<span><b class="W">W</b><b class="W">W</b><b class="D">D</b><b class="L">L</b><b class="W">W</b></span></div><div>Port Calloway · last 5<span><b class="W">W</b><b class="L">L</b><b class="W">W</b><b class="W">W</b><b class="W">W</b></span></div></div>
+ <div class="rep"><div><b>Theo's preview</b><p>They go long to Gil and their full-backs push on. Space behind them for Ilori.</p></div><span class="btn">Opponent report</span></div>
+ <div class="stripe"></div><div class="price">€3.50</div>
+</div>
+<div class="o paper2"><div class="mast"><b>The Calloway Gazette</b><span>Monday 16 November<br>Sport</span></div>
+ <h3>Mariners up to second</h3><div class="sf">Calder's back-post header sinks the Crows</div>
+ <div class="row"><div class="cols">Rhys Calder's 71st-minute header settled a nervy night at The Lanternworks, and with Saltmere held by Ironvale, the Mariners sit two points off the top. The manager now takes his side to Furnace Park, where Ironvale are unbeaten in four. "We've practised that one to death," said Calder.</div><div class="ph"><svg id="ph" width="200" height="150"></svg></div></div></div>
+<div class="o tbl"><div class="lab" style="margin-bottom:8px">Meridian League · top six</div>
+ <div class="r"><span>1</span><span>Saltmere</span><span>+9</span><span>19</span></div><div class="r us"><span>2</span><span>Port Calloway</span><span>+7</span><span>17</span></div><div class="r"><span>3</span><span>Kestrel Bay</span><span>+6</span><span>16</span></div><div class="r"><span>4</span><span>Northgate</span><span>+3</span><span>14</span></div><div class="r"><span>5</span><span>Ironvale</span><span>+2</span><span>13</span></div><div class="r"><span>6</span><span>Ashcombe</span><span>+1</span><span>12</span></div>
+ <div style="margin-top:14px;font:600 12px/1 'Barlow Condensed';letter-spacing:.12em;color:var(--pdim);text-transform:uppercase">Full table on the TV →</div></div>
+<div class="inb"><div class="lab" style="color:#e9dfc6;margin-bottom:10px">In-tray · 2 need you</div>
+ <div class="o m" style="--c:#C98A12;transform:rotate(-1deg)"><span class="st">ACTION</span><b>Calder's contract</b><small>His agent wants talks this week.</small></div>
+ <div class="o m" style="--c:#C42B2B;transform:rotate(1.2deg)"><span class="st">ACTION</span><b>Mensah-Lowe late again</b><small>Deal with it before Saturday.</small></div>
+ <div class="o m" style="--c:#1E7B3C;transform:rotate(-.6deg)"><b>Achebe: twisted ankle</b><small>Out for 2 matchdays.</small></div></div>
+<div class="o pad"><div><span>Fit to play</span><b>21</b></div><div><span>Injured</span><b style="color:#C42B2B">1 · Achebe</b></div><div><span>Suspended</span><b>0</b></div><div><span>Unhappy</span><b style="color:#C42B2B">1 · Mensah-Lowe</b></div><div><span>Tired (fatigue &gt; 50)</span><b style="color:#C98A12">3</b></div><div><span>Contracts ending</span><b>3</b></div></div>
+<div class="o brd"><div class="lab">The board · the fans</div><div class="mt"><span>Board confidence</span><b>68 <small class="up" style="font-size:14px">▲4</small></b><i><u style="width:68%"></u></i></div><div class="mt"><span>Fan mood</span><b>74 <small class="up" style="font-size:14px">▲3</small></b><i><u style="width:74%"></u></i></div><div style="font:italic 400 13px/1.35 'Source Serif 4',serif;margin-top:10px">"Keep the wage bill where it is." — M.H.</div></div>
+<div class="o note"><b>THEO</b><p>Three of them are tired. I'd swap Pressing for Recovery on Tuesday.</p><span>APPLY</span></div>
+<div class="pen"></div><div class="mug"></div><div class="phone"><i></i><small>Chairman · missed call</small></div>
+<div class="cont"></div>
+<script src="base.js"></script>
+<script>
+topbar('Hub','MD <b>8/18</b> · <b>2nd</b> · <b>17 pts</b>','Continue');
+halftone('ph',200,150,3.4,(x,y)=>{let l=0.3+0.6*Math.max(0,1-Math.hypot(x-30,y-10)/150);if(y>70&&y<100)l=0.35;if(y>=100)l=0.5;
+ const cx=110;const body=seg(x,y,cx,62,cx,110)<14||seg(x,y,cx-8,110,cx-12,150)<6||seg(x,y,cx+8,110,cx+12,150)<6;const arms=seg(x,y,cx-12,66,cx-34,30)<5||seg(x,y,cx+12,66,cx+34,30)<5;const head=Math.hypot((x-cx)/9,(y-48)/10)<1;
+ if(body||arms)l=0.12;if(head)l=0.3;return Math.max(.03,Math.min(.97,l))});
+</script></body></html>

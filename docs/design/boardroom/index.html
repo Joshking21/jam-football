@@ -1,0 +1,56 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css"><link rel="stylesheet" href="scenes.css">
+<style>body{background:#120d09}
+.terms{display:grid;grid-template-columns:repeat(4,1fr);border:2px solid var(--ink);margin-bottom:14px}
+.terms div{padding:10px 14px;border-right:1px solid var(--rule)}.terms div:last-child{border:0}
+.terms span{display:block;font:700 11px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--pdim)}
+.terms b{display:block;font:800 24px/1 'Barlow Condensed';margin-top:5px}
+.notes{font:400 15px/1.5 'Source Serif 4',serif;margin-bottom:14px}.notes div:before{content:"— ";color:var(--pdim)}
+</style></head><body>
+<svg id="sc" width="1920" height="1080" style="position:absolute;inset:0"></svg>
+<div class="room">Boardroom <span>· Day one</span></div>
+<div class="hint">Your call: <kbd>1</kbd>–<kbd>2</kbd> <kbd>Enter</kbd></div>
+<div class="q" style="top:520px"><b>Margaret Holloway<small>Owner</small></b>"Those are our terms. The title, nothing less. So, will you take the job?"</div>
+<div class="choice" style="width:1240px">
+ <div class="ch"><h3>The board's offer</h3><span>Port Calloway FC · season 2026/27</span><span class="theo"><b>THEO</b>(waiting outside) "Say yes. Then we talk."</span></div>
+ <div class="terms"><div><span>The board expects</span><b>Win the league</b></div><div><span>Transfer budget</span><b>€40M</b></div><div><span>Wage budget</span><b>€510K / wk</b></div><div><span>Contract</span><b>2 years</b></div></div>
+ <div class="notes"><div>We expect attacking football. The Lanternworks wants goals.</div><div>Give the young players minutes: Nwosu and Okafor are the future.</div><div>Beat Saltmere. Twice, if you can.</div></div>
+ <div class="opts" style="grid-template-columns:1.4fr 1fr">
+  <div class="opt hov"><span class="k">1</span><div class="tn">Accept</div><div class="ln">"I'll take it. We'll win it."</div><div class="fx"><span class="g">Board +5 on day one</span></div></div>
+  <div class="opt"><span class="k">2</span><div class="tn">Read the dossier again</div><div class="ln">Back to the clubs. No harm done.</div></div>
+ </div>
+</div>
+<script src="base.js"></script><script src="people.js"></script>
+<script>
+topbar('','New game · <b>Port Calloway FC</b>','');document.querySelector('.top .tabs').remove();
+let s=`<defs><linearGradient id="wl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2618"/><stop offset="1" stop-color="#24170e"/></linearGradient>
+<linearGradient id="tb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a2c18"/><stop offset="1" stop-color="#2a170b"/></linearGradient>
+<radialGradient id="win" cx="50%" cy="50%" r="60%"><stop offset="0" stop-color="#cfe0ff" stop-opacity=".5"/><stop offset="1" stop-color="#cfe0ff" stop-opacity="0"/></radialGradient>
+<radialGradient id="vig" cx="50%" cy="40%" r="75%"><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".75"/></radialGradient></defs>`;
+// room
+s+=`<rect width="1920" height="1080" fill="url(#wl)"/>`;
+s+=`<polygon points="0,0 1920,0 1500,170 420,170" fill="#1a110b"/>`;
+s+=`<rect x="420" y="170" width="1080" height="420" fill="#2e1e13"/>`;
+// wood panelling lines
+for(let x=440;x<1500;x+=90)s+=`<line x1="${x}" y1="360" x2="${x}" y2="590" stroke="#1a100a" stroke-width="3"/>`;
+s+=`<line x1="420" y1="360" x2="1500" y2="360" stroke="#5a3a22" stroke-width="4"/>`;
+// big window behind owner showing the pitch
+s+=`<rect x="760" y="190" width="400" height="160" fill="#0d1830"/><polygon points="760,300 1160,280 1160,350 760,350" fill="#2c5a2c"/><line x1="960" y1="280" x2="960" y2="350" stroke="#e8efe6" stroke-opacity=".5"/><rect x="760" y="190" width="400" height="160" fill="url(#win)"/><rect x="760" y="190" width="400" height="160" fill="none" stroke="#5a3a22" stroke-width="10"/><line x1="960" y1="190" x2="960" y2="350" stroke="#5a3a22" stroke-width="6"/>`;
+// portraits of past chairmen
+[[500,200],[620,200],[1220,200],[1340,200]].forEach(([x,y],i)=>{s+=`<rect x="${x}" y="${y}" width="90" height="120" fill="#c9a86a"/><rect x="${x+8}" y="${y+8}" width="74" height="104" fill="#e9dfc6"/><circle cx="${x+45}" cy="${y+48}" r="16" fill="#3a2a1c" opacity=".55"/><path d="M${x+20} ${y+108} q25 -36 50 0" fill="#3a2a1c" opacity=".55"/>`});
+// floor
+s+=`<polygon points="420,590 1500,590 1920,1080 0,1080" fill="#2a1a10"/>`;
+// owner at head of table (far), directors on sides
+s+=pSeated(960,560,{skin:SKIN[0],hair:HAIR[4],mood:'neutral',top:'#20242e',suit:1,tie:'#F2B705',pose:'table',scale:.95,talk:0});
+s+=pSeated(760,640,{skin:SKIN[3],hair:HAIR[0],mood:'neutral',top:'#2b2b33',suit:1,tie:'#1d2a44',pose:'table',scale:1.05,turn:.6,bald:1});
+s+=pSeated(1160,640,{skin:SKIN[1],hair:HAIR[2],mood:'happy',top:'#30303a',suit:1,tie:'#7a1f22',pose:'table',scale:1.05,turn:-.6});
+// table (perspective, long toward camera)
+s+=`<polygon points="820,560 1100,560 1500,1080 420,1080" fill="url(#tb)"/><polygon points="820,560 1100,560 1104,572 816,572" fill="#5a3a22"/>`;
+s+=`<line x1="960" y1="572" x2="960" y2="1080" stroke="#000" stroke-opacity=".15" stroke-width="3"/>`;
+// papers, glasses on table
+[[900,620,-8],[1010,640,6],[880,760,-4],[1060,780,8]].forEach(([x,y,r])=>s+=`<rect x="${x}" y="${y}" width="70" height="50" fill="#efe9dc" transform="rotate(${r} ${x} ${y})"/>`);
+[[930,600],[1000,600]].forEach(([x,y])=>s+=`<rect x="${x}" y="${y-22}" width="12" height="22" fill="#cfe0ff" opacity=".55"/>`);
+// coach, foreground, back to camera at the near end
+s+=pBack(960,1180,{skin:SKIN[3],hair:HAIR[1],top:'#1c2029',scale:1.15});
+s+=`<rect width="1920" height="1080" fill="url(#vig)"/>`;
+document.getElementById('sc').innerHTML=s;
+</script></body></html>

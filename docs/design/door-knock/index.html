@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css"><link rel="stylesheet" href="scenes.css">
+<style>body{background:#120d09}.chipt{position:absolute;left:50%;top:76px;transform:translateX(-50%);z-index:6;background:rgba(8,10,14,.8);border:1px solid #2A313D;padding:8px 14px;font:700 14px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase}.chipt b{color:var(--acc)}</style></head><body>
+<svg id="sc" width="1920" height="1080" style="position:absolute;inset:0"></svg>
+<div class="room">The office <span>· He knocked</span></div>
+<div class="chipt">Wed · <b>Afternoon</b></div>
+<div class="hint">Your answer: <kbd>1</kbd>–<kbd>3</kbd> <kbd>Enter</kbd></div>
+<div class="q" style="top:712px"><b>Mensah-Lowe<small>RW · morale 34</small></b>"Boss, three weeks on the bench. I didn't come here to sit and watch."</div>
+<div class="choice" style="width:1380px">
+ <div class="ch"><h3>What do you tell him?</h3><span>Playing time · he started 1 of the last 4</span><span class="theo"><b>THEO</b>"He's been poor in training. 5.4 last week."</span></div>
+ <div class="opts" style="grid-template-columns:repeat(3,1fr)">
+  <div class="opt"><span class="k">1</span><div class="tn">Promise</div><div class="ln">"You start on Saturday. Show me I'm right."</div><div class="fx"><span class="g">Morale +10</span><span class="n">Promise: starts 2 of next 4</span></div><div class="risk">Break it: morale −15, asks to leave</div></div>
+  <div class="opt hov"><span class="k">2</span><div class="tn">Challenge</div><div class="ln">"Train like you did in August and the shirt is yours."</div><div class="fx"><span class="n">Morale −2</span><span class="g">Training rating +0.5 for 2 weeks</span></div><div class="risk">Hot-headed: 30% it goes badly (morale −6)</div></div>
+  <div class="opt"><span class="k">3</span><div class="tn">Honest</div><div class="ln">"Right now Ilori is ahead of you. That might not change."</div><div class="fx"><span class="b">Morale −12</span><span class="n">He may ask to leave</span></div><div class="risk">Leaders' morale −1 if he's popular</div></div>
+ </div>
+</div>
+<script src="base.js"></script><script src="people.js"></script>
+<script>
+topbar('Hub','MD <b>8/18</b> · <b>2nd</b> · <b>17 pts</b>','');
+let s=`<defs><linearGradient id="wl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2520"/><stop offset="1" stop-color="#1a1512"/></linearGradient>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fb3d9"/><stop offset="1" stop-color="#e8c79a"/></linearGradient>
+<linearGradient id="dk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a3a22"/><stop offset="1" stop-color="#3a2414"/></linearGradient>
+<linearGradient id="sun" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd9a0" stop-opacity=".35"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="40%" r="75%"><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></radialGradient></defs>`;
+s+=`<rect width="1920" height="1080" fill="url(#wl)"/>`;
+// window behind the player: afternoon training ground
+s+=`<rect x="600" y="120" width="720" height="330" fill="url(#sky)"/><polygon points="600,330 1320,300 1320,450 600,450" fill="#3f7a3a"/>`;
+for(let i=0;i<8;i++){const x=650+i*80,y=360+(i%3)*16;s+=`<circle cx="${x}" cy="${y-10}" r="5" fill="#0B1F3A"/><rect x="${x-4}" y="${y-5}" width="8" height="14" fill="#F2B705"/>`}
+s+=`<rect x="600" y="120" width="720" height="330" fill="none" stroke="#3a2e24" stroke-width="12"/><line x1="960" y1="120" x2="960" y2="450" stroke="#3a2e24" stroke-width="8"/>`;
+s+=`<polygon points="600,120 1320,120 1700,1080 300,1080" fill="url(#sun)"/>`;
+// tactics whiteboard on the side wall
+s+=`<polygon points="1500,200 1760,160 1760,470 1500,450" fill="#c9ced3"/><polygon points="1512,212 1748,176 1748,458 1512,440" fill="#e3e6e3"/>`;
+// player seated across the desk, worried, arms folded, in training top
+s+=pSeated(960,700,{skin:SKIN[4],hair:HAIR[0],mood:'worried',top:'#0B1F3A',top2:'#F2B705',pose:'folded',scale:1.25,talk:0});
+// desk (foreground)
+s+=`<polygon points="380,700 1540,700 1700,880 220,880" fill="url(#dk)"/><polygon points="220,880 1700,880 1700,1080 220,1080" fill="#24170e"/>`;
+s+=`<rect x="760" y="720" width="160" height="110" fill="#f2ede2" transform="rotate(-4 840 775)"/><rect x="980" y="730" width="140" height="100" fill="#EFEBE3" transform="rotate(5 1050 780)"/>`;
+s+=`<rect x="1240" y="730" width="40" height="44" rx="4" fill="#e9e4da"/><ellipse cx="1260" cy="732" rx="20" ry="6" fill="#3a2414"/>`;
+// the coach, foreground left, back three-quarter, seated feel
+s+=pBack(420,1240,{skin:SKIN[3],hair:HAIR[1],top:'#1c2029',scale:1.3});
+s+=`<rect width="1920" height="1080" fill="url(#vig)"/>`;
+document.getElementById('sc').innerHTML=s;
+</script></body></html>

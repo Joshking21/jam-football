@@ -1,0 +1,86 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{background:#05070b}
+.bg{position:absolute;inset:-40px;background:url('title.png') center/cover;filter:blur(10px) brightness(.4)}
+.wrap{position:absolute;inset:0}
+.h{position:absolute;left:96px;top:70px;font:800 64px/1 'Barlow Condensed';text-transform:uppercase}
+.h small{display:block;font:600 15px/1 'Barlow Condensed';letter-spacing:.2em;color:var(--dim);margin-top:10px}
+.back{position:absolute;right:96px;top:80px;font:600 13px/1 Inter;color:#cfd5de;display:flex;gap:8px;align-items:center}
+/* load */
+.slots{position:absolute;left:96px;right:96px;top:200px;display:grid;grid-template-columns:repeat(4,1fr);gap:26px}
+.slot{position:relative;height:620px;background:#0B1F3A;color:#fff;box-shadow:0 24px 50px rgba(0,0,0,.6);overflow:hidden}
+.slot .band{height:10px;background:var(--c)}
+.slot .lab2{display:flex;justify-content:space-between;padding:14px 20px 0;font:700 12px/1 'Barlow Condensed';letter-spacing:.18em;color:var(--c);text-transform:uppercase}
+.slot .cr{display:flex;justify-content:center;margin-top:24px}
+.slot h3{font:800 40px/.95 'Barlow Condensed';text-transform:uppercase;text-align:center;margin-top:16px;padding:0 16px}
+.slot .pos{text-align:center;font:800 80px/1 'Barlow Condensed';margin-top:14px}.slot .pos sup{font-size:32px;color:var(--c)}
+.slot .meta{text-align:center;font:600 14px/1.5 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase;color:#cfd5de}
+.slot .meta b{color:#fff}
+.slot svg.line{display:block;margin:16px auto 0}
+.slot .acts{position:absolute;left:20px;right:20px;bottom:20px;display:flex;gap:8px}
+.slot .acts span{flex:1;text-align:center;font:700 14px/1 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase;padding:11px 0;border:1.5px solid rgba(255,255,255,.3)}
+.slot .acts span.p{background:var(--c);color:#141000;border-color:var(--c)}
+.slot.sel{outline:4px solid var(--acc);outline-offset:6px;transform:translateY(-10px)}
+.slot.auto .tag{position:absolute;top:18px;right:-34px;background:var(--acc);color:#141000;font:800 12px/1 'Barlow Condensed';letter-spacing:.18em;padding:6px 40px;transform:rotate(35deg)}
+.empty{height:620px;border:2px dashed rgba(255,255,255,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--dim);font:700 22px/1 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase}
+.empty small{font:500 13px/1.4 Inter;letter-spacing:0;text-transform:none;color:#7d8696;text-align:center;max-width:220px}
+.foot{position:absolute;left:96px;right:96px;bottom:50px;display:flex;justify-content:space-between;align-items:center;font:500 13.5px/1.4 Inter;color:#a3acba}
+.foot .b{border:1.5px solid rgba(255,255,255,.3);color:#fff;font:700 15px/1 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase;padding:12px 18px}
+/* settings */
+.modal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-.3deg);width:1180px;height:760px;background:#EFEBE3;color:var(--ink);box-shadow:0 30px 70px rgba(0,0,0,.7);display:grid;grid-template-columns:260px 1fr}
+.side{background:#0B1F3A;color:#fff;padding:30px 0}
+.side h2{font:800 36px/1 'Barlow Condensed';text-transform:uppercase;padding:0 28px}
+.side .it{display:flex;align-items:center;gap:12px;padding:14px 28px;font:700 18px/1 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;color:#a3acba;margin-top:4px}
+.side .it.on{background:#EFEBE3;color:var(--ink);box-shadow:inset 5px 0 0 var(--acc)}
+.side .it kbd{margin-left:auto;font-size:10px;color:inherit}
+.pane{padding:34px 40px;position:relative}
+.pane h3{font:800 30px/1 'Barlow Condensed';text-transform:uppercase}
+.pane .sub{font:500 13.5px/1.4 Inter;color:var(--pdim);margin-top:6px}
+.row{display:grid;grid-template-columns:260px 1fr 60px;align-items:center;gap:20px;padding:16px 0;border-bottom:1px solid var(--rule)}
+.row .n{font:600 15px/1.2 Inter}.row .n small{display:block;font:500 12px/1.35 Inter;color:var(--pdim);margin-top:3px}
+.sl{position:relative;height:8px;background:#ddd6c8}.sl i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}.sl b{position:absolute;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;background:#fff;border:3px solid var(--ink);border-radius:50%}
+.row .v{font:800 22px/1 'Barlow Condensed';text-align:right}
+.seg{display:flex;border:2px solid var(--ink);width:max-content}.seg span{padding:8px 14px;font:700 14px/1 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase}.seg span.on{background:var(--ink);color:var(--paper)}
+.tg{width:52px;height:28px;border-radius:14px;background:#cfc6b6;position:relative}.tg.on{background:var(--green)}.tg i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff}.tg.on i{left:27px}
+.pane .acts{position:absolute;left:40px;right:40px;bottom:28px;display:flex;gap:10px;justify-content:flex-end}
+.test{display:flex;align-items:center;gap:10px;font:500 13px/1 Inter;color:var(--pdim)}
+</style></head><body>
+<div class="bg"></div>
+<div class="wrap" id="load">
+ <div class="h">Load a season<small>3 save slots · autosave after every decision</small></div>
+ <div class="back"><kbd>Esc</kbd> back to the title</div>
+ <div class="slots">
+  <div class="slot auto sel" style="--c:#F2B705"><span class="tag">AUTOSAVE</span><div class="band"></div><div class="lab2"><span>Autosave · 2 h ago</span><span></span></div>
+   <div class="cr"><svg width="96" height="108" viewBox="0 0 30 34"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#F2B705" stroke="#fff" stroke-width="1"/><path d="M15 8 v18 M9 13 h12 M8.5 20 q6.5 7 13 0" stroke="#0B1F3A" stroke-width="2.2" fill="none"/></svg></div>
+   <h3>Port Calloway</h3><div class="pos">2<sup>nd</sup></div><div class="meta"><b>17 pts</b> · Matchday 8 of 18<br>Alex Mercer · 2026/27 · 1 h 12 min</div>
+   <svg class="line" width="240" height="70" id="l1"></svg>
+   <div class="acts"><span class="p">Load</span><span>Export</span></div></div>
+  <div class="slot" style="--c:#FF6A13;background:#2B2B2B"><div class="band"></div><div class="lab2"><span>Slot 1</span><span>Yesterday</span></div>
+   <div class="cr"><svg width="96" height="108" viewBox="0 0 30 34"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#2B2B2B" stroke="#FF6A13" stroke-width="1.4"/><path d="M9 22 h12 M11 22 v-7 h8 v7 M13 15 v-5 h4 v5" stroke="#FF6A13" stroke-width="1.6" fill="none"/></svg></div>
+   <h3>Ironvale Athletic</h3><div class="pos">5<sup>th</sup></div><div class="meta"><b>23 pts</b> · Matchday 15 of 18<br>Alex Mercer · 2026/27 · 2 h 40 min</div>
+   <svg class="line" width="240" height="70" id="l2"></svg>
+   <div class="acts"><span class="p">Load</span><span>Export</span><span>Delete</span></div></div>
+  <div class="empty">Empty slot<small>Save into it from Settings → Data while you play.</small></div>
+  <div class="empty">Empty slot<small>Or import a save file you exported earlier.</small></div>
+ </div>
+ <div class="foot"><span>Saves live in this browser. Export to keep a copy or move to another computer.</span><span class="b">Import a save file</span></div>
+</div>
+<div class="wrap" id="settings" style="display:none">
+ <div class="modal">
+  <div class="side"><h2>Settings</h2><div style="height:18px"></div>
+   <div class="it on">Audio <kbd>1</kbd></div><div class="it">Gameplay <kbd>2</kbd></div><div class="it">Graphics <kbd>3</kbd></div><div class="it">Accessibility <kbd>4</kbd></div><div class="it">Data <kbd>5</kbd></div></div>
+  <div class="pane"><h3>Audio</h3><div class="sub">Changes apply straight away. Captions stay on when voices are off.</div>
+   <div id="rows"></div>
+   <div class="row"><div class="n">Voices<small>Commentary, the coach, Theo, the press</small></div><div class="seg"><span class="on">On</span><span>Off</span></div><div></div></div>
+   <div class="acts"><span class="test">▶ Play a test line: "Bankole… and it's in!"</span><span class="btn ghost">Reset to default</span><span class="btn">Done <kbd style="color:#EFEBE3">Esc</kbd></span></div>
+  </div>
+ </div>
+</div>
+<script src="base.js"></script>
+<script>
+if(location.hash==='#settings'){document.getElementById('load').style.display='none';document.getElementById('settings').style.display='block'}
+const line=(id,arr,c)=>{const W=240,H=70,X=i=>10+i*(W-20)/(arr.length-1),Y=p=>8+(p-1)*(H-16)/9;document.getElementById(id).innerHTML=`<rect x="0" y="0" width="${W}" height="${H}" fill="rgba(255,255,255,.05)"/><path d="${arr.map((p,i)=>`${i?'L':'M'}${X(i)} ${Y(p)}`).join(' ')}" fill="none" stroke="${c}" stroke-width="3"/><circle cx="${X(arr.length-1)}" cy="${Y(arr[arr.length-1])}" r="4" fill="${c}"/>`};
+line('l1',[6,7,5,4,3,3,3,2],'#F2B705');line('l2',[3,4,6,5,5,7,6,6,5,4,5,6,5,5,5],'#FF6A13');
+const R=[['Master','Everything',80],['Music','Title theme and menus',50],['Crowd','Match atmosphere',70],['Commentary','Callum and Nadia',85],['Effects','Whistles, UI sounds, room ambience',70]];
+document.getElementById('rows').innerHTML=R.map(([n,d,v])=>`<div class="row"><div class="n">${n}<small>${d}</small></div><div class="sl"><i style="width:${v}%"></i><b style="left:${v}%"></b></div><div class="v">${v}</div></div>`).join('');
+</script></body></html>

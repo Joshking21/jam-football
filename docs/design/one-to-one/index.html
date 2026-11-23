@@ -1,0 +1,49 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css"><link rel="stylesheet" href="scenes.css">
+<style>body{background:#2a3a4a}.chipt{position:absolute;left:50%;top:76px;transform:translateX(-50%);z-index:6;background:rgba(8,10,14,.8);border:1px solid #2A313D;padding:8px 14px;font:700 14px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase}.chipt b{color:var(--acc)}</style></head><body>
+<svg id="sc" width="1920" height="1080" style="position:absolute;inset:0"></svg>
+<div class="room">Training ground <span>· One-to-one</span></div>
+<div class="chipt">Wed · <b>Afternoon</b> · after the session</div>
+<div class="hint">Pick one: <kbd>1</kbd>–<kbd>4</kbd> <kbd>Enter</kbd></div>
+<div class="q" style="top:600px"><b>Nwosu<small>CB · 19 · rating 7.4</small></b>"You wanted to see me, boss?"</div>
+<div class="choice" style="width:1500px">
+ <div class="ch"><h3>This week's one-to-one</h3><span>Nwosu · individual focus: positioning · mentored by Fairclough</span><span class="theo"><b>THEO</b>"He's flying. Push him."</span></div>
+ <div class="opts" style="grid-template-columns:repeat(4,1fr)">
+  <div class="opt hov"><span class="k">1</span><div class="tn">Technique work</div><div class="ln">"Stay out with me. Body shape when they run at you."</div><div class="fx"><span class="g">Growth ×1.25 this week</span></div></div>
+  <div class="opt"><span class="k">2</span><div class="tn">Confidence talk</div><div class="ln">"You're starting games because you've earned it."</div><div class="fx"><span class="g">Morale +2</span></div><div class="risk" style="color:inherit;opacity:.6">Bigger effect on low morale</div></div>
+  <div class="opt"><span class="k">3</span><div class="tn">Fitness work</div><div class="ln">"Ice bath, then the bike. You'll need legs on Saturday."</div><div class="fx"><span class="g">Condition +6</span><span class="g">Fatigue −4</span></div></div>
+  <div class="opt"><span class="k">4</span><div class="tn">Video of his last match</div><div class="ln">"Look at the second goal. Where should you be?"</div><div class="fx"><span class="g">Sharper decisions next match</span></div></div>
+ </div>
+</div>
+<script src="base.js"></script><script src="people.js"></script>
+<script>
+topbar('Training','MD <b>8/18</b> · <b>2nd</b> · <b>17 pts</b>','');
+let s=`<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7da3cf"/><stop offset=".7" stop-color="#e8c79a"/><stop offset="1" stop-color="#f0d2a6"/></linearGradient>
+<linearGradient id="grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b8a42"/><stop offset="1" stop-color="#2f6a2c"/></linearGradient>
+<radialGradient id="sun" cx="85%" cy="38%" r="50%"><stop offset="0" stop-color="#ffe6b8" stop-opacity=".75"/><stop offset="1" stop-color="#ffe6b8" stop-opacity="0"/></radialGradient>
+<radialGradient id="vig" cx="50%" cy="45%" r="75%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></radialGradient></defs>`;
+s+=`<rect width="1920" height="1080" fill="url(#sky)"/>`;
+// stadium in the distance behind the training ground
+s+=`<polygon points="1100,330 1700,320 1700,410 1100,410" fill="#4a2a20"/><polygon points="1100,330 1700,320 1720,300 1080,312" fill="#2b313c"/>`;
+for(let x=1120;x<1690;x+=34)s+=`<rect x="${x}" y="350" width="16" height="22" fill="#2a1812"/>`;
+s+=`<line x1="1120" y1="410" x2="1120" y2="200" stroke="#3a404b" stroke-width="5"/><rect x="1100" y="190" width="40" height="18" fill="#d9d4c6"/><line x1="1690" y1="410" x2="1690" y2="210" stroke="#3a404b" stroke-width="5"/><rect x="1670" y="200" width="40" height="18" fill="#d9d4c6"/>`;
+// tree line left
+for(let i=0;i<14;i++)s+=`<ellipse cx="${40+i*80}" cy="${400-((i*37)%30)}" rx="60" ry="${50+(i%3)*12}" fill="#2f4a2a"/>`;
+// grass + stripes + pitch lines
+s+=`<polygon points="0,400 1920,400 1920,1080 0,1080" fill="url(#grass)"/>`;
+for(let i=0;i<9;i++)if(i%2)s+=`<polygon points="${i*240-200},1080 ${(i+1)*240-200},1080 ${960+((i+1)*240-200-960)*0.25},400 ${960+(i*240-200-960)*0.25},400" fill="#fff" opacity=".05"/>`;
+s+=`<path d="M200 470 L1720 470" stroke="#eef4ea" stroke-opacity=".8" stroke-width="3"/><path d="M960 470 L960 700" stroke="#eef4ea" stroke-opacity=".5" stroke-width="2"/>`;
+// squad in the background doing a cool-down jog
+for(let i=0;i<9;i++){const x=300+i*150,y=500+(i%2)*14;s+=pStand(x,y,{skin:SKIN[i%6],hair:HAIR[i%4],mood:'neutral',top:'#0B1F3A',stripe:'#F2B705',scale:.32})}
+// cones, mannequins
+for(let i=0;i<7;i++)s+=`<path d="M${520+i*60} 640 l8 -16 l8 16z" fill="#ff7a2a"/>`;
+s+=`<rect x="1400" y="560" width="14" height="70" fill="#d8b21c"/><rect x="1440" y="560" width="14" height="70" fill="#d8b21c"/>`;
+s+=`<rect width="1920" height="1080" fill="url(#sun)"/>`;
+// Nwosu standing (front, slightly turned to the coach)
+s+=pStand(1180,880,{skin:SKIN[5],hair:HAIR[0],mood:'happy',top:'#0B1F3A',stripe:'#F2B705',legs:'#13213A',turn:-.5,scale:1.35});
+// long shadows
+s+=`<ellipse cx="1050" cy="890" rx="200" ry="16" fill="#000" opacity=".18" transform="rotate(-6 1050 890)"/>`;
+// coach, back three-quarter, holding a clipboard
+s+=pBack(700,1140,{skin:SKIN[3],hair:HAIR[1],top:'#22335a',scale:1.15});
+s+=`<rect width="1920" height="1080" fill="url(#vig)"/>`;
+document.getElementById('sc').innerHTML=s;
+</script></body></html>
