@@ -1,0 +1,309 @@
+{
+  "_about": "Scout's notes (REVIEW-M5 R7). A note = optional firstLook line + the strength line for his best relevant attribute + the weakness line for his worst + sometimes a personality line. Groups and relevant attributes are in src/ui/screens/scoutNote.ts. Tokens: {foot} = left / right / either. Voice: a scout talking to the manager in a car park. Plain words, one real detail, no adjectives doing the work.",
+  "firstLook": [
+    "Only seen him the once, so take this with a pinch of salt.",
+    "One game, from the far end. First impressions only.",
+    "Caught him on a wet Tuesday. Early days."
+  ],
+  "strength": {
+    "GK": {
+      "reflexes": [
+        "Quick hands. Stopped two from six yards when I watched and made neither look hard.",
+        "Reacts before the striker's finished the swing. Point-blank stuff is his."
+      ],
+      "handling": [
+        "Holds everything. You don't see the ball bounce off him into the six-yard box.",
+        "Catches what other keepers parry. Saves you a lot of second balls."
+      ],
+      "oneOnOnes": [
+        "Stays big and stays up when a forward is through. Makes them pick the shot.",
+        "Good at the one-on-ones. Comes out quick and narrows the angle."
+      ],
+      "aerialCommand": [
+        "Owns his box at corners. Shouts, comes, punches clear.",
+        "Takes crosses at the highest point. Defenders like playing in front of him."
+      ],
+      "passing": [
+        "Kicks it to feet, both sides. Your full-backs will thank him.",
+        "Starts attacks. Rolls it out quick and picks the free man."
+      ],
+      "composure": [
+        "Doesn't panic with the ball at his feet, even with a striker on him.",
+        "Same face at 0-0 and 0-2. Calm keeper."
+      ]
+    },
+    "CB": {
+      "tackling": [
+        "Wins it clean. Times his tackles and doesn't need to go to ground.",
+        "Hard to get past one-on-one. Gets a foot in and comes away with it."
+      ],
+      "heading": [
+        "Wins his headers, both boxes. Good for three or four goals from corners.",
+        "Attacks the ball in the air. Long balls into him come straight back."
+      ],
+      "strength": [
+        "Strong. Forwards bounce off him and stop trying after half an hour.",
+        "Big, and uses it. Pins his man and doesn't get shoved off the ball."
+      ],
+      "positioning": [
+        "Reads it early. He's usually standing where the pass is going.",
+        "Doesn't need to be quick because he's never in the wrong place."
+      ],
+      "pace": [
+        "Quick for a centre-half. Will let you play a high line.",
+        "Can cover the space behind. Recovery pace gets him out of trouble."
+      ],
+      "passing": [
+        "Passes it forward from the back, and through the lines when it's on.",
+        "Comfortable bringing it out and finding the midfield."
+      ],
+      "composure": [
+        "Calm on the ball under a press. Won't hoof it when he doesn't need to.",
+        "Never flustered. Picks his moment to clear and his moment to play."
+      ]
+    },
+    "FB": {
+      "pace": [
+        "Quick both ways. Overlaps and still gets back.",
+        "Real pace. Wingers don't get in behind him often."
+      ],
+      "crossing": [
+        "Good delivery from wide, early or from the byline. Hits the near post when he wants to.",
+        "Crosses with his {foot} foot and finds a head, not the keeper."
+      ],
+      "tackling": [
+        "Defends first. Wingers have a bad afternoon against him.",
+        "Gets tight and wins it. Doesn't dive in."
+      ],
+      "stamina": [
+        "Up and down for ninety minutes. Still overlapping at the end.",
+        "Engine on him. Last man running at full-time."
+      ],
+      "positioning": [
+        "Tucks in at the right time. Keeps the back four tidy.",
+        "Knows when to go and when to stay. Rarely caught upfield."
+      ],
+      "dribbling": [
+        "Will carry it up the line himself and beat a man.",
+        "Takes people on from full-back. Useful when the winger's marked."
+      ],
+      "workRate": [
+        "Works hard for the side. Tracks his man all the way back.",
+        "Never stops. Coaches will love him."
+      ]
+    },
+    "DM": {
+      "tackling": [
+        "Wins the ball back in the middle and gives it simple.",
+        "Breaks it up. Plenty of tackles, not many fouls."
+      ],
+      "positioning": [
+        "Sits in front of the back four and fills every gap.",
+        "Always in the passing lane. Picks off a lot without having to tackle."
+      ],
+      "passing": [
+        "Gets it and moves it on. Sets the tempo from deep.",
+        "Switches play well. Finds the full-back on the far side."
+      ],
+      "workRate": [
+        "Covers ground. Does the running for whoever plays beside him.",
+        "Doesn't stop working. Snaps at people all afternoon."
+      ],
+      "strength": [
+        "Strong in the middle. Hard to knock off it.",
+        "Physical. Wins his duels and lets people know."
+      ],
+      "decisions": [
+        "Makes good choices. Knows when to keep it and when to clear it.",
+        "Never forces it. Plays what's on."
+      ]
+    },
+    "CM": {
+      "passing": [
+        "Moves it quickly and keeps it. Plays a forward pass when there is one.",
+        "Good range. Finds the winger forty yards away with his {foot} foot."
+      ],
+      "stamina": [
+        "Box to box for ninety minutes. Still arriving late in the second half.",
+        "Runs all day. You won't need to take him off."
+      ],
+      "workRate": [
+        "Puts a shift in, both ways. The kind the others play for.",
+        "Presses, covers, gets back. Never hides."
+      ],
+      "decisions": [
+        "Plays the right pass far more often than not. Doesn't waste the ball.",
+        "Clever. Sees the next pass before he's got this one."
+      ],
+      "longShots": [
+        "Will score you a few from outside the box with his {foot} foot.",
+        "Shoots from distance and hits the target."
+      ],
+      "firstTouch": [
+        "Takes it in his stride under pressure. First touch sets him up.",
+        "Lovely first touch. Gets out of tight spots."
+      ],
+      "tackling": [
+        "Wins it back for a midfielder who likes to get forward.",
+        "Gets stuck in. Not afraid of a challenge."
+      ]
+    },
+    "AM": {
+      "passing": [
+        "Sees the pass between the lines and has the touch to play it.",
+        "Plays the last ball. Your strikers will get chances."
+      ],
+      "dribbling": [
+        "Gets past people in tight areas. Draws two and finds the spare.",
+        "Beats his man and turns the defence."
+      ],
+      "firstTouch": [
+        "Receives on the half-turn. Hard to press because he's already facing forward.",
+        "Takes it under pressure, between the lines, and keeps going."
+      ],
+      "decisions": [
+        "Knows when to shoot, when to pass and when to keep it.",
+        "Clever footballer. Rarely gives it away cheaply."
+      ],
+      "longShots": [
+        "Shoots from the edge of the box and scores a few.",
+        "Dangerous from twenty-five yards with his {foot} foot."
+      ],
+      "offTheBall": [
+        "Finds space around the box. Arrives late and unmarked.",
+        "Drifts into the gaps. Defenders lose him."
+      ],
+      "composure": [
+        "Calm in front of goal. Doesn't snatch at chances.",
+        "Doesn't rush it. Waits for the keeper to go first."
+      ]
+    },
+    "WIDE": {
+      "pace": [
+        "Very quick. Give him space behind and he's gone.",
+        "Raw pace. Full-backs drop off him and give him room."
+      ],
+      "dribbling": [
+        "Takes his man on every time and wins more than he loses.",
+        "Direct. Goes at defenders and gets fouled a lot."
+      ],
+      "crossing": [
+        "Good delivery. Whips it in early with his {foot} foot.",
+        "Crosses for heads, not hopes. Picks out the run."
+      ],
+      "finishing": [
+        "Comes inside and scores. Wants to shoot.",
+        "Finishes like a striker from wide. Gets you ten a season."
+      ],
+      "workRate": [
+        "Tracks back. Your full-back won't be left alone.",
+        "Works for the team. Presses from the front and gets back."
+      ],
+      "firstTouch": [
+        "Kills it dead on the touchline and is away.",
+        "Good first touch on the run. Doesn't need to slow down."
+      ]
+    },
+    "ST": {
+      "finishing": [
+        "Scores. Doesn't need many chances and doesn't need a big backlift.",
+        "Hits the target. Finishes with either foot when he has to."
+      ],
+      "offTheBall": [
+        "Gets away from his marker in the box. Always on the move.",
+        "Clever runs. Gets across the near post before the defender reacts."
+      ],
+      "heading": [
+        "Good in the air. Crosses are worth putting in for him.",
+        "Wins headers in the box and scores a few with his head."
+      ],
+      "pace": [
+        "Runs in behind. Defenders drop deep because of him.",
+        "Quick. Ball over the top and he's through."
+      ],
+      "strength": [
+        "Holds it up. Back to goal, he keeps it till help arrives.",
+        "Strong. Bullies centre-halves and wins free kicks."
+      ],
+      "composure": [
+        "Calm one-on-one. Takes the extra touch and slots it.",
+        "Doesn't panic in front of goal. Picks his spot."
+      ],
+      "firstTouch": [
+        "Good first touch in the box. Sets himself and shoots.",
+        "Takes it down under pressure. Links play well."
+      ]
+    }
+  },
+  "weakness": {
+    "reflexes": ["Slow to react to close-range shots, though."],
+    "handling": ["Spills a few, though. Have someone follow in."],
+    "oneOnOnes": ["Goes down too early when a striker's through, though."],
+    "aerialCommand": [
+      "Stays on his line for crosses, though. Your centre-halves will have to deal with them."
+    ],
+    "passing": [
+      "His passing lets him down. Gives it away when he tries to be clever.",
+      "Doesn't pass forward much. Plays it safe."
+    ],
+    "composure": [
+      "Can get rattled. Watch him if the crowd gets on him.",
+      "Snatches at it when it matters."
+    ],
+    "tackling": [
+      "Doesn't win many tackles, though. Don't ask him to defend.",
+      "Dives in. You'll see yellow cards."
+    ],
+    "heading": ["Not much in the air, though. Long balls will be a problem.", "Avoids headers."],
+    "strength": ["Lightweight. Gets knocked off it.", "Gets bullied by big forwards."],
+    "positioning": [
+      "Wanders out of position. You'll need someone to cover.",
+      "Switches off and gets caught ball-watching."
+    ],
+    "pace": [
+      "Not quick, though. Don't leave him one-on-one in space.",
+      "Lacks pace. A quick forward will give him a hard afternoon."
+    ],
+    "crossing": ["His crossing is poor, though. Most go behind or into the first man."],
+    "stamina": ["Fades after an hour. Plan to take him off.", "Blows up in the second half."],
+    "dribbling": ["Won't beat a man, though. Needs the pass on."],
+    "workRate": [
+      "Doesn't track back much. Somebody else will be doing his running.",
+      "Picks and chooses when to work."
+    ],
+    "decisions": [
+      "Decision-making is off. Shoots when he should pass and the other way round.",
+      "Forces it. Tries the killer ball when the simple one is on."
+    ],
+    "longShots": ["Doesn't threaten from distance."],
+    "firstTouch": [
+      "First touch is heavy, though. Gives defenders a chance.",
+      "Touch lets him down under pressure."
+    ],
+    "finishing": [
+      "Doesn't finish his chances, though. Misses more than he should.",
+      "Wasteful in front of goal."
+    ],
+    "offTheBall": ["Static without the ball. Needs it to feet."]
+  },
+  "personality": {
+    "Professional": [
+      "Good lad. First in, last out.",
+      "No trouble off the pitch. Looks after himself."
+    ],
+    "Ambitious": [
+      "Wants to play at the top. He'll want to know where you finish.",
+      "Hungry. Says he wants to win things."
+    ],
+    "Leader": ["Talks all game. Organises the others.", "Captain material. People listen to him."],
+    "Relaxed": ["Easy-going. Some say too easy-going.", "Laid-back lad. Doesn't do extra."],
+    "Temperamental": [
+      "Has a temper. Booked for dissent twice when I watched.",
+      "Moody. Good when he's happy."
+    ],
+    "Loyal": [
+      "Loyal to his club. Won't push for a move.",
+      "Settled where he is. It'll take a good offer."
+    ]
+  }
+}

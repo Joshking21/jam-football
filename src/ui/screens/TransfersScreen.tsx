@@ -16,6 +16,7 @@ import {
 } from '../../core/transfers/scouting';
 import { calculateAskingPrice } from '../../core/transfers/transfers';
 import { BALANCE } from '../../config/balance';
+import { composeScoutNote } from './scoutNote';
 import {
   Search,
   Check,
@@ -89,43 +90,6 @@ const HalftonePortrait: React.FC<{
     </svg>
   );
 };
-
-// Tactical scout quote generator
-function generateScoutNote(player: Player, ovr: number): string {
-  const primPos = player.positions[0]?.pos ?? 'CM';
-  const pace = player.attributes.pace;
-  const dribbling = player.attributes.dribbling;
-  const finishing = player.attributes.finishing;
-  const tackling = player.attributes.tackling;
-  const passing = player.attributes.passing;
-  const workRate = player.attributes.workRate;
-
-  if (primPos === 'GK') {
-    return 'Athletic shot-stopper with commanding reach and quick reflexes on the line. Confident dealing with crosses into a crowded six-yard box.';
-  }
-  if (['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(primPos)) {
-    if (tackling >= 75 && pace >= 70) {
-      return 'Proactive defender with recovery pace and excellent timing into the tackle. Relishes one-on-one duels and steps up smoothly to snuff out counter-attacks.';
-    }
-    return 'Disciplined positional defender who stays calm under pressure and organises the back line. Dominant in aerial challenges with solid clearance distribution.';
-  }
-  if (['ST', 'CF', 'LW', 'RW'].includes(primPos)) {
-    if (pace >= 78 && dribbling >= 75) {
-      return 'Quick, direct, and hungry. He drifts inside onto his stronger foot and can strike from distance. His work rate is honest, though delivery needs consistency.';
-    }
-    if (finishing >= 75) {
-      return 'Natural penalty-box predator with sharp movement across the near post. Clinical first-time finisher who punishes defensive lapses with minimal backlift.';
-    }
-    return 'Hard-working forward who presses tirelessly from the front and links play well. Generates chances for runners through clever hold-up combinations.';
-  }
-  if (passing >= 75) {
-    return 'Intelligent metronome with exquisite passing range and composure in tight spaces. Dictates tempo from the centre and spots penetrative line-breaking passes.';
-  }
-  if (workRate >= 78 && tackling >= 70) {
-    return 'Combative engine in the middle of the park. Breaks up opposition buildup with relentless pressing and covers immense ground across ninety minutes.';
-  }
-  return 'Well-rounded midfielder who balances defensive duties with late arrivals on the edge of the box. Reliable option to shore up squad depth.';
-}
 
 // Assistant manager Theo Vance contextual advice
 function getTheoTransferQuote(player: Player, userClub: Club, askingPrice: number): string {
@@ -1454,7 +1418,7 @@ export const TransfersScreen: React.FC = () => {
               >
                 Scout's note
               </b>
-              "{generateScoutNote(selectedPlayer, playerOvr)}"
+              "{composeScoutNote(selectedPlayer, knowledgePct)}"
             </div>
 
             {/* Action Buttons */}
