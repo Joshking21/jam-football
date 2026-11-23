@@ -238,4 +238,62 @@ export class MatchPlayback {
       lastGoalEvent: this.lastGoalEvent,
     };
   }
+
+  /**
+   * Computes the interpolated 2D pitch ball position (0..105, 0..68) at any pt,
+   * including gaps between highlights during time-lapse (SPEC §14.1, M4).
+   */
+  public getBallPosition(pt: number): { x: number; y: number } {
+    if (this.events.length === 0) {
+      return { x: 52.5, y: 34 };
+    }
+
+    // 1. Check if an active event exists at pt
+    const activeEv = this.events.find(
+      (ev) => pt >= ev.t && pt <= ev.t + Math.max(0.1, ev.duration) && ev.from && ev.to,
+    );
+    if (activeEv && activeEv.from && activeEv.to) {
+      const p = Math.min(1.0, Math.max(0, (pt - activeEv.t) / Math.max(0.1, activeEv.duration)));
+      return {
+        x: activeEv.from.x + (activeEv.to.x - activeEv.from.x) * p,
+        y: activeEv.from.y + (activeEv.to.y - activeEv.from.y) * p,
+      };
+    }
+
+    // 2. Otherwise find previous event and next event for gap interpolation
+    let prevEv: MatchEvent | null = null;
+    let nextEv: MatchEvent | null = null;
+
+    for (let i = 0; i < this.events.length; i++) {
+      const ev = this.events[i]!;
+      if (!ev.from || !ev.to) continue;
+      if (ev.t <= pt) {
+        prevEv = ev;
+      } else if (ev.t > pt && !nextEv) {
+        nextEv = ev;
+        break;
+      }
+    }
+
+    if (prevEv && nextEv && prevEv.to && nextEv.from) {
+      const prevEnd = prevEv.t + prevEv.duration;
+      const gapTotal = Math.max(0.1, nextEv.t - prevEnd);
+      const gapElapsed = Math.max(0, pt - prevEnd);
+      const frac = Math.min(1.0, gapElapsed / gapTotal);
+      return {
+        x: prevEv.to.x + (nextEv.from.x - prevEv.to.x) * frac,
+        y: prevEv.to.y + (nextEv.from.y - prevEv.to.y) * frac,
+      };
+    }
+
+    if (prevEv && prevEv.to) {
+      return { x: prevEv.to.x, y: prevEv.to.y };
+    }
+
+    if (nextEv && nextEv.from) {
+      return { x: nextEv.from.x, y: nextEv.from.y };
+    }
+
+    return { x: 52.5, y: 34 };
+  }
 }

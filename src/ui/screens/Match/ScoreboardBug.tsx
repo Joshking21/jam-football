@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Club } from '../../../core/types';
 import { Crest } from '../../components/Crest';
+import { formatMatchClock } from './clock';
 
 interface ScoreboardBugProps {
   homeClub: Club;
@@ -46,10 +47,8 @@ export const ScoreboardBug: React.FC<ScoreboardBugProps> = ({
     }
   }, [awayScore]);
 
-  // Clock format: MM:SS
-  const matchMin = Math.floor(pt / 60);
-  const matchSec = Math.floor(pt % 60);
-  const clockText = `${String(matchMin).padStart(2, '0')}:${String(matchSec).padStart(2, '0')}`;
+  // Clock format: MM:SS or 45+X / 90+X during stoppage time (SPEC §14.5, REVIEW-M4 B2)
+  const clockText = formatMatchClock(pt, half);
 
   const homeCode = homeClub.code ?? homeClub.name.substring(0, 3).toUpperCase();
   const awayCode = awayClub.code ?? awayClub.name.substring(0, 3).toUpperCase();

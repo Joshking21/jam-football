@@ -1,10 +1,12 @@
-// Implements Telestrator Pitch Diagram (SPEC §11.5, §11.15, ART-DIRECTION §6.2)
-// Visualises opponent attacking shape as Os, passing/width arrows, defender X, and key battle marker.
+// Implements Telestrator Pitch Diagram (SPEC §11.5, §11.15, ART-DIRECTION §6.2, REVIEW-M4 M2)
+// Visualises opponent attacking shape as red-marker Os with numbers and surnames,
+// passing/width arrows, defender X, and cleanly backed key battle markers.
 import React from 'react';
-import { Club } from '../../core/types';
+import { Club, Player } from '../../core/types';
 
 interface TelestratorPitchProps {
   oppClub: Club;
+  oppPlayers?: Player[];
   width?: number | string;
   height?: number | string;
   showTitle?: boolean;
@@ -73,6 +75,7 @@ function mArrow(x0: number, y0: number, x1: number, y1: number, bend = 0, head =
 
 export const TelestratorPitch: React.FC<TelestratorPitchProps> = ({
   oppClub,
+  oppPlayers = [],
   width = '100%',
   height = 'auto',
   showTitle = true,
@@ -97,8 +100,11 @@ export const TelestratorPitch: React.FC<TelestratorPitchProps> = ({
   const fwd = pos[n - 1]!.reduce((a, b) => (Math.abs(b[1] - 90) < Math.abs(a[1] - 90) ? b : a));
   const mids = pos[n - 2] || pos[0]!;
 
+  const gkPlayer = oppPlayers[0];
+  const outfieldPlayers = oppPlayers.slice(1);
+
   return (
-    <div style={{ width, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+    <div style={{ width, display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {showTitle && (
         <div
           className="broadcast-label"
@@ -108,11 +114,12 @@ export const TelestratorPitch: React.FC<TelestratorPitchProps> = ({
             color: 'var(--text-faint)',
           }}
         >
-          TELESTRATOR · HOW {oppClub.name.toUpperCase()} ATTACK
+          TELESTRATOR · HOW {oppClub.name.toUpperCase()} ATTACK ({formation} ·{' '}
+          {passing.toUpperCase()})
         </div>
       )}
       <svg
-        viewBox="0 0 400 180"
+        viewBox="0 0 400 195"
         style={{
           width: '100%',
           height,
@@ -127,40 +134,19 @@ export const TelestratorPitch: React.FC<TelestratorPitchProps> = ({
         {/* Pitch markings */}
         <g stroke="var(--border)" strokeWidth="1" fill="none">
           {/* Pitch outline */}
-          <rect x="10" y="10" width="380" height="160" />
+          <rect x="10" y="10" width="380" height="175" />
           {/* Halfway line */}
-          <line x1="200" y1="10" x2="200" y2="170" />
+          <line x1="200" y1="10" x2="200" y2="185" />
           {/* Centre circle */}
-          <circle cx="200" cy="90" r="24" />
-          <circle cx="200" cy="90" r="1.5" fill="var(--border)" />
+          <circle cx="200" cy="97" r="26" />
+          <circle cx="200" cy="97" r="1.5" fill="var(--border)" />
           {/* Left Penalty Box (Our Box) */}
-          <rect x="10" y="46" width="54" height="88" />
-          <rect x="10" y="70" width="18" height="40" />
+          <rect x="10" y="48" width="56" height="98" />
+          <rect x="10" y="74" width="20" height="46" />
           {/* Right Penalty Box (Their Box) */}
-          <rect x="336" y="46" width="54" height="88" />
-          <rect x="372" y="70" width="18" height="40" />
+          <rect x="334" y="48" width="56" height="98" />
+          <rect x="370" y="74" width="20" height="46" />
         </g>
-
-        {/* Opponent GK */}
-        <path
-          d={mCircle(372, 90, 7, 59)}
-          fill="none"
-          stroke="var(--text)"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
-
-        {/* Opponent Outfield Players (Os in marker) */}
-        {pos.flat().map(([x, y], idx) => (
-          <path
-            key={`opp-p-${idx}`}
-            d={mCircle(x, y, 7, 60 + idx)}
-            fill="none"
-            stroke="var(--text)"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-          />
-        ))}
 
         {/* Tactical Style Movement Arrows */}
         {passing === 'Direct' ? (
@@ -168,21 +154,35 @@ export const TelestratorPitch: React.FC<TelestratorPitchProps> = ({
             <path
               d={mArrow(362, 82, fwd[0] - 34, fwd[1] - 6, 0.16)}
               fill="none"
-              stroke="var(--text)"
+              stroke="var(--text-dim)"
               strokeWidth="2.2"
               strokeLinecap="round"
             />
-            <text
-              x="260"
-              y={fwd[1] - 32}
-              fill="var(--text-dim)"
-              fontFamily="var(--font-head)"
-              fontWeight="600"
-              fontSize="11"
-              letterSpacing="0.08em"
-            >
-              LONG BALL
-            </text>
+            {/* Opaque Paper-Backed Label */}
+            <g transform={`translate(245, ${fwd[1] - 44})`}>
+              <rect
+                x="0"
+                y="0"
+                width="76"
+                height="18"
+                rx="3"
+                fill="#EFEBE3"
+                stroke="#C42B2B"
+                strokeWidth="1"
+              />
+              <text
+                x="38"
+                y="12"
+                fill="#C42B2B"
+                fontFamily="var(--font-head)"
+                fontWeight="700"
+                fontSize="10"
+                letterSpacing="0.08em"
+                textAnchor="middle"
+              >
+                LONG BALL
+              </text>
+            </g>
           </>
         ) : passing === 'Short' ? (
           <>
@@ -196,34 +196,48 @@ export const TelestratorPitch: React.FC<TelestratorPitchProps> = ({
                 6,
               )}
               fill="none"
-              stroke="var(--text)"
+              stroke="var(--text-dim)"
               strokeWidth="2.2"
               strokeLinecap="round"
             />
             <path
               d={mArrow(mids[0]![0] - 8, mids[0]![1] + 4, fwd[0] + 10, fwd[1] - 4, -0.1, 6)}
               fill="none"
-              stroke="var(--text)"
+              stroke="var(--text-dim)"
               strokeWidth="2.2"
               strokeLinecap="round"
             />
-            <text
-              x="215"
-              y="135"
-              fill="var(--text-dim)"
-              fontFamily="var(--font-head)"
-              fontWeight="600"
-              fontSize="11"
-              letterSpacing="0.08em"
-            >
-              THROUGH THE MIDDLE
-            </text>
+            {/* Opaque Paper-Backed Label placed clearly between lines */}
+            <g transform="translate(198, 150)">
+              <rect
+                x="0"
+                y="0"
+                width="124"
+                height="18"
+                rx="3"
+                fill="#EFEBE3"
+                stroke="#C42B2B"
+                strokeWidth="1"
+              />
+              <text
+                x="62"
+                y="12"
+                fill="#C42B2B"
+                fontFamily="var(--font-head)"
+                fontWeight="700"
+                fontSize="10"
+                letterSpacing="0.08em"
+                textAnchor="middle"
+              >
+                THROUGH THE MIDDLE
+              </text>
+            </g>
           </>
         ) : (
           <path
             d={mArrow(mids[0]![0] - 8, mids[0]![1], fwd[0] + 10, fwd[1] - 8, 0.2)}
             fill="none"
-            stroke="var(--text)"
+            stroke="var(--text-dim)"
             strokeWidth="2.2"
             strokeLinecap="round"
           />
@@ -234,7 +248,7 @@ export const TelestratorPitch: React.FC<TelestratorPitchProps> = ({
             <path
               d={mArrow(mids[0]![0] - 10, mids[0]![1] - 4, 74, 40, -0.08)}
               fill="none"
-              stroke="var(--text)"
+              stroke="var(--text-dim)"
               strokeWidth="2.2"
               strokeLinecap="round"
             />
@@ -243,61 +257,169 @@ export const TelestratorPitch: React.FC<TelestratorPitchProps> = ({
                 mids[mids.length - 1]![0] - 10,
                 mids[mids.length - 1]![1] + 4,
                 74,
-                140,
+                146,
                 0.08,
               )}
               fill="none"
-              stroke="var(--text)"
+              stroke="var(--text-dim)"
               strokeWidth="2.2"
               strokeLinecap="round"
             />
             <path
               d={mArrow(70, 46, 44, 82, 0.2, 6)}
               fill="none"
-              stroke="var(--text)"
+              stroke="var(--text-dim)"
               strokeWidth="2.2"
               strokeLinecap="round"
             />
-            <text
-              x="96"
-              y="26"
-              fill="var(--text-dim)"
-              fontFamily="var(--font-head)"
-              fontWeight="600"
-              fontSize="11"
-              letterSpacing="0.08em"
-            >
-              CROSSES
-            </text>
+            {/* Opaque Paper-Backed Label */}
+            <g transform="translate(74, 18)">
+              <rect
+                x="0"
+                y="0"
+                width="62"
+                height="18"
+                rx="3"
+                fill="#EFEBE3"
+                stroke="#C42B2B"
+                strokeWidth="1"
+              />
+              <text
+                x="31"
+                y="12"
+                fill="#C42B2B"
+                fontFamily="var(--font-head)"
+                fontWeight="700"
+                fontSize="10"
+                letterSpacing="0.08em"
+                textAnchor="middle"
+              >
+                CROSSES
+              </text>
+            </g>
           </>
         )}
 
+        {/* Opponent GK (Red Marker O + Number + Surname) */}
+        <g transform="translate(372, 97)">
+          <path
+            d={mCircle(0, 0, 8.5, 59)}
+            fill="#FFFFFF"
+            stroke="#C42B2B"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+          <text
+            x="0"
+            y="3"
+            fill="#C42B2B"
+            fontFamily="var(--font-head)"
+            fontWeight="700"
+            fontSize="9"
+            textAnchor="middle"
+          >
+            1
+          </text>
+          <text
+            x="0"
+            y="18"
+            fill="var(--text)"
+            fontFamily="var(--font-head)"
+            fontWeight="600"
+            fontSize="8"
+            letterSpacing="0.02em"
+            textAnchor="middle"
+          >
+            {(gkPlayer?.lastName ?? 'GK').toUpperCase()}
+          </text>
+        </g>
+
+        {/* Opponent Outfield Players (Red Marker Os with number inside and surname underneath per M2) */}
+        {pos.flat().map(([x, y], idx) => {
+          const player = outfieldPlayers[idx];
+          const shirtNum = idx + 2;
+          const surname = player ? player.lastName.toUpperCase() : `P${shirtNum}`;
+
+          return (
+            <g key={`opp-p-${idx}`} transform={`translate(${x}, ${y})`}>
+              <path
+                d={mCircle(0, 0, 8.5, 60 + idx)}
+                fill="#FFFFFF"
+                stroke="#C42B2B"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              />
+              <text
+                x="0"
+                y="3"
+                fill="#C42B2B"
+                fontFamily="var(--font-head)"
+                fontWeight="700"
+                fontSize="9"
+                textAnchor="middle"
+              >
+                {shirtNum}
+              </text>
+              <text
+                x="0"
+                y="17"
+                fill="var(--text)"
+                fontFamily="var(--font-head)"
+                fontWeight="600"
+                fontSize="7.5"
+                letterSpacing="0.02em"
+                textAnchor="middle"
+              >
+                {surname}
+              </text>
+            </g>
+          );
+        })}
+
         {/* Our defender as 'X' and Key Battle circled in accent */}
+        <g transform={`translate(${fwd[0] - 22}, ${fwd[1] + 8})`}>
+          <path
+            d={mX(0, 0, 6, 77)}
+            fill="none"
+            stroke="#F4B41A"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+          />
+        </g>
         <path
-          d={mX(fwd[0] - 22, fwd[1] + 8, 5.5, 77)}
+          d={mCircle(fwd[0] - 11, fwd[1] + 4, 24, 78)}
           fill="none"
-          stroke="var(--accent-text)"
-          strokeWidth="2.4"
+          stroke="#F4B41A"
+          strokeWidth="2.2"
           strokeLinecap="round"
+          strokeDasharray="4 2"
         />
-        <path
-          d={mCircle(fwd[0] - 11, fwd[1] + 3, 22, 78)}
-          fill="none"
-          stroke="var(--accent-text)"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-        />
-        <text
-          x={fwd[0] - 38}
-          y={fwd[1] + 44}
-          fill="var(--accent-text)"
-          fontFamily="var(--font-head)"
-          fontWeight="700"
-          fontSize="11"
-          letterSpacing="0.08em"
-        >
-          KEY BATTLE
-        </text>
+
+        {/* KEY BATTLE label with paper backing cleanly offset */}
+        <g transform={`translate(${fwd[0] - 46}, ${fwd[1] + 32})`}>
+          <rect
+            x="0"
+            y="0"
+            width="78"
+            height="18"
+            rx="3"
+            fill="#EFEBE3"
+            stroke="#F4B41A"
+            strokeWidth="1.2"
+          />
+          <text
+            x="39"
+            y="12"
+            fill="#1E2A38"
+            fontFamily="var(--font-head)"
+            fontWeight="700"
+            fontSize="10"
+            letterSpacing="0.08em"
+            textAnchor="middle"
+          >
+            KEY BATTLE
+          </text>
+        </g>
       </svg>
     </div>
   );

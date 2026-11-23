@@ -13,6 +13,7 @@ export interface PlayersBundle {
   linesmen: Player3DVisual[];
   allPlayers: Map<string, Player3DVisual>;
   update: (delta: number) => void;
+  updateNameTags: (carrierId: string | null, commentaryId: string | null, showAll: boolean) => void;
   dispose: () => void;
 }
 
@@ -198,11 +199,12 @@ export function createPlayers(
     shadow.position.set(0, 0.015, 0);
     pGroup.add(shadow);
 
-    // 7. Overhead Name Tag Sprite (Barlow Condensed)
+    // 7. Overhead Name Tag Sprite (Barlow Condensed 600, Kit Chip)
     let nameTag: THREE.Sprite | undefined;
     if (player) {
-      nameTag = createNameTagSprite(num, player.lastName);
-      nameTag.position.set(0, 1.95, 0);
+      nameTag = createNameTagSprite(num, player.lastName, kitClub);
+      nameTag.position.set(0, 2.05, 0);
+      nameTag.visible = false;
       pGroup.add(nameTag);
     }
 
@@ -354,6 +356,16 @@ export function createPlayers(
       updateLimbAnimation(referee);
       linesmen.forEach(updateLimbAnimation);
     },
+    updateNameTags: (carrierId: string | null, commentaryId: string | null, showAll: boolean) => {
+      allPlayers.forEach((visual, id) => {
+        if (!visual.nameTag) return;
+        if (showAll) {
+          visual.nameTag.visible = true;
+        } else {
+          visual.nameTag.visible = id === carrierId || id === commentaryId;
+        }
+      });
+    },
     dispose: () => {
       shadowMat.dispose();
       shadowGeom.dispose();
@@ -435,26 +447,50 @@ function createShirtCanvas(
   return canvas;
 }
 
-function createNameTagSprite(num: number, surname: string): THREE.Sprite {
-  const canvas = createSafeCanvas(256, 64);
+function createNameTagSprite(num: number, surname: string, club: Club): THREE.Sprite {
+  const canvas = createSafeCanvas(512, 128);
   const ctx = canvas.getContext('2d');
   if (ctx) {
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
-    ctx.roundRect(10, 8, 236, 48, 8);
+    const primary = club.colors.primary || '#1E2A38';
+    const secondary = club.colors.secondary || '#F4B41A';
+    const textCol = club.colors.text || '#FFFFFF';
+
+    // Outer chip backing
+    ctx.fillStyle = 'rgba(10, 14, 20, 0.9)';
+    ctx.beginPath();
+    ctx.roundRect(16, 16, 480, 96, 20);
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.lineWidth = 2;
+    // Kit accent left stripe / chip
+    ctx.fillStyle = primary;
+    ctx.beginPath();
+    ctx.roundRect(16, 16, 110, 96, [20, 0, 0, 20]);
+    ctx.fill();
+
+    // Border around chip
+    ctx.strokeStyle = secondary;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.roundRect(16, 16, 480, 96, 20);
     ctx.stroke();
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 26px "Barlow Condensed", sans-serif';
+    // Number inside kit stripe
+    ctx.fillStyle = textCol;
+    ctx.font = '600 56px "Barlow Condensed", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${num} ${surname.toUpperCase()}`, 128, 32);
+    ctx.fillText(`${num}`, 71, 66);
+
+    // Surname in Barlow Condensed 600
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '600 48px "Barlow Condensed", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(surname.toUpperCase(), 146, 66);
   }
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.minFilter = THREE.LinearFilter;
   const spriteMat = new THREE.SpriteMaterial({
     map: texture,
     transparent: true,
@@ -462,7 +498,8 @@ function createNameTagSprite(num: number, surname: string): THREE.Sprite {
   });
 
   const sprite = new THREE.Sprite(spriteMat);
-  sprite.scale.set(1.4, 0.35, 1);
+  sprite.scale.set(3.0, 0.75, 1);
+  sprite.visible = false;
   return sprite;
 }
 

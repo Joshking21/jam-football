@@ -1,0 +1,654 @@
+{
+  "matchHeadlines": {
+    "big_win": [
+      {
+        "id": "match_big_win_01",
+        "headline": "{team} RUN RIOT AGAINST {opponent}",
+        "sub": "A ruthless attacking masterclass sweeps {opponent} aside in {score} thrashing.",
+        "body": "{team} produced one of the most dominant performances of the campaign at {stadium}. The home supporters were in dreamland as {opponent} were completely dismantled from the first whistle."
+      },
+      {
+        "id": "match_big_win_02",
+        "headline": "{team} TEAR {opponent} TO SHREDS",
+        "sub": "Six-star display leaves {opponent} shell-shocked after {score} drubbing.",
+        "body": "It was total football on show as {team} delivered an emphatic statement to the rest of the league. Manager {manager} hailed the relentless energy and incisive finishing across all ninety minutes."
+      },
+      {
+        "id": "match_big_win_03",
+        "headline": "UNSTOPPABLE {team} BATTER {opponent}",
+        "sub": "Clinical finishing seals a resounding {score} demolition job.",
+        "body": "There was simply no contest as {team} dominated every blade of grass. {opponent} could only look on helplessly as wave after wave of attacks hit the target."
+      },
+      {
+        "id": "match_big_win_04",
+        "headline": "{team} HIT {opponent} FOR SIX IN EMPHATIC ROUT",
+        "sub": "Electric forward play dismantles visiting back line in stunning {score} triumph.",
+        "body": "The noise inside {stadium} reached fever pitch as {team} put on a show of attacking supremacy. {opponent} will face intense scrutiny after capitulating so comprehensively."
+      }
+    ],
+    "win": [
+      {
+        "id": "match_win_01",
+        "headline": "{team} EDGE PAST STUBBORN {opponent}",
+        "sub": "Professional display secures hard-earned three points in {score} contest.",
+        "body": "{team} showed tactical maturity to negotiate a testing encounter against {opponent}. A resolute defensive showing in the closing stages ensured the victory was safely brought home."
+      },
+      {
+        "id": "match_win_02",
+        "headline": "{player} INSPIRES {team} TO CRUCIAL VICTORY",
+        "sub": "Standout individual display guides {team} to {score} triumph over {opponent}.",
+        "body": "When {team} needed inspiration, {player} delivered with quality and composure. The result leaves manager {manager} delighted with the squad's battling spirit."
+      },
+      {
+        "id": "match_win_03",
+        "headline": "{team} TAKE THE POINTS IN HARD-FOUGHT BATTLE",
+        "sub": "Disciplined execution blunts {opponent} challenge in tight {score} win.",
+        "body": "This was a victory forged in tactical discipline and sheer grit. {team} absorbed sustained pressure before landing the decisive blows to secure maximum reward."
+      },
+      {
+        "id": "match_win_04",
+        "headline": "THREE POINTS FOR {team} AFTER COMPOSED DISPLAY",
+        "sub": "Measured performance keeps {team} marching on with {score} victory.",
+        "body": "{team} controlled the tempo for long spells and never looked like relinquishing control against {opponent}. The travelling supporters celebrated a thoroughly deserved win at full-time."
+      }
+    ],
+    "late_winner": [
+      {
+        "id": "match_late_01",
+        "headline": "LATE {player} DRAMA BREAKS {opponent} HEARTS",
+        "sub": "Stunning minute {minute} winner sparks delirium at {stadium}.",
+        "body": "Just when {opponent} believed they had earned a point, {player} stepped up in the dying moments to snatch victory. The stadium erupted as the referee blew the final whistle seconds later."
+      },
+      {
+        "id": "match_late_02",
+        "headline": "LAST-GASP {team} STUNNER SINKS {opponent}",
+        "sub": "Injury-time decider delivers breathless {score} finish.",
+        "body": "Football at its most dramatic played out this afternoon as {team} struck at the death. Manager {manager} sprinted down the touchline to celebrate an unforgettable finale."
+      },
+      {
+        "id": "match_late_03",
+        "headline": "{player} THE HERO AS {team} SNATCH LATE GLORY",
+        "sub": "Dramatic {minute}th-minute breakthrough seals epic {score} triumph.",
+        "body": "With seconds ticking away, {player} kept cool under intense pressure to fire home. It was heartbreak for {opponent}, who had defended manfully until the fatal final lapse."
+      },
+      {
+        "id": "match_late_04",
+        "headline": "DYING EMBERS: {team} CLAIM STUNNING LATE WIN",
+        "sub": "Never-say-die attitude pays off in sensational {score} victory over {opponent}.",
+        "body": "{team} refused to settle for a draw and threw men forward until the final second. The gamble paid rich dividends as the winning goal sparked wild celebrations in the stands."
+      }
+    ],
+    "draw": [
+      {
+        "id": "match_draw_01",
+        "headline": "HONOURS EVEN AS {team} AND {opponent} SHARE SPOILS",
+        "sub": "Absorbing tactical stalemate ends {score} after tense encounter.",
+        "body": "Neither side could find a way through in an intensely competitive battle between two evenly matched sides. Both managers praised their teams' defensive concentration and organization."
+      },
+      {
+        "id": "match_draw_02",
+        "headline": "{team} AND {opponent} CANNOT BE SEPARATED",
+        "sub": "Points shared at {stadium} following tight {score} clash.",
+        "body": "Chances were at a premium as both midfields fought tooth and nail for dominance. While both teams had late opportunities, a share of the spoils was the fairest outcome."
+      },
+      {
+        "id": "match_draw_03",
+        "headline": "DEADLOCK AT {stadium}: {score} DRAW",
+        "sub": "Defences come out on top as {team} and {opponent} settle for a point.",
+        "body": "It was a match of fine margins and rigorous defensive systems. Both back fours stood tall to deny attackers any clear-cut openings in a tactical chess match."
+      },
+      {
+        "id": "match_draw_04",
+        "headline": "NOTHING BETWEEN THEM: {team} DRAW {score} WITH {opponent}",
+        "sub": "Fast-paced encounter ends with a point apiece for title chasers.",
+        "body": "End-to-end action thrilled spectators throughout, but neither team could produce the decisive touch. Both dressing rooms will feel they left points on the table."
+      }
+    ],
+    "comeback": [
+      {
+        "id": "match_comeback_01",
+        "headline": "SENSATIONAL COMEBACK SEES {team} ROAR BACK",
+        "sub": "Trailing early on, {team} rally in heroic fashion to defeat {opponent} {score}.",
+        "body": "Faced with adversity, {team} produced a stirring second-half fightback that will live long in the memory. Manager {manager} made inspired adjustments to turn the tide completely."
+      },
+      {
+        "id": "match_comeback_02",
+        "headline": "{team} RESURRECTION: STUNNING TURNAROUND OVER {opponent}",
+        "sub": "Unshakable belief powers {team} from behind to claim {score} triumph.",
+        "body": "When {opponent} took command, {team} looked down and out. But an astonishing revival driven by raw passion and pressing transformed despair into ecstatic victory."
+      },
+      {
+        "id": "match_comeback_03",
+        "headline": "FROM THE BRINK! {team} FIGHT BACK TO STUN {opponent}",
+        "sub": "Second-half blitz overturns deficit in thrilling {score} triumph.",
+        "body": "The atmosphere flipped from tension to pure ecstasy as {team} launched an unstoppable barrage of attacks. {opponent} crumbled under the sheer intensity of the comeback."
+      },
+      {
+        "id": "match_comeback_04",
+        "headline": "MIGHTY {team} MOUNT THRILLING FIGHTBACK",
+        "sub": "{player} sparks heroic turnaround in {score} win over {opponent}.",
+        "body": "Character and spirit defined this extraordinary match. {team} dug deep into their reserves of resolve to overturn the scoreline and send their supporters into raptures."
+      }
+    ],
+    "loss": [
+      {
+        "id": "match_loss_01",
+        "headline": "{team} FALL SHORT AGAINST CLINICAL {opponent}",
+        "sub": "Frustrating afternoon ends in {score} defeat for {team}.",
+        "body": "{team} enjoyed spells of promising possession but lacked the cutting edge required in the final third. {opponent} punished defensive hesitation to take all three points."
+      },
+      {
+        "id": "match_loss_02",
+        "headline": "DISAPPOINTMENT FOR {team} IN {score} SETBACK",
+        "sub": "{opponent} capitalize on defensive lapses to leave {team} empty-handed.",
+        "body": "It was an afternoon to forget for {team} as basic errors proved costly at {stadium}. Manager {manager} conceded that the performance fell below the squad's usual high standards."
+      },
+      {
+        "id": "match_loss_03",
+        "headline": "{team} OUTWITTED BY TACTICAL {opponent}",
+        "sub": "Visitors execute counter-attacking blueprint to claim {score} win.",
+        "body": "{team} struggled to penetrate a compact and disciplined opposing block. Despite pressing high late on, clear openings remained elusive as {opponent} held firm."
+      },
+      {
+        "id": "match_loss_04",
+        "headline": "BITTER PILL FOR {team} AS {opponent} TAKE THE SPOILS",
+        "sub": "Narrow {score} loss leaves {team} searching for answers.",
+        "body": "Fine margins separated the sides, but {opponent} proved sharper in key moments. {team} will be eager to quickly put this disappointment behind them on the training ground."
+      }
+    ],
+    "heavy_loss": [
+      {
+        "id": "match_heavy_loss_01",
+        "headline": "MISERY FOR {team}: {opponent} RUN AMOK",
+        "sub": "Damaging {score} defeat exposes defensive frailties at {stadium}.",
+        "body": "A nightmare afternoon unfolded for {team} as {opponent} carved through their defensive ranks with ease. Urgent inquests are expected after an unacceptable collapse."
+      },
+      {
+        "id": "match_heavy_loss_02",
+        "headline": "{team} EMBARRASSED IN {score} CRUSHING BY {opponent}",
+        "sub": "Dismal display prompts soul-searching as pressure mounts on {manager}.",
+        "body": "Supporters voiced their frustration as {team} slumped to a humiliating defeat. Defensive discipline deserted the squad entirely during an alarming second-half unraveling."
+      },
+      {
+        "id": "match_heavy_loss_03",
+        "headline": "{opponent} HUMBLE {team} IN SHOCKING BLOWOUT",
+        "sub": "Ruthless opponents inflict crushing {score} beating on toothless {team}.",
+        "body": "There was nowhere to hide for {team} as they were outrun, outmuscled, and completely outclassed. The board will demand immediate answers after such a chastening reverse."
+      },
+      {
+        "id": "match_heavy_loss_04",
+        "headline": "DARK DAY FOR {team} AFTER {score} HUMILIATION",
+        "sub": "Rampant {opponent} mercilessly punish chaotic defending.",
+        "body": "Every department of {team}'s game misfired in a calamitous showing. The dressing room was silent at full-time as the reality of the scoreline sank in."
+      }
+    ],
+    "derby_win": [
+      {
+        "id": "match_derby_win_01",
+        "headline": "{team} RULE THE CITY IN FIERY DERBY TRIUMPH",
+        "sub": "Bragging rights belong to {team} after epic {score} victory over fierce rivals {opponent}.",
+        "body": "A cauldron of noise greeted the final whistle at {stadium} as {team} vanquished their arch-rivals. This victory will be savoured for months across the district."
+      },
+      {
+        "id": "match_derby_win_02",
+        "headline": "DERBY DELIGHT! {team} TRIUMPH OVER {opponent}",
+        "sub": "Passionate display delivers monumental {score} win in grudge match.",
+        "body": "Tackles flew in and tempers flared, but {team} kept their heads when it mattered most. The fans stayed long after the final whistle to serenade their victorious heroes."
+      },
+      {
+        "id": "match_derby_win_03",
+        "headline": "{player} IGNITES DERBY GLORY FOR {team}",
+        "sub": "Heroic performance downs rivals {opponent} in pulsating {score} derby.",
+        "body": "Local pride was on the line and {team} rose to the occasion magnificently. Manager {manager} hailed the emotional maturity and tactical execution of his squad."
+      },
+      {
+        "id": "match_derby_win_04",
+        "headline": "TOWN IS OURS! {team} CRUSH RIVALS {opponent}",
+        "sub": "Masterful derby display seals memorable {score} celebration.",
+        "body": "From first tackle to last, {team} demonstrated that this rivalry meant everything to them. {opponent} were left reeling in a defeat that will sting their faithful for a long time."
+      }
+    ],
+    "derby_loss": [
+      {
+        "id": "match_derby_loss_01",
+        "headline": "DERBY AGONY AS {team} FALL TO {opponent}",
+        "sub": "Painful {score} defeat hands bragging rights to bitter rivals.",
+        "body": "The worst possible outcome materialized for {team} as arch-rivals {opponent} celebrated on their turf. The disappointment among the home faithful was palpable."
+      },
+      {
+        "id": "match_derby_loss_02",
+        "headline": "HEARTBREAK IN THE DERBY: {team} EDGED OUT",
+        "sub": "Fierce local contest ends in bitter {score} reverse to {opponent}.",
+        "body": "It was an emotionally draining battle where {team} gave everything but came up agonizingly short. The dressing room will have to carry the heavy burden of local bragging rights lost."
+      },
+      {
+        "id": "match_derby_loss_03",
+        "headline": "{opponent} SPOIL THE PARTY IN HEATED DERBY CLASH",
+        "sub": "Visitors take derby spoils with clinical {score} win at {stadium}.",
+        "body": "Despite roaring home support, {team} could not breach {opponent}'s resolute rearguard. Manager {manager} apologized to the supporters after the painful derby defeat."
+      },
+      {
+        "id": "match_derby_loss_04",
+        "headline": "RIVALS CELEBRATE AS {team} STUMBLE IN DERBY",
+        "sub": "Tense derby ends in misery with {score} defeat against {opponent}.",
+        "body": "Local bragging rights were conceded as {opponent} seized on critical moments. {team} must regroup swiftly to ensure this setback does not derail their campaign."
+      }
+    ],
+    "upset": [
+      {
+        "id": "match_upset_01",
+        "headline": "DAVID DOWNS GOLIATH: {team} STUN {opponent}",
+        "sub": "Underdogs produce shock of the season with fearless {score} victory.",
+        "body": "Reputations counted for nothing as {team} tore up the form book to defeat heavyweight {opponent}. The tactical gameplan worked to perfection in an astonishing upset."
+      },
+      {
+        "id": "match_upset_02",
+        "headline": "GIANT KILLERS! {team} DEFY THE ODDS AGAINST {opponent}",
+        "sub": "Heroic rearguard and ruthless breaks spark sensational {score} win.",
+        "body": "Pundits gave {team} little chance before kick-off, but the underdogs delivered an inspired performance. Manager {manager} hailed the belief running through the entire squad."
+      },
+      {
+        "id": "match_upset_03",
+        "headline": "EARTHQUAKE AT {stadium}: {team} TOPPLE {opponent}",
+        "sub": "Modest {team} humble league heavyweights in thrilling {score} triumph.",
+        "body": "This was an afternoon when desire and collective discipline overcame superior resources. {opponent} were utterly flummoxed by {team}'s ferocious pressing."
+      },
+      {
+        "id": "match_upset_04",
+        "headline": "IMPOSSIBLE VICTORY: {team} OVERCOME {opponent}",
+        "sub": "Fearless showing writes a famous new chapter in {score} giant-killing.",
+        "body": "The celebrations at the final whistle echoed far beyond the stadium walls. {team} proved once again that football is decided on the grass, not on balance sheets."
+      }
+    ],
+    "hat_trick": [
+      {
+        "id": "match_hat_trick_01",
+        "headline": "HAT-TRICK HERO {player} DESTROYS {opponent}",
+        "sub": "Magnificent treble powers {team} to dominant {score} victory.",
+        "body": "{player} took home the match ball after an exhibition in world-class finishing. Every time the forward received possession inside the box, the net rippled."
+      },
+      {
+        "id": "match_hat_trick_02",
+        "headline": "THREE-GOAL MASTERPIECE FROM SENSATIONAL {player}",
+        "sub": "Clinical treble leaves {opponent} defence in tatters.",
+        "body": "It was an afternoon that belonged entirely to {player}. Precision, movement, and ice-cold composure yielded a memorable hat-trick for {team}."
+      },
+      {
+        "id": "match_hat_trick_03",
+        "headline": "TREBLE DELIGHT: {player} POWERS {team} TO GLORY",
+        "sub": "Superstar striker bags three in {score} masterclass over {opponent}.",
+        "body": "The stadium stood as one to applaud {player} following an immaculate goalscoring performance. Manager {manager} described the striker's display as unplayable."
+      },
+      {
+        "id": "match_hat_trick_04",
+        "headline": "{player} CRUSHES {opponent} WITH SENSATIONAL HAT-TRICK",
+        "sub": "Flawless three-goal haul seals unforgettable {score} triumph for {team}.",
+        "body": "From close-range predatory finishes to thunderous strikes, {player} delivered a clinic in centre-forward play that {opponent} could not contain."
+      }
+    ],
+    "clean_sheet": [
+      {
+        "id": "match_clean_sheet_01",
+        "headline": "WALL OF STEEL: {team} EXTEND SHUTOUT STREAK",
+        "sub": "Another clean sheet underpins rock-solid {score} win against {opponent}.",
+        "body": "{team}'s defensive fortress remains impenetrable. Opposing forwards found themselves continually marshalled and repelled by an unyielding backline."
+      },
+      {
+        "id": "match_clean_sheet_02",
+        "headline": "IMPERIOUS DEFENDING GUIDES {team} PAST {opponent}",
+        "sub": "Zero goals conceded as tactical discipline wins the day in {score} match.",
+        "body": "While flair often steals headlines, this result was constructed from defensive brilliance. The goalkeeper and central defenders gave a textbook clinic in organization."
+      },
+      {
+        "id": "match_clean_sheet_03",
+        "headline": "NONE SHALL PASS: {team} BLANK {opponent}",
+        "sub": "Ironclad rearguard shuts the door in composed {score} showing.",
+        "body": "Frustration mounted for {opponent} with every blocked shot and aerial clearance. {team} protected their lead with formidable structural discipline."
+      },
+      {
+        "id": "match_clean_sheet_04",
+        "headline": "{team} REARGUARD SHINES IN SHUTOUT VICTORY",
+        "sub": "Back five celebrated after frustrating {opponent} attack in {score} win.",
+        "body": "Manager {manager} has drilled this defence into an elite unit. The goalkeeper barely had a testing save to make thanks to protective shielding ahead."
+      }
+    ],
+    "red_card": [
+      {
+        "id": "match_red_card_01",
+        "headline": "SEEING RED! {player} DISMISSED IN HEATED CLASH",
+        "sub": "Early red card tilts the balance as {team} face {opponent}.",
+        "body": "The referee had no hesitation in brandishing red after a reckless challenge by {player}. The sending-off drastically altered the complexion of the contest."
+      },
+      {
+        "id": "match_red_card_02",
+        "headline": "MOMENT OF MADNESS: {player} SENT OFF",
+        "sub": "Disciplinary blow leaves teammates battling with ten men against {opponent}.",
+        "body": "A costly loss of composure proved devastating as {player} was ordered down the tunnel. The manager refused to defend the incident in his post-match briefing."
+      },
+      {
+        "id": "match_red_card_03",
+        "headline": "MARCHING ORDERS: {player} OFF IN TUMULTUOUS BATTLE",
+        "sub": "High drama and fierce tempers flare during {score} encounter.",
+        "body": "The atmosphere boiled over midway through the contest, resulting in {player}'s prompt expulsion. Playing with a numerical disadvantage proved an uphill task."
+      },
+      {
+        "id": "match_red_card_04",
+        "headline": "CONTROVERSY REIGNS: DISMISSAL ROCKS {team}",
+        "sub": "Red card decision sparks heated debate on the touchline.",
+        "body": "Touchline tempers flared after the match official reached for his pocket to dismiss {player}. The decision proved the undisputed turning point of the fixture."
+      }
+    ]
+  },
+  "transferNews": {
+    "mega_signing": [
+      {
+        "id": "news_trans_mega_01",
+        "headline": "BLOCKBUSTER! {team} LAND {player} IN €{fee} DEAL",
+        "sub": "Statement capture sends shockwaves across the division.",
+        "body": "{team} have officially confirmed the marquee signing of {player} for a reported fee of €{fee}. The acquisition marks a major coup and signals clear title ambitions."
+      },
+      {
+        "id": "news_trans_mega_02",
+        "headline": "{player} SEALS BIG-MONEY SWITCH TO {team}",
+        "sub": "Star forward completes medical ahead of bumper contract at {stadium}.",
+        "body": "The protracted transfer saga concluded today as {player} held up the shirt of {team}. Supporters gathered outside the ground to welcome their new headline signing."
+      },
+      {
+        "id": "news_trans_mega_03",
+        "headline": "SPLASHING THE CASH: {team} UNVEIL {player}",
+        "sub": "Record outlay demonstrates financial firepower of ambitious {team}.",
+        "body": "Manager {manager} beamed with satisfaction after landing his primary summer target. {player} is expected to immediately slot into the starting lineup."
+      },
+      {
+        "id": "news_trans_mega_04",
+        "headline": "TRANSFER SENSATION: {team} COMPLETE {player} SWOOP",
+        "sub": "Rivals left in the dust as {team} capture prized signature for €{fee}.",
+        "body": "Negotiations reached a swift breakthrough overnight as {team} met the asking price. Pundits agree this signing elevates the club into genuine contenders."
+      }
+    ],
+    "deadline_day": [
+      {
+        "id": "news_trans_dd_01",
+        "headline": "DEADLINE DRAMA: {team} BEAT THE CLOCK FOR {player}",
+        "sub": "Paperwork submitted minutes before the midnight cutoff.",
+        "body": "A frantic deadline day ended with cheers at {stadium} as {team} pushed through the signing of {player}. The deal went down to the final seconds before receiving league clearance."
+      },
+      {
+        "id": "news_trans_dd_02",
+        "headline": "ELEVENTH HOUR CAPTURE: {player} JOINS {team}",
+        "sub": "Dramatic deadline breakthrough secures coveted recruit.",
+        "body": "Just when it appeared negotiations had stalled, a breakthrough occurred in the final hour of the window. {player} arrived for a late medical to finalize terms."
+      },
+      {
+        "id": "news_trans_dd_03",
+        "headline": "DEADLINE DAY STUNNER: {team} WIN THE RACE FOR {player}",
+        "sub": "High-stakes deadline poker concludes with decisive transfer swoop.",
+        "body": "Club officials worked tirelessly through the night to conclude the deal for {player}. The announcement capped off an exhilarating transfer window."
+      },
+      {
+        "id": "news_trans_dd_04",
+        "headline": "BUZZER BEATER! {team} CONFIRM DEADLINE ARRIVAL",
+        "sub": "Late flurry brings {player} to {stadium} on long-term deal.",
+        "body": "Fans refreshing their feeds were treated to late excitement as {team} confirmed the acquisition. The manager expressed relief at strengthening ahead of the crunch matches."
+      }
+    ],
+    "free_agent": [
+      {
+        "id": "news_trans_free_01",
+        "headline": "BARGAIN HUNTING: {team} SNAP UP FREE AGENT {player}",
+        "sub": "Shrewd recruitment brings experienced campaigner to the club on zero fee.",
+        "body": "{team} have moved decisively to secure {player} on a free transfer following his departure from his previous club. The deal is seen as a smart addition to squad depth."
+      },
+      {
+        "id": "news_trans_free_02",
+        "headline": "{player} COMMITS FUTURE TO {team} AS FREE AGENT",
+        "sub": "Unattached star chooses {team} project ahead of rival suitors.",
+        "body": "Having weighed up several options, {player} has put pen to paper with {team}. The player cited the manager's tactical vision as the decisive factor."
+      },
+      {
+        "id": "news_trans_free_03",
+        "headline": "NO FEE, HIGH QUALITY: {team} SECURE {player}",
+        "sub": "Free agent signing bolsters dressing room without touching transfer budget.",
+        "body": "{team} directors were pleased to finalize terms with {player} without paying a transfer fee. The acquisition preserves vital financial capital for future moves."
+      },
+      {
+        "id": "news_trans_free_04",
+        "headline": "{team} COMPLETE SNARL CAPTURE OF UNATTACHED {player}",
+        "sub": "Astute squad reinforcement finalized outside transfer fee market.",
+        "body": "{player} joins {team} with immediate effect and could make his debut this weekend. The coaching staff believe his leadership will prove invaluable."
+      }
+    ],
+    "transfer_listed": [
+      {
+        "id": "news_trans_listed_01",
+        "headline": "DOOR IS OPEN: {player} TRANSFER LISTED BY {team}",
+        "sub": "Out-of-favour forward made available for summer bids.",
+        "body": "Relations have reportedly soured between {team} and {player}, leading to the player being placed on the transfer list. Several rival clubs are monitoring the situation."
+      },
+      {
+        "id": "news_trans_listed_02",
+        "headline": "{player} SET FOR EXIT AS {team} LISTEN TO OFFERS",
+        "sub": "Discontent over playing time prompts club to sanction departure.",
+        "body": "With playing time limited, {team} have agreed to facilitate a move for {player}. The club will seek a fair market fee to reinvest in replacements."
+      },
+      {
+        "id": "news_trans_listed_03",
+        "headline": "SURPLUS TO REQUIREMENTS: {player} AVAILABLE FOR SALE",
+        "sub": "{manager} signals tactical rebuild by listing first-team squad member.",
+        "body": "Manager {manager} has informed {player} that he is not central to future tactical plans. Agents are actively circulating the player's profile across the league."
+      },
+      {
+        "id": "news_trans_listed_04",
+        "headline": "{team} INVITE BIDS FOR UNSETTLED {player}",
+        "sub": "Contract stand-off results in player being made available on the market.",
+        "body": "Unable to reach agreement on contract terms, {team} will entertain offers for {player} during the current window. A departure appears imminent."
+      }
+    ]
+  },
+  "injuryNews": {
+    "blow": [
+      {
+        "id": "news_inj_blow_01",
+        "headline": "CRUEL INJURY BLOW FOR {team}: {player} SIDELINED",
+        "sub": "Key star faces lengthy absence following training ground scan.",
+        "body": "Medical staff have confirmed that {player} has suffered a significant injury layoff. The setback comes at a critical juncture in {team}'s campaign."
+      },
+      {
+        "id": "news_inj_blow_02",
+        "headline": "{player} STRUCK DOWN: MAJOR SETBACK FOR {team}",
+        "sub": "Influential starter ruled out for multiple matchdays.",
+        "body": "{team} will have to navigate upcoming fixtures without {player}. Manager {manager} acknowledged the loss of the player's leadership is a severe test of squad depth."
+      },
+      {
+        "id": "news_inj_blow_03",
+        "headline": "INJURY CURSE STRIKES {team} TALISMAN {player}",
+        "sub": "Physio team confirm recovery timetable stretching into coming weeks.",
+        "body": "Scans revealed the extent of the damage sustained by {player} during the last fixture. The coaching staff will need to adapt tactical systems to cope."
+      },
+      {
+        "id": "news_inj_blow_04",
+        "headline": "HOSPITAL WARD EXPANDS: {player} INJURED FOR {team}",
+        "sub": "Treatment room welcomes another starter ahead of busy fixture run.",
+        "body": "{team}'s medical department faces a race against time to nurse key players back to fitness. {player} has begun rehabilitation under physio supervision."
+      }
+    ],
+    "recovery": [
+      {
+        "id": "news_inj_rec_01",
+        "headline": "BOOST FOR {team}: {player} RETURNS TO FULL FITNESS",
+        "sub": "Talisman cleared by medical staff ahead of vital matchday.",
+        "body": "Smiles were back on faces at the training ground as {player} completed full contact sessions. His return provides an enormous lift for {team} supporters."
+      },
+      {
+        "id": "news_inj_rec_02",
+        "headline": "{player} BACK IN CONTENTION AFTER REHABILITATION",
+        "sub": "Injured star resumes training ahead of schedule.",
+        "body": "Following rigorous gym and grass recovery sessions, {player} is ready to bolster {team}'s matchday squad. Manager {manager} welcomed the added competition."
+      },
+      {
+        "id": "news_inj_rec_03",
+        "headline": "GREEN LIGHT! {player} ENDS INJURY NIGHTMARE",
+        "sub": "Vital rearguard pillar passes fitness test for {team}.",
+        "body": "After several weeks on the sidelines, {player} has been passed fit by club doctors. The player expressed immense relief at being back on the pitch."
+      },
+      {
+        "id": "news_inj_rec_04",
+        "headline": "TIMELY RETURN: {player} CLEARED TO PLAY FOR {team}",
+        "sub": "Welcome reinforcement arrives just as fixtures ramp up.",
+        "body": "The return of {player} could not have arrived at a better time for {team}. The squad looked visibly energized by his presence on the training field."
+      }
+    ]
+  },
+  "boardNews": {
+    "backing": [
+      {
+        "id": "news_board_back_01",
+        "headline": "BOARD REITERATE UNWAVERING SUPPORT FOR {manager}",
+        "sub": "Club leadership issue statement of full confidence in current project.",
+        "body": "The board of {team} have dismissed outside speculation, reaffirming that manager {manager} has their total backing to guide the club forward."
+      },
+      {
+        "id": "news_board_back_02",
+        "headline": "{team} HIERARCHY BACK MANAGER TO DELIVER VISION",
+        "sub": "Directors praise tactical foundation and squad unity under {manager}.",
+        "body": "Speaking to club media, the chairman stressed the long-term commitment to {manager}'s blueprint. The boardroom remains entirely aligned with the coaching staff."
+      },
+      {
+        "id": "news_board_back_03",
+        "headline": "VOTE OF CONFIDENCE: {team} BOARD RALLY AROUND {manager}",
+        "sub": "United front presented amid intense media speculation.",
+        "body": "Internal sources confirm the board's confidence in {manager} remains steadfast. The club hierarchy intends to provide every tool necessary for success."
+      },
+      {
+        "id": "news_board_back_04",
+        "headline": "STEADY AT THE HELM: {team} DIRECTORS ENDORSE {manager}",
+        "sub": "Stability prioritized as board back the manager's methods.",
+        "body": "Directors met this week to review on-pitch progress and expressed satisfaction with the squad's direction. {manager} will continue to lead the project."
+      }
+    ],
+    "warning": [
+      {
+        "id": "news_board_warn_01",
+        "headline": "PRESSURE MOUNTS: {team} BOARD DEMAND RAPID IMPROVEMENT",
+        "sub": "Emergency boardroom summit held following disappointing sequence of results.",
+        "body": "Patience is wearing thin inside the corridors of power at {stadium}. The board have made it clear to manager {manager} that results must improve swiftly."
+      },
+      {
+        "id": "news_board_warn_02",
+        "headline": "TIGHTROPE WALK: {manager} UNDER INTENSE BOARD SCRUTINY",
+        "sub": "Subpar league standing prompts tough questions from club directors.",
+        "body": "{team}'s underwhelming campaign has triggered deep concern among the executive leadership. Speculation over the manager's future continues to grow."
+      },
+      {
+        "id": "news_board_warn_03",
+        "headline": "CRUNCH TIME FOR {manager} AT {team}",
+        "sub": "Board issue formal notice that target positions must be achieved.",
+        "body": "With the club languishing below preseason expectations, the directors have warned that decisive changes will be considered if form does not rebound."
+      },
+      {
+        "id": "news_board_warn_04",
+        "headline": "HEAT ON {team} BOSS AS BOARD GROW RESTLESS",
+        "sub": "Boardroom patience reaches breaking point after recent setbacks.",
+        "body": "Insiders suggest the next run of fixtures will prove defining for {manager}'s tenure. The board expect an immediate response from the playing group."
+      }
+    ]
+  },
+  "fanReactions": [
+    {
+      "id": "fan_quote_01",
+      "author": "Marcus from Calloway",
+      "quote": "If we keep pressing like that, nobody in this league can touch us. Absolute masterclass from the gaffer today."
+    },
+    {
+      "id": "fan_quote_02",
+      "author": "Sarah from Saltmere",
+      "quote": "I lost my voice in the 89th minute! You can see the lads are playing with genuine heart and passion for the badge."
+    },
+    {
+      "id": "fan_quote_03",
+      "author": "Dave from Ironvale",
+      "quote": "Tactically spot-on. We soaked up their pressure, let them pass it in front of us, and hit them like lightning."
+    },
+    {
+      "id": "fan_quote_04",
+      "author": "Elena from Kestrel Bay",
+      "quote": "I was skeptical about the lineup before kickoff, but I have to hand it to the manager. That was a tactical triumph."
+    },
+    {
+      "id": "fan_quote_05",
+      "author": "Tom from Northgate",
+      "quote": "Basic defending cost us today. You can't give away cheap set pieces at this level and expect to get away with it."
+    },
+    {
+      "id": "fan_quote_06",
+      "author": "Priya from Brightwater",
+      "quote": "We need another striker before the window shuts. We're creating enough chances to win three matches but nobody is burying them."
+    },
+    {
+      "id": "fan_quote_07",
+      "author": "Jack from Ashcombe",
+      "quote": "A point away from home isn't the end of the world, but we really should have gone for the jugular in the second half."
+    },
+    {
+      "id": "fan_quote_08",
+      "author": "Chloe from Veldmoor",
+      "quote": "The energy in the ground was electric from minute one. Best ninety minutes I've witnessed down at the ground in years!"
+    },
+    {
+      "id": "fan_quote_09",
+      "author": "George from Lindenfield",
+      "quote": "Fair play to the referee today, kept the game moving and didn't fall for any theatrical nonsense. Great battle."
+    },
+    {
+      "id": "fan_quote_10",
+      "author": "Hannah from Corvallen",
+      "quote": "Our new signing looked like he'd been playing in this team for five seasons already. Incredible composure on the ball."
+    },
+    {
+      "id": "fan_quote_11",
+      "author": "Ben from Calloway Pier",
+      "quote": "We've got our identity back. High tempo, sharp passing, and defenders who put their bodies on the line."
+    },
+    {
+      "id": "fan_quote_12",
+      "author": "Arthur from Old Ironvale",
+      "quote": "Win, lose or draw, we back the gaffer. Rome wasn't built in a day, but the foundations here look solid."
+    }
+  ],
+  "inboxTemplates": {
+    "rumour": [
+      {
+        "id": "inbox_rumour_01",
+        "title": "Transfer Speculation: {opponent} circling {player}",
+        "body": "Reports in the regional press suggest {opponent} are preparing a bid for {player}. Sources close to the club indicate informal enquiries have already been lodged."
+      },
+      {
+        "id": "inbox_rumour_02",
+        "title": "Scouting Alert: Rival interest in {player}",
+        "body": "Scouts from {opponent} were spotted watching {player} during the last match. An approach may materialize once the transfer window reopens."
+      },
+      {
+        "id": "inbox_rumour_03",
+        "title": "Market Whisper: {opponent} target {team} squad member",
+        "body": "Rumours are circulating across the league that {opponent} have shortlisted {player} to address their tactical needs. The situation bears close watching."
+      },
+      {
+        "id": "inbox_rumour_04",
+        "title": "Press Rumour: Foreign interest linked to {player}",
+        "body": "Tabloid columnists claim overseas scouts have compiled extensive dossiers on {player}. Club directors remain calm regarding the speculative chatter."
+      }
+    ],
+    "awards": [
+      {
+        "id": "inbox_potm_01",
+        "title": "League Award: Player of the Month announced",
+        "body": "The Meridian League has announced that {player} of {team} has been awarded Player of the Month following a string of sensational individual performances."
+      },
+      {
+        "id": "inbox_motm_01",
+        "title": "Manager of the Month: Accolade awarded",
+        "body": "The panel has confirmed {manager} of {team} as Manager of the Month after steering his squad through an unbeaten sequence of fixtures."
+      }
+    ]
+  }
+}

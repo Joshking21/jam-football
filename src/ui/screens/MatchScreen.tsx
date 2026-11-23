@@ -26,6 +26,7 @@ import { RadarOverlay } from './Match/RadarOverlay';
 import { HalfTimeModal } from './Match/HalfTimeModal';
 import { FullTimeModal } from './Match/FullTimeModal';
 import { TalkTone, getHalfTimeTalkContext } from '../../core/player/talks';
+import { simulateInstant } from '../../core/match/engine';
 import type { ClientToWorkerMessage, WorkerToClientMessage } from '../../workers/match.worker';
 
 export const MatchScreen: React.FC = () => {
@@ -42,6 +43,7 @@ export const MatchScreen: React.FC = () => {
   const workerRef = useRef<Worker | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number>(performance.now());
+  const isAltHeldRef = useRef<boolean>(false);
 
   // UI Reactive States
   const [hudVisible, setHudVisible] = useState(true);
@@ -152,8 +154,17 @@ export const MatchScreen: React.FC = () => {
       .map((id) => (id ? gameState.players[id] : null))
       .filter((p): p is Player => Boolean(p));
 
+    const captureState =
+      typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('state')
+        : null;
+
     const quality: QualityPreset = settings.quality === 'Auto' ? 'Medium' : settings.quality;
-    const timeSlot: TimeSlot = (fixture.kickoff?.toLowerCase() ?? 'evening') as TimeSlot;
+    const timeSlot: TimeSlot =
+      captureState === 'afternoon'
+        ? 'afternoon'
+        : ((fixture.kickoff?.toLowerCase() ?? 'evening') as TimeSlot);
+    const weather = captureState === 'rain' ? 'rain' : fixture.weather === 'Rain' ? 'rain' : 'dry';
 
     // C. Initialize 3D Scene
     const scene = new MatchScene({
@@ -162,11 +173,52 @@ export const MatchScreen: React.FC = () => {
       awayClub,
       homePlayers,
       awayPlayers,
-      weather: fixture.weather === 'Rain' ? 'rain' : 'dry',
+      weather,
       timeSlot,
       quality,
     });
     sceneRef.current = scene;
+
+    // Apply capture states if specified in URL query (?state=...)
+    if (captureState === 'goal') {
+      const scorer = homePlayers[9] ?? homePlayers[0];
+      setCurrentGoalBanner({
+        scorerName: scorer
+          ? (scorer.knownAs ?? `${scorer.firstName} ${scorer.lastName}`)
+          : 'Whitlock',
+        minuteLabel: "34'",
+        side: 'home',
+      });
+    } else if (captureState === 'replay') {
+      playback.isReplay = true;
+      setPlaybackState((prev) => ({ ...prev, isReplay: true }));
+    } else if (captureState === 'halftime') {
+      setIsHalfTime(true);
+      playback.score = { home: 1, away: 0 };
+      setPlaybackState((prev) => ({ ...prev, score: { home: 1, away: 0 }, half: 1, pt: 2700 }));
+    } else if (captureState === 'subs') {
+      setSubsOpen(true);
+    } else if (captureState === 'drawers') {
+      setStatsOpen(true);
+      setAssistantOpen(true);
+    } else if (captureState === 'tactical') {
+      scene.setCameraMode('tactical');
+      setCameraMode('tactical');
+    } else if (captureState === 'freecam') {
+      scene.setCameraMode('player');
+      setCameraMode('player');
+    } else if (captureState === 'timelapse') {
+      playback.pt = 1620;
+      playback.isTimeLapse = true;
+      playback.timeLapseProgress = 0.55;
+      setPlaybackState((prev) => ({
+        ...prev,
+        pt: 1620,
+        isTimeLapse: true,
+        timeLapseProgress: 0.55,
+        speedMultiplier: 60,
+      }));
+    }
 
     // D. Initialize Match Worker
     const worker = new Worker(new URL('../../workers/match.worker.ts', import.meta.url), {
@@ -196,6 +248,19 @@ export const MatchScreen: React.FC = () => {
     };
 
     const matchSeed = deriveSeed(gameState.seed, 'match-sim', fixture.id);
+
+    if (captureState === 'fulltime') {
+      const instantRes = simulateInstant(input, matchSeed);
+      setMatchResult(instantRes);
+      setIsFullTime(true);
+      playback.score = { home: instantRes.homeGoals, away: instantRes.awayGoals };
+      setPlaybackState((prev) => ({
+        ...prev,
+        score: { home: instantRes.homeGoals, away: instantRes.awayGoals },
+        half: 2,
+        pt: 5400,
+      }));
+    }
 
     worker.postMessage({
       type: 'start',
@@ -231,6 +296,24 @@ export const MatchScreen: React.FC = () => {
 
       // Update 3D Scene
       scene.updatePlayback(state.pt, state.currentEvent, state.half);
+
+      // Update name tags visibility (SPEC §14, M1)
+      const ballCarrierId = state.currentEvent?.playerId ?? null;
+      const commentaryPlayerId =
+        state.currentEvent?.targetId ??
+        state.currentEvent?.opponentId ??
+        state.currentEvent?.playerId ??
+        null;
+      const showAllTags = scene.getCameraMode() === 'tactical' || isAltHeldRef.current;
+      scene.updateNameTags(ballCarrierId, commentaryPlayerId, showAllTags);
+
+      // Update 3D ball position during time-lapse (M4)
+      if (state.isTimeLapse) {
+        const interpBall = playback.getBallPosition(state.pt);
+        const sceneX = interpBall.x - 52.5;
+        const sceneZ = interpBall.y - 34;
+        scene.setBallPosition(sceneX, 0.11, sceneZ);
+      }
 
       // Update Out of Town Scores progress
       if (state.pt > 0 && Math.random() < 0.005) {
@@ -273,6 +356,9 @@ export const MatchScreen: React.FC = () => {
   // Keyboard Shortcuts per SPEC §11.0
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Alt') {
+        isAltHeldRef.current = true;
+      }
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
 
       const playback = playbackRef.current;
@@ -315,8 +401,18 @@ export const MatchScreen: React.FC = () => {
       }
     };
 
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Alt') {
+        isAltHeldRef.current = false;
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
   }, []);
 
   const handleFinishInstant = () => {
@@ -488,11 +584,11 @@ export const MatchScreen: React.FC = () => {
             importance={playbackState.currentEvent?.importance ?? 0}
           />
 
-          {/* 2D Radar Time-Lapse Overlay during highlights gaps */}
+          {/* 2D Radar Time-Lapse Overlay during highlights gaps (M4) */}
           {playbackState.isTimeLapse && (
             <RadarOverlay
-              ballX={absBallX}
-              ballY={absBallY}
+              ballX={playbackRef.current?.getBallPosition(playbackState.pt).x ?? absBallX}
+              ballY={playbackRef.current?.getBallPosition(playbackState.pt).y ?? absBallY}
               speedMultiplier={playbackState.speedMultiplier}
               timeLapseProgress={playbackState.timeLapseProgress}
             />

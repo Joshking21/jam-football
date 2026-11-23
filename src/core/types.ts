@@ -519,6 +519,7 @@ export interface GameState {
   awards: SeasonAwards | null;
   boardWarningSent?: boolean;
   boardPraiseSent?: boolean;
+  scoutedThisMatchday?: PlayerId[];
   score: number; // leaderboard score, computed at season end
   counters: { news: number; inbox: number; offer: number };
 }

@@ -300,6 +300,10 @@ export class MatchScene {
     return this.cameras.getMode();
   }
 
+  public updateNameTags(carrierId: string | null, commentaryId: string | null, showAll: boolean) {
+    this.players.updateNameTags(carrierId, commentaryId, showAll);
+  }
+
   public setBallPosition(x: number, y: number, z: number) {
     this.ball.setPosition(x, y, z);
   }

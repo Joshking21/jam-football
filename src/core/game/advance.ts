@@ -38,6 +38,8 @@ import {
   generatePressConference,
 } from './press';
 import { checkConversationTriggers, evaluatePromisesAfterMatch } from '../player/conversations';
+import { generateMatchNews, checkRivalRumour } from '../news/news';
+import { advanceWindowRound } from '../transfers/transfers';
 
 export interface LineupValidationResult {
   valid: boolean;
@@ -579,6 +581,23 @@ export function applyMatchResults(
     }
   }
 
+  // Reset scouting allowance for new matchday
+  next.scoutedThisMatchday = [];
+
+  // Generate Match News (SPEC §16.6)
+  if (!next.news) next.news = [];
+  const roundFixtures = next.fixtures.filter((f) => f.matchday === currentMatchday);
+  for (const fix of roundFixtures) {
+    if (!fix.result) continue;
+    const homeC = next.clubs[fix.homeId];
+    const awayC = next.clubs[fix.awayId];
+    if (homeC && awayC) {
+      const isDerby = homeC.rivals.includes(awayC.id);
+      const matchNews = generateMatchNews(next, fix.result, homeC, awayC, isDerby, fix.id);
+      next.news.unshift(matchNews);
+    }
+  }
+
   next.phase = 'PostMatch';
   return next;
 }
@@ -776,6 +795,12 @@ export function runWeeklyProcessing(state: GameState): GameState {
       next.activeConversation = convResult.conversation;
       next.inbox.unshift(convResult.inboxItem);
     }
+  }
+
+  // 5. Rival transfer rumour check (SPEC §12.11: 1 per 3 weeks outside windows)
+  const rumourItem = checkRivalRumour(next);
+  if (rumourItem) {
+    next.inbox.unshift(rumourItem);
   }
 
   next.phase = 'WeekSummary';
@@ -1045,6 +1070,23 @@ export function advance(
       if (state.matchday === 9) {
         const next = JSON.parse(JSON.stringify(state)) as GameState;
         next.phase = 'TransferWindow';
+        next.window = {
+          kind: 'Midseason',
+          round: 1,
+          offers: [],
+          scoutingQueue: [],
+          scoutingDoneThisRound: 0,
+          boardWageRequestUsed: false,
+        };
+        next.inbox.unshift({
+          id: `inbox_win_open_${next.seed}_${next.matchday}`,
+          matchday: 9,
+          kind: 'Transfer',
+          title: 'Midseason Transfer Window Open',
+          body: 'The midseason transfer window has arrived. Clubs may submit bids, scout talent, negotiate contracts, and field incoming enquiries over 3 rounds.',
+          read: false,
+          requiresAction: false,
+        });
         return next;
       }
       if (state.matchday >= 18) {
@@ -1058,16 +1100,7 @@ export function advance(
     }
 
     case 'TransferWindow': {
-      const next = JSON.parse(JSON.stringify(state)) as GameState;
-      if (next.matchday === 0) {
-        next.matchday = 1;
-        next.phase = 'PreMatch';
-      } else {
-        next.matchday += 1;
-        next.phase = 'PreMatch';
-      }
-      checkPreMatchDerbyPress(next);
-      return next;
+      return advanceWindowRound(state);
     }
 
     case 'SeasonEnd':

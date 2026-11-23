@@ -1,6 +1,14 @@
 // Implements SPEC §7.1, §7.2, §10, §11.0, §20 Zustand store for GameState and UI state
 import { create } from 'zustand';
-import { GameState, PlayerId, Tactics, TrainingPlan, Player } from '@/core/types';
+import {
+  GameState,
+  PlayerId,
+  Tactics,
+  TrainingPlan,
+  Player,
+  SquadRole,
+  TransferOffer,
+} from '@/core/types';
 import { GameSettings, loadSettings, saveSettings } from './settings';
 import { getSaveMeta, loadGame, saveGame, SaveMeta, triggerDebouncedAutosave } from './saves';
 import { createNewGame, NewGameOptions } from '@/core/game/newGame';
@@ -11,6 +19,17 @@ import { TalkContext, TalkTone, TeamTalkResult, applyTeamTalk } from '@/core/pla
 import { applyPressAnswer, PressAnswerResult } from '@/core/game/press';
 import { applyConversationReply, ConversationResolution } from '@/core/player/conversations';
 import { deriveSeed, createRng } from '@/core/rng';
+import { canScoutPlayer, queueScoutPlayer } from '@/core/transfers/scouting';
+import {
+  calculateAskingPrice,
+  evaluateBid,
+  evaluatePlayerContract,
+  completeTransfer,
+  requestBoardWageIncrease as reqWageInc,
+} from '@/core/transfers/transfers';
+import { formatMoney } from '@/core/math';
+import { valueOf, wageFor } from '@/core/player/value';
+import { BALANCE } from '@/config/balance';
 
 export type AppScreen =
   | 'title'
@@ -87,6 +106,22 @@ export interface AppState {
   saveAutosave: () => Promise<void>;
   checkAutosave: () => Promise<void>;
   continueAutosave: () => Promise<boolean>;
+  scoutPlayer: (id: PlayerId) => boolean;
+  submitTransferBid: (
+    playerId: PlayerId,
+    fee: number,
+  ) => { status: string; message: string; counterFee?: number };
+  acceptCounterBid: (offerId: string) => boolean;
+  negotiateContract: (
+    offerId: string,
+    terms: { wagePerWeek: number; years: 1 | 2 | 3 | 4; role: SquadRole },
+  ) => { success: boolean; message: string; counterWage?: number };
+  respondToIncomingBid: (
+    offerId: string,
+    action: 'Accept' | 'Reject' | 'Counter',
+    counterFee?: number,
+  ) => { success: boolean; message: string };
+  requestBoardWageIncrease: () => { success: boolean; message: string };
 }
 
 export const useStore = create<AppState>((set, get) => {
@@ -113,29 +148,21 @@ export const useStore = create<AppState>((set, get) => {
         const firstFix = initialGameState.fixtures[0];
         if (firstFix) initialGameState.pendingMatch = { fixtureId: firstFix.id };
       } else if (scr === 'seasonEnd') {
-        const playerIds = Object.keys(initialGameState.players) as PlayerId[];
-        initialGameState.matchday = 18;
-        initialGameState.awards = {
-          playerOfTheSeason: playerIds[0]!,
-          goldenBoot: playerIds[1]!,
-          playmaker: playerIds[2]!,
-          goldenGlove: playerIds[3]!,
-          youngPlayer: playerIds[4]!,
-          managerOfTheSeason: initialGameState.userClubId,
-          teamOfTheSeason: playerIds.slice(0, 11),
-        };
-      } else if (scr === 'weekSummary') {
-        initialGameState.matchday = 1;
-        for (const f of initialGameState.fixtures.filter((fix) => fix.matchday === 1)) {
-          f.result = {
-            homeGoals: 2,
-            awayGoals: 1,
-            scorers: [],
-            attendance: 18000,
-            motm: Object.keys(initialGameState.players)[0] as PlayerId,
-            stats: {} as any,
-          };
+        // Run real engine simulation through all 18 matchdays (SPEC §19.8, B3)
+        let state = initialGameState;
+        state = advance(state); // Preseason
+        state = advance(state); // PreMatch MD 1
+        while (state.phase !== 'SeasonEnd') {
+          state = advance(state);
         }
+        initialGameState = state;
+      } else if (scr === 'weekSummary') {
+        // Run real engine simulation through Matchday 1 (SPEC §19.8, B3)
+        let state = initialGameState;
+        state = advance(state); // Preseason
+        state = advance(state); // PreMatch MD 1
+        state = advance(state); // Match MD 1 -> WeekSummary MD 1
+        initialGameState = state;
       }
     }
   }
@@ -501,6 +528,255 @@ export const useStore = create<AppState>((set, get) => {
         return true;
       }
       return false;
+    },
+
+    scoutPlayer: (id: PlayerId) => {
+      const state = get().gameState;
+      if (!state) return false;
+      const check = canScoutPlayer(state, id);
+      if (!check.allowed) {
+        get().showToast(check.reason || 'Cannot scout player', 'warning');
+        return false;
+      }
+      const next = queueScoutPlayer(state, id);
+      set({ gameState: next });
+      get().showToast('Scouting assignment dispatched', 'success');
+      triggerDebouncedAutosave(next);
+      return true;
+    },
+
+    submitTransferBid: (playerId: PlayerId, fee: number) => {
+      const state = get().gameState;
+      if (!state) return { status: 'Error', message: 'No game state' };
+      const player = state.players[playerId];
+      const userClub = state.clubs[state.userClubId];
+      if (!player || !userClub) return { status: 'Error', message: 'Player/Club not found' };
+
+      if (fee > userClub.transferBudget) {
+        get().showToast('Bid exceeds available transfer budget.', 'warning');
+        return { status: 'Error', message: 'Bid exceeds available transfer budget.' };
+      }
+
+      const sellerClub = player.clubId ? (state.clubs[player.clubId] ?? null) : null;
+      const isDeadlineDay = state.window?.round === 3;
+      const ask = calculateAskingPrice(player, sellerClub, userClub, isDeadlineDay, state.players);
+
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      if (!next.window) {
+        next.window = {
+          kind: 'Midseason',
+          round: 1,
+          offers: [],
+          scoutingQueue: [],
+          scoutingDoneThisRound: 0,
+          boardWageRequestUsed: false,
+        };
+      }
+
+      const seed = deriveSeed(next.seed, `bid_${playerId}_${Date.now()}`);
+      const evalRes = evaluateBid(fee, ask, player, sellerClub, seed, next.players);
+
+      const offerId = `offer_user_${playerId}_${Date.now()}`;
+      const offer: TransferOffer = {
+        id: offerId,
+        playerId,
+        fromClubId: player.clubId,
+        toClubId: userClub.id,
+        fee: evalRes.status === 'Countered' && evalRes.counterFee ? evalRes.counterFee : fee,
+        status: evalRes.status,
+        counterFee: evalRes.counterFee,
+        createdRound: next.window.round,
+        bidsMade: 1,
+      };
+
+      next.window.offers.push(offer);
+      set({ gameState: next });
+      triggerDebouncedAutosave(next);
+
+      if (evalRes.status === 'Accepted') {
+        get().showToast(
+          `Bid of ${formatMoney(fee)} accepted by ${sellerClub?.name ?? 'Free Agent'}! Ready for personal terms.`,
+          'success',
+        );
+        return {
+          status: 'Accepted',
+          message: 'Bid accepted by club. Proceed to agree personal terms.',
+        };
+      } else if (evalRes.status === 'Countered') {
+        get().showToast(
+          `${sellerClub?.name} countered with asking fee of ${formatMoney(evalRes.counterFee!)}.`,
+          'info',
+        );
+        return {
+          status: 'Countered',
+          counterFee: evalRes.counterFee,
+          message: `${sellerClub?.name} countered at ${formatMoney(evalRes.counterFee!)}.`,
+        };
+      } else {
+        get().showToast(
+          `${sellerClub?.name ?? 'Club'} rejected the bid of ${formatMoney(fee)}.`,
+          'warning',
+        );
+        return { status: 'Rejected', message: 'The selling club rejected this bid.' };
+      }
+    },
+
+    acceptCounterBid: (offerId: string) => {
+      const state = get().gameState;
+      if (!state || !state.window) return false;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const offer = next.window?.offers.find((o) => o.id === offerId);
+      if (!offer || offer.status !== 'Countered' || !offer.counterFee) return false;
+
+      offer.fee = offer.counterFee;
+      offer.status = 'Accepted';
+      set({ gameState: next });
+      get().showToast('Counter offer accepted. Ready for personal terms.', 'success');
+      triggerDebouncedAutosave(next);
+      return true;
+    },
+
+    negotiateContract: (
+      offerId: string,
+      terms: { wagePerWeek: number; years: 1 | 2 | 3 | 4; role: SquadRole },
+    ) => {
+      const state = get().gameState;
+      if (!state || !state.window) return { success: false, message: 'No active window' };
+      const offer = state.window.offers.find((o) => o.id === offerId);
+      if (!offer) return { success: false, message: 'Offer not found' };
+
+      const player = state.players[offer.playerId];
+      const buyer = state.clubs[state.userClubId];
+      const seller = offer.fromClubId ? (state.clubs[offer.fromClubId] ?? null) : null;
+      if (!player || !buyer) return { success: false, message: 'Data missing' };
+
+      // Check squad size
+      if (buyer.squad.length >= BALANCE.transfers.maxSquadSize) {
+        return {
+          success: false,
+          message: `Squad is already at maximum capacity (${BALANCE.transfers.maxSquadSize} players).`,
+        };
+      }
+
+      // Check wage budget
+      let currentPayroll = 0;
+      for (const pId of buyer.squad) {
+        const p = state.players[pId];
+        if (p?.contract) currentPayroll += p.contract.wagePerWeek;
+      }
+      if (currentPayroll + terms.wagePerWeek > buyer.wageBudget) {
+        return { success: false, message: 'Offered wage would exceed total club wage budget.' };
+      }
+
+      // Check fee budget
+      if (offer.fee > buyer.transferBudget) {
+        return { success: false, message: 'Transfer fee exceeds available transfer budget.' };
+      }
+
+      const seed = deriveSeed(state.seed, `contract_${offer.id}`);
+      const evalContract = evaluatePlayerContract(player, seller, buyer, terms, seed);
+
+      if (evalContract.accepted) {
+        offer.contractOffer = terms;
+        const next = completeTransfer(state, offer);
+        set({ gameState: next });
+        get().showToast(
+          `Agreement reached! ${player.firstName} ${player.lastName} signs for ${buyer.name}!`,
+          'success',
+        );
+        triggerDebouncedAutosave(next);
+        return { success: true, message: 'Personal terms agreed. Deal complete!' };
+      } else {
+        return {
+          success: false,
+          message: evalContract.reason || 'Player rejected the proposed terms.',
+          counterWage: evalContract.counterWage,
+        };
+      }
+    },
+
+    respondToIncomingBid: (
+      offerId: string,
+      action: 'Accept' | 'Reject' | 'Counter',
+      counterFee?: number,
+    ) => {
+      const state = get().gameState;
+      if (!state || !state.window) return { success: false, message: 'No active window' };
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const offer = next.window?.offers.find((o) => o.id === offerId);
+      if (!offer) return { success: false, message: 'Offer not found' };
+
+      const player = next.players[offer.playerId];
+      const buyer = next.clubs[offer.toClubId];
+      if (!player || !buyer) return { success: false, message: 'Player/Club not found' };
+
+      if (action === 'Reject') {
+        offer.status = 'Rejected';
+        set({ gameState: next });
+        get().showToast(`Rejected bid from ${buyer.name} for ${player.lastName}.`, 'info');
+        triggerDebouncedAutosave(next);
+        return { success: true, message: 'Bid rejected.' };
+      }
+
+      if (action === 'Accept') {
+        offer.status = 'Accepted';
+        offer.contractOffer = {
+          wagePerWeek: wageFor(valueOf(player)),
+          years: 3,
+          role: 'Starter',
+        };
+        const completedState = completeTransfer(next, offer);
+        set({ gameState: completedState });
+        get().showToast(
+          `Sold ${player.lastName} to ${buyer.name} for ${formatMoney(offer.fee)}!`,
+          'success',
+        );
+        triggerDebouncedAutosave(completedState);
+        return { success: true, message: 'Bid accepted and sale finalized.' };
+      }
+
+      if (action === 'Counter') {
+        if (!counterFee) return { success: false, message: 'Counter fee required' };
+        const val = valueOf(player);
+        if (counterFee <= BALANCE.transfers.aiBidAcceptMaxCounter * val) {
+          offer.fee = counterFee;
+          offer.status = 'Accepted';
+          offer.contractOffer = {
+            wagePerWeek: wageFor(valueOf(player)),
+            years: 3,
+            role: 'Starter',
+          };
+          const completedState = completeTransfer(next, offer);
+          set({ gameState: completedState });
+          get().showToast(
+            `${buyer.name} accepted your counter-offer of ${formatMoney(counterFee)}! Deal complete.`,
+            'success',
+          );
+          triggerDebouncedAutosave(completedState);
+          return { success: true, message: `${buyer.name} accepted the counter-offer!` };
+        } else {
+          offer.status = 'Rejected';
+          set({ gameState: next });
+          get().showToast(
+            `${buyer.name} deemed ${formatMoney(counterFee)} excessive and walked away.`,
+            'warning',
+          );
+          triggerDebouncedAutosave(next);
+          return { success: false, message: `${buyer.name} walked away from negotiations.` };
+        }
+      }
+
+      return { success: false, message: 'Invalid action' };
+    },
+
+    requestBoardWageIncrease: () => {
+      const state = get().gameState;
+      if (!state) return { success: false, message: 'No game state' };
+      const res = reqWageInc(state);
+      set({ gameState: res.state });
+      get().showToast(res.message, res.success ? 'success' : 'warning');
+      triggerDebouncedAutosave(res.state);
+      return { success: res.success, message: res.message };
     },
   };
 });

@@ -74,6 +74,7 @@ export function createStadium(homeClub: Club, quality: QualityPreset = 'Medium')
     tiers: number,
     pos: THREE.Vector3,
     rotY: number,
+    hasRoof: boolean = true,
   ) => {
     const standGroup = new THREE.Group();
     standGroup.position.copy(pos);
@@ -97,34 +98,38 @@ export function createStadium(homeClub: Club, quality: QualityPreset = 'Medium')
       standGroup.add(seatMesh);
     }
 
-    // Roof Canopy
-    const roofGeom = new THREE.BoxGeometry(length + 4, 0.4, depth + 4);
-    const roof = new THREE.Mesh(roofGeom, roofMaterial);
-    roof.position.set(0, height + 4, depth / 2 - 2);
-    roof.rotation.x = 0.08; // Slight pitch
-    roof.castShadow = quality !== 'Low';
-    standGroup.add(roof);
+    if (hasRoof) {
+      // Roof Canopy
+      const roofGeom = new THREE.BoxGeometry(length + 4, 0.4, depth + 4);
+      const roof = new THREE.Mesh(roofGeom, roofMaterial);
+      roof.position.set(0, height + 4, depth / 2 - 2);
+      roof.rotation.x = 0.08; // Slight pitch
+      roof.castShadow = quality !== 'Low';
+      standGroup.add(roof);
 
-    // Roof Support Pillars
-    const pillarCount = 6;
-    for (let p = 0; p < pillarCount; p++) {
-      const px = -length / 2 + (p / (pillarCount - 1)) * length;
-      const pillarGeom = new THREE.CylinderGeometry(0.2, 0.2, height + 4, 8);
-      const pillar = new THREE.Mesh(pillarGeom, steelMaterial);
-      pillar.position.set(px, (height + 4) / 2, depth);
-      standGroup.add(pillar);
+      // Roof Support Pillars
+      const pillarCount = 6;
+      for (let p = 0; p < pillarCount; p++) {
+        const px = -length / 2 + (p / (pillarCount - 1)) * length;
+        const pillarGeom = new THREE.CylinderGeometry(0.2, 0.2, height + 4, 8);
+        const pillar = new THREE.Mesh(pillarGeom, steelMaterial);
+        pillar.position.set(px, (height + 4) / 2, depth);
+        standGroup.add(pillar);
+      }
     }
 
     group.add(standGroup);
   };
 
-  // Two Side Stands (length 114m, outside touchlines at z = ±40m)
-  createStand(114, 15, 13, 8, new THREE.Vector3(0, 0, 40), 0);
-  createStand(114, 15, 13, 8, new THREE.Vector3(0, 0, -40), Math.PI);
+  // Two Side Stands (outside touchlines at z = ±40m)
+  // Far side stand with roof
+  createStand(114, 15, 13, 8, new THREE.Vector3(0, 0, 40), 0, true);
+  // Near side stand: camera gantry mounted at z = -62, y = 22 per SPEC §14.4; open roof so camera has clear sightline
+  createStand(114, 15, 13, 8, new THREE.Vector3(0, 0, -40), Math.PI, false);
 
   // Two End Stands (length 76m, behind goals at x = ±59m)
-  createStand(76, 13, 11, 7, new THREE.Vector3(59, 0, 0), -Math.PI / 2);
-  createStand(76, 13, 11, 7, new THREE.Vector3(-59, 0, 0), Math.PI / 2);
+  createStand(76, 13, 11, 7, new THREE.Vector3(59, 0, 0), -Math.PI / 2, true);
+  createStand(76, 13, 11, 7, new THREE.Vector3(-59, 0, 0), Math.PI / 2, true);
 
   // 2. Corner Floodlight Towers (SPEC §14.2: 45m lattice towers at x = ±62, z = ±42)
   const floodlightPositions: THREE.Vector3[] = [

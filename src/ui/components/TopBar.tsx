@@ -32,7 +32,10 @@ export const TopBar: React.FC = () => {
     const pts =
       tableIndex >= 0 && gameState.table[tableIndex] ? gameState.table[tableIndex].pts : 0;
     const suffix = pos === 1 ? 'st' : pos === 2 ? 'nd' : pos === 3 ? 'rd' : 'th';
-    const matchdayText = gameState.matchday === 0 ? 'Preseason' : `MD ${gameState.matchday}/18`;
+    const isPreMatchOrMatch =
+      currentScreen === 'preMatch' || currentScreen === 'match' || Boolean(gameState.pendingMatch);
+    const displayMD = gameState.matchday === 0 && isPreMatchOrMatch ? 1 : gameState.matchday;
+    const matchdayText = displayMD === 0 ? 'Preseason' : `MD ${displayMD}/18`;
     rankLabel = `${matchdayText} · ${pos}${suffix} · ${pts} pts`;
   }
 

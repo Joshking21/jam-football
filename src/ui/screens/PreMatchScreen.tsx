@@ -10,6 +10,7 @@ import { Portrait } from '../components/Portrait';
 import { TacticsScreen } from './TacticsScreen';
 import { Ticker } from '../components/Ticker';
 import { TelestratorPitch } from '../components/TelestratorPitch';
+import { getPreMatchTickerItems } from '../components/tickerHelper';
 import {
   Check,
   Shield,
@@ -29,7 +30,7 @@ import {
   TALKS_DATA,
 } from '@/core/player/talks';
 import { rawOvr } from '@/core/player/ratings';
-import { Player } from '@/core/types';
+import { Player, TeamInstructions } from '@/core/types';
 
 type PreMatchStep = 0 | 1 | 2 | 3;
 
@@ -86,17 +87,142 @@ export const PreMatchScreen: React.FC = () => {
       : 70;
 
   const preMatchContext = getPreMatchTalkContext(userAvgOvr, oppAvgOvr);
+  const activeMatchday = nextFix?.matchday ?? (gameState.matchday === 0 ? 1 : gameState.matchday);
+
+  // Key battles duels (§13.17.7)
+  const userFB =
+    userStarters.find((p) => p.positions.some((pos) => pos.pos === 'LB' || pos.pos === 'RB')) ??
+    userStarters[1] ??
+    userStarters[0];
+  const oppWinger =
+    oppStarters.find((p) =>
+      p.positions.some(
+        (pos) => pos.pos === 'LW' || pos.pos === 'RW' || pos.pos === 'LM' || pos.pos === 'RM',
+      ),
+    ) ??
+    oppStarters[7] ??
+    oppStarters[0];
+
+  const userCB =
+    userStarters.find((p) => p.positions.some((pos) => pos.pos === 'CB')) ??
+    userStarters[2] ??
+    userStarters[0];
+  const oppST =
+    oppStarters.find((p) => p.positions.some((pos) => pos.pos === 'ST')) ??
+    oppStarters[9] ??
+    oppStarters[0];
+
+  const userDM =
+    userStarters.find((p) => p.positions.some((pos) => pos.pos === 'DM' || pos.pos === 'CM')) ??
+    userStarters[4] ??
+    userStarters[0];
+  const oppAM =
+    oppStarters.find((p) => p.positions.some((pos) => pos.pos === 'AM' || pos.pos === 'CM')) ??
+    oppStarters[5] ??
+    oppStarters[0];
+
+  // Duel 1: FB vs Winger (pace + tackling vs pace + dribbling)
+  const fbDefScore = (userFB?.attributes.pace ?? 70) + (userFB?.attributes.tackling ?? 70);
+  const wingAttScore = (oppWinger?.attributes.pace ?? 70) + (oppWinger?.attributes.dribbling ?? 70);
+  const diff1 = (fbDefScore - wingAttScore) / 10;
+  const edge1 = diff1 >= 0.25 ? 'us' : diff1 <= -0.25 ? 'them' : 'even';
+  const bigEdge1 = Math.abs(diff1) >= 1.0;
+
+  // Duel 2: CB vs ST (heading + strength vs heading + strength)
+  const cbAirScore = (userCB?.attributes.heading ?? 70) + (userCB?.attributes.strength ?? 70);
+  const stAirScore = (oppST?.attributes.heading ?? 70) + (oppST?.attributes.strength ?? 70);
+  const diff2 = (cbAirScore - stAirScore) / 10;
+  const edge2 = diff2 >= 0.25 ? 'us' : diff2 <= -0.25 ? 'them' : 'even';
+  const bigEdge2 = Math.abs(diff2) >= 1.0;
+
+  // Duel 3: DM vs AM (positioning + tackling vs decisions + passing)
+  const dmScore = (userDM?.attributes.positioning ?? 70) + (userDM?.attributes.tackling ?? 70);
+  const amScore = (oppAM?.attributes.decisions ?? 70) + (oppAM?.attributes.passing ?? 70);
+  const diff3 = (dmScore - amScore) / 10;
+  const edge3 = diff3 >= 0.25 ? 'us' : diff3 <= -0.25 ? 'them' : 'even';
+  const bigEdge3 = Math.abs(diff3) >= 1.0;
+
+  // Assistant Theo Vance advice per §15.2
+  const bestForward =
+    userStarters.find((p) =>
+      p.positions.some((pos) => pos.pos === 'ST' || pos.pos === 'LW' || pos.pos === 'RW'),
+    ) ?? userStarters[9];
+  const backLine = userStarters.filter((p) =>
+    p.positions.some((pos) => ['CB', 'LB', 'RB'].includes(pos.pos)),
+  );
+  const backLinePaceAvg =
+    backLine.length > 0
+      ? Math.round(backLine.reduce((sum, p) => sum + p.attributes.pace, 0) / backLine.length)
+      : 66;
+  const cbHeadingAvg = Math.round(
+    userStarters
+      .filter((p) => p.positions.some((pos) => pos.pos === 'CB'))
+      .reduce((sum, p) => sum + p.attributes.heading, 0) /
+      Math.max(1, userStarters.filter((p) => p.positions.some((pos) => pos.pos === 'CB')).length),
+  );
+
+  let theoAdvice: {
+    title: string;
+    text: string;
+    reason: string;
+    changes: Partial<TeamInstructions>;
+  } = {
+    title: 'Maintain Tactical Shape',
+    text: `Countering their ${oppClub.style?.formation || '4-3-3'} with mid-block pressure will force turnovers in midfield.`,
+    reason: `Their ${oppClub.style?.passing?.toLowerCase() || 'mixed'} passing depends on central service.`,
+    changes: { mentality: 'Balanced', pressing: 'Mid' },
+  };
+
+  if (
+    (oppClub.style?.line === 'High' || oppClub.style?.pressing === 'High') &&
+    bestForward &&
+    bestForward.attributes.pace >= 75
+  ) {
+    theoAdvice = {
+      title: 'Exploit High Line in Behind',
+      text: `Make ${bestForward.lastName} an advanced threat. Their defensive line presses high, leaving green space behind.`,
+      reason: `Direct passing toward ${bestForward.lastName} (pace ${bestForward.attributes.pace}) will create breakaways.`,
+      changes: { passing: 'Direct' as const, mentality: 'Attacking' as const },
+    };
+  } else if (oppClub.style?.pressing === 'High' && backLinePaceAvg >= 65) {
+    theoAdvice = {
+      title: 'Play Out Quickly Under Pressure',
+      text: `Play out quickly with tempo. Our defenders have the pace (${backLinePaceAvg} avg) to bypass their initial press.`,
+      reason: 'Bypassing their first press opens up clean passing lanes into the final third.',
+      changes: { passing: 'Mixed' as const, tempo: 'Fast' as const },
+    };
+  } else if (oppAvgOvr >= userAvgOvr + 4) {
+    theoAdvice = {
+      title: 'Stay Compact & Defend Deep',
+      text: `Stay compact in our half. ${oppClub.name} hold a clear quality advantage in individual duels.`,
+      reason:
+        'A deep defensive line with mid pressing prevents their forwards from finding space between the lines.',
+      changes: { mentality: 'Defensive' as const, line: 'Deep' as const, pressing: 'Mid' as const },
+    };
+  } else if (oppAvgOvr <= userAvgOvr - 4) {
+    theoAdvice = {
+      title: 'Take the Game to Them',
+      text: `Take the game to them with attacking mentality. We have a clear technical advantage across all units.`,
+      reason: 'Early aggressive pressure will pin them in their defensive third.',
+      changes: { mentality: 'Attacking' as const, pressing: 'High' as const },
+    };
+  } else if (cbHeadingAvg >= 72 && oppClub.style?.width === 'Wide') {
+    theoAdvice = {
+      title: 'Dominate Aerial Crossing Delivery',
+      text: `Our centre backs (${cbHeadingAvg} avg heading) will dominate their wide delivery. Keep our defensive shape tight.`,
+      reason: 'Neutralising their wide crosses cuts off their primary avenue of attack.',
+      changes: { line: 'Normal' as const, pressing: 'Mid' as const },
+    };
+  }
 
   const handleApplySuggestedApproach = () => {
-    // If opponent plays wide or direct, counter with balanced/pressing
     updateUserTactics({
       instructions: {
         ...userClub.tactics.instructions,
-        mentality: 'Balanced',
-        pressing: 'Mid',
+        ...theoAdvice.changes,
       },
     });
-    showToast('Applied assistant tactical adjustment', 'success');
+    showToast(`Applied assistant tactical adjustment: ${theoAdvice.title}`, 'success');
   };
 
   const handleKickOff = async () => {
@@ -186,7 +312,7 @@ export const PreMatchScreen: React.FC = () => {
                   margin: 0,
                 }}
               >
-                PRE-MATCH PREPARATION · MATCHDAY {gameState.matchday}
+                PRE-MATCH PREPARATION · MATCHDAY {activeMatchday}
               </h1>
               <div
                 className="broadcast-label"
@@ -437,13 +563,13 @@ export const PreMatchScreen: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Telestrator Pitch Graphic */}
-                  <TelestratorPitch oppClub={oppClub} />
+                  {/* Telestrator Pitch Graphic with Red-Marker Os, Numbers and Surnames */}
+                  <TelestratorPitch oppClub={oppClub} oppPlayers={oppStarters} />
 
                   <div
                     style={{
                       backgroundColor: 'var(--surface-2)',
-                      padding: '12px 14px',
+                      padding: '14px 16px',
                       borderRadius: 'var(--radius-s)',
                       border: '1px solid var(--border)',
                       fontSize: '13px',
@@ -452,19 +578,87 @@ export const PreMatchScreen: React.FC = () => {
                     }}
                   >
                     <strong style={{ color: 'var(--text)' }}>Tactical Pattern:</strong>{' '}
-                    {oppClub.name} build in a {oppClub.style.formation} attacking formation. They
-                    look to exploit {oppClub.style.width.toLowerCase()} width with{' '}
-                    {oppClub.style.passing.toLowerCase()} service towards their advanced forward
-                    line.
+                    {oppClub.name} operate in a {oppClub.style.formation} shape. Under manager{' '}
+                    {oppClub.managerName}, they focus on {oppClub.style.width.toLowerCase()} width
+                    with {oppClub.style.passing.toLowerCase()} distribution. Key striker{' '}
+                    {oppST
+                      ? `${oppST.lastName} (finishing ${oppST.attributes.finishing})`
+                      : 'their 9'}{' '}
+                    is their primary focal point in the box.
+                  </div>
+
+                  {/* Preparation Rundown filling vertical height */}
+                  <div
+                    style={{
+                      backgroundColor: 'var(--surface-2)',
+                      padding: '14px 16px',
+                      borderRadius: 'var(--radius-s)',
+                      border: '1px solid var(--border)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                    }}
+                  >
+                    <div
+                      className="broadcast-label"
+                      style={{ fontSize: '11px', color: 'var(--accent-text)' }}
+                    >
+                      SQUAD READINESS & MATCH PREPARATION
+                    </div>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: '12px',
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-faint)' }}>
+                          STARTING XI AVG OVR
+                        </div>
+                        <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>
+                          {Math.round(userAvgOvr)}{' '}
+                          <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+                            vs {Math.round(oppAvgOvr)}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-faint)' }}>
+                          MATCH CONDITION
+                        </div>
+                        <div style={{ fontSize: '16px', fontWeight: 700, color: '#38A169' }}>
+                          {Math.round(
+                            userStarters.reduce((acc, p) => acc + p.condition, 0) /
+                              Math.max(1, userStarters.length),
+                          )}
+                          %
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-faint)' }}>
+                          SQUAD MORALE
+                        </div>
+                        <div
+                          style={{ fontSize: '16px', fontWeight: 700, color: 'var(--accent-text)' }}
+                        >
+                          {Math.round(
+                            userStarters.reduce((acc, p) => acc + p.morale, 0) /
+                              Math.max(1, userStarters.length),
+                          )}
+                          /100
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Panel>
 
-              {/* Right Column: Key Battles, Assistant Advice & Match Conditions */}
+              {/* Right Column: Key Battles (3 duels), Assistant Advice & Match Factors */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <Panel title="KEY BATTLE & TACTICAL ADVICE">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {/* Key Battle breakdown */}
+                <Panel title="KEY BATTLES & TACTICAL ADVICE">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {/* Key Battles Card: 3 Named Duels per §13.17.7 */}
                     <div
                       style={{
                         backgroundColor: 'var(--surface-2)',
@@ -486,48 +680,143 @@ export const PreMatchScreen: React.FC = () => {
                           gap: '6px',
                         }}
                       >
-                        <Award size={14} /> DECISIVE MATCHUP
+                        <Award size={14} /> DECISIVE MATCHUPS (SPEC §13.17.7)
                       </div>
+
+                      {/* Duel 1: FB vs Winger */}
                       <div
                         style={{
+                          padding: '8px 10px',
+                          backgroundColor: 'var(--surface-3)',
+                          borderRadius: 'var(--radius-xs)',
                           display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          fontSize: '14px',
+                          flexDirection: 'column',
+                          gap: '3px',
                         }}
                       >
-                        <div>
-                          <div style={{ fontWeight: 700 }}>{userClub.name} Defence</div>
-                          <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
-                            Central Backline
-                          </div>
-                        </div>
                         <div
-                          className="broadcast-label"
                           style={{
-                            fontSize: '14px',
-                            fontWeight: 700,
-                            color: 'var(--text-faint)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            fontSize: '12px',
                           }}
                         >
-                          VS
+                          <span style={{ fontWeight: 600 }}>Flank Duel:</span>
+                          <span
+                            style={{
+                              fontWeight: 700,
+                              color:
+                                edge1 === 'us'
+                                  ? '#38A169'
+                                  : edge1 === 'them'
+                                    ? '#E53E3E'
+                                    : 'var(--text-dim)',
+                            }}
+                          >
+                            {edge1 === 'us'
+                              ? `→ ${userClub.shortName}${bigEdge1 ? ' (big edge)' : ''}`
+                              : edge1 === 'them'
+                                ? `→ ${oppClub.shortName}${bigEdge1 ? ' (big edge)' : ''}`
+                                : 'Level'}
+                          </span>
                         </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: 700 }}>{oppClub.name} Attack</div>
-                          <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
-                            Centre Forward
-                          </div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+                          {userFB?.lastName} (pace {userFB?.attributes.pace}) vs{' '}
+                          {oppWinger?.lastName} (pace {oppWinger?.attributes.pace}, dribble{' '}
+                          {oppWinger?.attributes.dribbling})
                         </div>
                       </div>
+
+                      {/* Duel 2: CB vs ST */}
                       <div
-                        style={{ fontSize: '12px', color: 'var(--text-dim)', lineHeight: '1.4' }}
+                        style={{
+                          padding: '8px 10px',
+                          backgroundColor: 'var(--surface-3)',
+                          borderRadius: 'var(--radius-xs)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '3px',
+                        }}
                       >
-                        Winning early second balls and cutting out the delivery lanes will
-                        neutralise their offensive momentum.
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            fontSize: '12px',
+                          }}
+                        >
+                          <span style={{ fontWeight: 600 }}>Aerial Duel:</span>
+                          <span
+                            style={{
+                              fontWeight: 700,
+                              color:
+                                edge2 === 'us'
+                                  ? '#38A169'
+                                  : edge2 === 'them'
+                                    ? '#E53E3E'
+                                    : 'var(--text-dim)',
+                            }}
+                          >
+                            {edge2 === 'us'
+                              ? `→ ${userClub.shortName}${bigEdge2 ? ' (big edge)' : ''}`
+                              : edge2 === 'them'
+                                ? `→ ${oppClub.shortName}${bigEdge2 ? ' (big edge)' : ''}`
+                                : 'Level'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+                          {userCB?.lastName} (heading {userCB?.attributes.heading}, strength{' '}
+                          {userCB?.attributes.strength}) vs {oppST?.lastName} (heading{' '}
+                          {oppST?.attributes.heading}, strength {oppST?.attributes.strength})
+                        </div>
+                      </div>
+
+                      {/* Duel 3: DM vs AM */}
+                      <div
+                        style={{
+                          padding: '8px 10px',
+                          backgroundColor: 'var(--surface-3)',
+                          borderRadius: 'var(--radius-xs)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '3px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            fontSize: '12px',
+                          }}
+                        >
+                          <span style={{ fontWeight: 600 }}>Midfield Engine:</span>
+                          <span
+                            style={{
+                              fontWeight: 700,
+                              color:
+                                edge3 === 'us'
+                                  ? '#38A169'
+                                  : edge3 === 'them'
+                                    ? '#E53E3E'
+                                    : 'var(--text-dim)',
+                            }}
+                          >
+                            {edge3 === 'us'
+                              ? `→ ${userClub.shortName}${bigEdge3 ? ' (big edge)' : ''}`
+                              : edge3 === 'them'
+                                ? `→ ${oppClub.shortName}${bigEdge3 ? ' (big edge)' : ''}`
+                                : 'Level'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+                          {userDM?.lastName} (positioning {userDM?.attributes.positioning}) vs{' '}
+                          {oppAM?.lastName} (passing {oppAM?.attributes.passing}, decisions{' '}
+                          {oppAM?.attributes.decisions})
+                        </div>
                       </div>
                     </div>
 
-                    {/* Assistant Advice Card */}
+                    {/* Data-Driven Assistant Advice Card (SPEC §15.2) */}
                     <div
                       style={{
                         backgroundColor: 'rgba(255, 91, 53, 0.08)',
@@ -536,18 +825,22 @@ export const PreMatchScreen: React.FC = () => {
                         borderRadius: 'var(--radius-s)',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '8px',
+                        gap: '6px',
                       }}
                     >
                       <div
                         className="broadcast-label"
                         style={{ color: 'var(--accent-text)', fontSize: '11px' }}
                       >
-                        THEO VANCE · ASSISTANT MANAGER
+                        THEO VANCE · ASSISTANT MANAGER ADVICE
                       </div>
-                      <div style={{ fontSize: '13px', lineHeight: '1.45', color: 'var(--text)' }}>
-                        "We should remain balanced and compact in the middle third. Countering their
-                        style with mid-block pressure will force turnovers."
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
+                        "{theoAdvice.text}"
+                      </div>
+                      <div
+                        style={{ fontSize: '11px', color: 'var(--text-dim)', lineHeight: '1.4' }}
+                      >
+                        Reason: {theoAdvice.reason}
                       </div>
                     </div>
 
@@ -623,7 +916,7 @@ export const PreMatchScreen: React.FC = () => {
                         icon={<Zap size={16} />}
                         onClick={handleApplySuggestedApproach}
                       >
-                        Apply Counter-Tactic
+                        Apply Counter-Tactic ({theoAdvice.title})
                       </Button>
                       <Button variant="primary" size="l" onClick={() => setCurrentStep(2)}>
                         Proceed to Team Selection (Step 2) <ChevronRight size={18} />
@@ -783,13 +1076,7 @@ export const PreMatchScreen: React.FC = () => {
         </div>
       </div>
 
-      <Ticker
-        items={[
-          'Teams emerging from the tunnel',
-          'Match officials conducting pitch inspection',
-          'Atmosphere building inside the stadium',
-        ]}
-      />
+      <Ticker items={getPreMatchTickerItems(gameState, nextFix)} />
     </div>
   );
 };

@@ -56,14 +56,18 @@ export function createLights(
     lightsToDispose.push(sunLight);
   } else {
     // Night / Evening Floodlights (4 corners pointing 20m inside corners per ART-DIRECTION §3.3)
+    const mult = (cfg as any).floodlightMult ?? 1.0;
+    const candela = (RENDER_CONFIG.floodlights.candela ?? 14000) * mult;
+    const decay = RENDER_CONFIG.floodlights.decay ?? 2;
+
     floodlightCoords.forEach((coord, idx) => {
       const spot = new THREE.SpotLight(
         cfg.keyLight.color,
-        cfg.keyLight.intensity * 1.5,
-        140,
+        candela,
+        180,
         Math.PI / 3.2,
         0.35,
-        1.2,
+        decay,
       );
       spot.position.copy(coord);
 
