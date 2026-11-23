@@ -2926,6 +2926,46 @@ export class MatchEngine implements MatchSim {
     }
   }
 
+  /**
+   * Where a shot of this context is struck, in the shooting side's attacking frame. Keeps the
+   * current ball position when it already lies in the context's zone; otherwise picks a point in
+   * the zone from a hash of the event sequence (deterministic, no RNG draw).
+   */
+  private shotOrigin(context: ShotContext): { ax: number; ay: number } {
+    const zones: Record<ShotContext, [number, number, number, number]> = {
+      PENALTY: [94, 94, 34, 34],
+      SIX_YARD: [99.5, 101.5, 30, 38],
+      HEADER: [93, 100.5, 28, 40],
+      REBOUND: [93, 100, 27, 41],
+      ONE_ON_ONE: [87, 96, 26, 42],
+      BOX_CENTRAL: [89, 96, 26, 42],
+      BOX_WIDE: [89, 99, 15, 25],
+      OUTSIDE_CENTRAL: [76, 86, 24, 44],
+      OUTSIDE_WIDE: [78, 88, 10, 22],
+      DIRECT_FK: [70, 90, 14, 54],
+    };
+    const [x0, x1, y0, y1] = zones[context];
+    const cur = this.ballPosAttacking;
+    const mirrorY = cur.ay > 34; // wide zones are defined on the left; mirror to the ball's side
+    const curY =
+      context === 'BOX_WIDE' || context === 'OUTSIDE_WIDE'
+        ? mirrorY
+          ? 68 - cur.ay
+          : cur.ay
+        : cur.ay;
+    if (context === 'DIRECT_FK' || (cur.ax >= x0 && cur.ax <= x1 && curY >= y0 && curY <= y1)) {
+      return { ...cur };
+    }
+    let h = (this.seq * 2654435761 + Math.floor(this.t * 7)) >>> 0;
+    const r1 = (h % 1000) / 1000;
+    h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
+    const r2 = (h % 1000) / 1000;
+    const ax = x0 + (x1 - x0) * r1;
+    let ay = y0 + (y1 - y0) * r2;
+    if ((context === 'BOX_WIDE' || context === 'OUTSIDE_WIDE') && mirrorY) ay = 68 - ay;
+    return { ax, ay };
+  }
+
   private processShotResult(
     side: Side,
     attackerId: PlayerId,
@@ -2958,7 +2998,12 @@ export class MatchEngine implements MatchSim {
       }
     }
 
-    // Shot event
+    // Shot event. The shot starts where its context says it happened (a header from a cross is in
+    // the box, not where the cross was hit from). Presentation only: it moves the reported ball
+    // position (ballPosAbsolute), never the sim's ballPosAttacking, and draws no RNG, so results and
+    // calibration are bit-identical.
+    const origin = this.shotOrigin(context);
+    this.ballPosAbsolute = toAbsolute(origin.ax, origin.ay, side, this.half);
     this.emitEvent('SHOT', 2, {
       side,
       playerId: attackerId,
