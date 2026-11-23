@@ -8,6 +8,7 @@ import {
   runAiAiTransfers,
   generateAiIncomingBids,
   advanceWindowRound,
+  requestBoardWageIncrease,
 } from '../../../src/core/transfers/transfers';
 import {
   queueScoutPlayer,
@@ -15,6 +16,7 @@ import {
   isPlayerScouted,
   getScoutedOvr,
   canScoutPlayer,
+  getPlayerKnowledge,
 } from '../../../src/core/transfers/scouting';
 import { valueOf, wageFor } from '../../../src/core/player/value';
 import { Club, TransferOffer } from '../../../src/core/types';
@@ -167,5 +169,67 @@ describe('Transfers System (SPEC §12.12, §12.13)', () => {
 
     const advanced = advanceWindowRound(state, 12345);
     expect(advanced.window?.round).toBe(2);
+  });
+
+  it('determines knowledge percentage accurately and initializes shortlists (§12.12)', () => {
+    const targetPlayer = gameState.players[clubB.squad[0]!]!;
+    const userPlayer = gameState.players[clubA.squad[0]!]!;
+
+    // Own player is 100% knowledge
+    expect(getPlayerKnowledge(userPlayer, clubA.id)).toBe(100);
+
+    // Other player has deterministic knowledge between 15% and 50%
+    const unscoutedK = getPlayerKnowledge(targetPlayer, clubA.id);
+    expect(unscoutedK).toBeGreaterThanOrEqual(15);
+    expect(unscoutedK).toBeLessThanOrEqual(50);
+
+    // Knowledge is stable across repeated calls
+    expect(getPlayerKnowledge(targetPlayer, clubA.id)).toBe(unscoutedK);
+
+    // Shortlist is initialized in new game
+    expect(Array.isArray(gameState.shortlist)).toBe(true);
+    expect(gameState.shortlist!.length).toBeGreaterThan(0);
+  });
+
+  it('handles board wage budget request (§12.13.6)', () => {
+    let state = JSON.parse(JSON.stringify(gameState));
+    state.window = {
+      kind: 'Preseason',
+      round: 1,
+      offers: [],
+      scoutingQueue: [],
+      scoutingDoneThisRound: 0,
+      boardWageRequestUsed: false,
+    };
+
+    const initialWageBudget = state.clubs[state.userClubId].wageBudget;
+    state.clubs[state.userClubId].boardConfidence = 70; // >= 60 -> granted
+
+    const resGranted = requestBoardWageIncrease(state);
+    expect(resGranted.success).toBe(true);
+    expect(resGranted.state.clubs[state.userClubId]!.wageBudget).toBe(
+      Math.round(initialWageBudget * 1.1),
+    );
+    expect(resGranted.state.window?.boardWageRequestUsed).toBe(true);
+
+    // Attempting a second time in the same window is rejected
+    const resSecond = requestBoardWageIncrease(resGranted.state);
+    expect(resSecond.success).toBe(false);
+
+    // If board confidence is low (< 60) -> denied with penalty
+    let stateLow = JSON.parse(JSON.stringify(gameState));
+    stateLow.window = {
+      kind: 'Preseason',
+      round: 1,
+      offers: [],
+      scoutingQueue: [],
+      scoutingDoneThisRound: 0,
+      boardWageRequestUsed: false,
+    };
+    stateLow.clubs[stateLow.userClubId].boardConfidence = 50;
+
+    const resDenied = requestBoardWageIncrease(stateLow);
+    expect(resDenied.success).toBe(false);
+    expect(resDenied.state.clubs[stateLow.userClubId]!.boardConfidence).toBe(48); // -2 penalty
   });
 });

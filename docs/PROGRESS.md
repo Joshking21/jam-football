@@ -98,5 +98,28 @@ REVIEW REQUESTED: M4 (second pass)
 
 REVIEW REQUESTED: M4 (third pass)
 
+## 2026-11-23 · M5.6 Complete transfer windows, scouting, and recruitment suite
+- Changed: src/core/types.ts, src/core/game/newGame.ts, src/core/transfers/scouting.ts, src/state/store.ts, src/ui/screens/TransfersScreen.tsx, tests/core/transfers/transfers.test.ts
+- Ran:
+  - `npm run check`:
+    - `prettier --check .` PASS
+    - `tsc --noEmit` PASS
+    - `vitest run`: 35 test files passed (229 tests passed in 19.85s) PASS
+    - `vite build`: main chunk 1,335.81 kB (gzip 290.10 kB <= 350 kB budget) / three.js chunk 489.80 kB, built in 9.61s PASS
+- Notes:
+  - Implemented SPEC §11.10 Transfers & Scouting, §12.12 Knowledge & Scouting, and §12.13 Transfer Windows according to approved design reference (`docs/design/scouting/`):
+    - **Card Index Drawer (Wooden Box):** Left drawer (`.drawer`) with stacked tactile player cards (`.card`), tabbed by position and club code (`.tab`), name, club, age, OVR band (`.o`), and animated knowledge progress gauge (`.kn`). Filterable by Shortlist, Search (real-time name filter), By Position (ALL/GK/DEF/MID/ATT), Free Agents, and Window Offers. Selected card pulls out with blue outline (`#1F4FBF`) and slight translation.
+    - **Scout's Report Sheet (Paper Dossier):** Middle paper document (`.pg.paper`) with authentic letterhead ("Scout's report", file number, user club), procedurally-generated SVG halftone portrait (`<HalftonePortrait />`), complete bio data (age, nationality, foot, height, personality, club, season stats, contract duration), position chips with familiarity, trait chips (unlocked at >= 50% knowledge), large OVR band, and potential stars.
+    - **Attributes Grid with Hatched Bands:** Two-column attribute display (Technical and Mental/Physical) showing solid base fill plus hatched unknown range for unscouted players, and exact values when fully scouted.
+    - **Tactical Verdict & Scout's Notes:** 3-column verdict box evaluating "Would he start?" (against user's starter in that slot), "Asking price (estimate)" (with club valuation context), and "Would he come?" (evaluating reputation, ambition, and loyalty per §12.13.3). Generates characterful scout quotes based on positional playstyle and attributes.
+    - **Starter Comparison:** 6 comparative attribute bars (`.cmp`) measuring the target player against the user's starter in that primary slot in blue (`#1F4FBF`) and navy (`#0B1F3A`).
+    - **Interactive Modals & Negotiation Flow:**
+      - Make an Offer Modal: Stepper fee input (-/+ 5% steps), asking price guide indicator, and budget headroom validation.
+      - Contract Negotiation Modal: Weekly wage stepper, contract duration (1-4 years), and promised squad role (Star, Starter, Rotation, Backup). Validates against wage budget headroom and 26-man squad limit.
+      - Offers View: Integrated review and resolution for outgoing bids and incoming AI proposals (Accept, Counter, Reject).
+    - **Right Rail & Board Requests:** Live window status panel (Closed / Day 1-2 / Deadline Day), advance day action, board wage budget request button (+10% wage budget per §12.13.6), budget meters, active scout assignments with free slot dispatch, and Theo Vance's contextual advice.
+    - Added unit tests in `tests/core/transfers/transfers.test.ts` verifying knowledge percentage calculation, new game shortlist initialization, and board wage budget request behavior.
+
+
 
 

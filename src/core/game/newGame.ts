@@ -1,5 +1,5 @@
 // Implements SPEC §8.9, §9, §11.3 New Game state creation
-import { GameState, ClubId } from '../types';
+import { GameState, ClubId, PlayerId } from '../types';
 import { SAVE_VERSION } from '@/config/constants';
 import worldSnapshot from '../world/world.snapshot.json';
 import { WorldSnapshot } from '../world/generateWorld';
@@ -79,6 +79,19 @@ export function createNewGame(options: NewGameOptions): GameState {
     },
   ];
 
+  // Pre-seed an initial shortlist of scout targets from other clubs/free agents
+  const otherPlayers = Object.values(snapshot.players).filter((p) => p.clubId !== userClubId);
+  const initialShortlist: PlayerId[] = [];
+  const targetPositions = ['LW', 'ST', 'CB', 'DM', 'GK', 'RB', 'AM'];
+  for (const pos of targetPositions) {
+    const candidate = otherPlayers.find(
+      (p) => !initialShortlist.includes(p.id) && p.positions.some((pp) => pp.pos === pos),
+    );
+    if (candidate) {
+      initialShortlist.push(candidate.id);
+    }
+  }
+
   return {
     version: SAVE_VERSION,
     seed,
@@ -95,6 +108,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     window: null,
     inbox: initialInbox,
     news: initialNews,
+    shortlist: initialShortlist,
     pressHistory: [],
     conversationsHistory: [],
     tutorial: { step: 1, done: !tutorialEnabled },

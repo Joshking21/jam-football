@@ -142,6 +142,7 @@ export interface Player {
   growth: number; // fractional OVR progress carried between weeks
   history: { matchday: number; event: string }[]; // e.g. 'Signed from Ironvale for €4.2M'
   promise?: PlayerPromise | null; // active promise (§12.9)
+  traits?: string[];
 }
 
 // --- 8.4 Tactics ---
@@ -519,6 +520,7 @@ export interface GameState {
   awards: SeasonAwards | null;
   boardWarningSent?: boolean;
   boardPraiseSent?: boolean;
+  shortlist?: PlayerId[];
   scoutedThisMatchday?: PlayerId[];
   score: number; // leaderboard score, computed at season end
   counters: { news: number; inbox: number; offer: number };

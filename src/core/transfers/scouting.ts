@@ -85,6 +85,20 @@ export function getPotentialStars(player: Player, viewerClubId: ClubId): number 
 }
 
 /**
+ * Computes deterministic knowledge percentage (0-100) of a player for a viewer club.
+ * Own players and fully scouted players return 100%.
+ * Unscouted players return a stable base knowledge percentage (15% to 50%).
+ */
+export function getPlayerKnowledge(player: Player, viewerClubId: ClubId): number {
+  if (isPlayerScouted(player, viewerClubId)) {
+    return 100;
+  }
+  const seed = deriveSeed(105, `${player.id}_${viewerClubId}_knowledge`);
+  const rng = createRng(seed);
+  return 15 + rng.int(0, 35);
+}
+
+/**
  * Check if the user club can scout a player at this moment.
  */
 export function canScoutPlayer(

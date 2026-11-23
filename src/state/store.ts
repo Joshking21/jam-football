@@ -122,6 +122,8 @@ export interface AppState {
     counterFee?: number,
   ) => { success: boolean; message: string };
   requestBoardWageIncrease: () => { success: boolean; message: string };
+  toggleShortlist: (id: PlayerId) => void;
+  isShortlisted: (id: PlayerId) => boolean;
 }
 
 export const useStore = create<AppState>((set, get) => {
@@ -777,6 +779,28 @@ export const useStore = create<AppState>((set, get) => {
       get().showToast(res.message, res.success ? 'success' : 'warning');
       triggerDebouncedAutosave(res.state);
       return { success: res.success, message: res.message };
+    },
+
+    toggleShortlist: (id: PlayerId) => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      if (!next.shortlist) next.shortlist = [];
+      const idx = next.shortlist.indexOf(id);
+      if (idx >= 0) {
+        next.shortlist.splice(idx, 1);
+        get().showToast('Removed from shortlist', 'info');
+      } else {
+        next.shortlist.push(id);
+        get().showToast('Added to shortlist (TARGET)', 'success');
+      }
+      set({ gameState: next });
+      triggerDebouncedAutosave(next);
+    },
+
+    isShortlisted: (id: PlayerId) => {
+      const state = get().gameState;
+      return state?.shortlist?.includes(id) ?? false;
     },
   };
 });
