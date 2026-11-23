@@ -222,6 +222,81 @@ export type CornerSwing = 'Inswinger' | 'Outswinger' | 'Mixed';
 export type PostMen = 'None' | 'Near' | 'Both';
 export type MenBack = 1 | 2 | 3;
 
+// SPEC §13.20 Detailed Set Pieces types
+export type CornerJob =
+  | 'nearPost'
+  | 'farPost'
+  | 'penaltySpot'
+  | 'keeperScreen'
+  | 'edge'
+  | 'short'
+  | 'stayBack';
+
+export type CornerTarget = 'Near' | 'Far' | 'Spot' | 'Short' | 'Mixed';
+export type CornerSwingChoice = 'Auto' | 'In' | 'Out';
+
+export interface CornerRoutine {
+  id: string;
+  name: string;
+  target: CornerTarget;
+  swing: CornerSwingChoice;
+  jobs: Record<number, CornerJob>; // slot index (1..10) to job
+  familiarity: number; // 0..100
+}
+
+export interface CornerRoutinesSide {
+  routines: CornerRoutine[]; // up to 3
+  activeRoutine: number; // 0 | 1 | 2
+  rotate: boolean;
+}
+
+export type CentralFreeKickOption =
+  | 'Shoot'
+  | 'CrossNear'
+  | 'CrossFar'
+  | 'Short'
+  | 'Dummy'
+  | 'Mixed';
+export type WideFreeKickOption = 'CrossNear' | 'CrossFar' | 'ToTheSpot' | 'Short' | 'Mixed';
+export type DeepFreeKickOption = 'Quick' | 'Long' | 'Keep';
+
+export interface FreeKickTactics {
+  central: CentralFreeKickOption;
+  wide: WideFreeKickOption;
+  deep: DeepFreeKickOption;
+}
+
+export type ForwardsUp = 0 | 1 | 2;
+export type WallOption = 'Auto' | 'Small' | 'Big';
+export type LineHeightOption = 'High' | 'Normal' | 'Deep';
+
+export interface DefendingSetPieces {
+  cornersAgainst: CornersAgainst;
+  markMainMan: PlayerId | 'Auto' | null;
+  postMen: PostMen;
+  edgeGuard: boolean;
+  forwardsUp: ForwardsUp;
+  wall: WallOption;
+  lineHeight: LineHeightOption;
+}
+
+export interface SetPieceTakers {
+  leftCorner: PlayerId | null;
+  rightCorner: PlayerId | null;
+  directFreeKick: PlayerId | null;
+  wideFreeKick: PlayerId | null;
+  penalties: (PlayerId | null)[]; // 1, 2, 3
+  longThrow: PlayerId | null;
+}
+
+export interface SetPieceTactics {
+  leftCorners: CornerRoutinesSide;
+  rightCorners: CornerRoutinesSide;
+  freeKicks: FreeKickTactics;
+  defending: DefendingSetPieces;
+  takers?: SetPieceTakers;
+}
+
 export interface TeamInstructions {
   mentality: Mentality;
   passing: PassingStyle;
@@ -310,7 +385,13 @@ export interface Tactics {
     freeKick: PlayerId | null;
     corner: PlayerId | null;
     longThrow: PlayerId | null;
+    leftCorner?: PlayerId | null;
+    rightCorner?: PlayerId | null;
+    directFreeKick?: PlayerId | null;
+    wideFreeKick?: PlayerId | null;
+    penalties?: (PlayerId | null)[];
   };
+  setPieces?: SetPieceTactics;
   instructions: TeamInstructions;
   opposition: OppOrder[]; // 0–3, set per match (cleared after each match)
   // SPEC 1.4 additions (§13.18.10)
@@ -746,6 +827,7 @@ export interface TeamSheet {
       personality: Personality;
       name: string;
       shirt: number;
+      foot?: Foot;
     }
   >;
   trainingBonus: { attack: number; defence: number; setPieces: number }; // z-units, §12.3

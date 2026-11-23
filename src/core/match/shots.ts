@@ -45,6 +45,8 @@ export interface ShotParams {
   isFloatedCross?: boolean;
   defendingPostMen?: PostMen;
   isNearPostHeader?: boolean;
+  customBlockProb?: number;
+  blockProbAdd?: number;
 }
 
 const SHOT_CONTEXT_DATA: Record<
@@ -236,8 +238,13 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
 
   // 1. Block resolution
   let pBlock = 0;
-  if (data.blockProb > 0 && defender) {
-    pBlock = Math.max(0, data.blockProb + 0.05 * z(defender.attributes.positioning));
+  if (params.customBlockProb !== undefined) {
+    pBlock = Math.max(0, params.customBlockProb + (params.blockProbAdd ?? 0));
+  } else if (data.blockProb > 0 && defender) {
+    pBlock = Math.max(
+      0,
+      data.blockProb + 0.05 * z(defender.attributes.positioning) + (params.blockProbAdd ?? 0),
+    );
   }
 
   if (pBlock > 0 && rng.chance(pBlock)) {

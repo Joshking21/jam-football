@@ -35,6 +35,17 @@ import {
   MenBack,
   DefInstruction,
   Attributes,
+  CornerJob,
+  CornerTarget,
+  CornerSwingChoice,
+  CentralFreeKickOption,
+  WideFreeKickOption,
+  DeepFreeKickOption,
+  WallOption,
+  LineHeightOption,
+  SetPieceTactics,
+  ForwardsUp,
+  SetPieceTakers,
 } from '../../core/types';
 import { FORMATIONS } from '../../config/formations';
 import {
@@ -58,6 +69,7 @@ import { RadarChart } from '../components/RadarChart';
 import { getAllRoleShapes } from '../../core/player/roleShapes';
 import { validateLineup } from '../../core/game/advance';
 import { ovrAt, getPrimaryOvr } from '../../core/player/ratings';
+import { createDefaultSetPieceTactics, generateAutoCornerJobs } from '../../core/match/setPieces';
 import {
   CheckCircle2,
   AlertCircle,
@@ -83,6 +95,16 @@ const BENCH_Y = 728;
 const BENCH_X0 = 160;
 const BENCH_DX = 86;
 const TREAT_X = 966;
+
+const JOB_INFO: Record<CornerJob, { label: string; max: number; desc: string }> = {
+  nearPost: { label: 'NEAR', max: 2, desc: 'Near post header candidate' },
+  farPost: { label: 'FAR', max: 2, desc: 'Far post header candidate' },
+  penaltySpot: { label: 'SPOT', max: 2, desc: 'Penalty spot header candidate' },
+  keeperScreen: { label: 'KEEPER', max: 1, desc: 'Screens the keeper' },
+  edge: { label: 'EDGE', max: 2, desc: 'Second balls & long range shots' },
+  short: { label: 'SHORT', max: 1, desc: 'Short corner option' },
+  stayBack: { label: 'BACK', max: 3, desc: 'Stays back to prevent counters' },
+};
 
 const PRESETS: [
   string,
@@ -219,6 +241,16 @@ export const TacticsScreen: React.FC = () => {
   const [hoveredSlot, setHoveredSlot] = useState<number | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [selectedOppSlot, setSelectedOppSlot] = useState<number | null>(null);
+
+  // Set-piece mode state
+  const [setPieceSubTab, setSetPieceSubTab] = useState<
+    'ourCorners' | 'theirCorners' | 'ourFK' | 'theirFK' | 'takers'
+  >('ourCorners');
+  const [cornerSide, setCornerSide] = useState<'left' | 'right'>('left');
+  const [routineIdx, setRoutineIdx] = useState<number>(0);
+  const [editingRoutineName, setEditingRoutineName] = useState<string | null>(null);
+  const [renamingText, setRenamingText] = useState<string>('');
+  const [hoveredJob, setHoveredJob] = useState<CornerJob | null>(null);
 
   if (!gameState) return null;
 
@@ -506,6 +538,104 @@ export const TacticsScreen: React.FC = () => {
     (p) => p.clubId === userClub.id && p.injury !== null,
   );
 
+  // Set-piece tactics and routines
+  const setPieces: SetPieceTactics = useMemo(
+    () => tactics.setPieces ?? createDefaultSetPieceTactics(),
+    [tactics.setPieces],
+  );
+
+  const updateSetPieces = (updater: (sp: SetPieceTactics) => SetPieceTactics) => {
+    const current = tactics.setPieces ?? createDefaultSetPieceTactics();
+    const next = updater(JSON.parse(JSON.stringify(current)));
+    updateUserTactics({ setPieces: next });
+  };
+
+  const activeSideRoutines = cornerSide === 'left' ? setPieces.leftCorners : setPieces.rightCorners;
+
+  const currentRoutine = activeSideRoutines?.routines[routineIdx] ??
+    activeSideRoutines?.routines[0] ?? {
+      id: 'r1',
+      name: 'Near-post flick',
+      target: 'Near' as CornerTarget,
+      swing: 'Auto' as CornerSwingChoice,
+      familiarity: 70,
+      jobs: {},
+    };
+
+  const assignJobToSlot = (slotIdx: number, targetJob: CornerJob) => {
+    if (slotIdx <= 0 || slotIdx > 10) return;
+    updateSetPieces((sp) => {
+      const side = cornerSide === 'left' ? sp.leftCorners : sp.rightCorners;
+      const routine = side?.routines[routineIdx];
+      if (!routine) return sp;
+      const currentJobs = { ...(routine.jobs ?? {}) };
+      const prevJob = currentJobs[slotIdx];
+      if (prevJob === targetJob) return sp;
+
+      const maxCaps: Record<CornerJob, number> = {
+        nearPost: 2,
+        farPost: 2,
+        penaltySpot: 2,
+        keeperScreen: 1,
+        edge: 2,
+        short: 1,
+        stayBack: 3,
+      };
+
+      const playersInJob = Object.entries(currentJobs)
+        .filter(([s, j]) => j === targetJob && Number(s) !== slotIdx)
+        .map(([s]) => Number(s));
+
+      if (playersInJob.length >= maxCaps[targetJob] && playersInJob[0] !== undefined) {
+        const swapSlot = playersInJob[0];
+        if (prevJob) {
+          currentJobs[swapSlot] = prevJob;
+        } else {
+          delete currentJobs[swapSlot];
+        }
+      }
+
+      currentJobs[slotIdx] = targetJob;
+      routine.jobs = currentJobs;
+      return sp;
+    });
+  };
+
+  const resetToAutoJobs = () => {
+    const lineupPlayers = starters.map((s) => s.player ?? null);
+    const curTarget = currentRoutine?.target ?? 'Mixed';
+    const autoJobs = generateAutoCornerJobs(lineupPlayers, curTarget);
+    updateSetPieces((sp) => {
+      const side = cornerSide === 'left' ? sp.leftCorners : sp.rightCorners;
+      const routine = side?.routines[routineIdx];
+      if (routine) {
+        routine.jobs = autoJobs;
+      }
+      return sp;
+    });
+  };
+
+  const nearY = cornerSide === 'left' ? 280 : 390;
+  const farY = cornerSide === 'left' ? 390 : 280;
+  const shortY = cornerSide === 'left' ? 80 : 588;
+
+  const JOB_COORDS: Record<CornerJob, { x: number; y: number }> = {
+    nearPost: { x: 975, y: nearY },
+    farPost: { x: 975, y: farY },
+    penaltySpot: { x: 910, y: 334 },
+    keeperScreen: { x: 980, y: 334 },
+    edge: { x: 810, y: 334 },
+    short: { x: 995, y: shortY },
+    stayBack: { x: 640, y: 334 },
+  };
+
+  const isSetPieceZoomAttacking =
+    activeDivider === 'setpieces' &&
+    (setPieceSubTab === 'ourCorners' || setPieceSubTab === 'ourFK');
+  const isSetPieceZoomDefending =
+    activeDivider === 'setpieces' &&
+    (setPieceSubTab === 'theirCorners' || setPieceSubTab === 'theirFK');
+
   // Active plan index
   const activePlanIdx = tactics.activePlan ?? 0;
   const plans = tactics.plans ?? [
@@ -552,7 +682,7 @@ export const TacticsScreen: React.FC = () => {
           minWidth: 0,
         }}
       >
-        {/* Frame Top Edge: Folder Tabs & Ball Switch */}
+        {/* Frame Top Edge: Folder Tabs & Ball Switch (or Set Piece Tabs) */}
         <div
           style={{
             display: 'flex',
@@ -561,116 +691,228 @@ export const TacticsScreen: React.FC = () => {
             padding: '0 8px 4px 8px',
           }}
         >
-          {/* Tabs: Our Team vs Opposition */}
-          <div style={{ display: 'flex', gap: '4px' }}>
-            <button
-              onClick={() => {
-                setBoardTab('us');
-                setSelectedOppSlot(null);
-              }}
-              style={{
-                height: '32px',
-                padding: '0 16px',
-                borderRadius: '4px 4px 0 0',
-                fontFamily: 'var(--font-head)',
-                fontWeight: 700,
-                fontSize: '13px',
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                border: 'none',
-                backgroundColor: boardTab === 'us' ? 'var(--paper, #EFEBE3)' : '#1C222C',
-                color: boardTab === 'us' ? 'var(--paper-ink, #1B1A17)' : '#A3ACBA',
-                cursor: 'pointer',
-              }}
-            >
-              OUR TEAM
-            </button>
-            <button
-              onClick={() => {
-                setBoardTab('opp');
-                setSelectedSlot(null);
-              }}
-              style={{
-                height: '32px',
-                padding: '0 16px',
-                borderRadius: '4px 4px 0 0',
-                fontFamily: 'var(--font-head)',
-                fontWeight: 700,
-                fontSize: '13px',
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                border: 'none',
-                backgroundColor: boardTab === 'opp' ? 'var(--paper, #EFEBE3)' : '#1C222C',
-                color: boardTab === 'opp' ? '#C42B2B' : '#A3ACBA',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              <span>OPPOSITION</span>
-              <span
-                style={{
-                  fontSize: '11px',
-                  backgroundColor: boardTab === 'opp' ? '#C42B2B' : 'rgba(255,255,255,0.15)',
-                  color: '#FFFFFF',
-                  padding: '1px 5px',
-                  borderRadius: '10px',
-                }}
-              >
-                {tactics.opposition?.length ?? 0}/3
-              </span>
-            </button>
-          </div>
-
-          {/* With Ball / Without Ball Switch */}
-          {boardTab === 'us' && (
+          {activeDivider === 'setpieces' ? (
             <div
               style={{
                 display: 'flex',
-                backgroundColor: '#191613',
-                borderRadius: '16px',
-                padding: '2px',
-                border: '1px solid #2E2924',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%',
               }}
             >
-              <button
-                onClick={() => setPhase('withBall')}
-                style={{
-                  padding: '4px 12px',
-                  borderRadius: '14px',
-                  border: 'none',
-                  fontFamily: 'var(--font-head)',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  letterSpacing: '0.04em',
-                  backgroundColor: phase === 'withBall' ? '#1F4FBF' : 'transparent',
-                  color: phase === 'withBall' ? '#FFFFFF' : '#A3ACBA',
-                  cursor: 'pointer',
-                  transition: 'background-color 140ms ease',
-                }}
-              >
-                WITH BALL
-              </button>
-              <button
-                onClick={() => setPhase('withoutBall')}
-                style={{
-                  padding: '4px 12px',
-                  borderRadius: '14px',
-                  border: 'none',
-                  fontFamily: 'var(--font-head)',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  letterSpacing: '0.04em',
-                  backgroundColor: phase === 'withoutBall' ? '#1F4FBF' : 'transparent',
-                  color: phase === 'withoutBall' ? '#FFFFFF' : '#A3ACBA',
-                  cursor: 'pointer',
-                  transition: 'background-color 140ms ease',
-                }}
-              >
-                WITHOUT BALL
-              </button>
+              {/* Set Piece Mode Board Tabs (§13.20.7) */}
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {[
+                  { id: 'ourCorners', label: 'Our Corners' },
+                  { id: 'theirCorners', label: 'Their Corners' },
+                  { id: 'ourFK', label: 'Our Free Kicks' },
+                  { id: 'theirFK', label: 'Their Free Kicks' },
+                  { id: 'takers', label: 'Takers' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setSetPieceSubTab(tab.id as any);
+                      setSelectedSlot(null);
+                    }}
+                    style={{
+                      height: '32px',
+                      padding: '0 12px',
+                      borderRadius: '4px 4px 0 0',
+                      fontFamily: 'var(--font-head)',
+                      fontWeight: 700,
+                      fontSize: '12px',
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                      border: 'none',
+                      backgroundColor:
+                        setPieceSubTab === tab.id ? 'var(--paper, #EFEBE3)' : '#1C222C',
+                      color: setPieceSubTab === tab.id ? 'var(--paper-ink, #1B1A17)' : '#A3ACBA',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {setPieceSubTab === 'ourCorners' && (
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                  {/* Left / Right corner toggle */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      backgroundColor: '#191613',
+                      borderRadius: '14px',
+                      padding: '2px',
+                      border: '1px solid #2E2924',
+                    }}
+                  >
+                    {(['left', 'right'] as const).map((side) => (
+                      <button
+                        key={side}
+                        onClick={() => setCornerSide(side)}
+                        style={{
+                          padding: '3px 10px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontFamily: 'var(--font-head)',
+                          fontWeight: 700,
+                          fontSize: '11px',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                          backgroundColor: cornerSide === side ? '#1F4FBF' : 'transparent',
+                          color: cornerSide === side ? '#FFFFFF' : '#A3ACBA',
+                        }}
+                      >
+                        {side}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Routines 1, 2, 3 selector */}
+                  <div style={{ display: 'flex', gap: '3px' }}>
+                    {[0, 1, 2].map((idx) => {
+                      const side =
+                        cornerSide === 'left' ? setPieces.leftCorners : setPieces.rightCorners;
+                      const r = side?.routines[idx];
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => setRoutineIdx(idx)}
+                          style={{
+                            padding: '3px 8px',
+                            borderRadius: '3px',
+                            border: routineIdx === idx ? '1px solid #1F4FBF' : '1px solid #2E2924',
+                            backgroundColor: routineIdx === idx ? '#1F4FBF' : '#191613',
+                            color: routineIdx === idx ? '#FFFFFF' : '#A3ACBA',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {r?.name ? r.name.slice(0, 8) : `R${idx + 1}`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
+          ) : (
+            <>
+              {/* Tabs: Our Team vs Opposition */}
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button
+                  onClick={() => {
+                    setBoardTab('us');
+                    setSelectedOppSlot(null);
+                  }}
+                  style={{
+                    height: '32px',
+                    padding: '0 16px',
+                    borderRadius: '4px 4px 0 0',
+                    fontFamily: 'var(--font-head)',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    border: 'none',
+                    backgroundColor: boardTab === 'us' ? 'var(--paper, #EFEBE3)' : '#1C222C',
+                    color: boardTab === 'us' ? 'var(--paper-ink, #1B1A17)' : '#A3ACBA',
+                    cursor: 'pointer',
+                  }}
+                >
+                  OUR TEAM
+                </button>
+                <button
+                  onClick={() => {
+                    setBoardTab('opp');
+                    setSelectedSlot(null);
+                  }}
+                  style={{
+                    height: '32px',
+                    padding: '0 16px',
+                    borderRadius: '4px 4px 0 0',
+                    fontFamily: 'var(--font-head)',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    border: 'none',
+                    backgroundColor: boardTab === 'opp' ? 'var(--paper, #EFEBE3)' : '#1C222C',
+                    color: boardTab === 'opp' ? '#C42B2B' : '#A3ACBA',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <span>OPPOSITION</span>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      backgroundColor: boardTab === 'opp' ? '#C42B2B' : 'rgba(255,255,255,0.15)',
+                      color: '#FFFFFF',
+                      padding: '1px 5px',
+                      borderRadius: '10px',
+                    }}
+                  >
+                    {tactics.opposition?.length ?? 0}/3
+                  </span>
+                </button>
+              </div>
+
+              {/* With Ball / Without Ball Switch */}
+              {boardTab === 'us' && (
+                <div
+                  style={{
+                    display: 'flex',
+                    backgroundColor: '#191613',
+                    borderRadius: '16px',
+                    padding: '2px',
+                    border: '1px solid #2E2924',
+                  }}
+                >
+                  <button
+                    onClick={() => setPhase('withBall')}
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: '14px',
+                      border: 'none',
+                      fontFamily: 'var(--font-head)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      letterSpacing: '0.04em',
+                      backgroundColor: phase === 'withBall' ? '#1F4FBF' : 'transparent',
+                      color: phase === 'withBall' ? '#FFFFFF' : '#A3ACBA',
+                      cursor: 'pointer',
+                      transition: 'background-color 140ms ease',
+                    }}
+                  >
+                    WITH BALL
+                  </button>
+                  <button
+                    onClick={() => setPhase('withoutBall')}
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: '14px',
+                      border: 'none',
+                      fontFamily: 'var(--font-head)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      letterSpacing: '0.04em',
+                      backgroundColor: phase === 'withoutBall' ? '#1F4FBF' : 'transparent',
+                      color: phase === 'withoutBall' ? '#FFFFFF' : '#A3ACBA',
+                      cursor: 'pointer',
+                      transition: 'background-color 140ms ease',
+                    }}
+                  >
+                    WITHOUT BALL
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -687,398 +929,1070 @@ export const TacticsScreen: React.FC = () => {
             overflow: 'hidden',
           }}
         >
-          {/* Pitch Markings SVG (1050 x 790) */}
-          <svg
-            viewBox="0 0 1050 790"
+          {/* Zoomable pitch and magnets container (§13.20.7) */}
+          <div
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
               width: '100%',
               height: '100%',
-              pointerEvents: 'none',
+              transformOrigin: isSetPieceZoomAttacking
+                ? '88% 45%'
+                : isSetPieceZoomDefending
+                  ? '12% 45%'
+                  : '50% 50%',
+              transform: isSetPieceZoomAttacking
+                ? 'scale(1.52)'
+                : isSetPieceZoomDefending
+                  ? 'scale(1.52)'
+                  : 'scale(1)',
+              transition: 'transform 480ms cubic-bezier(.2,.8,.2,1)',
             }}
           >
-            {/* Outer touchline (982 x 620) */}
-            <rect
-              x={P.x}
-              y={P.y}
-              width={P.w}
-              height={P.h}
-              fill="none"
-              stroke="#1E2A38"
-              strokeWidth="3"
-              strokeOpacity="0.35"
-              strokeLinecap="round"
-            />
-
-            {/* Halfway line */}
-            <line
-              x1={P.x + P.w / 2}
-              y1={P.y}
-              x2={P.x + P.w / 2}
-              y2={P.y + P.h}
-              stroke="#1E2A38"
-              strokeWidth="3"
-              strokeOpacity="0.35"
-              strokeLinecap="round"
-            />
-
-            {/* Center circle & spot */}
-            <circle
-              cx={P.x + P.w / 2}
-              cy={P.y + P.h / 2}
-              r={P.h * 0.135}
-              fill="none"
-              stroke="#1E2A38"
-              strokeWidth="3"
-              strokeOpacity="0.35"
-            />
-            <circle cx={P.x + P.w / 2} cy={P.y + P.h / 2} r="3" fill="#1E2A38" fillOpacity="0.4" />
-
-            {/* Left Penalty Area (Own Goal: 154 x 366) */}
-            <rect
-              x={P.x}
-              y={P.y + P.h / 2 - (P.h * 0.59) / 2}
-              width={P.w * 0.157}
-              height={P.h * 0.59}
-              fill="none"
-              stroke="#1E2A38"
-              strokeWidth="3"
-              strokeOpacity="0.35"
-              strokeLinecap="round"
-            />
-            {/* Left 6-yard box (51 x 168) */}
-            <rect
-              x={P.x}
-              y={P.y + P.h / 2 - (P.h * 0.27) / 2}
-              width={P.w * 0.052}
-              height={P.h * 0.27}
-              fill="none"
-              stroke="#1E2A38"
-              strokeWidth="3"
-              strokeOpacity="0.35"
-              strokeLinecap="round"
-            />
-            <circle
-              cx={P.x + P.w * 0.105}
-              cy={P.y + P.h / 2}
-              r="3"
-              fill="#1E2A38"
-              fillOpacity="0.4"
-            />
-            <path
-              d={`M ${P.x + P.w * 0.157} ${P.y + P.h / 2 - P.h * 0.11} A ${P.h * 0.135} ${P.h * 0.135} 0 0 1 ${P.x + P.w * 0.157} ${P.y + P.h / 2 + P.h * 0.11}`}
-              fill="none"
-              stroke="#1E2A38"
-              strokeWidth="3"
-              strokeOpacity="0.35"
-            />
-
-            {/* Right Penalty Area (Opp Goal: 154 x 366) */}
-            <rect
-              x={P.x + P.w - P.w * 0.157}
-              y={P.y + P.h / 2 - (P.h * 0.59) / 2}
-              width={P.w * 0.157}
-              height={P.h * 0.59}
-              fill="none"
-              stroke="#1E2A38"
-              strokeWidth="3"
-              strokeOpacity="0.35"
-              strokeLinecap="round"
-            />
-            {/* Right 6-yard box */}
-            <rect
-              x={P.x + P.w - P.w * 0.052}
-              y={P.y + P.h / 2 - (P.h * 0.27) / 2}
-              width={P.w * 0.052}
-              height={P.h * 0.27}
-              fill="none"
-              stroke="#1E2A38"
-              strokeWidth="3"
-              strokeOpacity="0.35"
-              strokeLinecap="round"
-            />
-            <circle
-              cx={P.x + P.w * 0.895}
-              cy={P.y + P.h / 2}
-              r="3"
-              fill="#1E2A38"
-              fillOpacity="0.4"
-            />
-            <path
-              d={`M ${P.x + P.w - P.w * 0.157} ${P.y + P.h / 2 - P.h * 0.11} A ${P.h * 0.135} ${P.h * 0.135} 0 0 0 ${P.x + P.w - P.w * 0.157} ${P.y + P.h / 2 + P.h * 0.11}`}
-              fill="none"
-              stroke="#1E2A38"
-              strokeWidth="3"
-              strokeOpacity="0.35"
-            />
-
-            {/* Bench Divider Dashed Line */}
-            <line
-              x1={P.x}
-              y1={P.y + P.h + 26}
-              x2={P.x + P.w}
-              y2={P.y + P.h + 26}
-              stroke="#1E2A38"
-              strokeWidth="2"
-              strokeDasharray="4 8"
-              strokeOpacity="0.25"
-            />
-
-            {/* Bench Labels */}
-            <text
-              x={P.x + 8}
-              y={BENCH_Y + 6}
-              fill="#1E2A38"
-              fillOpacity="0.55"
-              fontFamily="var(--font-head)"
-              fontSize="18"
-              fontWeight="700"
-              letterSpacing="0.08em"
+            {/* Pitch Markings SVG (1050 x 790) */}
+            <svg
+              viewBox="0 0 1050 790"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                pointerEvents: 'none',
+              }}
             >
-              BENCH
-            </text>
-            <line
-              x1={TREAT_X - 60}
-              y1={P.y + P.h + 32}
-              x2={TREAT_X - 60}
-              y2={BENCH_Y + 28}
-              stroke="#1E2A38"
-              strokeWidth="1.5"
-              strokeOpacity="0.2"
-            />
-            <text
-              x={TREAT_X - 44}
-              y={P.y + P.h + 20}
-              fill="#C42B2B"
-              fillOpacity="0.65"
-              fontFamily="var(--font-head)"
-              fontSize="16"
-              fontWeight="700"
-              letterSpacing="0.06em"
-            >
-              INJURED
-            </text>
+              {/* Outer touchline (982 x 620) */}
+              <rect
+                x={P.x}
+                y={P.y}
+                width={P.w}
+                height={P.h}
+                fill="none"
+                stroke="#1E2A38"
+                strokeWidth="3"
+                strokeOpacity="0.35"
+                strokeLinecap="round"
+              />
 
-            {boardTab === 'us' && (
-              <>
-                {/* Defensive Line: Vertical dashed blue line sliding left-right */}
-                <g
-                  style={{
-                    transform: `translateX(${(P.x + lineX * P.w).toFixed(0)}px)`,
-                    transition: 'transform 520ms cubic-bezier(.2,.8,.2,1)',
-                  }}
-                >
-                  <line
-                    x1="0"
-                    y1={P.y + 16}
-                    x2="0"
-                    y2={P.y + P.h - 16}
-                    stroke="#1F4FBF"
-                    strokeWidth="3"
-                    strokeDasharray="12 10"
-                    strokeOpacity="0.65"
-                  />
-                  <text
-                    x="10"
-                    y={P.y + 36}
-                    fill="#1F4FBF"
-                    fontFamily="var(--font-head)"
-                    fontSize="18"
-                    fontWeight="700"
-                    letterSpacing="0.06em"
-                  >
-                    {tactics.instructions.offsideTrap ? 'LINE · TRAP' : 'LINE'}
-                  </text>
-                </g>
+              {/* Halfway line */}
+              <line
+                x1={P.x + P.w / 2}
+                y1={P.y}
+                x2={P.x + P.w / 2}
+                y2={P.y + P.h}
+                stroke="#1E2A38"
+                strokeWidth="3"
+                strokeOpacity="0.35"
+                strokeLinecap="round"
+              />
 
-                {/* Pressing Line: Vertical dashed red line sliding left-right */}
-                <g
-                  style={{
-                    transform: `translateX(${(P.x + pressX * P.w).toFixed(0)}px)`,
-                    transition: 'transform 520ms cubic-bezier(.2,.8,.2,1)',
-                  }}
-                >
-                  <line
-                    x1="0"
-                    y1={P.y + 16}
-                    x2="0"
-                    y2={P.y + P.h - 16}
-                    stroke="#C42B2B"
-                    strokeWidth="3"
-                    strokeDasharray="12 10"
-                    strokeOpacity="0.65"
-                  />
-                  <text
-                    x="10"
-                    y={P.y + 36}
-                    fill="#C42B2B"
-                    fontFamily="var(--font-head)"
-                    fontSize="18"
-                    fontWeight="700"
-                    letterSpacing="0.06em"
-                  >
-                    PRESS
-                  </text>
-                </g>
+              {/* Center circle & spot */}
+              <circle
+                cx={P.x + P.w / 2}
+                cy={P.y + P.h / 2}
+                r={P.h * 0.135}
+                fill="none"
+                stroke="#1E2A38"
+                strokeWidth="3"
+                strokeOpacity="0.35"
+              />
+              <circle
+                cx={P.x + P.w / 2}
+                cy={P.y + P.h / 2}
+                r="3"
+                fill="#1E2A38"
+                fillOpacity="0.4"
+              />
 
-                {/* Width Arrows on sidelines */}
-                {phase === 'withBall' && tactics.instructions.width === 'Wide' && (
+              {/* Left Penalty Area (Own Goal: 154 x 366) */}
+              <rect
+                x={P.x}
+                y={P.y + P.h / 2 - (P.h * 0.59) / 2}
+                width={P.w * 0.157}
+                height={P.h * 0.59}
+                fill="none"
+                stroke="#1E2A38"
+                strokeWidth="3"
+                strokeOpacity="0.35"
+                strokeLinecap="round"
+              />
+              {/* Left 6-yard box (51 x 168) */}
+              <rect
+                x={P.x}
+                y={P.y + P.h / 2 - (P.h * 0.27) / 2}
+                width={P.w * 0.052}
+                height={P.h * 0.27}
+                fill="none"
+                stroke="#1E2A38"
+                strokeWidth="3"
+                strokeOpacity="0.35"
+                strokeLinecap="round"
+              />
+              <circle
+                cx={P.x + P.w * 0.105}
+                cy={P.y + P.h / 2}
+                r="3"
+                fill="#1E2A38"
+                fillOpacity="0.4"
+              />
+              <path
+                d={`M ${P.x + P.w * 0.157} ${P.y + P.h / 2 - P.h * 0.11} A ${P.h * 0.135} ${P.h * 0.135} 0 0 1 ${P.x + P.w * 0.157} ${P.y + P.h / 2 + P.h * 0.11}`}
+                fill="none"
+                stroke="#1E2A38"
+                strokeWidth="3"
+                strokeOpacity="0.35"
+              />
+
+              {/* Right Penalty Area (Opp Goal: 154 x 366) */}
+              <rect
+                x={P.x + P.w - P.w * 0.157}
+                y={P.y + P.h / 2 - (P.h * 0.59) / 2}
+                width={P.w * 0.157}
+                height={P.h * 0.59}
+                fill="none"
+                stroke="#1E2A38"
+                strokeWidth="3"
+                strokeOpacity="0.35"
+                strokeLinecap="round"
+              />
+              {/* Right 6-yard box */}
+              <rect
+                x={P.x + P.w - P.w * 0.052}
+                y={P.y + P.h / 2 - (P.h * 0.27) / 2}
+                width={P.w * 0.052}
+                height={P.h * 0.27}
+                fill="none"
+                stroke="#1E2A38"
+                strokeWidth="3"
+                strokeOpacity="0.35"
+                strokeLinecap="round"
+              />
+              <circle
+                cx={P.x + P.w * 0.895}
+                cy={P.y + P.h / 2}
+                r="3"
+                fill="#1E2A38"
+                fillOpacity="0.4"
+              />
+              <path
+                d={`M ${P.x + P.w - P.w * 0.157} ${P.y + P.h / 2 - P.h * 0.11} A ${P.h * 0.135} ${P.h * 0.135} 0 0 0 ${P.x + P.w - P.w * 0.157} ${P.y + P.h / 2 + P.h * 0.11}`}
+                fill="none"
+                stroke="#1E2A38"
+                strokeWidth="3"
+                strokeOpacity="0.35"
+              />
+
+              {/* Bench Divider Dashed Line */}
+              <line
+                x1={P.x}
+                y1={P.y + P.h + 26}
+                x2={P.x + P.w}
+                y2={P.y + P.h + 26}
+                stroke="#1E2A38"
+                strokeWidth="2"
+                strokeDasharray="4 8"
+                strokeOpacity="0.25"
+              />
+
+              {/* Bench Labels */}
+              <text
+                x={P.x + 8}
+                y={BENCH_Y + 6}
+                fill="#1E2A38"
+                fillOpacity="0.55"
+                fontFamily="var(--font-head)"
+                fontSize="18"
+                fontWeight="700"
+                letterSpacing="0.08em"
+              >
+                BENCH
+              </text>
+              <line
+                x1={TREAT_X - 60}
+                y1={P.y + P.h + 32}
+                x2={TREAT_X - 60}
+                y2={BENCH_Y + 28}
+                stroke="#1E2A38"
+                strokeWidth="1.5"
+                strokeOpacity="0.2"
+              />
+              <text
+                x={TREAT_X - 44}
+                y={P.y + P.h + 20}
+                fill="#C42B2B"
+                fillOpacity="0.65"
+                fontFamily="var(--font-head)"
+                fontSize="16"
+                fontWeight="700"
+                letterSpacing="0.06em"
+              >
+                INJURED
+              </text>
+
+              {boardTab === 'us' && (
+                <>
+                  {/* Defensive Line: Vertical dashed blue line sliding left-right */}
                   <g
-                    stroke="#1F4FBF"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    fill="none"
-                    opacity="0.6"
+                    style={{
+                      transform: `translateX(${(P.x + lineX * P.w).toFixed(0)}px)`,
+                      transition: 'transform 520ms cubic-bezier(.2,.8,.2,1)',
+                    }}
                   >
-                    {/* Top flank outward */}
-                    <path d={`M 525 80 L 525 40 M 517 48 L 525 40 L 533 48`} />
-                    {/* Bottom flank outward */}
-                    <path d={`M 525 588 L 525 628 M 517 620 L 525 628 L 533 620`} />
+                    <line
+                      x1="0"
+                      y1={P.y + 16}
+                      x2="0"
+                      y2={P.y + P.h - 16}
+                      stroke="#1F4FBF"
+                      strokeWidth="3"
+                      strokeDasharray="12 10"
+                      strokeOpacity="0.65"
+                    />
+                    <text
+                      x="10"
+                      y={P.y + 36}
+                      fill="#1F4FBF"
+                      fontFamily="var(--font-head)"
+                      fontSize="18"
+                      fontWeight="700"
+                      letterSpacing="0.06em"
+                    >
+                      {tactics.instructions.offsideTrap ? 'LINE · TRAP' : 'LINE'}
+                    </text>
                   </g>
-                )}
-                {phase === 'withBall' && tactics.instructions.width === 'Narrow' && (
+
+                  {/* Pressing Line: Vertical dashed red line sliding left-right */}
                   <g
-                    stroke="#1F4FBF"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    fill="none"
-                    opacity="0.6"
+                    style={{
+                      transform: `translateX(${(P.x + pressX * P.w).toFixed(0)}px)`,
+                      transition: 'transform 520ms cubic-bezier(.2,.8,.2,1)',
+                    }}
                   >
-                    {/* Top flank inward */}
-                    <path d={`M 525 40 L 525 80 M 517 72 L 525 80 L 533 72`} />
-                    {/* Bottom flank inward */}
-                    <path d={`M 525 628 L 525 588 M 517 596 L 525 588 L 533 596`} />
+                    <line
+                      x1="0"
+                      y1={P.y + 16}
+                      x2="0"
+                      y2={P.y + P.h - 16}
+                      stroke="#C42B2B"
+                      strokeWidth="3"
+                      strokeDasharray="12 10"
+                      strokeOpacity="0.65"
+                    />
+                    <text
+                      x="10"
+                      y={P.y + 36}
+                      fill="#C42B2B"
+                      fontFamily="var(--font-head)"
+                      fontSize="18"
+                      fontWeight="700"
+                      letterSpacing="0.06em"
+                    >
+                      PRESS
+                    </text>
                   </g>
-                )}
 
-                {/* Focus Arrow */}
-                {phase === 'withBall' && tactics.instructions.focus !== 'Mixed' && (
-                  <g
-                    stroke="#1F4FBF"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    fill="none"
-                    opacity="0.7"
-                  >
-                    {tactics.instructions.focus === 'Left' && (
-                      <path d={`M 720 120 L 860 120 M 850 112 L 860 120 L 850 128`} />
-                    )}
-                    {tactics.instructions.focus === 'Centre' && (
-                      <path d={`M 720 334 L 860 334 M 850 326 L 860 334 L 850 342`} />
-                    )}
-                    {tactics.instructions.focus === 'Right' && (
-                      <path d={`M 720 548 L 860 548 M 850 540 L 860 548 L 850 556`} />
-                    )}
-                  </g>
-                )}
-              </>
-            )}
+                  {/* Width Arrows on sidelines */}
+                  {phase === 'withBall' && tactics.instructions.width === 'Wide' && (
+                    <g
+                      stroke="#1F4FBF"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="none"
+                      opacity="0.6"
+                    >
+                      {/* Top flank outward */}
+                      <path d={`M 525 80 L 525 40 M 517 48 L 525 40 L 533 48`} />
+                      {/* Bottom flank outward */}
+                      <path d={`M 525 588 L 525 628 M 517 620 L 525 628 L 533 620`} />
+                    </g>
+                  )}
+                  {phase === 'withBall' && tactics.instructions.width === 'Narrow' && (
+                    <g
+                      stroke="#1F4FBF"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="none"
+                      opacity="0.6"
+                    >
+                      {/* Top flank inward */}
+                      <path d={`M 525 40 L 525 80 M 517 72 L 525 80 L 533 72`} />
+                      {/* Bottom flank inward */}
+                      <path d={`M 525 628 L 525 588 M 517 596 L 525 588 L 533 596`} />
+                    </g>
+                  )}
 
-            {/* Opposition Lines & Orders */}
-            {boardTab === 'opp' && (
-              <>
-                {/* Active Opposition Orders lines */}
-                {(tactics.opposition ?? []).map((order, oIdx) => {
-                  const oppXI = oppFormationDef.slots;
-                  const targetSlotIdx =
-                    oppXI.findIndex((s) => tactics.lineup[s.slot] === order.target) || 0;
-                  const targetSlot = oppXI[targetSlotIdx] ?? oppXI[0]!;
-                  const tx = P.x + (1 - targetSlot.anchor.x / 105) * P.w;
-                  const ty = P.y + (1 - targetSlot.anchor.y / 68) * P.h;
+                  {/* Focus Arrow */}
+                  {phase === 'withBall' && tactics.instructions.focus !== 'Mixed' && (
+                    <g
+                      stroke="#1F4FBF"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="none"
+                      opacity="0.7"
+                    >
+                      {tactics.instructions.focus === 'Left' && (
+                        <path d={`M 720 120 L 860 120 M 850 112 L 860 120 L 850 128`} />
+                      )}
+                      {tactics.instructions.focus === 'Centre' && (
+                        <path d={`M 720 334 L 860 334 M 850 326 L 860 334 L 850 342`} />
+                      )}
+                      {tactics.instructions.focus === 'Right' && (
+                        <path d={`M 720 548 L 860 548 M 850 540 L 860 548 L 850 556`} />
+                      )}
+                    </g>
+                  )}
+                </>
+              )}
 
-                  return (
-                    <g key={oIdx}>
-                      <line
-                        x1={tx - 40}
-                        y1={ty}
-                        x2={tx}
-                        y2={ty}
-                        stroke="#C42B2B"
-                        strokeWidth="3"
-                        strokeDasharray="6 4"
+              {/* Opposition Lines & Orders */}
+              {boardTab === 'opp' && (
+                <>
+                  {/* Active Opposition Orders lines */}
+                  {(tactics.opposition ?? []).map((order, oIdx) => {
+                    const oppXI = oppFormationDef.slots;
+                    const targetSlotIdx =
+                      oppXI.findIndex((s) => tactics.lineup[s.slot] === order.target) || 0;
+                    const targetSlot = oppXI[targetSlotIdx] ?? oppXI[0]!;
+                    const tx = P.x + (1 - targetSlot.anchor.x / 105) * P.w;
+                    const ty = P.y + (1 - targetSlot.anchor.y / 68) * P.h;
+
+                    return (
+                      <g key={oIdx}>
+                        <line
+                          x1={tx - 40}
+                          y1={ty}
+                          x2={tx}
+                          y2={ty}
+                          stroke="#C42B2B"
+                          strokeWidth="3"
+                          strokeDasharray="6 4"
+                        />
+                        <rect
+                          x={tx + 24}
+                          y={ty - 14}
+                          width="46"
+                          height="20"
+                          rx="3"
+                          fill="#C42B2B"
+                        />
+                        <text
+                          x={tx + 47}
+                          y={ty}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          fill="#FFFFFF"
+                          fontFamily="var(--font-head)"
+                          fontSize="12"
+                          fontWeight="700"
+                        >
+                          {order.kind === 'doubleUp'
+                            ? '×2'
+                            : order.kind === 'tightMark'
+                              ? 'TIGHT'
+                              : order.kind === 'pressOnBall'
+                                ? 'PRESS'
+                                : order.kind === 'showInside'
+                                  ? 'IN'
+                                  : 'OUT'}
+                        </text>
+                      </g>
+                    );
+                  })}
+                </>
+              )}
+              {/* Set Pieces SVG Markings (§13.20.7) */}
+              {activeDivider === 'setpieces' && (
+                <>
+                  <defs>
+                    <marker
+                      id="chalk-arrow-delivery"
+                      viewBox="0 0 10 10"
+                      refX="8"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 1 L 9 5 L 0 9 z" fill="#1F4FBF" />
+                    </marker>
+                    <marker
+                      id="chalk-arrow-run"
+                      viewBox="0 0 10 10"
+                      refX="8"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 1 L 9 5 L 0 9 z" fill="#4B5563" />
+                    </marker>
+                    <marker
+                      id="chalk-arrow-shot"
+                      viewBox="0 0 10 10"
+                      refX="8"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 1 L 9 5 L 0 9 z" fill="#D97706" />
+                    </marker>
+                  </defs>
+
+                  {setPieceSubTab === 'ourCorners' && (
+                    <>
+                      {/* Delivery Arc */}
+                      {(() => {
+                        const flagX = 1016;
+                        const flagY = cornerSide === 'left' ? 26 : 642;
+                        let targetX = 945;
+                        let targetY = 334;
+                        if (currentRoutine.target === 'Near') {
+                          targetX = 975;
+                          targetY = nearY;
+                        } else if (currentRoutine.target === 'Far') {
+                          targetX = 975;
+                          targetY = farY;
+                        } else if (currentRoutine.target === 'Spot') {
+                          targetX = 910;
+                          targetY = 334;
+                        } else if (currentRoutine.target === 'Short') {
+                          targetX = 995;
+                          targetY = shortY;
+                        }
+
+                        const midX = (flagX + targetX) / 2;
+                        const midY = (flagY + targetY) / 2;
+                        const isIn =
+                          currentRoutine.swing === 'In' ||
+                          (currentRoutine.swing === 'Auto' && cornerSide === 'left');
+                        const ctrlOffset = isIn
+                          ? cornerSide === 'left'
+                            ? 40
+                            : -40
+                          : cornerSide === 'left'
+                            ? -60
+                            : 60;
+                        const ctrlX = midX - 25;
+                        const ctrlY = midY + ctrlOffset;
+
+                        return (
+                          <g>
+                            <path
+                              d={`M ${flagX} ${flagY} Q ${ctrlX} ${ctrlY} ${targetX} ${targetY}`}
+                              fill="none"
+                              stroke="#1F4FBF"
+                              strokeWidth="3.5"
+                              strokeDasharray="6 4"
+                              markerEnd="url(#chalk-arrow-delivery)"
+                            />
+                            <circle cx={flagX} cy={flagY} r="5" fill="#1F4FBF" />
+                            <text
+                              x={midX - 10}
+                              y={midY + (cornerSide === 'left' ? -15 : 25)}
+                              fill="#1F4FBF"
+                              fontSize="11"
+                              fontWeight="700"
+                              fontFamily="var(--font-head)"
+                            >
+                              {currentRoutine.target.toUpperCase()} DELIVERY (
+                              {currentRoutine.swing.toUpperCase()})
+                            </text>
+                          </g>
+                        );
+                      })()}
+
+                      {/* Run Arrows */}
+                      <g>
+                        <line
+                          x1="860"
+                          y1={nearY}
+                          x2="945"
+                          y2={nearY}
+                          stroke="#4B5563"
+                          strokeWidth="2.5"
+                          strokeDasharray="5 4"
+                          markerEnd="url(#chalk-arrow-run)"
+                        />
+                        <line
+                          x1="860"
+                          y1={farY}
+                          x2="945"
+                          y2={farY}
+                          stroke="#4B5563"
+                          strokeWidth="2.5"
+                          strokeDasharray="5 4"
+                          markerEnd="url(#chalk-arrow-run)"
+                        />
+                        <line
+                          x1="790"
+                          y1="334"
+                          x2="880"
+                          y2="334"
+                          stroke="#4B5563"
+                          strokeWidth="2.5"
+                          strokeDasharray="5 4"
+                          markerEnd="url(#chalk-arrow-run)"
+                        />
+                      </g>
+
+                      {/* Second Ball Shot Line from Edge of Box */}
+                      <g>
+                        <line
+                          x1="810"
+                          y1="334"
+                          x2="1010"
+                          y2="334"
+                          stroke="#D97706"
+                          strokeWidth="2.5"
+                          strokeDasharray="6 4"
+                          markerEnd="url(#chalk-arrow-shot)"
+                        />
+                        <text
+                          x="880"
+                          y="324"
+                          fill="#D97706"
+                          fontSize="11"
+                          fontWeight="700"
+                          fontFamily="var(--font-head)"
+                          letterSpacing="0.06em"
+                        >
+                          EDGE SHOT / RECYCLE
+                        </text>
+                      </g>
+
+                      {/* Interactive Job Circles (§13.20.7) */}
+                      {(Object.keys(JOB_COORDS) as CornerJob[]).map((job) => {
+                        const coord = JOB_COORDS[job];
+                        const info = JOB_INFO[job];
+                        const count = Object.values(currentRoutine?.jobs ?? {}).filter(
+                          (j) => j === job,
+                        ).length;
+                        const isFull = count >= info.max;
+                        const isHovered = hoveredJob === job;
+                        return (
+                          <g
+                            key={job}
+                            style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+                            onClick={() => {
+                              if (selectedSlot !== null) {
+                                assignJobToSlot(selectedSlot, job);
+                              }
+                            }}
+                            onMouseEnter={() => setHoveredJob(job)}
+                            onMouseLeave={() => setHoveredJob(null)}
+                          >
+                            <circle
+                              cx={coord.x}
+                              cy={coord.y}
+                              r="28"
+                              fill={
+                                isHovered ? 'rgba(31, 79, 191, 0.22)' : 'rgba(31, 79, 191, 0.08)'
+                              }
+                              stroke={isHovered ? '#1F4FBF' : isFull ? '#059669' : '#1F4FBF'}
+                              strokeWidth={isHovered ? '2.5' : '1.5'}
+                              strokeDasharray={isFull ? 'none' : '4 3'}
+                            />
+                            <text
+                              x={coord.x}
+                              y={coord.y - 32}
+                              textAnchor="middle"
+                              fill="#1F4FBF"
+                              fontSize="11"
+                              fontWeight="700"
+                              fontFamily="var(--font-head)"
+                              letterSpacing="0.04em"
+                            >
+                              {info.label}
+                            </text>
+                            <text
+                              x={coord.x}
+                              y={coord.y + 38}
+                              textAnchor="middle"
+                              fill={isFull ? '#059669' : '#6B7280'}
+                              fontSize="10"
+                              fontWeight="600"
+                            >
+                              {count}/{info.max}
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </>
+                  )}
+
+                  {setPieceSubTab === 'theirCorners' && (
+                    <g>
+                      {/* Defending Corner Markings */}
+                      <circle
+                        cx={P.x + 20}
+                        cy={298}
+                        r="16"
+                        fill="none"
+                        stroke="#1F4FBF"
+                        strokeWidth="2"
+                        strokeDasharray="3 3"
                       />
-                      <rect x={tx + 24} y={ty - 14} width="46" height="20" rx="3" fill="#C42B2B" />
                       <text
-                        x={tx + 47}
-                        y={ty}
-                        textAnchor="middle"
-                        dominantBaseline="central"
-                        fill="#FFFFFF"
+                        x={P.x + 42}
+                        y={294}
+                        fill="#1F4FBF"
+                        fontSize="10"
+                        fontWeight="700"
                         fontFamily="var(--font-head)"
+                      >
+                        NEAR POST
+                      </text>
+                      <circle
+                        cx={P.x + 20}
+                        cy={370}
+                        r="16"
+                        fill="none"
+                        stroke="#1F4FBF"
+                        strokeWidth="2"
+                        strokeDasharray="3 3"
+                      />
+                      <text
+                        x={P.x + 42}
+                        y={374}
+                        fill="#1F4FBF"
+                        fontSize="10"
+                        fontWeight="700"
+                        fontFamily="var(--font-head)"
+                      >
+                        FAR POST
+                      </text>
+                      {setPieces.defending.edgeGuard && (
+                        <g>
+                          <circle
+                            cx={P.x + 190}
+                            cy={334}
+                            r="22"
+                            fill="rgba(31, 79, 191, 0.1)"
+                            stroke="#1F4FBF"
+                            strokeWidth="2"
+                          />
+                          <text
+                            x={P.x + 190}
+                            y={305}
+                            textAnchor="middle"
+                            fill="#1F4FBF"
+                            fontSize="10"
+                            fontWeight="700"
+                            fontFamily="var(--font-head)"
+                          >
+                            EDGE GUARD
+                          </text>
+                        </g>
+                      )}
+                      <text
+                        x={P.x + 480}
+                        y={310}
+                        textAnchor="middle"
+                        fill="#1F4FBF"
                         fontSize="12"
                         fontWeight="700"
+                        fontFamily="var(--font-head)"
                       >
-                        {order.kind === 'doubleUp'
-                          ? '×2'
-                          : order.kind === 'tightMark'
-                            ? 'TIGHT'
-                            : order.kind === 'pressOnBall'
-                              ? 'PRESS'
-                              : order.kind === 'showInside'
-                                ? 'IN'
-                                : 'OUT'}
+                        FORWARDS UP: {setPieces.defending.forwardsUp}
                       </text>
                     </g>
-                  );
-                })}
-              </>
-            )}
-          </svg>
+                  )}
 
-          {/* Interactive Starter Magnets (11 starters on sideways pitch) */}
-          {boardTab === 'us' &&
-            starters.map(({ slotDef, player, slotOvr, isNatural }) => {
-              const isSelected = selectedSlot === slotDef.slot;
-              const isHovered = hoveredSlot === slotDef.slot;
+                  {setPieceSubTab === 'ourFK' && (
+                    <g>
+                      {/* Central Free Kick Zone */}
+                      <rect
+                        x={P.x + P.w * 0.72}
+                        y={P.y + P.h * 0.28}
+                        width={P.w * 0.28}
+                        height={P.h * 0.44}
+                        fill="rgba(31, 79, 191, 0.08)"
+                        stroke="#1F4FBF"
+                        strokeWidth="2"
+                        strokeDasharray="6 4"
+                      />
+                      <text
+                        x={P.x + P.w * 0.86}
+                        y={P.y + P.h * 0.25}
+                        textAnchor="middle"
+                        fill="#1F4FBF"
+                        fontSize="12"
+                        fontWeight="700"
+                        fontFamily="var(--font-head)"
+                      >
+                        CENTRAL (&lt;30m): {setPieces.freeKicks.central.toUpperCase()}
+                      </text>
+                      {/* Wide Channels */}
+                      <rect
+                        x={P.x + P.w * 0.65}
+                        y={P.y}
+                        width={P.w * 0.35}
+                        height={P.h * 0.26}
+                        fill="rgba(217, 119, 6, 0.08)"
+                        stroke="#D97706"
+                        strokeWidth="1.5"
+                        strokeDasharray="4 4"
+                      />
+                      <rect
+                        x={P.x + P.w * 0.65}
+                        y={P.y + P.h * 0.74}
+                        width={P.w * 0.35}
+                        height={P.h * 0.26}
+                        fill="rgba(217, 119, 6, 0.08)"
+                        stroke="#D97706"
+                        strokeWidth="1.5"
+                        strokeDasharray="4 4"
+                      />
+                      <text
+                        x={P.x + P.w * 0.82}
+                        y={P.y + 20}
+                        textAnchor="middle"
+                        fill="#D97706"
+                        fontSize="11"
+                        fontWeight="700"
+                        fontFamily="var(--font-head)"
+                      >
+                        WIDE: {setPieces.freeKicks.wide.toUpperCase()}
+                      </text>
+                    </g>
+                  )}
 
-              // Normalized coordinates along pitch (0 = own goal left, 1 = opp goal right)
-              const nx = slotDef.anchor.x / 105;
-              const ny = slotDef.anchor.y / 68;
+                  {setPieceSubTab === 'theirFK' && (
+                    <g>
+                      {/* Wall visualization */}
+                      <rect
+                        x={P.x + 95}
+                        y={P.y + P.h * 0.4}
+                        width="16"
+                        height={P.h * 0.2}
+                        fill="rgba(31, 79, 191, 0.2)"
+                        stroke="#1F4FBF"
+                        strokeWidth="2"
+                      />
+                      <text
+                        x={P.x + 103}
+                        y={P.y + P.h * 0.38}
+                        textAnchor="middle"
+                        fill="#1F4FBF"
+                        fontSize="11"
+                        fontWeight="700"
+                        fontFamily="var(--font-head)"
+                      >
+                        WALL: {setPieces.defending.wall.toUpperCase()}
+                      </text>
+                      {/* Defensive Line */}
+                      <line
+                        x1={
+                          P.x +
+                          (setPieces.defending.lineHeight === 'High'
+                            ? 230
+                            : setPieces.defending.lineHeight === 'Deep'
+                              ? 120
+                              : 175)
+                        }
+                        y1={P.y + 20}
+                        x2={
+                          P.x +
+                          (setPieces.defending.lineHeight === 'High'
+                            ? 230
+                            : setPieces.defending.lineHeight === 'Deep'
+                              ? 120
+                              : 175)
+                        }
+                        y2={P.y + P.h - 20}
+                        stroke="#D97706"
+                        strokeWidth="2.5"
+                        strokeDasharray="8 6"
+                      />
+                      <text
+                        x={
+                          P.x +
+                          (setPieces.defending.lineHeight === 'High'
+                            ? 235
+                            : setPieces.defending.lineHeight === 'Deep'
+                              ? 125
+                              : 180)
+                        }
+                        y={P.y + 40}
+                        fill="#D97706"
+                        fontSize="11"
+                        fontWeight="700"
+                        fontFamily="var(--font-head)"
+                      >
+                        LINE: {setPieces.defending.lineHeight.toUpperCase()}
+                      </text>
+                    </g>
+                  )}
+                </>
+              )}
+            </svg>
 
-              // Defensive shape derivation
-              const defNormX = Math.max(
-                0.05,
-                Math.min(
-                  0.94,
-                  0.07 +
-                    (nx - 0.05) * 0.62 +
-                    (tactics.instructions.line === 'High'
-                      ? 0.04
-                      : tactics.instructions.line === 'Deep'
-                        ? -0.03
-                        : 0),
-                ),
-              );
+            {/* Interactive Starter Magnets (11 starters on sideways pitch) */}
+            {boardTab === 'us' &&
+              starters.map(({ slotDef, player, slotOvr, isNatural }) => {
+                const isSelected = selectedSlot === slotDef.slot;
+                const isHovered = hoveredSlot === slotDef.slot;
 
-              const curX = phase === 'withBall' ? nx : defNormX;
-              const curY = ny;
+                // Normalized coordinates along pitch (0 = own goal left, 1 = opp goal right)
+                const nx = slotDef.anchor.x / 105;
+                const ny = slotDef.anchor.y / 68;
 
-              // Position in SVG / Board coordinates
-              const px = P.x + curX * P.w;
-              const py = P.y + curY * P.h;
+                // Defensive shape derivation
+                const defNormX = Math.max(
+                  0.05,
+                  Math.min(
+                    0.94,
+                    0.07 +
+                      (nx - 0.05) * 0.62 +
+                      (tactics.instructions.line === 'High'
+                        ? 0.04
+                        : tactics.instructions.line === 'Deep'
+                          ? -0.03
+                          : 0),
+                  ),
+                );
 
-              // % coordinates for CSS positioning
-              const leftPct = (px / 1050) * 100;
-              const topPct = (py / 790) * 100;
+                let curX = phase === 'withBall' ? nx : defNormX;
+                let curY = ny;
 
-              const fitColor = isNatural ? '#1E7B3C' : slotOvr >= 65 ? '#B7791F' : '#C42B2B';
+                // Position in SVG / Board coordinates
+                let px = P.x + curX * P.w;
+                let py = P.y + curY * P.h;
+
+                if (activeDivider === 'setpieces') {
+                  if (setPieceSubTab === 'ourCorners') {
+                    if (slotDef.slot === 0) {
+                      px = P.x + 30;
+                      py = P.y + P.h / 2;
+                    } else {
+                      const job = currentRoutine?.jobs?.[slotDef.slot] as CornerJob | undefined;
+                      if (job && job in JOB_COORDS) {
+                        const coord = JOB_COORDS[job];
+                        const peers = Object.entries(currentRoutine?.jobs ?? {})
+                          .filter(([s, j]) => j === job)
+                          .map(([s]) => Number(s));
+                        const idxInPeers = peers.indexOf(slotDef.slot);
+                        const offsetX = peers.length > 1 ? (idxInPeers === 0 ? -18 : 18) : 0;
+                        px = coord.x + offsetX;
+                        py = coord.y;
+                      } else {
+                        px = P.x + 0.65 * P.w;
+                        py = P.y + (slotDef.anchor.y / 68) * P.h;
+                      }
+                    }
+                  } else if (setPieceSubTab === 'theirCorners') {
+                    if (slotDef.slot === 0) {
+                      px = P.x + 25;
+                      py = P.y + P.h / 2;
+                    } else if (slotDef.slot === 10 && setPieces.defending.forwardsUp >= 1) {
+                      px = P.x + 480;
+                      py = setPieces.defending.forwardsUp === 2 ? P.y + P.h * 0.4 : P.y + P.h / 2;
+                    } else if (slotDef.slot === 9 && setPieces.defending.forwardsUp === 2) {
+                      px = P.x + 480;
+                      py = P.y + P.h * 0.6;
+                    } else if (setPieces.defending.edgeGuard && slotDef.slot === 8) {
+                      px = P.x + 190;
+                      py = P.y + P.h / 2;
+                    } else if (setPieces.defending.markMainMan === player?.id) {
+                      px = P.x + 105;
+                      py = P.y + P.h / 2;
+                    } else {
+                      px = P.x + 40 + (slotDef.slot % 4) * 35;
+                      py = P.y + P.h * 0.25 + ((slotDef.slot * 47) % Math.round(P.h * 0.5));
+                    }
+                  }
+                }
+
+                // % coordinates for CSS positioning
+                const leftPct = (px / 1050) * 100;
+                const topPct = (py / 790) * 100;
+
+                const fitColor = isNatural ? '#1E7B3C' : slotOvr >= 65 ? '#B7791F' : '#C42B2B';
+
+                return (
+                  <div
+                    key={slotDef.slot}
+                    onClick={() => handleSlotClick(slotDef.slot)}
+                    onMouseEnter={() => {
+                      setHoveredSlot(slotDef.slot);
+                      if (selectedSlot !== null && selectedSlot !== slotDef.slot) {
+                        setDragOverSlot(slotDef.slot);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredSlot(null);
+                      setDragOverSlot(null);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      left: `${leftPct}%`,
+                      top: `${topPct}%`,
+                      transform: 'translate(-50%, -50%)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '2px',
+                      transition:
+                        'left 480ms cubic-bezier(.2,.8,.2,1), top 480ms cubic-bezier(.2,.8,.2,1)',
+                      zIndex: isSelected ? 25 : 10,
+                    }}
+                  >
+                    {/* Magnet Disc (44px) */}
+                    <div
+                      style={{
+                        width: '44px',
+                        height: '44px',
+                        borderRadius: '50%',
+                        backgroundColor: userClub.colors.primary,
+                        border: `2.5px solid ${isSelected ? '#FFFFFF' : userClub.colors.secondary}`,
+                        boxShadow: isSelected
+                          ? '0 0 0 3px #1F4FBF, 0 8px 18px rgba(0,0,0,0.45)'
+                          : isHovered
+                            ? '0 6px 14px rgba(0,0,0,0.3)'
+                            : '0 2px 5px rgba(0,0,0,0.25)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: userClub.colors.secondary,
+                        fontFamily: 'var(--font-head)',
+                        fontWeight: 700,
+                        fontSize: '16px',
+                        position: 'relative',
+                        transform: isSelected || isHovered ? 'scale(1.08)' : 'scale(1)',
+                        transition: 'transform 140ms ease',
+                      }}
+                    >
+                      <span>{player?.squadNumber ?? slotDef.slot + 1}</span>
+
+                      {/* OVR fit badge */}
+                      {player && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '-6px',
+                            right: '-10px',
+                            backgroundColor: fitColor,
+                            color: '#FFFFFF',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            fontFamily: 'var(--font-head)',
+                            borderRadius: '2px',
+                            padding: '1px 4px',
+                            lineHeight: 1,
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                          }}
+                        >
+                          {slotOvr}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Player Surname Label */}
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        fontFamily: 'var(--font-head)',
+                        fontWeight: 600,
+                        letterSpacing: '0.02em',
+                        color: 'var(--board-ink, #1E2A38)',
+                        whiteSpace: 'nowrap',
+                        maxWidth: '84px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        textAlign: 'center',
+                        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                        padding: '1px 4px',
+                        borderRadius: '2px',
+                      }}
+                    >
+                      {player ? player.lastName : slotDef.role}
+                    </div>
+                  </div>
+                );
+              })}
+
+            {/* Opposition XI Magnets (when boardTab === 'opp') */}
+            {boardTab === 'opp' &&
+              oppFormationDef.slots.map((slotDef, oppIdx) => {
+                const nx = 1 - slotDef.anchor.x / 105;
+                const ny = 1 - slotDef.anchor.y / 68;
+                const px = P.x + nx * P.w;
+                const py = P.y + ny * P.h;
+                const leftPct = (px / 1050) * 100;
+                const topPct = (py / 790) * 100;
+
+                const isOppSelected = selectedOppSlot === oppIdx;
+
+                return (
+                  <div
+                    key={oppIdx}
+                    onClick={() => setSelectedOppSlot(oppIdx)}
+                    style={{
+                      position: 'absolute',
+                      left: `${leftPct}%`,
+                      top: `${topPct}%`,
+                      transform: 'translate(-50%, -50%)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '2px',
+                      zIndex: 15,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '50%',
+                        backgroundColor: '#FFFFFF',
+                        border: `2.5px solid ${isOppSelected ? '#1E2A38' : '#C42B2B'}`,
+                        boxShadow: isOppSelected
+                          ? '0 0 0 3px #C42B2B, 0 6px 14px rgba(0,0,0,0.3)'
+                          : '0 2px 5px rgba(0,0,0,0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#C42B2B',
+                        fontFamily: 'var(--font-head)',
+                        fontWeight: 700,
+                        fontSize: '15px',
+                      }}
+                    >
+                      <span>{oppIdx + 1}</span>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-head)',
+                        fontWeight: 600,
+                        color: '#C42B2B',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        padding: '1px 4px',
+                        borderRadius: '2px',
+                      }}
+                    >
+                      {slotDef.role}
+                    </div>
+                  </div>
+                );
+              })}
+
+            {/* Bench Strip along bottom (Horizontal row at BENCH_Y) */}
+            {benchPlayers.slice(0, 8).map(({ idx, player, primaryOvr }) => {
+              const bx = BENCH_X0 + idx * BENCH_DX;
+              const by = BENCH_Y;
+              const leftPct = (bx / 1050) * 100;
+              const topPct = (by / 790) * 100;
+              const isBenchSelected = selectedBenchIndex === idx;
 
               return (
                 <div
-                  key={slotDef.slot}
-                  onClick={() => handleSlotClick(slotDef.slot)}
-                  onMouseEnter={() => {
-                    setHoveredSlot(slotDef.slot);
-                    if (selectedSlot !== null && selectedSlot !== slotDef.slot) {
-                      setDragOverSlot(slotDef.slot);
-                    }
-                  }}
-                  onMouseLeave={() => {
-                    setHoveredSlot(null);
-                    setDragOverSlot(null);
-                  }}
+                  key={idx}
+                  onClick={() => handleBenchClick(idx)}
                   style={{
                     position: 'absolute',
                     left: `${leftPct}%`,
@@ -1089,134 +2003,94 @@ export const TacticsScreen: React.FC = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     gap: '2px',
-                    transition:
-                      'left 480ms cubic-bezier(.2,.8,.2,1), top 480ms cubic-bezier(.2,.8,.2,1)',
-                    zIndex: isSelected ? 25 : 10,
+                    zIndex: isBenchSelected ? 20 : 10,
                   }}
                 >
-                  {/* Magnet Disc (44px) */}
                   <div
                     style={{
-                      width: '44px',
-                      height: '44px',
+                      width: '36px',
+                      height: '36px',
                       borderRadius: '50%',
                       backgroundColor: userClub.colors.primary,
-                      border: `2.5px solid ${isSelected ? '#FFFFFF' : userClub.colors.secondary}`,
-                      boxShadow: isSelected
-                        ? '0 0 0 3px #1F4FBF, 0 8px 18px rgba(0,0,0,0.45)'
-                        : isHovered
-                          ? '0 6px 14px rgba(0,0,0,0.3)'
-                          : '0 2px 5px rgba(0,0,0,0.25)',
+                      border: `2px solid ${isBenchSelected ? '#1F4FBF' : userClub.colors.secondary}`,
+                      boxShadow: isBenchSelected
+                        ? '0 0 0 3px #1F4FBF, 0 6px 12px rgba(0,0,0,0.3)'
+                        : '0 2px 4px rgba(0,0,0,0.2)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       color: userClub.colors.secondary,
                       fontFamily: 'var(--font-head)',
                       fontWeight: 700,
-                      fontSize: '16px',
-                      position: 'relative',
-                      transform: isSelected || isHovered ? 'scale(1.08)' : 'scale(1)',
+                      fontSize: '13px',
+                      transform: isBenchSelected ? 'scale(1.1)' : 'scale(1)',
                       transition: 'transform 140ms ease',
                     }}
                   >
-                    <span>{player?.squadNumber ?? slotDef.slot + 1}</span>
-
-                    {/* OVR fit badge */}
-                    {player && (
-                      <span
-                        style={{
-                          position: 'absolute',
-                          top: '-6px',
-                          right: '-10px',
-                          backgroundColor: fitColor,
-                          color: '#FFFFFF',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          fontFamily: 'var(--font-head)',
-                          borderRadius: '2px',
-                          padding: '1px 4px',
-                          lineHeight: 1,
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                        }}
-                      >
-                        {slotOvr}
-                      </span>
-                    )}
+                    {player?.squadNumber ?? `B${idx + 1}`}
                   </div>
-
-                  {/* Player Surname Label */}
                   <div
                     style={{
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontFamily: 'var(--font-head)',
                       fontWeight: 600,
-                      letterSpacing: '0.02em',
                       color: 'var(--board-ink, #1E2A38)',
                       whiteSpace: 'nowrap',
-                      maxWidth: '84px',
+                      maxWidth: '64px',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      textAlign: 'center',
-                      backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                      padding: '1px 4px',
-                      borderRadius: '2px',
                     }}
                   >
-                    {player ? player.lastName : slotDef.role}
+                    {player ? player.lastName : `B${idx + 1}`}
                   </div>
                 </div>
               );
             })}
 
-          {/* Opposition XI Magnets (when boardTab === 'opp') */}
-          {boardTab === 'opp' &&
-            oppFormationDef.slots.map((slotDef, oppIdx) => {
-              const nx = 1 - slotDef.anchor.x / 105;
-              const ny = 1 - slotDef.anchor.y / 68;
-              const px = P.x + nx * P.w;
-              const py = P.y + ny * P.h;
-              const leftPct = (px / 1050) * 100;
-              const topPct = (py / 790) * 100;
-
-              const isOppSelected = selectedOppSlot === oppIdx;
+            {/* Injured Corner (at TREAT_X) */}
+            {injuredPlayers.slice(0, 1).map((p) => {
+              const leftPct = (TREAT_X / 1050) * 100;
+              const topPct = (BENCH_Y / 790) * 100;
 
               return (
                 <div
-                  key={oppIdx}
-                  onClick={() => setSelectedOppSlot(oppIdx)}
+                  key={p.id}
+                  onClick={() =>
+                    showToast(
+                      `${p.firstName} ${p.lastName} is injured: ${p.injury?.kind ?? 'Injured'} (${p.injury?.matchdaysOut ?? 1} matchdays out)`,
+                      'warning',
+                    )
+                  }
                   style={{
                     position: 'absolute',
                     left: `${leftPct}%`,
                     top: `${topPct}%`,
                     transform: 'translate(-50%, -50%)',
-                    cursor: 'pointer',
+                    cursor: 'not-allowed',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     gap: '2px',
-                    zIndex: 15,
+                    opacity: 0.65,
                   }}
                 >
                   <div
                     style={{
-                      width: '42px',
-                      height: '42px',
+                      width: '36px',
+                      height: '36px',
                       borderRadius: '50%',
-                      backgroundColor: '#FFFFFF',
-                      border: `2.5px solid ${isOppSelected ? '#1E2A38' : '#C42B2B'}`,
-                      boxShadow: isOppSelected
-                        ? '0 0 0 3px #C42B2B, 0 6px 14px rgba(0,0,0,0.3)'
-                        : '0 2px 5px rgba(0,0,0,0.2)',
+                      backgroundColor: '#C42B2B',
+                      border: '2px solid #FFFFFF',
+                      color: '#FFFFFF',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: '#C42B2B',
                       fontFamily: 'var(--font-head)',
                       fontWeight: 700,
-                      fontSize: '15px',
+                      fontSize: '13px',
                     }}
                   >
-                    <span>{oppIdx + 1}</span>
+                    +
                   </div>
                   <div
                     style={{
@@ -1224,142 +2098,15 @@ export const TacticsScreen: React.FC = () => {
                       fontFamily: 'var(--font-head)',
                       fontWeight: 600,
                       color: '#C42B2B',
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                      padding: '1px 4px',
-                      borderRadius: '2px',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    {slotDef.role}
+                    {p.lastName}
                   </div>
                 </div>
               );
             })}
-
-          {/* Bench Strip along bottom (Horizontal row at BENCH_Y) */}
-          {benchPlayers.slice(0, 8).map(({ idx, player, primaryOvr }) => {
-            const bx = BENCH_X0 + idx * BENCH_DX;
-            const by = BENCH_Y;
-            const leftPct = (bx / 1050) * 100;
-            const topPct = (by / 790) * 100;
-            const isBenchSelected = selectedBenchIndex === idx;
-
-            return (
-              <div
-                key={idx}
-                onClick={() => handleBenchClick(idx)}
-                style={{
-                  position: 'absolute',
-                  left: `${leftPct}%`,
-                  top: `${topPct}%`,
-                  transform: 'translate(-50%, -50%)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '2px',
-                  zIndex: isBenchSelected ? 20 : 10,
-                }}
-              >
-                <div
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    backgroundColor: userClub.colors.primary,
-                    border: `2px solid ${isBenchSelected ? '#1F4FBF' : userClub.colors.secondary}`,
-                    boxShadow: isBenchSelected
-                      ? '0 0 0 3px #1F4FBF, 0 6px 12px rgba(0,0,0,0.3)'
-                      : '0 2px 4px rgba(0,0,0,0.2)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: userClub.colors.secondary,
-                    fontFamily: 'var(--font-head)',
-                    fontWeight: 700,
-                    fontSize: '13px',
-                    transform: isBenchSelected ? 'scale(1.1)' : 'scale(1)',
-                    transition: 'transform 140ms ease',
-                  }}
-                >
-                  {player?.squadNumber ?? `B${idx + 1}`}
-                </div>
-                <div
-                  style={{
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-head)',
-                    fontWeight: 600,
-                    color: 'var(--board-ink, #1E2A38)',
-                    whiteSpace: 'nowrap',
-                    maxWidth: '64px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  {player ? player.lastName : `B${idx + 1}`}
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Injured Corner (at TREAT_X) */}
-          {injuredPlayers.slice(0, 1).map((p) => {
-            const leftPct = (TREAT_X / 1050) * 100;
-            const topPct = (BENCH_Y / 790) * 100;
-
-            return (
-              <div
-                key={p.id}
-                onClick={() =>
-                  showToast(
-                    `${p.firstName} ${p.lastName} is injured: ${p.injury?.kind ?? 'Injured'} (${p.injury?.matchdaysOut ?? 1} matchdays out)`,
-                    'warning',
-                  )
-                }
-                style={{
-                  position: 'absolute',
-                  left: `${leftPct}%`,
-                  top: `${topPct}%`,
-                  transform: 'translate(-50%, -50%)',
-                  cursor: 'not-allowed',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '2px',
-                  opacity: 0.65,
-                }}
-              >
-                <div
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    backgroundColor: '#C42B2B',
-                    border: '2px solid #FFFFFF',
-                    color: '#FFFFFF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontFamily: 'var(--font-head)',
-                    fontWeight: 700,
-                    fontSize: '13px',
-                  }}
-                >
-                  +
-                </div>
-                <div
-                  style={{
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-head)',
-                    fontWeight: 600,
-                    color: '#C42B2B',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {p.lastName}
-                </div>
-              </div>
-            );
-          })}
+          </div>
         </div>
 
         {/* Marker Tray Under the Frame */}
@@ -3428,189 +4175,1588 @@ export const TacticsScreen: React.FC = () => {
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '10px',
+                    gap: '12px',
                     fontSize: '12px',
                   }}
                 >
-                  {/* Men Back */}
-                  <div>
-                    <div style={{ fontWeight: 700, marginBottom: '3px' }}>Men Back at Corners</div>
-                    <div
-                      style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '3px' }}
-                    >
-                      {([1, 2, 3] as MenBack[]).map((mb) => (
-                        <button
-                          key={mb}
-                          onClick={() =>
-                            updateUserTactics({
-                              instructions: { ...tactics.instructions, menBack: mb },
+                  {/* Sub-tab pills within the sheet */}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(5, 1fr)',
+                      gap: '4px',
+                      backgroundColor: 'var(--paper-2)',
+                      padding: '3px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--paper-rule)',
+                    }}
+                  >
+                    {[
+                      { id: 'ourCorners', label: 'Our Cnr' },
+                      { id: 'theirCorners', label: 'Opp Cnr' },
+                      { id: 'ourFK', label: 'Our FK' },
+                      { id: 'theirFK', label: 'Opp FK' },
+                      { id: 'takers', label: 'Takers' },
+                    ].map(({ id, label }) => (
+                      <button
+                        key={id}
+                        onClick={() => setSetPieceSubTab(id as any)}
+                        style={{
+                          padding: '5px 2px',
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          borderRadius: '3px',
+                          border: 'none',
+                          backgroundColor: setPieceSubTab === id ? '#1F4FBF' : 'transparent',
+                          color: setPieceSubTab === id ? '#FFFFFF' : 'var(--paper-dim)',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* TAB 1: OUR CORNERS */}
+                  {setPieceSubTab === 'ourCorners' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {/* Left/Right Side Switch */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span
+                          style={{ fontWeight: 700, fontSize: '11px', textTransform: 'uppercase' }}
+                        >
+                          Delivery Flank
+                        </span>
+                        <div style={{ display: 'flex', gap: '3px' }}>
+                          {(['left', 'right'] as const).map((side) => (
+                            <button
+                              key={side}
+                              onClick={() => setCornerSide(side)}
+                              style={{
+                                padding: '3px 8px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                borderRadius: '2px',
+                                border:
+                                  cornerSide === side
+                                    ? '1px solid #1F4FBF'
+                                    : '1px solid var(--paper-rule)',
+                                backgroundColor: cornerSide === side ? '#FFFFFF' : 'var(--paper-2)',
+                                color: cornerSide === side ? '#1F4FBF' : 'inherit',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {side === 'left' ? 'Left Corner' : 'Right Corner'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Routines 1, 2, 3 Selector */}
+                      <div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          <span style={{ fontWeight: 700, fontSize: '11px' }}>
+                            Routines (Up to 3 per side)
+                          </span>
+                          <label
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '11px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={
+                                (cornerSide === 'left'
+                                  ? setPieces.leftCorners
+                                  : setPieces.rightCorners
+                                )?.rotate ?? false
+                              }
+                              onChange={(e) =>
+                                updateSetPieces((sp) => {
+                                  const side =
+                                    cornerSide === 'left' ? sp.leftCorners : sp.rightCorners;
+                                  side.rotate = e.target.checked;
+                                  return sp;
+                                })
+                              }
+                            />
+                            <span>Rotate in turn</span>
+                          </label>
+                        </div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '4px',
+                          }}
+                        >
+                          {[0, 1, 2].map((idx) => {
+                            const r = (
+                              cornerSide === 'left' ? setPieces.leftCorners : setPieces.rightCorners
+                            )?.routines[idx];
+                            const isCur = routineIdx === idx;
+                            return (
+                              <button
+                                key={idx}
+                                onClick={() => setRoutineIdx(idx)}
+                                style={{
+                                  padding: '6px 4px',
+                                  fontSize: '11px',
+                                  borderRadius: '3px',
+                                  border: isCur
+                                    ? '1.5px solid #1F4FBF'
+                                    : '1px solid var(--paper-rule)',
+                                  backgroundColor: isCur ? '#FFFFFF' : 'var(--paper-2)',
+                                  color: isCur ? '#1F4FBF' : 'inherit',
+                                  cursor: 'pointer',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontWeight: 700,
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  }}
+                                >
+                                  {r?.name ?? `Routine ${idx + 1}`}
+                                </div>
+                                <div style={{ fontSize: '9.5px', color: 'var(--paper-dim)' }}>
+                                  Fam: {r?.familiarity ?? 70}%
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Routine Rename & Familiarity Bar */}
+                      <div
+                        style={{
+                          backgroundColor: 'var(--paper-2)',
+                          padding: '8px',
+                          borderRadius: '3px',
+                          border: '1px solid var(--paper-rule)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '6px',
+                          }}
+                        >
+                          {editingRoutineName !== null ? (
+                            <div style={{ display: 'flex', gap: '4px', width: '100%' }}>
+                              <input
+                                value={renamingText}
+                                onChange={(e) => setRenamingText(e.target.value)}
+                                style={{
+                                  flex: 1,
+                                  padding: '3px 6px',
+                                  fontSize: '11px',
+                                  borderRadius: '2px',
+                                  border: '1px solid var(--paper-rule)',
+                                }}
+                              />
+                              <button
+                                onClick={() => {
+                                  if (renamingText.trim()) {
+                                    updateSetPieces((sp) => {
+                                      const side =
+                                        cornerSide === 'left' ? sp.leftCorners : sp.rightCorners;
+                                      const r = side?.routines[routineIdx];
+                                      if (r) r.name = renamingText.trim();
+                                      return sp;
+                                    });
+                                  }
+                                  setEditingRoutineName(null);
+                                }}
+                                style={{
+                                  padding: '3px 8px',
+                                  fontSize: '10px',
+                                  backgroundColor: '#1F4FBF',
+                                  color: '#FFFFFF',
+                                  border: 'none',
+                                  borderRadius: '2px',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={() => setEditingRoutineName(null)}
+                                style={{
+                                  padding: '3px 8px',
+                                  fontSize: '10px',
+                                  backgroundColor: 'var(--paper-rule)',
+                                  border: 'none',
+                                  borderRadius: '2px',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <span style={{ fontWeight: 700, fontSize: '12px' }}>
+                                {currentRoutine.name}
+                              </span>
+                              <button
+                                onClick={() => {
+                                  setEditingRoutineName(currentRoutine.name);
+                                  setRenamingText(currentRoutine.name);
+                                }}
+                                style={{
+                                  fontSize: '10.5px',
+                                  color: '#1F4FBF',
+                                  background: 'none',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  textDecoration: 'underline',
+                                }}
+                              >
+                                Rename
+                              </button>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Familiarity Bar */}
+                        <div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              fontSize: '10px',
+                              color: 'var(--paper-dim)',
+                              marginBottom: '2px',
+                            }}
+                          >
+                            <span>Familiarity (Sharpness)</span>
+                            <span
+                              style={{
+                                fontWeight: 700,
+                                color: currentRoutine.familiarity >= 70 ? '#1E7B3C' : '#C42B2B',
+                              }}
+                            >
+                              {currentRoutine.familiarity}/100
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              height: '6px',
+                              backgroundColor: 'var(--paper-rule)',
+                              borderRadius: '3px',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${currentRoutine.familiarity}%`,
+                                height: '100%',
+                                backgroundColor:
+                                  currentRoutine.familiarity >= 70 ? '#1E7B3C' : '#D97706',
+                              }}
+                            />
+                          </div>
+                          {currentRoutine.familiarity < 70 && (
+                            <div style={{ color: '#D97706', fontSize: '10px', marginTop: '3px' }}>
+                              Practise it in training (Set-piece practice)
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Routine Target Selector */}
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: '3px' }}>Target Zone</div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(5, 1fr)',
+                            gap: '3px',
+                          }}
+                        >
+                          {(['Near', 'Far', 'Spot', 'Short', 'Mixed'] as CornerTarget[]).map(
+                            (tgt) => (
+                              <button
+                                key={tgt}
+                                onClick={() =>
+                                  updateSetPieces((sp) => {
+                                    const side =
+                                      cornerSide === 'left' ? sp.leftCorners : sp.rightCorners;
+                                    const r = side?.routines[routineIdx];
+                                    if (r) r.target = tgt;
+                                    return sp;
+                                  })
+                                }
+                                style={{
+                                  padding: '5px 2px',
+                                  fontSize: '10.5px',
+                                  fontWeight: 600,
+                                  borderRadius: '2px',
+                                  border:
+                                    currentRoutine.target === tgt
+                                      ? '1.5px solid #1F4FBF'
+                                      : '1px solid var(--paper-rule)',
+                                  backgroundColor:
+                                    currentRoutine.target === tgt ? '#FFFFFF' : 'var(--paper-2)',
+                                  color: currentRoutine.target === tgt ? '#1F4FBF' : 'inherit',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                {tgt}
+                              </button>
+                            ),
+                          )}
+                        </div>
+                        {/* Target Gain & Cost line */}
+                        <div
+                          style={{
+                            marginTop: '4px',
+                            fontSize: '10.5px',
+                            padding: '4px 6px',
+                            backgroundColor: 'var(--paper-2)',
+                            borderRadius: '2px',
+                          }}
+                        >
+                          {currentRoutine.target === 'Near' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Near post flick-on/header (weight ×2)
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Narrower angle; keeper cuts out misjudged crosses
+                              </div>
+                            </>
+                          )}
+                          {currentRoutine.target === 'Far' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Target man mismatch at back post (weight ×2)
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Longer flight time; lower conversion on direct headers
+                              </div>
+                            </>
+                          )}
+                          {currentRoutine.target === 'Spot' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Won headers use BOX_CENTRAL 30% of time, +3% on target
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Congested spot; header duel −0.05
+                              </div>
+                            </>
+                          )}
+                          {currentRoutine.target === 'Short' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Better crossing angle (+0.3 progress)
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Takes an extra attacker outside the box
+                              </div>
+                            </>
+                          )}
+                          {currentRoutine.target === 'Mixed' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Varied delivery keeps defenders guessing
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Less tailored to specific aerial strengths
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Routine Swing Selector */}
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: '3px' }}>Delivery Swing</div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '3px',
+                          }}
+                        >
+                          {(['Auto', 'In', 'Out'] as CornerSwingChoice[]).map((sw) => (
+                            <button
+                              key={sw}
+                              onClick={() =>
+                                updateSetPieces((sp) => {
+                                  const side =
+                                    cornerSide === 'left' ? sp.leftCorners : sp.rightCorners;
+                                  const r = side?.routines[routineIdx];
+                                  if (r) r.swing = sw;
+                                  return sp;
+                                })
+                              }
+                              style={{
+                                padding: '5px 4px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                borderRadius: '2px',
+                                border:
+                                  currentRoutine.swing === sw
+                                    ? '1.5px solid #1F4FBF'
+                                    : '1px solid var(--paper-rule)',
+                                backgroundColor:
+                                  currentRoutine.swing === sw ? '#FFFFFF' : 'var(--paper-2)',
+                                color: currentRoutine.swing === sw ? '#1F4FBF' : 'inherit',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {sw === 'Auto'
+                                ? 'Auto (Foot)'
+                                : sw === 'In'
+                                  ? 'Inswinger'
+                                  : 'Outswinger'}
+                            </button>
+                          ))}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: '4px',
+                            fontSize: '10.5px',
+                            padding: '4px 6px',
+                            backgroundColor: 'var(--paper-2)',
+                            borderRadius: '2px',
+                          }}
+                        >
+                          {currentRoutine.swing === 'Auto' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Natural curl based on taker footedness
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Predictable curl for the defending keeper
+                              </div>
+                            </>
+                          )}
+                          {currentRoutine.swing === 'In' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Dangerous curve towards goal into six-yard box
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Delivery penalty (−0.08) if taker foot is mismatched
+                              </div>
+                            </>
+                          )}
+                          {currentRoutine.swing === 'Out' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Curves away from keeper to arriving runners
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Delivery penalty (−0.08) if taker foot is mismatched
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Auto Jobs Reset */}
+                      <button
+                        onClick={resetToAutoJobs}
+                        style={{
+                          padding: '6px 8px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          backgroundColor: '#1F4FBF',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '3px',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                        }}
+                      >
+                        Reset to Auto Jobs (§13.20.1)
+                      </button>
+                    </div>
+                  )}
+
+                  {/* TAB 2: OPPOSITION CORNERS */}
+                  {setPieceSubTab === 'theirCorners' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {/* Marking Style */}
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: '3px' }}>Marking Style</div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '3px',
+                          }}
+                        >
+                          {(['Zonal', 'Man-mark', 'Mixed'] as CornersAgainst[]).map((m) => (
+                            <button
+                              key={m}
+                              onClick={() =>
+                                updateSetPieces((sp) => {
+                                  sp.defending.cornersAgainst = m;
+                                  return sp;
+                                })
+                              }
+                              style={{
+                                padding: '5px 4px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                borderRadius: '2px',
+                                border:
+                                  setPieces.defending.cornersAgainst === m
+                                    ? '1.5px solid #1F4FBF'
+                                    : '1px solid var(--paper-rule)',
+                                backgroundColor:
+                                  setPieces.defending.cornersAgainst === m
+                                    ? '#FFFFFF'
+                                    : 'var(--paper-2)',
+                                color:
+                                  setPieces.defending.cornersAgainst === m ? '#1F4FBF' : 'inherit',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {m === 'ManMark' ? 'Man-mark' : m}
+                            </button>
+                          ))}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: '4px',
+                            fontSize: '10.5px',
+                            padding: '4px 6px',
+                            backgroundColor: 'var(--paper-2)',
+                            borderRadius: '2px',
+                          }}
+                        >
+                          {setPieces.defending.cornersAgainst === 'Zonal' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Guards danger zones; strong against static crosses
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Vulnerable to aggressive runners attacking space
+                              </div>
+                            </>
+                          )}
+                          {setPieces.defending.cornersAgainst === 'ManMark' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Tight coverage on individual threats (−0.15 duel)
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Defenders get dragged out of position by decoy runs
+                              </div>
+                            </>
+                          )}
+                          {setPieces.defending.cornersAgainst === 'Mixed' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Balance of zonal coverage and marking key men
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Moderate strengths in both systems
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Mark Main Man */}
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: '3px' }}>
+                          Mark Their Main Man
+                        </div>
+                        <select
+                          value={setPieces.defending.markMainMan ?? ''}
+                          onChange={(e) =>
+                            updateSetPieces((sp) => {
+                              sp.defending.markMainMan = e.target.value || null;
+                              return sp;
                             })
                           }
                           style={{
-                            padding: '5px 4px',
+                            width: '100%',
+                            padding: '4px',
+                            borderRadius: '2px',
+                            border: '1px solid var(--paper-rule)',
+                            backgroundColor: 'var(--paper-2)',
                             fontSize: '11px',
-                            fontWeight: 600,
-                            borderRadius: '2px',
-                            border:
-                              tactics.instructions.menBack === mb
-                                ? '1.5px solid #1F4FBF'
-                                : '1px solid var(--paper-rule)',
-                            backgroundColor:
-                              tactics.instructions.menBack === mb ? '#FFFFFF' : 'var(--paper-2)',
-                            color: tactics.instructions.menBack === mb ? '#1F4FBF' : 'inherit',
-                            cursor: 'pointer',
                           }}
                         >
-                          {mb} Back
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                          <option value="">Auto (Our Best Aerial Defender)</option>
+                          {starters
+                            .filter((s) => s.player && s.slotDef.slot > 0)
+                            .map(({ player }) => (
+                              <option key={player!.id} value={player!.id}>
+                                {player!.firstName} {player!.lastName} (H:{' '}
+                                {player!.attributes.heading}, S: {player!.attributes.strength})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
 
-                  {/* Posts */}
-                  <div>
-                    <div style={{ fontWeight: 700, marginBottom: '3px' }}>Men on Posts</div>
-                    <div
-                      style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '3px' }}
-                    >
-                      {(['None', 'NearPost', 'FarPost', 'Both'] as PostMen[]).map((pm) => (
-                        <button
-                          key={pm}
-                          onClick={() =>
-                            updateUserTactics({
-                              instructions: { ...tactics.instructions, postMen: pm },
-                            })
-                          }
+                      {/* Men on Posts */}
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: '3px' }}>Men on Posts</div>
+                        <div
                           style={{
-                            padding: '5px 2px',
-                            fontSize: '10px',
-                            fontWeight: 600,
-                            borderRadius: '2px',
-                            border:
-                              tactics.instructions.postMen === pm
-                                ? '1.5px solid #1F4FBF'
-                                : '1px solid var(--paper-rule)',
-                            backgroundColor:
-                              tactics.instructions.postMen === pm ? '#FFFFFF' : 'var(--paper-2)',
-                            color: tactics.instructions.postMen === pm ? '#1F4FBF' : 'inherit',
-                            cursor: 'pointer',
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '3px',
                           }}
                         >
-                          {pm}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                          {(['None', 'Near', 'Both'] as PostMen[]).map((pm) => (
+                            <button
+                              key={pm}
+                              onClick={() => {
+                                updateUserTactics({
+                                  instructions: { ...tactics.instructions, postMen: pm },
+                                });
+                              }}
+                              style={{
+                                padding: '5px 2px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                borderRadius: '2px',
+                                border:
+                                  tactics.instructions.postMen === pm
+                                    ? '1.5px solid #1F4FBF'
+                                    : '1px solid var(--paper-rule)',
+                                backgroundColor:
+                                  tactics.instructions.postMen === pm
+                                    ? '#FFFFFF'
+                                    : 'var(--paper-2)',
+                                color: tactics.instructions.postMen === pm ? '#1F4FBF' : 'inherit',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {pm === 'None' ? 'None' : pm === 'Near' ? 'Near Post' : 'Both Posts'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
-                  {/* Set-Piece Takers */}
-                  <div style={{ borderTop: '1px solid var(--paper-rule)', paddingTop: '8px' }}>
-                    <div style={{ fontWeight: 700, marginBottom: '6px' }}>Takers</div>
+                      {/* Edge Guard */}
+                      <div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <span style={{ fontWeight: 700 }}>Edge Guard (D)</span>
+                          <button
+                            onClick={() =>
+                              updateSetPieces((sp) => {
+                                sp.defending.edgeGuard = !sp.defending.edgeGuard;
+                                return sp;
+                              })
+                            }
+                            style={{
+                              padding: '4px 10px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              borderRadius: '2px',
+                              border: setPieces.defending.edgeGuard
+                                ? '1.5px solid #1F4FBF'
+                                : '1px solid var(--paper-rule)',
+                              backgroundColor: setPieces.defending.edgeGuard
+                                ? '#FFFFFF'
+                                : 'var(--paper-2)',
+                              color: setPieces.defending.edgeGuard ? '#1F4FBF' : 'inherit',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {setPieces.defending.edgeGuard ? 'Guard D (1 man)' : 'None (0)'}
+                          </button>
+                        </div>
+                        <div
+                          style={{
+                            marginTop: '4px',
+                            fontSize: '10.5px',
+                            padding: '4px 6px',
+                            backgroundColor: 'var(--paper-2)',
+                            borderRadius: '2px',
+                          }}
+                        >
+                          {setPieces.defending.edgeGuard ? (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Opponent second balls −10%, long shot xG −0.02
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: One fewer defender in box; opp header duel +0.04
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Extra body packed inside the penalty box
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Opponent wins second balls outside the D
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Forwards Up */}
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: '3px' }}>Forwards Up</div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '3px',
+                          }}
+                        >
+                          {([0, 1, 2] as ForwardsUp[]).map((f) => (
+                            <button
+                              key={f}
+                              onClick={() =>
+                                updateSetPieces((sp) => {
+                                  sp.defending.forwardsUp = f;
+                                  return sp;
+                                })
+                              }
+                              style={{
+                                padding: '5px 4px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                borderRadius: '2px',
+                                border:
+                                  setPieces.defending.forwardsUp === f
+                                    ? '1.5px solid #1F4FBF'
+                                    : '1px solid var(--paper-rule)',
+                                backgroundColor:
+                                  setPieces.defending.forwardsUp === f
+                                    ? '#FFFFFF'
+                                    : 'var(--paper-2)',
+                                color: setPieces.defending.forwardsUp === f ? '#1F4FBF' : 'inherit',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {f === 0
+                                ? '0 (Drop all)'
+                                : f === 1
+                                  ? '1 Up (Default)'
+                                  : '2 Up (Counter)'}
+                            </button>
+                          ))}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: '4px',
+                            fontSize: '10.5px',
+                            padding: '4px 6px',
+                            backgroundColor: 'var(--paper-2)',
+                            borderRadius: '2px',
+                          }}
+                        >
+                          {setPieces.defending.forwardsUp === 0 && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Maximum box packing; opp header duel −0.05
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Clearances never trigger a Counter phase
+                              </div>
+                            </>
+                          )}
+                          {setPieces.defending.forwardsUp === 1 && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Balanced defensive shape with outlet forward
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Standard counter-attack odds
+                              </div>
+                            </>
+                          )}
+                          {setPieces.defending.forwardsUp === 2 && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: 35% of won clearances trigger instant Counter phase
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Opponent header duel +0.06 in our box
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 3: OUR FREE KICKS */}
+                  {setPieceSubTab === 'ourFK' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {/* Central (<30m) */}
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: '3px' }}>
+                          Central (&lt;30m)
+                        </div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '3px',
+                          }}
+                        >
+                          {(
+                            [
+                              'Shoot',
+                              'CrossNear',
+                              'CrossFar',
+                              'Short',
+                              'Dummy',
+                              'Mixed',
+                            ] as CentralFreeKickOption[]
+                          ).map((opt) => (
+                            <button
+                              key={opt}
+                              onClick={() =>
+                                updateSetPieces((sp) => {
+                                  sp.freeKicks.central = opt;
+                                  return sp;
+                                })
+                              }
+                              style={{
+                                padding: '4px 2px',
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                borderRadius: '2px',
+                                border:
+                                  setPieces.freeKicks.central === opt
+                                    ? '1.5px solid #1F4FBF'
+                                    : '1px solid var(--paper-rule)',
+                                backgroundColor:
+                                  setPieces.freeKicks.central === opt
+                                    ? '#FFFFFF'
+                                    : 'var(--paper-2)',
+                                color: setPieces.freeKicks.central === opt ? '#1F4FBF' : 'inherit',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: '4px',
+                            fontSize: '10.5px',
+                            padding: '4px 6px',
+                            backgroundColor: 'var(--paper-2)',
+                            borderRadius: '2px',
+                          }}
+                        >
+                          {setPieces.freeKicks.central === 'Dummy' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: DIRECT_FK xG +0.02, wall block −0.05 (2nd taker strikes)
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: 20% mistimed dummy results in recycle with no shot
+                              </div>
+                            </>
+                          )}
+                          {setPieces.freeKicks.central === 'Shoot' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Direct shot at goal by best set-piece specialist
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Tough to beat a well-positioned wall
+                              </div>
+                            </>
+                          )}
+                          {setPieces.freeKicks.central === 'Short' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Safe retention +0.3 progress towards box
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Passes up direct shooting opportunity
+                              </div>
+                            </>
+                          )}
+                          {setPieces.freeKicks.central === 'CrossNear' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Cross delivery to near post aerial runners
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Keeper positioned to cut it out
+                              </div>
+                            </>
+                          )}
+                          {setPieces.freeKicks.central === 'CrossFar' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Cross delivery to back post mismatch
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Lower conversion angle on header
+                              </div>
+                            </>
+                          )}
+                          {setPieces.freeKicks.central === 'Mixed' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Taker decides based on wall and runners
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>Costs: Unpredictable execution</div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Wide */}
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: '3px' }}>Wide Free Kicks</div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '3px',
+                          }}
+                        >
+                          {(
+                            [
+                              'CrossNear',
+                              'CrossFar',
+                              'ToTheSpot',
+                              'Short',
+                              'Mixed',
+                            ] as WideFreeKickOption[]
+                          ).map((opt) => (
+                            <button
+                              key={opt}
+                              onClick={() =>
+                                updateSetPieces((sp) => {
+                                  sp.freeKicks.wide = opt;
+                                  return sp;
+                                })
+                              }
+                              style={{
+                                padding: '4px 2px',
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                borderRadius: '2px',
+                                border:
+                                  setPieces.freeKicks.wide === opt
+                                    ? '1.5px solid #1F4FBF'
+                                    : '1px solid var(--paper-rule)',
+                                backgroundColor:
+                                  setPieces.freeKicks.wide === opt ? '#FFFFFF' : 'var(--paper-2)',
+                                color: setPieces.freeKicks.wide === opt ? '#1F4FBF' : 'inherit',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Deep */}
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: '3px' }}>Deep Free Kicks</div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '3px',
+                          }}
+                        >
+                          {(['Quick', 'Long', 'Keep'] as DeepFreeKickOption[]).map((opt) => (
+                            <button
+                              key={opt}
+                              onClick={() =>
+                                updateSetPieces((sp) => {
+                                  sp.freeKicks.deep = opt;
+                                  return sp;
+                                })
+                              }
+                              style={{
+                                padding: '4px 2px',
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                borderRadius: '2px',
+                                border:
+                                  setPieces.freeKicks.deep === opt
+                                    ? '1.5px solid #1F4FBF'
+                                    : '1px solid var(--paper-rule)',
+                                backgroundColor:
+                                  setPieces.freeKicks.deep === opt ? '#FFFFFF' : 'var(--paper-2)',
+                                color: setPieces.freeKicks.deep === opt ? '#1F4FBF' : 'inherit',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: '4px',
+                            fontSize: '10.5px',
+                            padding: '4px 6px',
+                            backgroundColor: 'var(--paper-2)',
+                            borderRadius: '2px',
+                          }}
+                        >
+                          {setPieces.freeKicks.deep === 'Quick' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>Gives: Next step progress +0.3</div>
+                              <div style={{ color: '#C42B2B' }}>Costs: 15% are rushed and lost</div>
+                            </>
+                          )}
+                          {setPieces.freeKicks.deep === 'Long' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Cross delivery from deep to best aerial target
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Deep delivery context penalty (−0.2)
+                              </div>
+                            </>
+                          )}
+                          {setPieces.freeKicks.deep === 'Keep' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Safely retains possession and recycles play
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: No immediate territorial gain
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 4: OPPOSITION FREE KICKS */}
+                  {setPieceSubTab === 'theirFK' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {/* Wall Size */}
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: '3px' }}>Defending Wall</div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '3px',
+                          }}
+                        >
+                          {(['Auto', 'Small', 'Big'] as WallOption[]).map((w) => (
+                            <button
+                              key={w}
+                              onClick={() =>
+                                updateSetPieces((sp) => {
+                                  sp.defending.wall = w;
+                                  return sp;
+                                })
+                              }
+                              style={{
+                                padding: '5px 4px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                borderRadius: '2px',
+                                border:
+                                  setPieces.defending.wall === w
+                                    ? '1.5px solid #1F4FBF'
+                                    : '1px solid var(--paper-rule)',
+                                backgroundColor:
+                                  setPieces.defending.wall === w ? '#FFFFFF' : 'var(--paper-2)',
+                                color: setPieces.defending.wall === w ? '#1F4FBF' : 'inherit',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {w === 'Auto'
+                                ? 'Auto (3-5)'
+                                : w === 'Small'
+                                  ? 'Small (2)'
+                                  : 'Big (+1)'}
+                            </button>
+                          ))}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: '4px',
+                            fontSize: '10.5px',
+                            padding: '4px 6px',
+                            backgroundColor: 'var(--paper-2)',
+                            borderRadius: '2px',
+                          }}
+                        >
+                          {setPieces.defending.wall === 'Auto' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Standard wall based on distance (20% block)
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Normal cross duel dynamics
+                              </div>
+                            </>
+                          )}
+                          {setPieces.defending.wall === 'Small' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: More markers in box; opp cross header duel −0.05
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Block chance drops to 12%, xG +0.01
+                              </div>
+                            </>
+                          )}
+                          {setPieces.defending.wall === 'Big' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Higher direct wall block chance (26%)
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Fewer markers in box; opp header duel +0.05
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Wide FK Line Height */}
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: '3px' }}>
+                          Wide Free Kick Line Height
+                        </div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '3px',
+                          }}
+                        >
+                          {(['High', 'Normal', 'Deep'] as LineHeightOption[]).map((lh) => (
+                            <button
+                              key={lh}
+                              onClick={() =>
+                                updateSetPieces((sp) => {
+                                  sp.defending.lineHeight = lh;
+                                  return sp;
+                                })
+                              }
+                              style={{
+                                padding: '5px 4px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                borderRadius: '2px',
+                                border:
+                                  setPieces.defending.lineHeight === lh
+                                    ? '1.5px solid #1F4FBF'
+                                    : '1px solid var(--paper-rule)',
+                                backgroundColor:
+                                  setPieces.defending.lineHeight === lh
+                                    ? '#FFFFFF'
+                                    : 'var(--paper-2)',
+                                color:
+                                  setPieces.defending.lineHeight === lh ? '#1F4FBF' : 'inherit',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {lh}
+                            </button>
+                          ))}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: '4px',
+                            fontSize: '10.5px',
+                            padding: '4px 6px',
+                            backgroundColor: 'var(--paper-2)',
+                            borderRadius: '2px',
+                          }}
+                        >
+                          {setPieces.defending.lineHeight === 'High' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: 20% of deliveries caught offside
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: When beaten, opponent header xG +0.03
+                              </div>
+                            </>
+                          )}
+                          {setPieces.defending.lineHeight === 'Normal' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Balanced positioning and line depth
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Standard aerial duel odds
+                              </div>
+                            </>
+                          )}
+                          {setPieces.defending.lineHeight === 'Deep' && (
+                            <>
+                              <div style={{ color: '#1E7B3C' }}>
+                                Gives: Goalkeeper claim chance +0.04
+                              </div>
+                              <div style={{ color: '#C42B2B' }}>
+                                Costs: Opponent second balls to attackers +10%
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 5: TAKERS */}
+                  {setPieceSubTab === 'takers' && (
                     <div
                       style={{
-                        display: 'grid',
-                        gridTemplateColumns: '80px 1fr',
-                        gap: '6px',
-                        alignItems: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
                         fontSize: '11.5px',
                       }}
                     >
-                      <span style={{ color: 'var(--paper-dim)' }}>Captain</span>
-                      <select
-                        value={tactics.captain ?? ''}
-                        onChange={(e) => updateUserTactics({ captain: e.target.value || null })}
-                        style={{
-                          padding: '3px',
-                          borderRadius: '2px',
-                          border: '1px solid var(--paper-rule)',
-                          backgroundColor: 'var(--paper-2)',
-                        }}
-                      >
-                        <option value="">Select Captain</option>
-                        {starters
-                          .filter((s) => s.player)
-                          .map(({ player }) => (
-                            <option key={player!.id} value={player!.id}>
-                              {player!.firstName} {player!.lastName}
-                            </option>
-                          ))}
-                      </select>
+                      <div style={{ fontWeight: 700, marginBottom: '2px' }}>
+                        Specialist Takers (§13.20.3)
+                      </div>
 
-                      <span style={{ color: 'var(--paper-dim)' }}>Penalties</span>
-                      <select
-                        value={tactics.takers?.penalty ?? ''}
-                        onChange={(e) =>
-                          updateUserTactics({
-                            takers: { ...tactics.takers, penalty: e.target.value || null },
-                          })
-                        }
+                      {/* Left Corner */}
+                      <div
                         style={{
-                          padding: '3px',
-                          borderRadius: '2px',
-                          border: '1px solid var(--paper-rule)',
-                          backgroundColor: 'var(--paper-2)',
+                          display: 'grid',
+                          gridTemplateColumns: '90px 1fr',
+                          gap: '6px',
+                          alignItems: 'center',
                         }}
                       >
-                        <option value="">Select Penalty Taker</option>
-                        {starters
-                          .filter((s) => s.player)
-                          .map(({ player }) => (
-                            <option key={player!.id} value={player!.id}>
-                              {player!.firstName} {player!.lastName}
-                            </option>
-                          ))}
-                      </select>
+                        <span style={{ color: 'var(--paper-dim)' }}>Left Corner</span>
+                        <select
+                          value={tactics.takers?.leftCorner ?? ''}
+                          onChange={(e) =>
+                            updateUserTactics({
+                              takers: { ...tactics.takers, leftCorner: e.target.value || null },
+                            })
+                          }
+                          style={{
+                            padding: '3px',
+                            borderRadius: '2px',
+                            border: '1px solid var(--paper-rule)',
+                            backgroundColor: 'var(--paper-2)',
+                          }}
+                        >
+                          <option value="">Auto (Right-footed inswinger)</option>
+                          {starters
+                            .filter((s) => s.player)
+                            .map(({ player }) => (
+                              <option key={player!.id} value={player!.id}>
+                                {player!.firstName} {player!.lastName} ({player!.foot ?? 'Right'},
+                                SP: {player!.attributes.setPieces})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
 
-                      <span style={{ color: 'var(--paper-dim)' }}>Free kicks</span>
-                      <select
-                        value={tactics.takers?.freeKick ?? ''}
-                        onChange={(e) =>
-                          updateUserTactics({
-                            takers: { ...tactics.takers, freeKick: e.target.value || null },
-                          })
-                        }
+                      {/* Right Corner */}
+                      <div
                         style={{
-                          padding: '3px',
-                          borderRadius: '2px',
-                          border: '1px solid var(--paper-rule)',
-                          backgroundColor: 'var(--paper-2)',
+                          display: 'grid',
+                          gridTemplateColumns: '90px 1fr',
+                          gap: '6px',
+                          alignItems: 'center',
                         }}
                       >
-                        <option value="">Select Free Kick Taker</option>
-                        {starters
-                          .filter((s) => s.player)
-                          .map(({ player }) => (
-                            <option key={player!.id} value={player!.id}>
-                              {player!.firstName} {player!.lastName}
-                            </option>
-                          ))}
-                      </select>
+                        <span style={{ color: 'var(--paper-dim)' }}>Right Corner</span>
+                        <select
+                          value={tactics.takers?.rightCorner ?? ''}
+                          onChange={(e) =>
+                            updateUserTactics({
+                              takers: { ...tactics.takers, rightCorner: e.target.value || null },
+                            })
+                          }
+                          style={{
+                            padding: '3px',
+                            borderRadius: '2px',
+                            border: '1px solid var(--paper-rule)',
+                            backgroundColor: 'var(--paper-2)',
+                          }}
+                        >
+                          <option value="">Auto (Left-footed inswinger)</option>
+                          {starters
+                            .filter((s) => s.player)
+                            .map(({ player }) => (
+                              <option key={player!.id} value={player!.id}>
+                                {player!.firstName} {player!.lastName} ({player!.foot ?? 'Right'},
+                                SP: {player!.attributes.setPieces})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
 
-                      <span style={{ color: 'var(--paper-dim)' }}>Corners</span>
-                      <select
-                        value={tactics.takers?.corner ?? ''}
-                        onChange={(e) =>
-                          updateUserTactics({
-                            takers: { ...tactics.takers, corner: e.target.value || null },
-                          })
-                        }
+                      {/* Direct Free Kick */}
+                      <div
                         style={{
-                          padding: '3px',
-                          borderRadius: '2px',
-                          border: '1px solid var(--paper-rule)',
-                          backgroundColor: 'var(--paper-2)',
+                          display: 'grid',
+                          gridTemplateColumns: '90px 1fr',
+                          gap: '6px',
+                          alignItems: 'center',
                         }}
                       >
-                        <option value="">Select Corner Taker</option>
-                        {starters
-                          .filter((s) => s.player)
-                          .map(({ player }) => (
-                            <option key={player!.id} value={player!.id}>
-                              {player!.firstName} {player!.lastName}
-                            </option>
-                          ))}
-                      </select>
+                        <span style={{ color: 'var(--paper-dim)' }}>Direct FK</span>
+                        <select
+                          value={tactics.takers?.directFreeKick ?? tactics.takers?.freeKick ?? ''}
+                          onChange={(e) =>
+                            updateUserTactics({
+                              takers: {
+                                ...tactics.takers,
+                                directFreeKick: e.target.value || null,
+                                freeKick: e.target.value || null,
+                              },
+                            })
+                          }
+                          style={{
+                            padding: '3px',
+                            borderRadius: '2px',
+                            border: '1px solid var(--paper-rule)',
+                            backgroundColor: 'var(--paper-2)',
+                          }}
+                        >
+                          <option value="">Auto (Best Set Pieces)</option>
+                          {starters
+                            .filter((s) => s.player)
+                            .map(({ player }) => (
+                              <option key={player!.id} value={player!.id}>
+                                {player!.firstName} {player!.lastName} (SP:{' '}
+                                {player!.attributes.setPieces})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+
+                      {/* Wide Free Kick */}
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '90px 1fr',
+                          gap: '6px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span style={{ color: 'var(--paper-dim)' }}>Wide FK</span>
+                        <select
+                          value={tactics.takers?.wideFreeKick ?? ''}
+                          onChange={(e) =>
+                            updateUserTactics({
+                              takers: { ...tactics.takers, wideFreeKick: e.target.value || null },
+                            })
+                          }
+                          style={{
+                            padding: '3px',
+                            borderRadius: '2px',
+                            border: '1px solid var(--paper-rule)',
+                            backgroundColor: 'var(--paper-2)',
+                          }}
+                        >
+                          <option value="">Auto (Best Crossing/SP)</option>
+                          {starters
+                            .filter((s) => s.player)
+                            .map(({ player }) => (
+                              <option key={player!.id} value={player!.id}>
+                                {player!.firstName} {player!.lastName} (SP:{' '}
+                                {player!.attributes.setPieces})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+
+                      {/* Penalty 1 */}
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '90px 1fr',
+                          gap: '6px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span style={{ color: 'var(--paper-dim)' }}>Penalty 1st</span>
+                        <select
+                          value={tactics.takers?.penalties?.[0] ?? tactics.takers?.penalty ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value || null;
+                            const ord = [...(tactics.takers?.penalties ?? [null, null, null])];
+                            ord[0] = val;
+                            updateUserTactics({
+                              takers: { ...tactics.takers, penalty: val, penalties: ord },
+                            });
+                          }}
+                          style={{
+                            padding: '3px',
+                            borderRadius: '2px',
+                            border: '1px solid var(--paper-rule)',
+                            backgroundColor: 'var(--paper-2)',
+                          }}
+                        >
+                          <option value="">Auto (Best Penalty/Finishing)</option>
+                          {starters
+                            .filter((s) => s.player)
+                            .map(({ player }) => (
+                              <option key={player!.id} value={player!.id}>
+                                {player!.firstName} {player!.lastName} (Fin:{' '}
+                                {player!.attributes.finishing})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+
+                      {/* Penalty 2 */}
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '90px 1fr',
+                          gap: '6px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span style={{ color: 'var(--paper-dim)' }}>Penalty 2nd</span>
+                        <select
+                          value={tactics.takers?.penalties?.[1] ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value || null;
+                            const ord = [...(tactics.takers?.penalties ?? [null, null, null])];
+                            ord[1] = val;
+                            updateUserTactics({
+                              takers: { ...tactics.takers, penalties: ord },
+                            });
+                          }}
+                          style={{
+                            padding: '3px',
+                            borderRadius: '2px',
+                            border: '1px solid var(--paper-rule)',
+                            backgroundColor: 'var(--paper-2)',
+                          }}
+                        >
+                          <option value="">Auto (2nd Best)</option>
+                          {starters
+                            .filter((s) => s.player)
+                            .map(({ player }) => (
+                              <option key={player!.id} value={player!.id}>
+                                {player!.firstName} {player!.lastName} (Fin:{' '}
+                                {player!.attributes.finishing})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+
+                      {/* Penalty 3 */}
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '90px 1fr',
+                          gap: '6px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span style={{ color: 'var(--paper-dim)' }}>Penalty 3rd</span>
+                        <select
+                          value={tactics.takers?.penalties?.[2] ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value || null;
+                            const ord = [...(tactics.takers?.penalties ?? [null, null, null])];
+                            ord[2] = val;
+                            updateUserTactics({
+                              takers: { ...tactics.takers, penalties: ord },
+                            });
+                          }}
+                          style={{
+                            padding: '3px',
+                            borderRadius: '2px',
+                            border: '1px solid var(--paper-rule)',
+                            backgroundColor: 'var(--paper-2)',
+                          }}
+                        >
+                          <option value="">Auto (3rd Best)</option>
+                          {starters
+                            .filter((s) => s.player)
+                            .map(({ player }) => (
+                              <option key={player!.id} value={player!.id}>
+                                {player!.firstName} {player!.lastName} (Fin:{' '}
+                                {player!.attributes.finishing})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+
+                      {/* Long Throw */}
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '90px 1fr',
+                          gap: '6px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span style={{ color: 'var(--paper-dim)' }}>Long Throw</span>
+                        <select
+                          value={tactics.takers?.longThrow ?? ''}
+                          onChange={(e) =>
+                            updateUserTactics({
+                              takers: { ...tactics.takers, longThrow: e.target.value || null },
+                            })
+                          }
+                          style={{
+                            padding: '3px',
+                            borderRadius: '2px',
+                            border: '1px solid var(--paper-rule)',
+                            backgroundColor: 'var(--paper-2)',
+                          }}
+                        >
+                          <option value="">Auto (Best Strength/FBs)</option>
+                          {starters
+                            .filter((s) => s.player)
+                            .map(({ player }) => (
+                              <option key={player!.id} value={player!.id}>
+                                {player!.firstName} {player!.lastName} (Str:{' '}
+                                {player!.attributes.strength})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>

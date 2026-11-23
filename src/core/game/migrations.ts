@@ -4,6 +4,7 @@ import { SAVE_VERSION } from '@/config/constants';
 import { FORMATIONS } from '@/config/formations';
 import { getDefaultRoleForPos } from '@/config/roles';
 import { createStartingFamiliarity } from './familiarity';
+import { createDefaultSetPieceTactics } from '../match/setPieces';
 
 export function migrateTactics(t: Partial<Tactics>): Tactics {
   const formation = t.formation ?? '4-4-2';
@@ -77,6 +78,7 @@ export function migrateTactics(t: Partial<Tactics>): Tactics {
     bench: t.bench ?? [],
     captain: t.captain ?? null,
     takers,
+    setPieces: t.setPieces ?? createDefaultSetPieceTactics(),
     instructions,
     opposition,
     plans: [planA, planB, planC],

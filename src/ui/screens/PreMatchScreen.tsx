@@ -31,6 +31,7 @@ import {
 } from '@/core/player/talks';
 import { rawOvr } from '@/core/player/ratings';
 import { Player, TeamInstructions } from '@/core/types';
+import { createDefaultSetPieceTactics } from '@/core/match/setPieces';
 
 type PreMatchStep = 0 | 1 | 2 | 3;
 
@@ -231,6 +232,28 @@ export const PreMatchScreen: React.FC = () => {
     }
     await advanceGame();
   };
+
+  const oppSetPieceThreat = (() => {
+    if (!oppStarters || oppStarters.length === 0) return null;
+    const sorted = [...oppStarters].sort((a, b) => {
+      const airA = (a.attributes.heading ?? 50) + (a.attributes.strength ?? 50);
+      const airB = (b.attributes.heading ?? 50) + (b.attributes.strength ?? 50);
+      return airB - airA;
+    });
+    const bestThreat = sorted[0];
+    if (!bestThreat) return null;
+    const userBestHeader = [...userStarters].sort((a, b) => {
+      const airA = (a.attributes.heading ?? 50) + (a.attributes.strength ?? 50);
+      const airB = (b.attributes.heading ?? 50) + (b.attributes.strength ?? 50);
+      return airB - airA;
+    })[0];
+    return {
+      threat: bestThreat,
+      targetZone: bestThreat.positions.some((pos) => pos.pos === 'ST') ? 'Far post' : 'Near post',
+      marker: userBestHeader,
+      posts: 'Both' as const,
+    };
+  })();
 
   const tones: {
     tone: TalkTone;
@@ -843,6 +866,83 @@ export const PreMatchScreen: React.FC = () => {
                         Reason: {theoAdvice.reason}
                       </div>
                     </div>
+
+                    {/* Opponent Set-Piece Threat Card (SPEC §13.20.9, §15.2) */}
+                    {oppSetPieceThreat && (
+                      <div
+                        style={{
+                          backgroundColor: 'var(--surface-2)',
+                          padding: '12px 14px',
+                          borderRadius: 'var(--radius-s)',
+                          border: '1px solid var(--border)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                        }}
+                      >
+                        <div
+                          className="broadcast-label"
+                          style={{
+                            color: 'var(--accent-text)',
+                            fontSize: '11px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                          }}
+                        >
+                          <Award size={14} /> SET-PIECE THREAT (§13.20.9)
+                        </div>
+                        <div style={{ fontSize: '12.5px', color: 'var(--text)' }}>
+                          <strong>{oppSetPieceThreat.threat.lastName}</strong> is their primary
+                          target at corners (heading {oppSetPieceThreat.threat.attributes.heading},
+                          strength {oppSetPieceThreat.threat.attributes.strength}), aiming for the{' '}
+                          <strong>{oppSetPieceThreat.targetZone}</strong>.
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--text-dim)' }}>
+                          Recommendation: Assign{' '}
+                          <strong>{oppSetPieceThreat.marker?.lastName}</strong> to mark him and put
+                          men on <strong>Both</strong> posts.
+                        </div>
+                        <button
+                          onClick={() => {
+                            const curSp =
+                              userClub.tactics.setPieces ?? createDefaultSetPieceTactics();
+                            updateUserTactics({
+                              setPieces: {
+                                ...curSp,
+                                defending: {
+                                  ...curSp.defending,
+                                  markMainMan: oppSetPieceThreat.marker?.id ?? null,
+                                  postMen: 'Both',
+                                },
+                              },
+                              instructions: {
+                                ...userClub.tactics.instructions,
+                                postMen: 'Both',
+                              },
+                            });
+                            showToast(
+                              `Set-Piece Defense: ${oppSetPieceThreat.marker?.lastName} assigned to ${oppSetPieceThreat.threat.lastName}`,
+                              'success',
+                            );
+                          }}
+                          style={{
+                            alignSelf: 'flex-start',
+                            marginTop: '4px',
+                            padding: '4px 10px',
+                            backgroundColor: 'var(--accent)',
+                            color: '#FFFFFF',
+                            borderRadius: 'var(--radius-xs)',
+                            border: 'none',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Apply Set-Piece Defense
+                        </button>
+                      </div>
+                    )}
 
                     {/* Match Factors */}
                     <div

@@ -19,6 +19,8 @@ import {
   PlayerInstruction,
   DefInstruction,
   OppOrder,
+  SetPieceTactics,
+  SetPieceTakers,
 } from '../types';
 import { RngState } from '../rng';
 
@@ -57,6 +59,8 @@ export interface LiveTeamState {
   freeKickTaker: PlayerId | null;
   cornerTaker: PlayerId | null;
   longThrowTaker: PlayerId | null;
+  takers?: SetPieceTakers | Tactics['takers'];
+  setPieces?: SetPieceTactics;
   subsUsed: number;
   inPlayWindowsUsed: number;
   redCardedPlayers: PlayerId[];

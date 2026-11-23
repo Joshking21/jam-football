@@ -26,6 +26,7 @@ import { valueOf, wageFor } from '../player/value';
 import { generateFixtures } from '../season/fixtures';
 import { createInitialTable, sortTable } from '../season/table';
 import { BALANCED_WEEK_SCHEDULE } from '../people/training';
+import { createDefaultSetPieceTactics } from '../match/setPieces';
 
 export interface WorldSnapshot {
   seed: number;
@@ -590,6 +591,7 @@ export function generateWorld(seed: number = WORLD_SEED): WorldSnapshot {
         corner: clubPlayers[0]?.id || null,
         longThrow: null,
       },
+      setPieces: createDefaultSetPieceTactics(),
       instructions: {
         mentality: cData.style.mentality,
         passing: cData.style.passing,

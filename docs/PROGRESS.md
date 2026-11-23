@@ -180,6 +180,26 @@ REVIEW REQUESTED: M4 (third pass)
       - Clipboard on right: Players tab (player table with workload L/N/H segmented controls, extra checkboxes, sparklines, risk badges, and one-to-one recommendation callout), One-to-one tab (interactive session dialogue scene), and Progress tab (4-week attribute delta arrows, coach's notes, mentoring pair assignments).
     - Added unit test suite in `tests/core/training/trainingDetail.test.ts` (17 tests covering all calculations, formulas, templates, Theo generation, and conversation triggers).
 
+## 2026-11-23 · M5.9 Set pieces in detail: routines, jobs, takers, whiteboard, and tactical resolution
+- Changed: src/config/balance.ts, src/core/game/advance.ts, src/core/game/migrations.ts, src/core/match/aiManager.ts, src/core/match/engine.ts, src/core/match/fouls.ts, src/core/match/setPieces.ts, src/core/match/shots.ts, src/core/match/state.ts, src/core/types.ts, src/core/world/generateWorld.ts, src/render3d/choreographer.ts, src/ui/screens/MatchScreen.tsx, src/ui/screens/PreMatchScreen.tsx, src/ui/screens/TacticsScreen.tsx, tests/core/match/setPiecesDetail.test.ts
+- Ran:
+  - `npm run check`:
+    - `prettier --check .` PASS
+    - `tsc --noEmit` PASS
+    - `vitest run`: 38 test files passed (272 tests passed in 24.89s) PASS
+    - `vite build`: main chunk 1,464.30 kB (gzip 321.36 kB <= 350 kB budget) / three.js chunk 489.80 kB, built in 13.21s PASS
+- Notes:
+  - Implemented Milestone M5 Task 9 (SPEC §13.20 Set pieces in detail, approved by user 22 Nov):
+    - **Corner jobs & auto assignment (§13.20.1):** 7 job types (`nearPost`, `farPost`, `penaltySpot`, `keeperScreen`, `edge`, `short`, `stayBack`) with capacity limits. Aerial header candidates strictly drawn from box jobs (`nearPost`, `farPost`, `penaltySpot`). Auto-job generator assigns best 2 aerial threats by S_air to target zone, next best to other post, best long shooter to edge, and slowest defenders to stayBack.
+    - **Routines, predictability & sharpness (§13.20.2):** Up to 3 routines per side (`leftCorners`, `rightCorners`) with targets (`Near`, `Far`, `Spot`, `Short`, `Mixed`), swing selection, user naming, and Pick/Rotate execution. Predictability penalty adds +0.04 * (n - 1) to defending header duel (capped at +0.12). Routine sharpness delivery context `(familiarity - 70) / 300` (range ±0.1). Weekly familiarity updates in `advance.ts` (+15 split equally across routines in use for each practice session; unpractised routines decay by 5 down to 40).
+    - **Takers and swing (§13.20.3):** Left corner, right corner, direct free kick, wide free kick, penalty taker order (1, 2, 3), and long throw. Natural swing derived from footedness; forcing swing against natural foot incurs -0.08 delivery context penalty (`forcedPenaltyDeliveryCtx`).
+    - **Free kicks by area (§13.20.4):** Central options within 30m (`Shoot` with 85% DIRECT_FK, `CrossNear`, `CrossFar`, `Short`, `Dummy` with xG +0.02 and 20% mistimed recycle, `Mixed`). Wide options (`CrossNear`, `CrossFar`, `ToTheSpot`, `Short`, `Mixed`) re-using box jobs. Deep options (`Quick` with +0.3 progress / 15% rushed turnover, `Long` cross from deep, `Keep`).
+    - **Defending set pieces & walls (§13.20.5, §13.20.6):** Corners against marking options (`Zonal`, `ManMark`, `Mixed`), Mark their main man (`markMainMan`), Post men (`None`, `Near`, `Both`), Edge guard (reduces second ball by 10 pts), and Forwards up (0, 1, 2, scaling clearance counter chance up to 35%). Free kick wall options (`Auto`, `Small`, `Big`) with composition bonus from mean heading & strength. Line height on wide FK (`High` with 20% offside, `Normal`, `Deep`).
+    - **Tactics screen whiteboard & clipboard sheet (§13.20.7):** Dedicated set-piece whiteboard camera zoom into attacking box or defending box. SVG chalk drawings for curved delivery arcs, run arrows to jobs, and edge shot arrows. Interactive job circles with click/swap player assignment. Clipboard sub-tabs for Our Corners, Their Corners, Our Free Kicks, Their Free Kicks, Takers, familiarity gauge bars, and Gain / Cost trade-offs on every option.
+    - **Broadcast report & Assistant advice (§13.20.9):** Pre-Match screen card displaying opponent set-piece aerial threat, target zone, recommended marker & posts with 1-click apply. In-match assistant advice tracking read corner routines and box aerial dominance.
+    - Added unit test suite in `tests/core/match/setPiecesDetail.test.ts` (10 tests covering auto-job generation, predictability caps, sharpness delivery context, swing and footedness penalties, free kick tactical branches, wall formulas, corner resolution, default creation, and weekly routine familiarity updating).
+
+
 
 
 

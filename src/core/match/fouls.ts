@@ -8,6 +8,7 @@ import {
   DefInstruction,
   Tackling,
   FreeKicks,
+  FreeKickTactics,
 } from '../types';
 import { Rng } from '../rng';
 import { K } from '@/config/balance';
@@ -52,30 +53,58 @@ export function resolveFoulCard(fouler: FoulerInfo, rng: Rng): FoulCardResult {
   return 'NONE';
 }
 
-export type FoulRestartType = 'PENALTY' | 'DIRECT_FK' | 'CROSS_FK' | 'SHORT_FK' | 'REGULAR_FK';
+export type FoulRestartType =
+  | 'PENALTY'
+  | 'DIRECT_FK'
+  | 'CROSS_FK'
+  | 'SHORT_FK'
+  | 'DUMMY_FK'
+  | 'QUICK_FK'
+  | 'LONG_FK'
+  | 'REGULAR_FK';
 
 export function determineFoulRestart(
   attackingPos: { ax: number; ay: number },
   rng: Rng,
-  freeKicks: FreeKicks = 'Mixed',
+  freeKicks: FreeKicks | FreeKickTactics = 'Mixed',
 ): FoulRestartType {
   // Foul by the defending team inside its own box (attacking frame box)
   if (isBox(attackingPos.ax, attackingPos.ay)) {
     return 'PENALTY';
   }
 
+  const fkTactics: FreeKickTactics =
+    typeof freeKicks === 'object'
+      ? freeKicks
+      : {
+          central:
+            freeKicks === 'Shoot'
+              ? 'Shoot'
+              : freeKicks === 'Cross'
+                ? 'CrossNear'
+                : freeKicks === 'Short'
+                  ? 'Short'
+                  : 'Mixed',
+          wide: freeKicks === 'Short' ? 'Short' : freeKicks === 'Cross' ? 'CrossNear' : 'Mixed',
+          deep: 'Keep',
+        };
+
   // Foul in ATT Centre within 30m of goal (ax >= 75)
   // Centre lane: 22.67 <= ay < 45.33
   const isCentre = attackingPos.ay >= 22.67 && attackingPos.ay < 45.33;
   if (attackingPos.ax >= 75 && isCentre) {
-    if (freeKicks === 'Shoot') {
-      return rng.chance(K.d2.setPieces.freeKicks.shootDirectChance) ? 'DIRECT_FK' : 'CROSS_FK';
+    const opt = fkTactics.central;
+    if (opt === 'Shoot') {
+      return rng.chance(K.sp.freeKicks.central.shootDirectChance) ? 'DIRECT_FK' : 'CROSS_FK';
     }
-    if (freeKicks === 'Cross') {
-      return rng.chance(K.d2.setPieces.freeKicks.crossChance) ? 'CROSS_FK' : 'DIRECT_FK';
-    }
-    if (freeKicks === 'Short') {
+    if (opt === 'Short') {
       return 'SHORT_FK';
+    }
+    if (opt === 'Dummy') {
+      return 'DUMMY_FK';
+    }
+    if (opt === 'CrossNear' || opt === 'CrossFar') {
+      return 'CROSS_FK';
     }
     // 50% direct shot, 50% cross delivery (Mixed)
     return rng.chance(0.5) ? 'DIRECT_FK' : 'CROSS_FK';
@@ -83,7 +112,20 @@ export function determineFoulRestart(
 
   // Foul in ATT wide (ax >= 70 && !isCentre)
   if (attackingPos.ax >= 70 && !isCentre) {
+    const opt = fkTactics.wide;
+    if (opt === 'Short') {
+      return 'SHORT_FK';
+    }
     return 'CROSS_FK';
+  }
+
+  // Deep (MID third and our half: ax < 70)
+  const deepOpt = fkTactics.deep;
+  if (deepOpt === 'Quick') {
+    return 'QUICK_FK';
+  }
+  if (deepOpt === 'Long') {
+    return 'LONG_FK';
   }
 
   // Elsewhere

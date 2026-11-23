@@ -27,12 +27,14 @@ import { HalfTimeModal } from './Match/HalfTimeModal';
 import { FullTimeModal } from './Match/FullTimeModal';
 import { TalkTone, getHalfTimeTalkContext } from '../../core/player/talks';
 import { createMatch, simulateInstant } from '../../core/match/engine';
+import { createDefaultSetPieceTactics } from '../../core/match/setPieces';
 import type { ClientToWorkerMessage, WorkerToClientMessage } from '../../workers/match.worker';
 
 export const MatchScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
   const advanceGame = useStore((state) => state.advanceGame);
   const performTeamTalk = useStore((state) => state.performTeamTalk);
+  const updateUserTactics = useStore((state) => state.updateUserTactics);
   const showToast = useStore((state) => state.showToast);
   const settings = useStore((state) => state.settings);
 
@@ -82,6 +84,12 @@ export const MatchScreen: React.FC = () => {
   // Out of town scores & Assistant advices
   const [outOfTownScores, setOutOfTownScores] = useState<OutOfTownScore[]>([]);
   const [adviceList, setAdviceList] = useState<AssistantAdviceItem[]>([]);
+
+  // Set-piece assistant tracking refs (§13.20.9)
+  const oppCornerHeadersRef = useRef<number[]>([]);
+  const hasAdvisedDropForwardRef = useRef<boolean>(false);
+  const ourCornerCountRef = useRef<number>(0);
+  const hasAdvisedRotateRef = useRef<boolean>(false);
 
   // Substitution tracking
   const [subsUsed, setSubsUsed] = useState(0);
@@ -140,6 +148,58 @@ export const MatchScreen: React.FC = () => {
               },
               ...prev.slice(0, 4),
             ]);
+          }
+        }
+
+        // Assistant in-match set-piece advice (§13.20.9)
+        if (ev.type === 'CORNER') {
+          const evMinute = Math.floor(ev.t / 60);
+          if (ev.side !== userSide) {
+            oppCornerHeadersRef.current.push(evMinute);
+            const recent = oppCornerHeadersRef.current.filter((m) => m >= evMinute - 20);
+            if (recent.length >= 3 && !hasAdvisedDropForwardRef.current) {
+              hasAdvisedDropForwardRef.current = true;
+              setAdviceList((prev) => [
+                {
+                  id: `sp-drop-forward-${ev.seq}`,
+                  text: "Drop a forward back, they're winning everything at corners",
+                  reason: 'Opponent has won 3+ corner aerial duels in our box.',
+                  onApply: () => {
+                    const sp = userClub.tactics.setPieces ?? createDefaultSetPieceTactics();
+                    updateUserTactics({
+                      setPieces: {
+                        ...sp,
+                        defending: { ...sp.defending, forwardsUp: 0 },
+                      },
+                    });
+                  },
+                },
+                ...prev.slice(0, 4),
+              ]);
+            }
+          } else {
+            ourCornerCountRef.current++;
+            if (ourCornerCountRef.current >= 3 && !hasAdvisedRotateRef.current) {
+              hasAdvisedRotateRef.current = true;
+              setAdviceList((prev) => [
+                {
+                  id: `sp-rotate-${ev.seq}`,
+                  text: "They've read our routine. Rotate?",
+                  reason: 'Predictability penalty builds up after 3+ uses of the same routine.',
+                  onApply: () => {
+                    const sp = userClub.tactics.setPieces ?? createDefaultSetPieceTactics();
+                    updateUserTactics({
+                      setPieces: {
+                        ...sp,
+                        leftCorners: { ...sp.leftCorners, rotate: true },
+                        rightCorners: { ...sp.rightCorners, rotate: true },
+                      },
+                    });
+                  },
+                },
+                ...prev.slice(0, 4),
+              ]);
+            }
           }
         }
       },

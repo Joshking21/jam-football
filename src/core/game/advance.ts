@@ -15,12 +15,14 @@ import {
   InboxItem,
   NewsItem,
   Phase,
+  CornerRoutine,
 } from '../types';
+import { createDefaultSetPieceTactics } from '../match/setPieces';
 import { sortTable } from '../season/table';
 import { pickBestLineup } from '../match/aiManager';
 import { simulateInstant } from '../match/engine';
 import { deriveSeed, createRng } from '../rng';
-import { BALANCE } from '@/config/balance';
+import { BALANCE, K } from '@/config/balance';
 import { roundTo, clamp } from '../math';
 import { updateClubFamiliarity, createStartingFamiliarity } from './familiarity';
 import {
@@ -150,6 +152,7 @@ export function buildTeamSheet(
       personality: p.personality,
       name: p.knownAs ?? `${p.firstName[0]}. ${p.lastName}`,
       shirt: p.squadNumber ?? 99,
+      foot: p.foot,
     };
   }
 
@@ -836,7 +839,7 @@ export function runWeeklyProcessing(state: GameState): GameState {
         focus,
         intensity,
         minutesLastMatch: playedMinutes,
-        individualFocus: positionTrained ? null : (club?.trainingPlan.individual[p.id] ?? null),
+        individualFocus: positionTrained ? null : (club?.trainingPlan?.individual?.[p.id] ?? null),
         rng: devRng,
         schedule,
         workload,
@@ -845,7 +848,7 @@ export function runWeeklyProcessing(state: GameState): GameState {
         trainingRating: trainRating,
         isMentee,
         isMentor,
-        oneToOneTechnique: club?.trainingPlan.lastOneToOnePlayerId === p.id,
+        oneToOneTechnique: club?.trainingPlan?.lastOneToOnePlayerId === p.id,
       });
 
       if (positionTrained) coachDevFactor *= 0.8;
@@ -1031,6 +1034,52 @@ export function runWeeklyProcessing(state: GameState): GameState {
     }
     const isTactical = (club.trainingPlan?.focus as string) === 'Tactical';
     club.familiarity = updateClubFamiliarity(club.familiarity, club.tactics, isTactical);
+
+    // Update set piece routine familiarity (§13.20.2)
+    if (!club.tactics.setPieces) {
+      club.tactics.setPieces = createDefaultSetPieceTactics();
+    }
+    const sp = club.tactics.setPieces;
+    const sched = club.trainingPlan?.schedule ?? BALANCED_WEEK_SCHEDULE;
+    let setPieceSessions = 0;
+    const trainSlots = sched ? Object.values(sched) : [];
+    for (const slot of trainSlots) {
+      if (slot === 'set_pieces') setPieceSessions++;
+    }
+
+    const leftInUse = sp.leftCorners.rotate
+      ? sp.leftCorners.routines
+      : [sp.leftCorners.routines[sp.leftCorners.activeRoutine] ?? sp.leftCorners.routines[0]];
+    const rightInUse = sp.rightCorners.rotate
+      ? sp.rightCorners.routines
+      : [sp.rightCorners.routines[sp.rightCorners.activeRoutine] ?? sp.rightCorners.routines[0]];
+
+    const inUseSet = new Set<CornerRoutine>([
+      ...leftInUse.filter((r): r is CornerRoutine => Boolean(r)),
+      ...rightInUse.filter((r): r is CornerRoutine => Boolean(r)),
+    ]);
+    const inUseCount = inUseSet.size;
+    const gainPerInUse =
+      inUseCount > 0 ? (K.sp.sharpness.practiceWeeklyGainTotal * setPieceSessions) / inUseCount : 0;
+
+    const allRoutines = [...sp.leftCorners.routines, ...sp.rightCorners.routines];
+    for (const r of allRoutines) {
+      if (inUseSet.has(r)) {
+        if (setPieceSessions > 0) {
+          r.familiarity = Math.min(K.sp.sharpness.familiarityCeiling, r.familiarity + gainPerInUse);
+        } else {
+          r.familiarity = Math.max(
+            K.sp.sharpness.familiarityFloor,
+            r.familiarity - K.sp.sharpness.unpractisedWeeklyLoss,
+          );
+        }
+      } else {
+        r.familiarity = Math.max(
+          K.sp.sharpness.familiarityFloor,
+          r.familiarity - K.sp.sharpness.unpractisedWeeklyLoss,
+        );
+      }
+    }
   }
 
   // 4. Check player conversation triggers (SPEC §12.9: At most 1 new conversation per week)

@@ -1021,6 +1021,159 @@ export const K = {
       wellNotPlayingChance: 0.5,
     },
   },
+  // SPEC §13.20 Detailed Set Pieces Constants (K.sp)
+  sp: {
+    jobs: {
+      nearPost: {
+        max: 2,
+        targetMatchWeightMult: 2.0,
+      },
+      farPost: {
+        max: 2,
+        targetMatchWeightMult: 2.0,
+      },
+      penaltySpot: {
+        max: 2,
+        targetMatchWeightMult: 2.0,
+        boxCentralRatio: 0.3,
+        headerDuelAdd: -0.05,
+        onTargetAdd: 0.03,
+      },
+      keeperScreen: {
+        max: 1,
+        gkClaimAdd: -0.04,
+        headerWeightMult: 0.3,
+      },
+      edge: {
+        max: 2,
+        secondBallChances: {
+          0: 0.25,
+          1: 0.4,
+          2: 0.5,
+        },
+        shotUtilityAdd: 0.3,
+      },
+      short: {
+        max: 1,
+      },
+      stayBack: {
+        min: 1,
+        max: 3,
+        default: 2,
+      },
+    },
+    predictability: {
+      duelPerUse: 0.04,
+      duelCap: 0.12,
+    },
+    sharpness: {
+      baselineFamiliarity: 70,
+      newRoutineFamiliarity: 40,
+      deliveryCtxDivisor: 300,
+      deliveryCtxCap: 0.1,
+      practiceWeeklyGainTotal: 15,
+      unpractisedWeeklyLoss: 5,
+      familiarityFloor: 40,
+      familiarityCeiling: 100,
+    },
+    swing: {
+      forcedPenaltyDeliveryCtx: -0.08,
+      inswinger: {
+        headerDuelAdd: 0.1,
+        sixYardHeaderRatio: 0.15,
+        gkClaimAdd: 0.03,
+      },
+      outswinger: {
+        gkClaimAdd: -0.03,
+        secondBallAttackerChance: 0.55,
+        headerDuelAdd: -0.05,
+      },
+    },
+    freeKicks: {
+      central: {
+        dummy: {
+          xgRefAdd: 0.02,
+          wallBlockAdd: -0.05,
+          mistimedRecycleChance: 0.2,
+        },
+        shootDirectChance: 0.85,
+        shortNextStepProgress: 0.3,
+      },
+      deep: {
+        quick: {
+          nextStepProgress: 0.3,
+          rushedLostChance: 0.15,
+        },
+        long: {
+          deliveryCtx: -0.2,
+        },
+      },
+    },
+    defendingCorners: {
+      edgeGuard: {
+        secondBallReduction: 0.1, // -10 points
+        longRangeXGRefReduction: 0.02,
+        oppHeaderDuelAdd: 0.04,
+      },
+      forwardsUp: {
+        0: {
+          oppHeaderDuelAdd: -0.05,
+          clearanceCounterChance: 0.0,
+        },
+        1: {
+          oppHeaderDuelAdd: 0.0,
+          clearanceCounterChance: 0.18,
+        },
+        2: {
+          oppHeaderDuelAdd: 0.06,
+          clearanceCounterChance: 0.35,
+        },
+      },
+      manMarkDuelMod: -0.15,
+      zonalFarPostDuelAdd: 0.1,
+      zonalNearPostDeliveryCtx: -0.15,
+    },
+    defendingFreeKicks: {
+      wall: {
+        auto: {
+          blockProb: 0.2,
+          xgRefAdd: 0.0,
+          oppCrossHeaderDuelAdd: 0.0,
+        },
+        small: {
+          blockProb: 0.12,
+          xgRefAdd: 0.01,
+          oppCrossHeaderDuelAdd: -0.05,
+        },
+        big: {
+          blockProb: 0.26,
+          xgRefAdd: 0.0,
+          oppCrossHeaderDuelAdd: 0.05,
+        },
+        wallZBonusFactor: 0.02, // +0.02 * mean z(heading, strength)
+      },
+      lineHeight: {
+        high: {
+          offsideChance: 0.2,
+          headerXGRefAdd: 0.03,
+        },
+        normal: {
+          offsideChance: 0.0,
+          headerXGRefAdd: 0.0,
+        },
+        deep: {
+          gkClaimAdd: 0.04,
+          secondBallAttackerBonus: 0.1,
+        },
+      },
+    },
+    assistant: {
+      readNearPostThresholdUses: 3,
+      readNearPostLostHeaders: 2,
+      dropForwardBackLostHeaders: 3,
+      dropForwardBackMinutes: 20,
+    },
+  },
 };
 
 export const RENDER_CONFIG = {
@@ -1143,8 +1296,12 @@ export const RENDER_CONFIG = {
   opp: K.opp,
   trans: K.trans,
   setp: K.setp,
+  sp: K.sp,
   pi: K.pi,
   d2: K.d2,
   droles: K.droles,
   dpi: K.dpi,
 };
+
+(BALANCE as Record<string, unknown>).setPieces = K.sp;
+(BALANCE as Record<string, unknown>).sp = K.sp;

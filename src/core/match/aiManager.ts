@@ -13,11 +13,15 @@ import {
   TeamInstructions,
   Attributes,
   Personality,
+  CornerTarget,
+  SetPieceTactics,
+  SetPieceTakers,
 } from '../types';
 import { FORMATIONS, FormationDef, FormationSlot } from '@/config/formations';
 import { ovrAt, getPrimaryOvr } from '../player/ratings';
 import { z } from '../math';
 import { computeRoleFit, getDefaultRoleForPos, getAvailableRolesForSlot } from '@/config/roles';
+import { createDefaultSetPieceTactics, generateAutoCornerJobs } from './setPieces';
 
 export interface LineupSelectionResult {
   formation: Formation;
@@ -32,6 +36,8 @@ export interface LineupSelectionResult {
   freeKickTaker: PlayerId;
   cornerTaker: PlayerId;
   longThrowTaker: PlayerId | null;
+  setPieces?: SetPieceTactics;
+  takers?: SetPieceTakers;
 }
 
 export interface PlayerSelectionCandidate {
@@ -78,6 +84,7 @@ export function pickBestLineup(
   clubStyleFormation: Formation,
   familiarities: Record<Formation, number>,
   clubStyle?: Partial<TeamInstructions>,
+  reputation?: number,
 ): LineupSelectionResult {
   // 1. Formation selection:
   // If 2+ slots in club style formation would have fit < 0.8, choose the formation among its familiarity >= 60 with highest total
@@ -263,6 +270,23 @@ export function pickBestLineup(
   cornerPool.sort((a, b) => b.attributes.setPieces - a.attributes.setPieces);
   const cornerTaker = cornerPool[0]?.id ?? freeKickTaker;
 
+  // Left & right corner takers with preferred foot (§13.20.3)
+  const leftCornerPool = [...cornerPool].sort((a, b) => {
+    const matchA = a.foot !== 'Left';
+    const matchB = b.foot !== 'Left';
+    if (matchA !== matchB) return matchA ? -1 : 1;
+    return b.attributes.setPieces - a.attributes.setPieces;
+  });
+  const leftCornerTaker = leftCornerPool[0]?.id ?? cornerTaker;
+
+  const rightCornerPool = [...cornerPool].sort((a, b) => {
+    const matchA = a.foot !== 'Right';
+    const matchB = b.foot !== 'Right';
+    if (matchA !== matchB) return matchA ? -1 : 1;
+    return b.attributes.setPieces - a.attributes.setPieces;
+  });
+  const rightCornerTaker = rightCornerPool[0]?.id ?? cornerTaker;
+
   // 7. Roles & Player Instructions (SPEC §13.17.8)
   let ballPlayingCbAssigned = false;
   const roles: RoleId[] = fDef.slots.map((slot) => {
@@ -350,6 +374,45 @@ export function pickBestLineup(
 
   const opposition: OppOrder[] = [];
 
+  // AI set piece target (§13.20.9): AI clubs use auto jobs, one Mixed routine, Auto wall, 1 forward up.
+  // A rep >= 4 club with a strong header (S_air z >= 1.0) targets its best header's zone.
+  let aiCornerTarget: CornerTarget = 'Mixed';
+  if ((reputation ?? 3) >= 4) {
+    const sortedByAir = [...xiPlayers].sort((a, b) => {
+      const airA = 0.6 * z(a.attributes.heading) + 0.4 * z(a.attributes.strength);
+      const airB = 0.6 * z(b.attributes.heading) + 0.4 * z(b.attributes.strength);
+      return airB - airA;
+    });
+    const bestHeader = sortedByAir[0];
+    if (bestHeader && z(bestHeader.attributes.heading) >= 1.0) {
+      aiCornerTarget = 'Far';
+    }
+  }
+
+  const aiSetPieces = createDefaultSetPieceTactics();
+  const lineupPlayersForJobs = lineup.map((id) =>
+    id ? (players.find((p) => p.id === id) ?? null) : null,
+  );
+  aiSetPieces.leftCorners.routines[0]!.target = aiCornerTarget;
+  aiSetPieces.leftCorners.routines[0]!.jobs = generateAutoCornerJobs(
+    lineupPlayersForJobs,
+    aiCornerTarget,
+  );
+  aiSetPieces.rightCorners.routines[0]!.target = aiCornerTarget;
+  aiSetPieces.rightCorners.routines[0]!.jobs = generateAutoCornerJobs(
+    lineupPlayersForJobs,
+    aiCornerTarget,
+  );
+
+  const aiTakers: SetPieceTakers = {
+    leftCorner: leftCornerTaker,
+    rightCorner: rightCornerTaker,
+    directFreeKick: freeKickTaker,
+    wideFreeKick: freeKickTaker,
+    penalties: penaltyTakers.slice(0, 3).map((p) => p.id),
+    longThrow: longThrowTaker,
+  };
+
   return {
     formation: chosenFormation,
     lineup,
@@ -363,6 +426,8 @@ export function pickBestLineup(
     freeKickTaker,
     cornerTaker,
     longThrowTaker,
+    setPieces: aiSetPieces,
+    takers: aiTakers,
   };
 }
 

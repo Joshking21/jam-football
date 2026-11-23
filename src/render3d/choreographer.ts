@@ -205,6 +205,8 @@ export class Choreographer {
     const ballAbsX = this.ballPos.x + 52.5;
     const ballAbsY = this.ballPos.z + 34;
 
+    const isCorner = event?.type === 'CORNER';
+
     this.computeTeamShape(
       'home',
       this.homeTactics,
@@ -212,6 +214,7 @@ export class Choreographer {
       ballAbsX,
       ballAbsY,
       half,
+      isCorner,
     );
     this.computeTeamShape(
       'away',
@@ -220,6 +223,7 @@ export class Choreographer {
       ballAbsX,
       ballAbsY,
       half,
+      isCorner,
     );
   }
 
@@ -230,6 +234,7 @@ export class Choreographer {
     ballAbsX: number,
     ballAbsY: number,
     half: 1 | 2,
+    isCorner: boolean = false,
   ) {
     const formDef = FORMATIONS[tactics.formation] ?? FORMATIONS['4-4-2'];
 
@@ -274,7 +279,50 @@ export class Choreographer {
         }
         targetOwnY = 34 + (by - 34) * 0.3;
       } else {
-        if (inPossession) {
+        if (isCorner && inPossession) {
+          // Attacking corner jobs placement (SPEC §13.20.8)
+          const cornerAy = by < 34 ? 0 : 68;
+          if (slotIdx === 9) {
+            // Penalty spot
+            targetOwnX = 94;
+            targetOwnY = 34;
+          } else if (slotIdx === 10) {
+            // Near post (5m out)
+            targetOwnX = 100;
+            targetOwnY = cornerAy < 34 ? 30 : 38;
+          } else if (slotIdx === 8) {
+            // Far post
+            targetOwnX = 98;
+            targetOwnY = cornerAy < 34 ? 38 : 30;
+          } else if (slotIdx === 7) {
+            // Edge of the box / D
+            targetOwnX = 84;
+            targetOwnY = 34;
+          } else if (slotIdx === 6) {
+            // Short option (5m from taker)
+            targetOwnX = 101;
+            targetOwnY = cornerAy < 34 ? 5 : 63;
+          } else if (slotIdx === 2 || slotIdx === 3) {
+            // Back (halfway line / stay back)
+            targetOwnX = 52.5;
+            targetOwnY = anchor.y;
+          } else {
+            targetOwnX = anchor.x * 0.85 + bx * 0.35 + mentalityBonus;
+            targetOwnY = 34 + (anchor.y - 34) * widthMult;
+          }
+        } else if (isCorner && !inPossession) {
+          // Defending corner placement
+          if (slotIdx === 9) {
+            // 1 forward up near halfway line
+            targetOwnX = 55;
+            targetOwnY = 34;
+          } else {
+            // Defenders packed in box
+            const rawX = anchor.x * 0.7 + bx * 0.3;
+            targetOwnX = Math.min(18, Math.max(5, rawX));
+            targetOwnY = 34 + (anchor.y - 34) * 0.6;
+          }
+        } else if (inPossession) {
           // In possession formula (SPEC §14.3):
           // x = anchor.x * 0.85 + bx * 0.35 + 6 * mentality
           targetOwnX = anchor.x * 0.85 + bx * 0.35 + mentalityBonus;

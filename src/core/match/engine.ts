@@ -50,7 +50,12 @@ import {
 import { selectAction, CandidateAction, ActionSelectionContext } from './actions';
 import { resolveShot, ShotResolutionResult } from './shots';
 import { resolveFoulCard, determineFoulRestart, getFoulMultiplier } from './fouls';
-import { resolveCorner } from './setPieces';
+import {
+  resolveCorner,
+  createDefaultSetPieceTactics,
+  generateAutoCornerJobs,
+  calculateWallEffect,
+} from './setPieces';
 import { createEmptyTeamStats, createPlayerMatchLine } from './stats';
 import { computePlayerRating, selectMotm } from './ratings';
 import { evaluateInMatchAi, pickBestLineup } from './aiManager';
@@ -127,6 +132,19 @@ export class MatchEngine implements MatchSim {
   private isLongThrowIn: boolean = false;
   private counterPhaseExtraCtx: number = 0;
   private shortFkProgressBonus: boolean = false;
+
+  // SPEC §13.20 Detailed Set Pieces State
+  private cornerRoutineIndices = {
+    home: { left: 0, right: 0 },
+    away: { left: 0, right: 0 },
+  };
+  private cornerRoutineUses: {
+    home: { left: Record<number, number>; right: Record<number, number> };
+    away: { left: Record<number, number>; right: Record<number, number> };
+  } = {
+    home: { left: {}, right: {} },
+    away: { left: {}, right: {} },
+  };
 
   // Tactical Depth involvement and role fit cache
   private roleFitCache = new Map<string, number>();
@@ -302,6 +320,8 @@ export class MatchEngine implements MatchSim {
       freeKickTaker: input.home.tactics.takers.freeKick,
       cornerTaker: input.home.tactics.takers.corner,
       longThrowTaker: input.home.tactics.takers.longThrow ?? null,
+      takers: input.home.tactics.takers,
+      setPieces: input.home.tactics.setPieces ?? createDefaultSetPieceTactics(),
       subsUsed: 0,
       inPlayWindowsUsed: 0,
       redCardedPlayers: [],
@@ -365,6 +385,8 @@ export class MatchEngine implements MatchSim {
       freeKickTaker: input.away.tactics.takers.freeKick,
       cornerTaker: input.away.tactics.takers.corner,
       longThrowTaker: input.away.tactics.takers.longThrow ?? null,
+      takers: input.away.tactics.takers,
+      setPieces: input.away.tactics.setPieces ?? createDefaultSetPieceTactics(),
       subsUsed: 0,
       inPlayWindowsUsed: 0,
       redCardedPlayers: [],
@@ -1145,17 +1167,43 @@ export class MatchEngine implements MatchSim {
       }
     } else if (restart.type === 'CORNER') {
       this.teamStats[restart.side].corners++;
-      const takerId = team.cornerTaker ?? this.selectOutfielder(team, 'LM');
+
+      // Corner side: left if ay < 34, right if ay >= 34
+      const cornerAy = restart.pos.ay < 34 ? 0 : 68;
+      const cornerSide: 'left' | 'right' = cornerAy < 34 ? 'left' : 'right';
+
+      // 1. Taker resolution (§13.20.3)
+      let takerId: PlayerId | null =
+        cornerSide === 'left'
+          ? ((team.takers as any)?.leftCorner ?? team.cornerTaker)
+          : ((team.takers as any)?.rightCorner ?? team.cornerTaker);
+
+      if (!takerId || !team.lineup.includes(takerId) || team.redCardedPlayers.includes(takerId)) {
+        // Auto select: find outfield player with best setPieces, preferring natural inswinger foot
+        const candidates = team.lineup.filter(
+          (id): id is PlayerId =>
+            !!id && !team.redCardedPlayers.includes(id) && team.lineup.indexOf(id) > 0,
+        );
+        candidates.sort((a, b) => {
+          const sheetA = this.getPlayerSheet(a);
+          const sheetB = this.getPlayerSheet(b);
+          const footA = this.input[restart.side].players[a]?.foot ?? 'Right';
+          const footB = this.input[restart.side].players[b]?.foot ?? 'Right';
+          const matchFootA = cornerSide === 'left' ? footA !== 'Left' : footA !== 'Right';
+          const matchFootB = cornerSide === 'left' ? footB !== 'Left' : footB !== 'Right';
+          if (matchFootA !== matchFootB) return matchFootA ? -1 : 1;
+          return sheetB.attributes.setPieces - sheetA.attributes.setPieces;
+        });
+        takerId = candidates[0] ?? this.selectOutfielder(team, 'LM');
+      }
+
       const dur = this.getRestartDuration(K.durations.corner, restart.side, takerId);
       this.t += dur;
       this.teamStats[restart.side].possessionSec += dur;
       this.updatePlayerMinutes(dur);
 
-      // Corner pos
-      const cornerAy = restart.pos.ay < 34 ? 0 : 68;
       this.ballPosAttacking = { ax: 105, ay: cornerAy };
       this.ballPosAbsolute = toAbsolute(105, cornerAy, restart.side, this.half);
-
       this.ballHolderId = takerId;
       this.lastPasserId = null;
 
@@ -1166,6 +1214,36 @@ export class MatchEngine implements MatchSim {
         to: this.ballPosAbsolute,
         importance: 1,
       });
+
+      // 2. Active Routine resolution & Rotation (§13.20.2)
+      const sideKey = cornerSide === 'left' ? 'leftCorners' : 'rightCorners';
+      const cornerRoutines = team.setPieces?.[sideKey];
+      let routine = undefined as any;
+      let routineUsesInMatch = 1;
+
+      if (cornerRoutines && cornerRoutines.routines.length > 0) {
+        let rIdx = cornerRoutines.activeRoutine;
+        if (cornerRoutines.rotate) {
+          rIdx = this.cornerRoutineIndices[restart.side][cornerSide];
+          this.cornerRoutineIndices[restart.side][cornerSide] =
+            (this.cornerRoutineIndices[restart.side][cornerSide] + 1) %
+            cornerRoutines.routines.length;
+        }
+        routine = cornerRoutines.routines[rIdx] ?? cornerRoutines.routines[0];
+        if (routine) {
+          const prevUses = this.cornerRoutineUses[restart.side][cornerSide][rIdx] ?? 0;
+          this.cornerRoutineUses[restart.side][cornerSide][rIdx] = prevUses + 1;
+          routineUsesInMatch = prevUses + 1;
+
+          // Populate auto jobs if routine has empty jobs
+          if (!routine.jobs || Object.keys(routine.jobs).length === 0) {
+            routine.jobs = generateAutoCornerJobs(
+              team.lineup.map((id) => (id ? this.getPlayerSheet(id) : null)),
+              routine.target,
+            );
+          }
+        }
+      }
 
       // Resolve corner contest
       const takerP = this.getSetPiecePlayer(takerId);
@@ -1189,6 +1267,12 @@ export class MatchEngine implements MatchSim {
         cornerSwing: team.instructions.cornerSwing,
         menBack: team.instructions.menBack,
         postMen: oppTeam.instructions.postMen,
+        routine,
+        routineUsesInMatch,
+        edgeGuard: oppTeam.setPieces?.defending?.edgeGuard ?? false,
+        forwardsUp: oppTeam.setPieces?.defending?.forwardsUp ?? 1,
+        markMainManId: oppTeam.setPieces?.defending?.markMainMan ?? 'Auto',
+        cornerSide,
         rng: this.rng,
       });
 
@@ -1245,10 +1329,41 @@ export class MatchEngine implements MatchSim {
           importance: 0,
         });
         if (cornerResult.secondBallSide === 'ATTACKING') {
-          // Attacking keeps ball in MID Centre
-          this.ballPosAttacking = { ax: 52.5, ay: 34 };
-          this.ballPosAbsolute = toAbsolute(52.5, 34, restart.side, this.half);
-          this.ballHolderId = this.selectOutfielder(team, 'CM');
+          // If edge player shot (§13.20.1)
+          if (cornerResult.isSecondBallEdgeShot) {
+            const edgePlayer = cornerResult.secondBallAttackerId
+              ? this.getSetPiecePlayer(cornerResult.secondBallAttackerId)
+              : takerP;
+            const defP = this.selectPrimaryDefenderId(oppTeam);
+            const defSheet = defP ? this.getPlayerSheet(defP) : null;
+            const shotRes = resolveShot({
+              context: 'OUTSIDE_CENTRAL',
+              attacker: edgePlayer,
+              goalkeeper: gkP,
+              defender: defSheet,
+              trainingBonus: this.getTrainingBonus(restart.side, 'setPieces'),
+              homeAdvantage: restart.side === 'home' ? K.homeAdvantage : 0,
+              defenderHomeAdvantage: restart.side === 'away' ? K.homeAdvantage : 0,
+              extraXgRefAdd: oppTeam.setPieces?.defending?.edgeGuard
+                ? -K.sp.defendingCorners.edgeGuard.longRangeXGRefReduction
+                : 0,
+              attackerCtxModifier: K.sp.jobs.edge.shotUtilityAdd,
+              rng: this.rng,
+            });
+            this.processShotResult(
+              restart.side,
+              edgePlayer.id,
+              'OUTSIDE_CENTRAL',
+              shotRes,
+              defP ?? undefined,
+            );
+          } else {
+            // Attacking keeps ball in MID Centre
+            this.ballPosAttacking = { ax: 52.5, ay: 34 };
+            this.ballPosAbsolute = toAbsolute(52.5, 34, restart.side, this.half);
+            this.ballHolderId =
+              cornerResult.secondBallAttackerId ?? this.selectOutfielder(team, 'CM');
+          }
         } else {
           // Defenders win possession
           this.possessionSide = oppTeam.side;
@@ -1256,9 +1371,13 @@ export class MatchEngine implements MatchSim {
           this.ballPosAbsolute = toAbsolute(35, 34, oppTeam.side, this.half);
           this.ballHolderId = this.selectOutfielder(oppTeam, 'CB');
 
-          // Men back (corners, SPEC §13.18.8): 1 gives 28% counter on clearance, 2 gives 18%, 3 gives 12%
-          const mb = team.instructions.menBack ?? 2;
-          const counterChance = K.d2.setPieces.menBack[mb]?.clearanceCounterChance ?? 0.18;
+          // Forwards up counter calculation (§13.20.5)
+          const fu = oppTeam.setPieces?.defending?.forwardsUp ?? 1;
+          let counterChance = K.sp.defendingCorners.forwardsUp[fu]?.clearanceCounterChance ?? 0.18;
+          if (fu === 1) {
+            const mb = team.instructions.menBack ?? 2;
+            counterChance = K.d2.setPieces.menBack[mb]?.clearanceCounterChance ?? 0.18;
+          }
           if (this.rng.chance(counterChance)) {
             this.phase = { type: 'COUNTER', remainingSteps: 2 };
             this.teamStats[oppTeam.side].countersStarted =
@@ -1284,7 +1403,21 @@ export class MatchEngine implements MatchSim {
       this.teamStats[restart.side].possessionSec += dur;
       this.updatePlayerMinutes(dur);
 
-      const takerId = team.penaltyTaker ?? this.selectOutfielder(team, 'ST');
+      // Order of penalty takers (§13.20.3)
+      let takerId = team.penaltyTaker;
+      const penaltyOrder = (team.takers as any)?.penalties as (PlayerId | null)[] | undefined;
+      if (penaltyOrder && penaltyOrder.length > 0) {
+        for (const pId of penaltyOrder) {
+          if (pId && team.lineup.includes(pId) && !team.redCardedPlayers.includes(pId)) {
+            takerId = pId;
+            break;
+          }
+        }
+      }
+      if (!takerId || !team.lineup.includes(takerId) || team.redCardedPlayers.includes(takerId)) {
+        takerId = this.selectOutfielder(team, 'ST');
+      }
+
       const gkId = oppTeam.lineup[0] ?? null;
       const takerP = this.getPlayerSheet(takerId);
       const gkP = gkId ? this.getPlayerSheet(gkId) : takerP;
@@ -1302,7 +1435,16 @@ export class MatchEngine implements MatchSim {
 
       this.processShotResult(restart.side, takerId, 'PENALTY', shotRes, undefined);
     } else if (restart.type === 'FREE_KICK') {
-      const takerId = team.freeKickTaker ?? this.selectOutfielder(team, 'CM');
+      const isDirectOrDummy =
+        restart.shotContext === 'DIRECT_FK' || restart.shotContext === ('DUMMY_FK' as any);
+      let takerId = isDirectOrDummy
+        ? ((team.takers as any)?.directFreeKick ?? team.freeKickTaker)
+        : ((team.takers as any)?.wideFreeKick ?? team.freeKickTaker);
+
+      if (!takerId || !team.lineup.includes(takerId) || team.redCardedPlayers.includes(takerId)) {
+        takerId = this.selectOutfielder(team, 'CM');
+      }
+
       const dur = this.getRestartDuration(K.durations.freeKick, restart.side, takerId);
       this.t += dur;
       this.teamStats[restart.side].possessionSec += dur;
@@ -1320,32 +1462,94 @@ export class MatchEngine implements MatchSim {
         importance: 0,
       });
 
-      if (restart.shotContext === 'DIRECT_FK') {
+      if (isDirectOrDummy) {
+        const isDummy = restart.shotContext === ('DUMMY_FK' as any);
+        let shooterId = takerId;
+
+        if (isDummy) {
+          // Dummy: 20% mistimed -> recycle with no shot (§13.20.4)
+          if (this.rng.chance(K.sp.freeKicks.central.dummy.mistimedRecycleChance)) {
+            this.forcedAction = { action: 'progress' };
+            return;
+          }
+          // Second best setPieces player strikes!
+          const candidates = team.lineup.filter(
+            (id): id is PlayerId =>
+              !!id && !team.redCardedPlayers.includes(id) && team.lineup.indexOf(id) > 0,
+          );
+          candidates.sort(
+            (a, b) =>
+              this.getPlayerSheet(b).attributes.setPieces -
+              this.getPlayerSheet(a).attributes.setPieces,
+          );
+          shooterId = candidates[1] ?? candidates[0] ?? takerId;
+        }
+
+        const wallDefenders = this.getPlayersInBox(oppTeam, oppTeam.side);
+        const wallSetting = oppTeam.setPieces?.defending?.wall ?? 'Auto';
+        const wallEffect = calculateWallEffect(wallSetting, wallDefenders);
+
         const gkId = oppTeam.lineup[0] ?? null;
-        const takerP = this.getPlayerSheet(takerId);
-        const gkP = gkId ? this.getPlayerSheet(gkId) : takerP;
+        const shooterP = this.getPlayerSheet(shooterId);
+        const gkP = gkId ? this.getPlayerSheet(gkId) : shooterP;
         const defP = this.selectPrimaryDefenderId(oppTeam);
         const defSheet = defP ? this.getPlayerSheet(defP) : null;
 
+        const extraXg = wallEffect.xgRefAdd + (isDummy ? K.sp.freeKicks.central.dummy.xgRefAdd : 0);
+        const blockAdd = isDummy ? K.sp.freeKicks.central.dummy.wallBlockAdd : 0;
+
         const shotRes = resolveShot({
           context: 'DIRECT_FK',
-          attacker: takerP,
+          attacker: shooterP,
           goalkeeper: gkP,
           defender: defSheet,
           trainingBonus: this.getTrainingBonus(restart.side, 'setPieces'),
           homeAdvantage: restart.side === 'home' ? K.homeAdvantage : 0,
           defenderHomeAdvantage: restart.side === 'away' ? K.homeAdvantage : 0,
+          customBlockProb: wallEffect.blockProb,
+          blockProbAdd: blockAdd,
+          extraXgRefAdd: extraXg,
           rng: this.rng,
         });
 
-        this.processShotResult(restart.side, takerId, 'DIRECT_FK', shotRes, defP ?? undefined);
+        this.processShotResult(restart.side, shooterId, 'DIRECT_FK', shotRes, defP ?? undefined);
+      } else if (restart.shotContext === ('QUICK_FK' as any)) {
+        // Quick deep FK (§13.20.4): 15% rushed and lost
+        if (this.rng.chance(K.sp.freeKicks.deep.quick.rushedLostChance)) {
+          this.possessionSide = oppTeam.side;
+          this.ballHolderId = this.selectOutfielder(oppTeam, 'CM');
+          return;
+        }
+        this.shortFkProgressBonus = true;
+        this.forcedAction = { action: 'progress' };
+      } else if (restart.shotContext === ('LONG_FK' as any)) {
+        this.forcedAction = { action: 'cross' };
       } else if (restart.shotContext === ('CROSS_FK' as any)) {
+        // Wide FK offside trap check (§13.20.6)
+        const isWide = restart.pos.ax >= 70 && (restart.pos.ay < 22.67 || restart.pos.ay >= 45.33);
+        if (
+          isWide &&
+          oppTeam.setPieces?.defending?.lineHeight === 'High' &&
+          this.rng.chance(K.sp.defendingFreeKicks.lineHeight.high.offsideChance)
+        ) {
+          this.emitEvent('OFFSIDE', 1, {
+            side: restart.side,
+            playerId: takerId,
+            importance: 1,
+          });
+          this.pendingRestart = {
+            type: 'FREE_KICK',
+            side: oppTeam.side,
+            pos: { ax: 105 - restart.pos.ax, ay: 68 - restart.pos.ay },
+          };
+          return;
+        }
         this.forcedAction = { action: 'cross' };
       } else if (restart.shotContext === ('SHORT_FK' as any)) {
         this.shortFkProgressBonus = true;
         this.forcedAction = { action: 'progress' };
       } else {
-        // Cross or keep ball
+        // Keep ball
         this.forcedAction = { action: 'progress' };
       }
     }
@@ -2940,7 +3144,7 @@ export class MatchEngine implements MatchSim {
     const restartType = determineFoulRestart(
       attackingPos,
       this.rng,
-      awardedTeam.instructions.freeKicks,
+      awardedTeam.setPieces?.freeKicks ?? awardedTeam.instructions.freeKicks,
     );
     if (restartType === 'PENALTY') {
       this.emitEvent('PENALTY_AWARDED', 0, {
@@ -2952,32 +3156,12 @@ export class MatchEngine implements MatchSim {
         side: awardedSide,
         pos: { ax: 94, ay: 34 },
       };
-    } else if (restartType === 'DIRECT_FK') {
-      this.pendingRestart = {
-        type: 'FREE_KICK',
-        side: awardedSide,
-        pos: { ...attackingPos },
-        shotContext: 'DIRECT_FK',
-      };
-    } else if (restartType === 'CROSS_FK') {
-      this.pendingRestart = {
-        type: 'FREE_KICK',
-        side: awardedSide,
-        pos: { ...attackingPos },
-        shotContext: 'CROSS_FK' as any,
-      };
-    } else if (restartType === 'SHORT_FK') {
-      this.pendingRestart = {
-        type: 'FREE_KICK',
-        side: awardedSide,
-        pos: { ...attackingPos },
-        shotContext: 'SHORT_FK' as any,
-      };
     } else {
       this.pendingRestart = {
         type: 'FREE_KICK',
         side: awardedSide,
         pos: { ...attackingPos },
+        shotContext: restartType as any,
       };
     }
   }
@@ -3537,13 +3721,18 @@ export class MatchEngine implements MatchSim {
   private getSetPiecePlayer(id: PlayerId): any {
     const sheet = this.getPlayerSheet(id);
     const live = this.players[id]!;
+    const homeSlot = this.homeTeam.lineup.indexOf(id);
+    const awaySlot = this.awayTeam.lineup.indexOf(id);
+    const slot = homeSlot >= 0 ? homeSlot : awaySlot >= 0 ? awaySlot : 0;
+    const foot = this.input.home.players[id]?.foot ?? this.input.away.players[id]?.foot ?? 'Right';
     return {
       id,
       name: sheet.name,
-      slot: 0,
+      slot,
       attributes: sheet.attributes,
       condition: live.condition,
       morale: live.morale,
+      foot,
     };
   }
 
