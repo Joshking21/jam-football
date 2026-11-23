@@ -30,6 +30,7 @@ The user explicitly wants nothing that looks or reads like generic AI output: th
 - Keep explanations short and plain.
 
 ## Status
+- 2026-11-23 (later): **design references for every main screen** are in `docs/design/<screen>/`, each with a PNG target, an `index.html` source and a README, and linked from the screen's SPEC section: title, new-game, training, fulltime (+half-time), week-summary (with the "Local papers" table), league, fixtures, season-end, squad (+player file), scouting, club, inbox, sacked, press, dressing-room. The images are drawn in headless Edge from HTML/SVG (fal is still not set up). The M4 review's second pass (`REVIEW-M4.md`) is open: kits, static players, fake capture states, SPEC refs in UI, lighting. Pushed through c172651.
 - 2026-11-23: **the spec is split** to save Gemini's data and tokens. `docs/SPEC.md` is now an index with a parts table, task map and section map; the text lives in `docs/spec/*.md` (32 parts, same § numbers). **Edit the parts, not the index**, and add a task-map row when a new task needs different parts. `docs/PROGRESS.md` keeps only the latest 3 entries; older ones are in `PROGRESS-archive.md`. `GEMINI.md` was rewritten with reading rules (one session per task, no screenshots, no whole-spec reads). Gemini committed the M4 fixes (4a84c2f) and asked for the second-pass review. Free walking is now the top-priority extra (§24).
 - 2026-11-22 (later): more depth went into SPEC 1.7, all as new M5 tasks:
   - task 8: training in detail (§12.18)
