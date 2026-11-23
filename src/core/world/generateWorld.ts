@@ -25,6 +25,7 @@ import { getPositionWeights, rawOvr, getPrimaryOvr } from '../player/ratings';
 import { valueOf, wageFor } from '../player/value';
 import { generateFixtures } from '../season/fixtures';
 import { createInitialTable, sortTable } from '../season/table';
+import { BALANCED_WEEK_SCHEDULE } from '../people/training';
 
 export interface WorldSnapshot {
   seed: number;
@@ -754,6 +755,9 @@ export function generateWorld(seed: number = WORLD_SEED): WorldSnapshot {
         focus: 'Balanced',
         intensity: 'Normal',
         individual: {},
+        schedule: { ...BALANCED_WEEK_SCHEDULE },
+        activeTemplate: 'balanced',
+        playerPlans: {},
       },
       seasonStats: {
         gateIncome: 0,

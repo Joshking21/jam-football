@@ -15,6 +15,7 @@ import {
 import { Rng } from '../rng';
 import conversationsData from '../../content/conversations.json';
 import { clamp, roundTo } from '../math';
+import { BALANCE } from '@/config/balance';
 
 export interface ConversationResolution {
   updatedPlayer: Player;
@@ -61,7 +62,22 @@ export function checkConversationTriggers(
   for (const player of clubPlayers) {
     const isFit = player.injury === null;
 
-    // 1. Playing time: role Star/Starter or promisedRole Starter, started < 50% of the last 4 matches while fit -> 60% chance
+    // 1. Training well, not playing (SPEC §12.18.7): 3 weeks running >= 7.5 while started < 50% of those matches -> 50% chance
+    if (player.ratingHistory && player.ratingHistory.length >= 3) {
+      const last3Ratings = player.ratingHistory.slice(-3);
+      const allHigh = last3Ratings.every((r) => r >= 7.5);
+      if (allHigh && matchCount >= 3) {
+        const startRatio = player.stats.starts / matchCount;
+        if (startRatio < 0.5) {
+          if (nextFloat() < (BALANCE.training.ratings.wellNotPlayingChance ?? 0.5)) {
+            candidates.push({ player, type: 'training_well', priority: 5 });
+            continue;
+          }
+        }
+      }
+    }
+
+    // 2. Playing time: role Star/Starter or promisedRole Starter, started < 50% of the last 4 matches while fit -> 60% chance
     const role = player.contract?.role;
     const promisedRole = player.contract?.promisedRole;
     const isKeyRole = role === 'Star' || role === 'Starter' || promisedRole === 'Starter';
@@ -76,7 +92,7 @@ export function checkConversationTriggers(
       }
     }
 
-    // 2. Unhappy morale: morale < 30 -> 40% chance
+    // 3. Unhappy morale: morale < 30 -> 40% chance
     if (player.morale < 30) {
       if (nextFloat() < 0.4) {
         candidates.push({ player, type: 'unhappy', priority: 3 });
@@ -84,7 +100,7 @@ export function checkConversationTriggers(
       }
     }
 
-    // 3. New contract: Ambitious or growth >= 3 this season and yearsLeft = 1 -> 30% chance
+    // 4. New contract: Ambitious or growth >= 3 this season and yearsLeft = 1 -> 30% chance
     const yearsLeft = player.contract?.yearsLeft ?? 2;
     if (yearsLeft === 1 && (player.personality === 'Ambitious' || player.growth >= 3)) {
       if (nextFloat() < 0.3) {
@@ -93,7 +109,7 @@ export function checkConversationTriggers(
       }
     }
 
-    // 4. Praise form: avg rating >= 7.5 over last 3 matches -> 20% chance
+    // 5. Praise form: avg rating >= 7.5 over last 3 matches -> 20% chance
     if (player.form && player.form.length >= 3) {
       const last3 = player.form.slice(-3);
       const avgLast3 = last3.reduce((a, b) => a + b, 0) / 3;
@@ -150,6 +166,7 @@ export function checkConversationTriggers(
     contract: 'his contract situation',
     unhappy: 'his morale and squad happiness',
     praise: 'his outstanding recent performances',
+    training_well: 'his excellent training form and desire to play',
   };
 
   const inboxItem: InboxItem = {

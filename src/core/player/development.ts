@@ -1,9 +1,18 @@
-// Implements SPEC §12.3 & §12.4 Weekly Player Development and Age Decline
-import { Player, Attributes, AttributeKey, TrainingPlan, Intensity, Position } from '../types';
+// Implements SPEC §12.3, §12.4 & §12.18 Weekly Player Development and Age Decline
+import {
+  Player,
+  Attributes,
+  AttributeKey,
+  TrainingPlan,
+  Intensity,
+  Position,
+  WeeklyTrainingSchedule,
+} from '../types';
 import { Rng } from '../rng';
 import { clamp, roundTo } from '../math';
 import { BALANCE } from '@/config/balance';
 import { getPositionWeights, rawOvr } from './ratings';
+import { countTrainingSessions, getWeekAttributeWeights } from '../people/training';
 
 export type TrainingFocus = TrainingPlan['focus'];
 
@@ -13,6 +22,15 @@ export interface DevelopmentOptions {
   minutesLastMatch: number;
   individualFocus?: AttributeKey | null;
   rng: Rng;
+  // SPEC §12.18 Detailed Training parameters
+  schedule?: WeeklyTrainingSchedule;
+  workload?: 'Light' | 'Normal' | 'Heavy';
+  extraSessions?: boolean;
+  extraSessionsSkipped?: boolean;
+  trainingRating?: number;
+  isMentee?: boolean;
+  isMentor?: boolean;
+  oneToOneTechnique?: boolean;
 }
 
 export interface DevelopmentResult {
@@ -148,6 +166,41 @@ export function processPlayerDevelopment(
     const moraleFactor = nextPlayer.morale >= 60 ? 1.1 : nextPlayer.morale < 30 ? 0.8 : 1.0;
 
     growthDelta = baseGrowth * headroomFactor * minutesFactor * intensityFactor * moraleFactor;
+
+    // SPEC §12.18 Detailed Training volume & multipliers
+    if (options.schedule) {
+      const trainingSessions = countTrainingSessions(options.schedule);
+      const volumeFactor =
+        BALANCE.training.volumeBase + BALANCE.training.volumePerSession * trainingSessions;
+      growthDelta *= volumeFactor;
+    }
+
+    if (options.trainingRating !== undefined) {
+      if (options.trainingRating >= BALANCE.training.ratings.highThreshold) {
+        growthDelta *= BALANCE.training.ratings.highGrowthMult;
+      } else if (options.trainingRating <= BALANCE.training.ratings.lowThreshold) {
+        growthDelta *= BALANCE.training.ratings.lowGrowthMult;
+      }
+    }
+
+    if (options.workload) {
+      const wlMult = BALANCE.training.workload[options.workload]?.growth ?? 1.0;
+      growthDelta *= wlMult;
+    }
+
+    if (options.extraSessions && !options.extraSessionsSkipped) {
+      growthDelta *= BALANCE.training.extraSessions.growth;
+    }
+
+    if (options.isMentee) {
+      growthDelta *= BALANCE.training.mentoring.menteeGrowthMult;
+    } else if (options.isMentor) {
+      growthDelta *= BALANCE.training.mentoring.mentorGrowthMult;
+    }
+
+    if (options.oneToOneTechnique) {
+      growthDelta *= BALANCE.training.oneToOne.techniqueGrowthMult;
+    }
   } else if (baseGrowth < 0) {
     // Decline can be slightly mitigated by higher intensity or accelerated by low intensity
     // SPEC: Base decline applies directly
@@ -162,7 +215,21 @@ export function processPlayerDevelopment(
   const posWeights = getPositionWeights(primaryPos);
 
   // 4. While growth >= 1.0 (Positive progression)
-  const candidatePool = getFocusAttributes(focus, primaryPos, nextPlayer.age);
+  let candidatePool: AttributeKey[];
+  let candidateWeights = posWeights;
+
+  if (options.schedule) {
+    const weekWeights = getWeekAttributeWeights(options.schedule, primaryPos, nextPlayer.age);
+    const keys = Object.keys(weekWeights) as AttributeKey[];
+    if (keys.length > 0) {
+      candidatePool = keys;
+      candidateWeights = weekWeights;
+    } else {
+      candidatePool = getFocusAttributes(focus, primaryPos, nextPlayer.age);
+    }
+  } else {
+    candidatePool = getFocusAttributes(focus, primaryPos, nextPlayer.age);
+  }
 
   while (nextPlayer.growth >= 1.0) {
     const currentOvr = Math.round(rawOvr(nextPlayer.attributes, primaryPos));
@@ -175,7 +242,7 @@ export function processPlayerDevelopment(
     nextPlayer.growth = roundTo(nextPlayer.growth - 1.0, 4);
 
     // Pick 3 attributes without repeats
-    const picked = pickWeightedAttributes(candidatePool, posWeights, 3, rng, individualFocus);
+    const picked = pickWeightedAttributes(candidatePool, candidateWeights, 3, rng, individualFocus);
 
     for (const attr of picked) {
       if (nextPlayer.attributes[attr] < 99) {

@@ -145,6 +145,18 @@ export interface Player {
   traits?: string[];
   rest?: boolean; // rested this week (§12.17.3)
   consecutiveRestWeeks?: number;
+  // SPEC §12.18 Detailed Training properties
+  workload?: 'Light' | 'Normal' | 'Heavy';
+  extraSessions?: boolean;
+  extraSessionsSkipped?: boolean;
+  mentorId?: PlayerId | null;
+  ratingHistory?: number[]; // last 8 training ratings
+  ovrHistory?: number[]; // weekly OVR history for the season
+  attrHistory?: { matchday: number; attributes: Record<AttributeKey, number> }[];
+  lastTrainingRating?: number;
+  consecutiveHighRatingsNotPlaying?: number;
+  decisionContextBonus?: number;
+  traitProgress?: Record<string, number>;
 }
 
 // --- 8.4 Tactics ---
@@ -325,7 +337,70 @@ export type MatchPrep = 'None' | 'SetPieces' | 'Press' | 'Wingers' | 'Shape';
 export type IndividualFocus =
   | { type: 'attribute'; attribute: AttributeKey }
   | { type: 'role'; roleId: RoleId }
-  | { type: 'position'; position: Position };
+  | { type: 'position'; position: Position }
+  | { type: 'trait'; trait: string }
+  | { type: 'mentor'; mentorId: PlayerId };
+
+// SPEC §12.18 Training Session & Schedule types
+export type TrainingSessionId =
+  | 'finishing'
+  | 'crossing'
+  | 'combination'
+  | 'dribbling'
+  | 'defensive_shape'
+  | 'defending_box'
+  | 'pressing'
+  | 'endurance'
+  | 'speed_power'
+  | 'shape_work'
+  | 'video_analysis'
+  | 'opponent_prep'
+  | 'set_pieces'
+  | 'small_sided'
+  | 'recovery'
+  | 'rest'
+  | 'light';
+
+export type TrainingCategory =
+  | 'Attacking'
+  | 'Defending'
+  | 'Fitness'
+  | 'Tactical'
+  | 'SetPieces'
+  | 'Balanced'
+  | 'Recovery'
+  | 'None';
+
+export type TrainingSlotKey =
+  | 'd2_am'
+  | 'd2_pm'
+  | 'd3_am'
+  | 'd3_pm'
+  | 'd4_am'
+  | 'd4_pm'
+  | 'd5_am'
+  | 'd5_pm'
+  | 'd6';
+
+export type WeeklyTrainingSchedule = Record<TrainingSlotKey, TrainingSessionId>;
+
+export type TrainingTemplateId =
+  | 'balanced'
+  | 'tactical'
+  | 'physical'
+  | 'attacking'
+  | 'defensive'
+  | 'opponent'
+  | 'recovery'
+  | 'custom';
+
+export interface PersonalPlayerPlan {
+  workload: 'Light' | 'Normal' | 'Heavy';
+  extraSessions: boolean;
+  mentorId: PlayerId | null;
+}
+
+export type OneToOneType = 'Technique' | 'Confidence' | 'Fitness' | 'Video';
 
 export type StaffRole = 'assistant' | 'coach' | 'scout' | 'physio';
 
@@ -350,6 +425,18 @@ export interface TrainingPlan {
   individual: Record<PlayerId, AttributeKey | null>;
   individualFocus?: Record<PlayerId, IndividualFocus | null>;
   prep?: MatchPrep;
+  // SPEC §12.18 Training in detail
+  schedule?: WeeklyTrainingSchedule;
+  customSchedule?: WeeklyTrainingSchedule;
+  activeTemplate?: TrainingTemplateId;
+  letTheoPlan?: boolean;
+  theoSuggestedSlots?: Partial<Record<TrainingSlotKey, boolean>>;
+  theosMemo?: { reasons: string[]; opponentPrep?: MatchPrep };
+  oneToOneUsedThisWeek?: boolean;
+  lastOneToOnePlayerId?: PlayerId | null;
+  oneToOneConsecutivePlayerId?: PlayerId | null;
+  oneToOneConsecutiveCount?: number;
+  playerPlans?: Record<PlayerId, PersonalPlayerPlan>;
 }
 
 export interface Club {
@@ -844,8 +931,8 @@ export type MatchCommand =
       issuedAtT: number;
     };
 
-// --- 8.11 Player Conversation Types (SPEC §12.9, §16.4) ---
-export type ConversationType = 'playing_time' | 'contract' | 'unhappy' | 'praise';
+// --- 8.11 Player Conversation Types (SPEC §12.9, §16.4, §12.18.7) ---
+export type ConversationType = 'playing_time' | 'contract' | 'unhappy' | 'praise' | 'training_well';
 
 export interface PlayerPromise {
   kind: 'Starter';

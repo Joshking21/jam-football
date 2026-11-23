@@ -90,18 +90,23 @@ export function checkInMatchInjury(
 }
 
 /**
- * Checks weekly training injury per SPEC §12.3:
- * 0.004 × intensityInjury × (fatigue > 60 ? 1.5 : 1)
+ * Checks weekly training injury per SPEC §12.3 & §12.18.3:
+ * 0.004 × intensityInjury × (fatigue > 60 ? 1.5 : 1) × (weekLoad / 12) × workload × extraSessions
  */
 export function checkTrainingInjury(
   rng: Rng,
   intensity: Intensity,
   fatigue: number,
+  weekLoad: number = 12,
+  workloadMultiplier: number = 1.0,
+  extraSessionsMultiplier: number = 1.0,
 ): Injury | null {
   const baseChance = BALANCE.training.baseInjuryChancePerPlayer; // 0.004
   const intFactor = BALANCE.training.intensityFactors[intensity]?.injury ?? 1.0;
   const fatTerm = fatigue > BALANCE.fatigue.hazardThreshold ? BALANCE.fatigue.hazardMultiplier : 1;
-  const prob = baseChance * intFactor * fatTerm;
+  const loadFactor = weekLoad / (BALANCE.training.baselineLoad ?? 12);
+  const prob =
+    baseChance * intFactor * fatTerm * loadFactor * workloadMultiplier * extraSessionsMultiplier;
 
   if (rng.next() < prob) {
     return rollInjury(rng);

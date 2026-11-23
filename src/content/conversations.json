@@ -431,5 +431,123 @@
         ]
       }
     ]
+  },
+  "training_well": {
+    "openings": [
+      {
+        "id": "conv_trainwell_open_01",
+        "text": "Boss, I've been giving everything in training every day. When do I get a run in the team?",
+        "voText": "Boss, I've been giving everything in training every day. When do I get a run in the team?",
+        "replies": [
+          {
+            "id": "conv_trainwell_rep_01_a",
+            "text": "{player}, you've earned your chance. You'll start the next match.",
+            "voText": "You've earned your chance. You'll start the next match.",
+            "nameSlot": "start",
+            "tone": "promise",
+            "playerReaction": "Thank you, boss. I won't let you down.",
+            "moraleDelta": 10,
+            "promise": {
+              "kind": "Starter",
+              "matches": 3,
+              "targetStarts": 2
+            }
+          },
+          {
+            "id": "conv_trainwell_rep_01_b",
+            "text": "I see the work, and your time is coming soon. Stay sharp, {player}.",
+            "voText": "I see the work, and your time is coming soon. Stay sharp.",
+            "nameSlot": "end",
+            "tone": "supportive",
+            "playerReaction": "Fair enough. I'll keep pushing.",
+            "moraleDelta": 2
+          },
+          {
+            "id": "conv_trainwell_rep_01_c",
+            "text": "Training well is the bare minimum at this club. You play when I say you play.",
+            "voText": "Training well is the bare minimum at this club. You play when I say you play.",
+            "tone": "tough",
+            "playerReaction": "Right. Message received.",
+            "moraleDelta": -6
+          }
+        ]
+      },
+      {
+        "id": "conv_trainwell_open_02",
+        "text": "Gaffer, the lads tell me I'm flying in the sessions. But Saturday comes and I'm sitting on the bench.",
+        "voText": "Gaffer, the lads tell me I'm flying in the sessions. But Saturday comes and I'm sitting on the bench.",
+        "replies": [
+          {
+            "id": "conv_trainwell_rep_02_a",
+            "text": "I hear you, {player}. You're in the eleven this weekend.",
+            "voText": "I hear you. You're in the eleven this weekend.",
+            "nameSlot": "middle",
+            "tone": "promise",
+            "playerReaction": "That's what I needed to hear.",
+            "moraleDelta": 8,
+            "promise": {
+              "kind": "Starter",
+              "matches": 2,
+              "targetStarts": 1
+            }
+          },
+          {
+            "id": "conv_trainwell_rep_02_b",
+            "text": "The tactical plan called for someone else, but your form isn't going unnoticed.",
+            "voText": "The tactical plan called for someone else, but your form isn't going unnoticed.",
+            "tone": "tactical",
+            "playerReaction": "I understand, but it's hard to watch from the side.",
+            "moraleDelta": -2
+          },
+          {
+            "id": "conv_trainwell_rep_02_c",
+            "text": "If you don't have the patience to fight for your place, we can look at a transfer.",
+            "voText": "If you don't have the patience to fight for your place, we can look at a transfer.",
+            "tone": "release",
+            "playerReaction": "Maybe that's best for both of us.",
+            "moraleDelta": -5,
+            "transferList": true
+          }
+        ]
+      },
+      {
+        "id": "conv_trainwell_open_03",
+        "text": "I need match minutes, gaffer. My training numbers are the highest in the squad.",
+        "voText": "I need match minutes, gaffer. My training numbers are the highest in the squad.",
+        "replies": [
+          {
+            "id": "conv_trainwell_rep_03_a",
+            "text": "You're right, {player}. I'll rotate you in over the next few games.",
+            "voText": "You're right. I'll rotate you in over the next few games.",
+            "nameSlot": "middle",
+            "tone": "promise",
+            "playerReaction": "Cheers gaffer. I'll take it with both hands.",
+            "moraleDelta": 7,
+            "promise": {
+              "kind": "Rotation",
+              "matches": 4,
+              "targetStarts": 2
+            }
+          },
+          {
+            "id": "conv_trainwell_rep_03_b",
+            "text": "It's a long season, {player}. We need everyone fit and ready when called upon.",
+            "voText": "It's a long season. We need everyone fit and ready when called upon.",
+            "nameSlot": "middle",
+            "tone": "patient",
+            "playerReaction": "I'll be ready when my number's called.",
+            "moraleDelta": 1
+          },
+          {
+            "id": "conv_trainwell_rep_03_c",
+            "text": "I pick teams based on match performance, not just drills on Tuesday morning.",
+            "voText": "I pick teams based on match performance, not just drills on Tuesday morning.",
+            "tone": "firm",
+            "playerReaction": "What's the point of training then?",
+            "moraleDelta": -8
+          }
+        ]
+      }
+    ]
   }
 }

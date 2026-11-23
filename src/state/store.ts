@@ -11,8 +11,18 @@ import {
   MatchPrep,
   IndividualFocus,
   StaffMember,
+  TrainingSessionId,
+  TrainingSlotKey,
+  TrainingTemplateId,
+  OneToOneType,
 } from '@/core/types';
 import { replaceStaffMember } from '@/core/club/clubDepth';
+import {
+  TRAINING_TEMPLATES,
+  BALANCED_WEEK_SCHEDULE,
+  generateTheosWeek,
+  applyOneToOneSession,
+} from '@/core/people/training';
 import { GameSettings, loadSettings, saveSettings } from './settings';
 import { getSaveMeta, loadGame, saveGame, SaveMeta, triggerDebouncedAutosave } from './saves';
 import { createNewGame, NewGameOptions } from '@/core/game/newGame';
@@ -31,7 +41,7 @@ import {
   completeTransfer,
   requestBoardWageIncrease as reqWageInc,
 } from '@/core/transfers/transfers';
-import { formatMoney } from '@/core/math';
+import { clamp, formatMoney } from '@/core/math';
 import { valueOf, wageFor } from '@/core/player/value';
 import { BALANCE } from '@/config/balance';
 
@@ -132,6 +142,21 @@ export interface AppState {
   setPlayerRest: (playerId: PlayerId, rest: boolean) => void;
   setPlayerIndividualFocus: (playerId: PlayerId, focus: IndividualFocus | null) => void;
   hireStaffMember: (newStaff: StaffMember) => { success: boolean; message: string };
+  // SPEC §12.18 Training store actions
+  setWeeklyTrainingSlot: (slot: TrainingSlotKey, sessionId: TrainingSessionId) => void;
+  applyTrainingTemplate: (templateId: TrainingTemplateId) => void;
+  applyTheosWeekPlan: () => void;
+  setLetTheoPlan: (enabled: boolean) => void;
+  setPlayerWorkload: (playerId: PlayerId, workload: 'Light' | 'Normal' | 'Heavy') => void;
+  setPlayerExtraSessions: (playerId: PlayerId, extra: boolean) => void;
+  setMentoringPair: (
+    mentorId: PlayerId | null,
+    menteeId: PlayerId,
+  ) => { success: boolean; reason?: string };
+  conductOneToOneSession: (
+    playerId: PlayerId,
+    type: OneToOneType,
+  ) => { success: boolean; message: string };
 }
 
 export const useStore = create<AppState>((set, get) => {
@@ -864,7 +889,17 @@ export const useStore = create<AppState>((set, get) => {
       const pName = player?.knownAs ?? player?.lastName ?? 'Player';
       get().showToast(
         focus
-          ? `Individual focus set for ${pName}: ${focus.type === 'attribute' ? focus.attribute : focus.type === 'role' ? focus.roleId : focus.position}`
+          ? `Individual focus set for ${pName}: ${
+              focus.type === 'attribute'
+                ? focus.attribute
+                : focus.type === 'role'
+                  ? focus.roleId
+                  : focus.type === 'position'
+                    ? focus.position
+                    : focus.type === 'trait'
+                      ? focus.trait
+                      : `Mentor ${focus.mentorId}`
+            }`
           : `Individual focus cleared for ${pName}`,
         'success',
       );
@@ -898,6 +933,290 @@ export const useStore = create<AppState>((set, get) => {
       );
       triggerDebouncedAutosave(next);
       return { success: true, message: `Appointed ${newStaff.name} successfully.` };
+    },
+
+    setWeeklyTrainingSlot: (slot: TrainingSlotKey, sessionId: TrainingSessionId) => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const club = next.clubs[next.userClubId];
+      if (!club) return;
+      if (!club.trainingPlan.schedule) {
+        club.trainingPlan.schedule = { ...BALANCED_WEEK_SCHEDULE };
+      }
+      club.trainingPlan.schedule[slot] = sessionId;
+      if (club.trainingPlan.theoSuggestedSlots?.[slot]) {
+        delete club.trainingPlan.theoSuggestedSlots[slot];
+      }
+      club.trainingPlan.activeTemplate = 'custom';
+      set({ gameState: next });
+      triggerDebouncedAutosave(next);
+    },
+
+    applyTrainingTemplate: (templateId: TrainingTemplateId) => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const club = next.clubs[next.userClubId];
+      if (!club) return;
+      const tmpl = TRAINING_TEMPLATES[templateId];
+      if (!tmpl) return;
+      club.trainingPlan.schedule = { ...tmpl.schedule };
+      club.trainingPlan.activeTemplate = templateId;
+      club.trainingPlan.theoSuggestedSlots = {};
+      set({ gameState: next });
+      get().showToast(`Applied ${tmpl.name}`, 'info');
+      triggerDebouncedAutosave(next);
+    },
+
+    applyTheosWeekPlan: () => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const club = next.clubs[next.userClubId];
+      if (!club) return;
+
+      const nextFixture = next.fixtures.find(
+        (f) => f.matchday === next.matchday && (f.homeId === club.id || f.awayId === club.id),
+      );
+      let oppClub;
+      let oppPlayers;
+      if (nextFixture) {
+        const oppId = nextFixture.homeId === club.id ? nextFixture.awayId : nextFixture.homeId;
+        oppClub = next.clubs[oppId];
+        oppPlayers = oppClub?.squad
+          .map((id) => next.players[id])
+          .filter((p): p is Player => p != null);
+      }
+
+      const theos = generateTheosWeek(club, next.players, oppClub, oppPlayers);
+      club.trainingPlan.schedule = theos.schedule;
+      club.trainingPlan.theosMemo = { reasons: theos.reasons, opponentPrep: theos.opponentPrep };
+      club.trainingPlan.theoSuggestedSlots = theos.suggestedSlots;
+      if (theos.opponentPrep) {
+        club.prep = theos.opponentPrep;
+      }
+      set({ gameState: next });
+      get().showToast("Theo's week plan applied", 'success');
+      triggerDebouncedAutosave(next);
+    },
+
+    setLetTheoPlan: (enabled: boolean) => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const club = next.clubs[next.userClubId];
+      if (!club) return;
+      club.trainingPlan.letTheoPlan = enabled;
+      set({ gameState: next });
+      get().showToast(
+        enabled
+          ? "Theo will plan every week's schedule automatically"
+          : 'Manual weekly schedule planning restored',
+        'info',
+      );
+      triggerDebouncedAutosave(next);
+    },
+
+    setPlayerWorkload: (playerId: PlayerId, workload: 'Light' | 'Normal' | 'Heavy') => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const p = next.players[playerId];
+      if (!p) return;
+      p.workload = workload;
+      const club = next.clubs[next.userClubId];
+      if (club) {
+        if (!club.trainingPlan.playerPlans) club.trainingPlan.playerPlans = {};
+        if (!club.trainingPlan.playerPlans[playerId]) {
+          club.trainingPlan.playerPlans[playerId] = {
+            workload,
+            extraSessions: p.extraSessions ?? false,
+            mentorId: p.mentorId ?? null,
+          };
+        } else {
+          club.trainingPlan.playerPlans[playerId]!.workload = workload;
+        }
+      }
+      set({ gameState: next });
+      get().showToast(`${p.knownAs ?? p.lastName}: Workload set to ${workload}`, 'info');
+      triggerDebouncedAutosave(next);
+    },
+
+    setPlayerExtraSessions: (playerId: PlayerId, extra: boolean) => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const p = next.players[playerId];
+      if (!p) return;
+      p.extraSessions = extra;
+      const club = next.clubs[next.userClubId];
+      if (club) {
+        if (!club.trainingPlan.playerPlans) club.trainingPlan.playerPlans = {};
+        if (!club.trainingPlan.playerPlans[playerId]) {
+          club.trainingPlan.playerPlans[playerId] = {
+            workload: p.workload ?? 'Normal',
+            extraSessions: extra,
+            mentorId: p.mentorId ?? null,
+          };
+        } else {
+          club.trainingPlan.playerPlans[playerId]!.extraSessions = extra;
+        }
+      }
+      set({ gameState: next });
+      get().showToast(
+        extra
+          ? `${p.knownAs ?? p.lastName}: Extra sessions scheduled (+15% growth, +4 fatigue)`
+          : `${p.knownAs ?? p.lastName}: Extra sessions removed`,
+        'info',
+      );
+      triggerDebouncedAutosave(next);
+    },
+
+    setMentoringPair: (mentorId: PlayerId | null, menteeId: PlayerId) => {
+      const state = get().gameState;
+      if (!state) return { success: false, reason: 'No game state' };
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const mentee = next.players[menteeId];
+      if (!mentee) return { success: false, reason: 'Mentee not found' };
+
+      if (!mentorId) {
+        mentee.mentorId = null;
+        const club = next.clubs[next.userClubId];
+        if (club?.trainingPlan.playerPlans?.[menteeId]) {
+          club.trainingPlan.playerPlans[menteeId]!.mentorId = null;
+        }
+        set({ gameState: next });
+        get().showToast(`Mentoring partnership removed for ${mentee.lastName}`, 'info');
+        triggerDebouncedAutosave(next);
+        return { success: true };
+      }
+
+      if (mentee.age > BALANCE.training.mentoring.menteeMaxAge) {
+        get().showToast(
+          `Mentee must be aged 21 or under (${mentee.lastName} is ${mentee.age})`,
+          'warning',
+        );
+        return { success: false, reason: 'Mentee must be aged 21 or under.' };
+      }
+
+      const mentor = next.players[mentorId];
+      if (!mentor) return { success: false, reason: 'Mentor not found' };
+
+      const isLeader = mentor.personality === 'Leader';
+      const isSeniorProf =
+        mentor.age >= BALANCE.training.mentoring.mentorMinAge &&
+        mentor.personality === 'Professional';
+      if (!isLeader && !isSeniorProf) {
+        get().showToast(
+          `Mentor must be a Leader or aged 28+ and Professional (${mentor.lastName} is ${mentor.age}, ${mentor.personality})`,
+          'warning',
+        );
+        return { success: false, reason: 'Mentor must be a Leader or aged 28+ and Professional.' };
+      }
+
+      // Check max 3 pairs
+      const club = next.clubs[next.userClubId];
+      const existingPairs =
+        club?.squad.filter(
+          (id) =>
+            id !== menteeId &&
+            (next.players[id]?.mentorId != null ||
+              club?.trainingPlan.playerPlans?.[id]?.mentorId != null),
+        ).length ?? 0;
+
+      if (existingPairs >= BALANCE.training.mentoring.maxPairs) {
+        get().showToast('Maximum of 3 mentoring pairs allowed at one time.', 'warning');
+        return { success: false, reason: 'Maximum of 3 mentoring pairs allowed.' };
+      }
+
+      mentee.mentorId = mentorId;
+      if (club) {
+        if (!club.trainingPlan.playerPlans) club.trainingPlan.playerPlans = {};
+        if (!club.trainingPlan.playerPlans[menteeId]) {
+          club.trainingPlan.playerPlans[menteeId] = {
+            workload: mentee.workload ?? 'Normal',
+            extraSessions: mentee.extraSessions ?? false,
+            mentorId,
+          };
+        } else {
+          club.trainingPlan.playerPlans[menteeId]!.mentorId = mentorId;
+        }
+      }
+
+      set({ gameState: next });
+      get().showToast(
+        `Mentoring pair created: ${mentor.lastName} will mentor ${mentee.lastName}`,
+        'success',
+      );
+      triggerDebouncedAutosave(next);
+      return { success: true };
+    },
+
+    conductOneToOneSession: (playerId: PlayerId, type: OneToOneType) => {
+      const state = get().gameState;
+      if (!state) return { success: false, message: 'No game state' };
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const club = next.clubs[next.userClubId];
+      if (!club) return { success: false, message: 'Club not found' };
+
+      if (club.trainingPlan.oneToOneUsedThisWeek) {
+        get().showToast('One-to-one sessions are limited to once per week.', 'warning');
+        return { success: false, message: 'Only one one-to-one session allowed per week.' };
+      }
+
+      const player = next.players[playerId];
+      if (!player) return { success: false, message: 'Player not found' };
+
+      if (type === 'Video' && (player.stats.minutesLastMatch ?? 0) === 0) {
+        get().showToast(
+          'Video session requires player to have played in the last match.',
+          'warning',
+        );
+        return { success: false, message: 'Player did not play in the last match.' };
+      }
+
+      const res = applyOneToOneSession(type, player);
+      next.players[playerId] = res.updatedPlayer;
+
+      // Track favourites
+      if (club.trainingPlan.lastOneToOnePlayerId === playerId) {
+        club.trainingPlan.oneToOneConsecutiveCount =
+          (club.trainingPlan.oneToOneConsecutiveCount ?? 1) + 1;
+      } else {
+        club.trainingPlan.lastOneToOnePlayerId = playerId;
+        club.trainingPlan.oneToOneConsecutiveCount = 1;
+      }
+
+      if (club.trainingPlan.oneToOneConsecutiveCount >= BALANCE.training.oneToOne.favouriteWeeks) {
+        // Favourites penalty: leaders lose 2 morale
+        for (const sId of club.squad) {
+          const sqP = next.players[sId];
+          if (sqP && sqP.id !== playerId && sqP.personality === 'Leader') {
+            sqP.morale = clamp(
+              sqP.morale + BALANCE.training.oneToOne.favouriteMoralePenalty,
+              0,
+              100,
+            );
+          }
+        }
+        next.counters.inbox++;
+        next.inbox.unshift({
+          id: `inbox_${next.counters.inbox}`,
+          matchday: next.matchday,
+          kind: 'Player',
+          title: "The lads think you've got a favourite",
+          body: `Picking ${player.knownAs ?? player.lastName} three weeks running has caused unrest among the dressing room leaders (Leader morale -2).`,
+          read: false,
+          requiresAction: false,
+        });
+      }
+
+      club.trainingPlan.oneToOneUsedThisWeek = true;
+      set({ gameState: next });
+      get().showToast(res.appliedEffect, 'success');
+      triggerDebouncedAutosave(next);
+      return { success: true, message: res.appliedEffect };
     },
   };
 });

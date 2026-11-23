@@ -142,6 +142,45 @@ REVIEW REQUESTED: M4 (third pass)
       - `SquadScreen.tsx`: Added `LEADER` badge on top 3 squad leaders and dedicated `Risk` column with Low/Med/High chips and hover reasons.
     - Added comprehensive unit test suite in `tests/core/club/clubDepth.test.ts` (16 tests covering all pure logic, formulas, clamping, and edge cases).
 
+## 2026-11-23 · M5.8 Detailed training system: planned week, session library, personal plans, ratings, and screen redesign
+- Changed: src/config/balance.ts, src/content/conversations.json, src/core/game/advance.ts, src/core/people/training.ts, src/core/player/condition.ts, src/core/player/conversations.ts, src/core/player/development.ts, src/core/player/injuries.ts, src/core/types.ts, src/core/world/generateWorld.ts, src/state/store.ts, src/ui/screens/TrainingScreen.tsx, tests/core/training/trainingDetail.test.ts
+- Ran:
+  - `npm run check`:
+    - `prettier --check .` PASS
+    - `tsc --noEmit` PASS
+    - `vitest run`: 37 test files passed (262 tests passed in 31.44s) PASS
+    - `vite build`: main chunk 1,412.37 kB (gzip 309.77 kB <= 350 kB budget) / three.js chunk 489.80 kB, built in 20.95s PASS
+- Notes:
+  - Implemented Milestone M5 Task 8 (SPEC §12.18 Training in detail, approved by the user 22 Nov) according to the approved design reference (`docs/design/training/`):
+    - **Session Library & Week Schedule (§12.18.1, §12.18.2):** Created `src/core/people/training.ts` with 17 session definitions spanning 7 categories (Attacking, Defending, Fitness, Tactical, SetPieces, Balanced, Recovery). Structured weekly grid: Day 1 fixed recovery (for >= 60' players; others do small-sided game), Days 2–5 morning and afternoon (8 free slots), Day 6 single match prep slot (Opponent prep, Shape work, Set pieces, Video, Light), Day 7 matchday block.
+    - **Week Load & Sharpness Mechanics (§12.18.3):**
+      - `weekLoad` = Day 1 recovery (-2) + sum of 8 free slots + Day 6 (default Balanced week = 12).
+      - Condition recovery between matchdays adjusted by `+ K.train.loadCond * (12 - weekLoad)` (+0.6 per point). Training injury probability scaled by `weekLoad / 12`.
+      - Development volume factor `0.6 + 0.05 * trainingSessions` (where `trainingSessions` are free slots not Rest or Recovery). Attribute candidates derived from session Grows union weighted by position OVR weights.
+      - Sharpness window (Days 5–6): Computes category fractions over the 3 slots, applying proportional next-match category bonuses.
+    - **Templates & Theo's Recommendation (§12.18.3, §12.18.4):**
+      - 8 pre-built templates: Balanced week (default), Tactical, Physical, Attacking, Defensive, Opponent, Recovery, and Custom.
+      - `generateTheosWeek`: Auto-detects fatigued starters (> 50 fatigue) to swap load-3 drills for Recovery, boosts Shape work on Day 5 when familiarity is below 70, counters opponent set-piece aerial threats (heading >= 75), and plans Day 6 opponent prep from opponent tactical style. Supports "Let Theo plan every week" auto-advance toggle.
+    - **Personal Training Plans & Mentoring (§12.18.5):**
+      - Workload control: Light (growth x0.8, injury x0.6, condition +3/wk), Normal, Heavy (growth x1.15, injury x1.6, condition -3/wk, rating +0.2).
+      - Extra sessions toggle: Growth x1.15, fatigue +4/wk, injury x1.3, rating +0.2, with a 30% weekly skip chance for Relaxed and Temperamental personalities (morale -3 penalty, "Didn't fancy it").
+      - Mentoring pairs (up to 3 pairs): Senior mentor (Leader or age >= 28 Professional) drifts mentee's (age <= 21) morale 20% toward mentor's and grants x1.08 development; mentor development x0.9; mentee morale -6 if mentor loses place for 3 matches.
+    - **One-to-One Sessions (§12.18.6):**
+      - Weekly 1-on-1 session scene on the training ground with 4 session types: Technique work (growth x1.25 on individual focus), Confidence talk (+6 morale if < 50, +2 otherwise, scaled by personality), Fitness work (+6 condition, -4 fatigue), Video of last match (+0.05 decision-weighted contests ctx).
+      - Favourites penalty: Picking the same player 3 weeks running reduces dressing room leaders' morale by -2 and triggers an inbox memo.
+    - **Weekly Training Ratings & Conversation Trigger (§12.18.7):**
+      - Weekly 1.0–10.0 player training rating based on personality, morale, condition, workload, extra sessions, and normal distribution noise. Ratings >= 7.5 grant development x1.05 and morale +1; ratings <= 5.5 reduce development to x0.95.
+      - Added new conversation trigger `training_well` ("Training well, not playing"): Fires at 50% chance when a player sustains >= 7.5 rating for 3 consecutive weeks while starting < 50% of matches. Added 3 openings x 3 replies in `src/content/conversations.json`.
+    - **Progress Tracking & Physio Overload Monitoring (§12.18.8, §12.18.9):**
+      - Tracks 4-week attribute snapshots with ▲ / ▼ progress indicators, season OVR line, 6-week rating sparklines, and contextual coach's notes from `src/content/training.json`.
+      - Identifies overloaded players (fatigue > 60 without Light workload, or extra sessions with fatigue > 50) and sends physio inbox memo with ease-off guidance.
+    - **Training Screen Redesign (`src/ui/screens/TrainingScreen.tsx`):**
+      - Rebuilt to match `docs/design/training/`: Aluminum frame whiteboard on left with interactive magnets, category color bands, load pips, "THEO" recommendation chips, drawn red "sharp for Saturday" bracket, yellow Theo sticky note with pin and one-click Apply, and bottom session library tray.
+      - Load strip under board: Week load meter (green-amber-red with marker at 12), matchday condition forecast, sharpness category breakdown, and squad average rating.
+      - Clipboard on right: Players tab (player table with workload L/N/H segmented controls, extra checkboxes, sparklines, risk badges, and one-to-one recommendation callout), One-to-one tab (interactive session dialogue scene), and Progress tab (4-week attribute delta arrows, coach's notes, mentoring pair assignments).
+    - Added unit test suite in `tests/core/training/trainingDetail.test.ts` (17 tests covering all calculations, formulas, templates, Theo generation, and conversation triggers).
+
+
 
 
 

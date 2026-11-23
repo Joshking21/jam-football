@@ -50,8 +50,11 @@ export function calculateWeeklyConditionRecovery(params: {
   focus: TrainingFocus;
   playedMinutes: number;
   fatigue: number;
+  weekLoad?: number;
+  workloadConditionDelta?: number;
 }): number {
-  const { stamina, intensity, focus, playedMinutes, fatigue } = params;
+  const { stamina, intensity, focus, playedMinutes, fatigue, weekLoad, workloadConditionDelta } =
+    params;
 
   const intMult = BALANCE.condition.intensityRecoveryMultipliers[intensity] ?? 1.0;
   let recovery =
@@ -70,6 +73,15 @@ export function calculateWeeklyConditionRecovery(params: {
   // Fatigue > 60 reduces weekly condition recovery by 15% (× 0.85) per SPEC §12.2
   if (fatigue > BALANCE.fatigue.hazardThreshold) {
     recovery *= 0.85;
+  }
+
+  // SPEC §12.18.3: Weekly recovery gets + K.train.loadCond * (12 - weekLoad)
+  if (weekLoad !== undefined) {
+    recovery += BALANCE.training.loadCond * (BALANCE.training.baselineLoad - weekLoad);
+  }
+
+  if (workloadConditionDelta !== undefined) {
+    recovery += workloadConditionDelta;
   }
 
   return recovery;

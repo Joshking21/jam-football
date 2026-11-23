@@ -31,6 +31,15 @@ import {
 import { checkTrainingInjury } from '../player/injuries';
 import { processPlayerDevelopment } from '../player/development';
 import { processPlayerMatchCards } from '../player/discipline';
+import { rawOvr } from '../player/ratings';
+import {
+  BALANCED_WEEK_SCHEDULE,
+  calculateWeekLoad,
+  calculateSharpnessBonuses,
+  calculateTrainingRating,
+  generateTheosWeek,
+  getOverloadedPlayers,
+} from '../people/training';
 import {
   shouldTriggerPostMatchPress,
   shouldTriggerPreMatchPress,
@@ -150,15 +159,13 @@ export function buildTeamSheet(
     familiarity = Math.min(100, familiarity + BALANCE.club.prepBonusShapeFamiliarity);
   }
 
-  let trainingBonus = { attack: 0, defence: 0, setPieces: 0 };
-  const bonusMultiplier = prep !== 'None' ? 0.5 : 1.0;
-  if (club.trainingPlan.focus === 'Attacking') {
-    trainingBonus.attack = 0.08 * bonusMultiplier;
-  } else if (club.trainingPlan.focus === 'Defending') {
-    trainingBonus.defence = 0.08 * bonusMultiplier;
-  } else if (club.trainingPlan.focus === 'SetPieces') {
-    trainingBonus.setPieces = 0.12 * bonusMultiplier;
-  }
+  const schedule = club.trainingPlan?.schedule ?? BALANCED_WEEK_SCHEDULE;
+  const sharpness = calculateSharpnessBonuses(schedule, prep);
+  const trainingBonus = {
+    attack: sharpness.attack,
+    defence: sharpness.defence,
+    setPieces: sharpness.setPieces,
+  };
 
   return {
     clubId: club.id,
@@ -631,9 +638,37 @@ export function runWeeklyProcessing(state: GameState): GameState {
     const club = p.clubId ? next.clubs[p.clubId] : null;
     const intensity = club?.trainingPlan.intensity ?? 'Normal';
     const focus = club?.trainingPlan.focus ?? 'Balanced';
+    const schedule = club?.trainingPlan.schedule ?? BALANCED_WEEK_SCHEDULE;
+    const weekLoad = calculateWeekLoad(schedule);
     const playedMinutes = p.stats.minutesLastMatch ?? 0;
+    const playerPlan = club?.trainingPlan.playerPlans?.[p.id];
+    const workload = p.workload ?? playerPlan?.workload ?? 'Normal';
+    const extra = p.extraSessions ?? playerPlan?.extraSessions ?? false;
 
-    // Condition recovery (§12.1, §12.2, §12.17.3)
+    const trainRng = createRng(deriveSeed(next.seed, 'training-inj', `${currentMatchday}-${p.id}`));
+
+    // Extra sessions skip chance (§12.18.5)
+    let extraSkipped = false;
+    if (extra && (p.personality === 'Relaxed' || p.personality === 'Temperamental')) {
+      if (trainRng.next() < BALANCE.training.extraSessions.skipChance) {
+        extraSkipped = true;
+        p.extraSessionsSkipped = true;
+        p.morale = clamp(p.morale + BALANCE.training.extraSessions.skipMoralePenalty, 0, 100);
+      } else {
+        p.extraSessionsSkipped = false;
+      }
+    } else {
+      p.extraSessionsSkipped = false;
+    }
+
+    if (extra && !extraSkipped) {
+      p.fatigue = clamp(p.fatigue + BALANCE.training.extraSessions.fatigue, 0, 100);
+    }
+
+    // Workload condition delta (§12.18.5)
+    const workloadCondDelta = BALANCE.training.workload[workload]?.condition ?? 0;
+
+    // Condition recovery (§12.1, §12.2, §12.17.3, §12.18.3)
     if (p.rest) {
       p.condition = clamp(p.condition + BALANCE.club.restConditionGain, 0, 100);
       p.fatigue = clamp(p.fatigue - BALANCE.club.restFatigueReduction, 0, 100);
@@ -666,6 +701,8 @@ export function runWeeklyProcessing(state: GameState): GameState {
         focus,
         playedMinutes,
         fatigue: p.fatigue,
+        weekLoad,
+        workloadConditionDelta: workloadCondDelta,
       });
       p.condition = clamp(Math.round(p.condition + condRec), 0, 100);
 
@@ -674,12 +711,18 @@ export function runWeeklyProcessing(state: GameState): GameState {
       p.fatigue = clamp(Math.round(p.fatigue - fatRec), 0, 100);
     }
 
-    // Training injury check per SPEC §12.3 (only for healthy players)
+    // Training injury check per SPEC §12.3 & §12.18.3 (only for healthy players)
     if (!p.injury && p.clubId) {
-      const trainRng = createRng(
-        deriveSeed(next.seed, 'training-inj', `${currentMatchday}-${p.id}`),
+      const workloadInjMult = BALANCE.training.workload[workload]?.injury ?? 1.0;
+      const extraInjMult = extra && !extraSkipped ? BALANCE.training.extraSessions.injury : 1.0;
+      const trainingInj = checkTrainingInjury(
+        trainRng,
+        intensity,
+        p.fatigue,
+        weekLoad,
+        workloadInjMult,
+        extraInjMult,
       );
-      const trainingInj = checkTrainingInjury(trainRng, intensity, p.fatigue);
       if (trainingInj) {
         const physioStars = club?.staff?.physio.stars ?? 3;
         const physioFactor =
@@ -700,6 +743,37 @@ export function runWeeklyProcessing(state: GameState): GameState {
         }
       }
     }
+
+    // Training rating (§12.18.7)
+    const ratingRng = createRng(
+      deriveSeed(next.seed, 'training-rating', `${currentMatchday}-${p.id}`),
+    );
+    const trainRating = calculateTrainingRating(p, workload, extra, extraSkipped, ratingRng);
+    p.lastTrainingRating = trainRating;
+    p.ratingHistory = [...(p.ratingHistory ?? []), trainRating].slice(-8);
+    if (trainRating >= BALANCE.training.ratings.highThreshold) {
+      p.morale = clamp(p.morale + BALANCE.training.ratings.highMoraleBonus, 0, 100);
+    }
+
+    // Mentoring pairs (§12.18.5)
+    const mentorId = p.mentorId ?? playerPlan?.mentorId ?? null;
+    let isMentee = false;
+    if (mentorId) {
+      const mentor = next.players[mentorId];
+      if (mentor && p.age <= BALANCE.training.mentoring.menteeMaxAge) {
+        isMentee = true;
+        const drift = BALANCE.training.mentoring.moraleDriftPct * (mentor.morale - p.morale);
+        p.morale = clamp(Math.round(p.morale + drift), 0, 100);
+        if (mentor.stats.starts === 0 && currentMatchday >= 3) {
+          p.morale = clamp(p.morale + BALANCE.training.mentoring.lostPlacePenalty, 0, 100);
+        }
+      }
+    }
+    const isMentor = (club?.squad ?? []).some((sId) => {
+      const otherP = next.players[sId];
+      const otherPlan = club?.trainingPlan?.playerPlans?.[sId];
+      return otherP?.mentorId === p.id || otherPlan?.mentorId === p.id;
+    });
 
     // Injury healing (§12.5)
     if (p.injury) {
@@ -764,6 +838,14 @@ export function runWeeklyProcessing(state: GameState): GameState {
         minutesLastMatch: playedMinutes,
         individualFocus: positionTrained ? null : (club?.trainingPlan.individual[p.id] ?? null),
         rng: devRng,
+        schedule,
+        workload,
+        extraSessions: extra,
+        extraSessionsSkipped: extraSkipped,
+        trainingRating: trainRating,
+        isMentee,
+        isMentor,
+        oneToOneTechnique: club?.trainingPlan.lastOneToOnePlayerId === p.id,
       });
 
       if (positionTrained) coachDevFactor *= 0.8;
@@ -771,6 +853,19 @@ export function runWeeklyProcessing(state: GameState): GameState {
         const gained = devRes.player.growth - p.growth;
         devRes.player.growth = p.growth + gained * coachDevFactor;
       }
+
+      // Progress snapshots for user club only (§12.18.8)
+      if (p.clubId === next.userClubId) {
+        const currentOvr = Math.round(
+          rawOvr(devRes.player.attributes, devRes.player.positions[0]?.pos ?? 'CM'),
+        );
+        devRes.player.ovrHistory = [...(devRes.player.ovrHistory ?? []), currentOvr];
+        devRes.player.attrHistory = [
+          ...(devRes.player.attrHistory ?? []),
+          { matchday: currentMatchday, attributes: { ...devRes.player.attributes } },
+        ].slice(-4);
+      }
+
       next.players[id] = devRes.player;
     }
   }
@@ -836,48 +931,97 @@ export function runWeeklyProcessing(state: GameState): GameState {
     }
     next.players = applyMoraleSpread(club, next.players);
 
-    // Reset match prep and staff replacement for the new week
+    // Reset match prep, staff replacement, and one-to-one for the new week
     club.prep = 'None';
     club.staffReplacedThisRound = false;
+    if (club.trainingPlan) {
+      club.trainingPlan.oneToOneUsedThisWeek = false;
+      club.trainingPlan.lastOneToOnePlayerId = null;
+    }
+
+    // Auto-apply Theo's week if letTheoPlan is enabled (§12.18.4)
+    if (club.id === next.userClubId && club.trainingPlan?.letTheoPlan) {
+      const nextFixture = next.fixtures.find(
+        (f) => f.matchday === currentMatchday + 1 && (f.homeId === club.id || f.awayId === club.id),
+      );
+      let oppClub: Club | undefined;
+      let oppPlayers: Player[] | undefined;
+      if (nextFixture) {
+        const oppId = nextFixture.homeId === club.id ? nextFixture.awayId : nextFixture.homeId;
+        oppClub = next.clubs[oppId];
+        oppPlayers = oppClub?.squad
+          .map((pId) => next.players[pId])
+          .filter((pl): pl is Player => pl != null);
+      }
+      const theos = generateTheosWeek(club, next.players, oppClub, oppPlayers);
+      club.trainingPlan.schedule = theos.schedule;
+      club.trainingPlan.theosMemo = { reasons: theos.reasons, opponentPrep: theos.opponentPrep };
+      club.trainingPlan.theoSuggestedSlots = theos.suggestedSlots;
+      if (theos.opponentPrep) {
+        club.prep = theos.opponentPrep;
+      }
+    }
   }
 
-  // 3. User Club Sacking & Board Warnings (§12.7, §12.11)
-  const userClub = next.clubs[next.userClubId]!;
-  if (userClub.boardConfidence < BALANCE.board.warningThreshold && !next.boardWarningSent) {
-    next.counters.inbox++;
-    next.inbox.unshift({
-      id: `inbox_${next.counters.inbox}`,
-      matchday: currentMatchday,
-      kind: 'Board',
-      title: 'Final Warning Regarding Recent Performance',
-      body: `The board of ${userClub.name} is deeply concerned by recent performances and results. Immediate improvement is required if you are to retain your position.`,
-      read: false,
-      requiresAction: false,
-    });
-    next.boardWarningSent = true;
-  }
+  const userClub = next.clubs[next.userClubId];
 
-  // Board praise when confidence >= 80 for the first time (§12.11)
-  if (userClub.boardConfidence >= BALANCE.board.praiseThreshold && !next.boardPraiseSent) {
-    next.counters.inbox++;
-    next.inbox.unshift({
-      id: `inbox_${next.counters.inbox}`,
-      matchday: currentMatchday,
-      kind: 'Board',
-      title: 'Board Commendation: Outstanding Management',
-      body: `The board of ${userClub.name} wishes to formally express their unanimous satisfaction with recent results. The club is currently exceeding boardroom expectations.`,
-      read: false,
-      requiresAction: false,
-    });
-    next.boardPraiseSent = true;
-  }
+  // Check physio overload memo (§12.18.9)
+  if (userClub) {
+    const userClubPlayers = userClub.squad
+      .map((pId) => next.players[pId])
+      .filter((pl): pl is Player => pl != null);
+    const overloaded = getOverloadedPlayers(userClubPlayers, userClub.trainingPlan?.playerPlans);
+    if (overloaded.length > 0) {
+      const names = overloaded.map((p) => p.lastName).join(', ');
+      next.counters.inbox++;
+      next.inbox.unshift({
+        id: `inbox_${next.counters.inbox}`,
+        matchday: currentMatchday,
+        kind: 'Medical',
+        title: `Overloaded: ${names}. Ease them off?`,
+        body: `Physio Sam Oduya reports that ${names} are carrying excessive fatigue levels under their current workload. Consider easing their sessions to Light.`,
+        read: false,
+        requiresAction: true,
+      });
+    }
 
-  if (
-    currentMatchday >= BALANCE.board.sackingMatchdayStart &&
-    userClub.boardConfidence < BALANCE.board.sackingThreshold
-  ) {
-    next.phase = 'Sacked';
-    return next;
+    // 3. User Club Sacking & Board Warnings (§12.7, §12.11)
+    if (userClub.boardConfidence < BALANCE.board.warningThreshold && !next.boardWarningSent) {
+      next.counters.inbox++;
+      next.inbox.unshift({
+        id: `inbox_${next.counters.inbox}`,
+        matchday: currentMatchday,
+        kind: 'Board',
+        title: 'Final Warning Regarding Recent Performance',
+        body: `The board of ${userClub.name} is deeply concerned by recent performances and results. Immediate improvement is required if you are to retain your position.`,
+        read: false,
+        requiresAction: false,
+      });
+      next.boardWarningSent = true;
+    }
+
+    // Board praise when confidence >= 80 for the first time (§12.11)
+    if (userClub.boardConfidence >= BALANCE.board.praiseThreshold && !next.boardPraiseSent) {
+      next.counters.inbox++;
+      next.inbox.unshift({
+        id: `inbox_${next.counters.inbox}`,
+        matchday: currentMatchday,
+        kind: 'Board',
+        title: 'Board Commendation: Outstanding Management',
+        body: `The board of ${userClub.name} wishes to formally express their unanimous satisfaction with recent results. The club is currently exceeding boardroom expectations.`,
+        read: false,
+        requiresAction: false,
+      });
+      next.boardPraiseSent = true;
+    }
+
+    if (
+      currentMatchday >= BALANCE.board.sackingMatchdayStart &&
+      userClub.boardConfidence < BALANCE.board.sackingThreshold
+    ) {
+      next.phase = 'Sacked';
+      return next;
+    }
   }
 
   // Update tactical familiarity per area (§13.18.11)
