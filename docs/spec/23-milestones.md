@@ -95,6 +95,7 @@ Build everything with fallbacks first (box rooms, capsule people, no faces, capt
 10. Touchline cuts in the match with Theo and the bench (§14.11.5).
 11. Training ground drills by focus (§14.11.4).
 12. Room ambience and one-shots (§17.5), and the coach, owner and Theo voices wired (§17.4).
+12b. **Time of day** (§11.25.6): the four weekly beats, the top-bar chip, events scheduled into beats, lighting presets and crossfades, who's where, and ambience by beat. The training ground sits beside the stadium (§11.25.1 site).
 13. Capture `docs/screens/M6b/` (every room, at 1280×720 and 1920×1080, with assets and without) and a performance run. `REVIEW REQUESTED: M6b`: this is a Claude design gate.
 
 **Accept:**

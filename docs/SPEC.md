@@ -77,7 +77,7 @@ The spec used to be one 290 KB file. Reading all of it on every step was slow an
 | M5 task 10: shouts, plans, traits | 13c (§13.21–13.23), 13a (§13.12, §13.13), 09 (world gen for traits) |
 | M5 task 11: injury and discipline decisions | 12b (§12.19–12.20), 12a (§12.5–12.6, §12.9), 13a (§13.12) |
 | M6 assistant and audio | 15, 17, 16 |
-| M6b club spaces | 11b, 14b, 17 (§17.4–17.5), 18 (§18.6), 21 |
+| M6b club spaces | 11b (incl. §11.25.6 time of day), 14b, 17 (§17.4–17.5), 18 (§18.6), 21 |
 | M7 polish | 19a, 19b, 11a, 22 |
 | M8 assets and performance | 18, 21 |
 | M9 ship | 01, 03, 23 |

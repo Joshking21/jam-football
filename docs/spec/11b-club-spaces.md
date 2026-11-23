@@ -3,6 +3,8 @@
 The menus become places. Every screen in §11 keeps its content, rules and keyboard access, and is shown inside a room of one club building. You play the coach living the club's week, filmed like a TV documentary.
 
 #### 11.25.1 Rooms
+**The site (the user, 23 Nov):** the club is **its stadium with the training ground right beside it**, not a whole campus. The stadium's main stand holds the office, boardroom, dressing room, press room and tunnel, joined by the corridor. The **training ground** sits next to the stadium and is reached by a short outdoor path past the side of the stand and the car park; the walk outside is part of the coach's walk (§11.25.2). The Exterior shot shows both the stand and the training pitches behind it. Free walking (§24, top extra) uses this same site.
+
 Each room is one small three.js set. Walls, floors, ceilings and windows are built in code (`rooms.ts`), with props from `models/club/*.glb` and window and backdrop images from `images/club/` (§18.2). Only the current room is drawn. The next room loads while the coach walks, and a room's props are kept in memory after its first visit.
 
 | Room | Set | Screens and moments |
@@ -61,6 +63,26 @@ Concepts: `docs/design/dressing-room/` (team talk) and `docs/design/press/` (pre
   6. For half-time only, Theo's analysis (§15.5) as a speaking beat with its Apply buttons on a small card.
   7. Continue to the tunnel.
 - Reduce motion: cards appear without sliding. Keyboard-only play must reach every choice.
+
+#### 11.25.6 Time of day (the user, 23 Nov)
+The week between matchdays has **four club beats**. Time does not run in real time: **Continue** moves to the next beat, and visiting screens never moves the clock. The top bar shows a day-and-time chip next to the status ("WED · AFTERNOON").
+
+| Beat | When | Light | Who's where |
+|---|---|---|---|
+| **Monday morning** | after the Week Summary | cool, bright daylight; office blinds half open | coach and Theo in the office; players who played ≥ 60' recovering in the dressing room; the owner in the boardroom only if a board review is due |
+| **Wednesday afternoon** | the middle of the training week | warm low sun; long shadows on the training ground | the squad on the training ground doing the week's main session (§12.18); the physio with any injured player at the side of the pitch; Theo with a clipboard on the touchline |
+| **Friday evening** | the day before the match | dusk turning to night; windows lit; the stadium floodlights tested once | the coach alone in the office or at the tactics board; the opponent report on the desk; the dressing room set out with shirts |
+| **Matchday** | the fixture's kick-off slot (§10.3) | as the match (ART-DIRECTION §3.1) | players in the dressing room, the crowd arriving outside, the tunnel |
+
+- **Events are scheduled into beats,** so they happen in the right place and time:
+  - Monday: the Week Summary items, inbox, board reviews.
+  - Wednesday: one-to-ones (§12.18.6), training incidents (§12.20), and players knocking about playing time (§12.9).
+  - Friday: Theo's opponent report, warm-up scares are announced on matchday instead (§12.19.3), and the pre-match press for derbies.
+- A beat with nothing to do is skipped by Continue.
+- **Lighting:** each beat has one preset (sun or sky colour, intensity, window emissive, interior lamp levels) in `balance.ts → render.tod.*`. Rooms crossfade the preset over 1.2 s when the beat changes. On Low it's a cut.
+- **Exterior and title:** the Title scene (`docs/design/title/`) uses the save's current beat; Matchday uses the night look when kick-off is Night.
+- **Sound:** ambience follows the beat: birds and distant traffic in the morning, training shouts in the afternoon, quiet and a ticking clock in the evening (§17.5 loops get a `{room}_{beat}` variant where it matters; otherwise the room loop plays).
+- **What it does not do:** no real-time clock, no NPC daily routines beyond the table above, no new rooms. It is about 2 days of M6b work on top of the rooms.
 
 ---
 
