@@ -4,18 +4,18 @@
       "managerLines": [
         {
           "id": "pre_fav_calm_01",
-          "text": "We are the better side, but only if we do the fundamentals. Play our game, stay patient.",
-          "voText": "We are the better side, but only if we do the fundamentals. Play our game, stay patient."
+          "text": "We're better than them. Prove it slowly.",
+          "voText": "We're better than them. Prove it slowly."
         },
         {
           "id": "pre_fav_calm_02",
-          "text": "Keep your heads, stick to our shape and let the quality show. Do not give them a sniff.",
-          "voText": "Keep your heads, stick to our shape and let the quality show. Do not give them a sniff."
+          "text": "No rush. The goals will come.",
+          "voText": "No rush. The goals will come."
         },
         {
           "id": "pre_fav_calm_03",
-          "text": "{player}, set the tempo early and keep everyone calm.",
-          "voText": "set the tempo early and keep everyone calm.",
+          "text": "{player}, set the tempo. Everyone follows you.",
+          "voText": "Set the tempo. Everyone follows you.",
           "nameSlot": "start"
         }
       ],
@@ -30,18 +30,18 @@
       "managerLines": [
         {
           "id": "pre_fav_motivate_01",
-          "text": "Go out there and show this crowd why we're favourites. High tempo from the first whistle!",
-          "voText": "Go out there and show this crowd why we're favourites. High tempo from the first whistle!"
+          "text": "Favourites is just a word. Go and earn it.",
+          "voText": "Favourites is just a word. Go and earn it."
         },
         {
           "id": "pre_fav_motivate_02",
-          "text": "Take the initiative early! Put them under severe pressure and make them crack.",
-          "voText": "Take the initiative early! Put them under severe pressure and make them crack."
+          "text": "Make them wish they'd stayed on the bus.",
+          "voText": "Make them wish they'd stayed on the bus."
         },
         {
           "id": "pre_fav_motivate_03",
-          "text": "Set the standard for the group today, {player}.",
-          "voText": "Set the standard for the group today.",
+          "text": "Big game from you today, {player}.",
+          "voText": "Big game from you today.",
           "nameSlot": "end"
         }
       ],
@@ -56,19 +56,19 @@
       "managerLines": [
         {
           "id": "pre_fav_demand_01",
-          "text": "I want complete professionalism today. Nothing less than three points is acceptable.",
-          "voText": "I want complete professionalism today. Nothing less than three points is acceptable."
+          "text": "Anything less than three points is a failure.",
+          "voText": "Anything less than three points is a failure."
         },
         {
           "id": "pre_fav_demand_02",
-          "text": "We are superior in every position on that pitch. Don't waste the advantage\u2014bury them.",
-          "voText": "We are superior in every position on that pitch. Don't waste the advantage\u2014bury them."
+          "text": "No lazy passes. No lazy runs. Nothing.",
+          "voText": "No lazy passes. No lazy runs. Nothing."
         },
         {
           "id": "pre_fav_demand_03",
-          "text": "{player}, I want zero complacency out of you today.",
-          "voText": "I want zero complacency out of you today.",
-          "nameSlot": "start"
+          "text": "I want a clean sheet from you, {player}.",
+          "voText": "I want a clean sheet from you.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -82,23 +82,23 @@
       "managerLines": [
         {
           "id": "pre_fav_praise_01",
-          "text": "You've earned the right to be called favourites. Go express yourselves and enjoy it.",
-          "voText": "You've earned the right to be called favourites. Go express yourselves and enjoy it."
+          "text": "You've earned the right to be favourites. Enjoy it.",
+          "voText": "You've earned the right to be favourites. Enjoy it."
         },
         {
           "id": "pre_fav_praise_02",
-          "text": "The work in training this week was world class. Take that belief onto the pitch.",
-          "voText": "The work in training this week was world class. Take that belief onto the pitch."
+          "text": "Best squad this club's had in years. Show them.",
+          "voText": "Best squad this club's had in years. Show them."
         },
         {
           "id": "pre_fav_praise_03",
-          "text": "You have earned this start, {player}. Go enjoy it.",
-          "voText": "You have earned this start. Go enjoy it.",
-          "nameSlot": "start"
+          "text": "Keep playing like you are, {player}.",
+          "voText": "Keep playing like you are.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
-        "positive": "Chest out, heads high\u2014the squad feels appreciated.",
+        "positive": "Chest out, heads high—the squad feels appreciated.",
         "neutral": "Players smile and acknowledge the tribute.",
         "negative": "Some players glance around, wondering if praise before kickoff is wise.",
         "mixed": "Smiles all around, though the captain quickly reminds them to stay focused."
@@ -108,19 +108,19 @@
       "managerLines": [
         {
           "id": "pre_fav_disappoint_01",
-          "text": "I'm hearing whispers that you think this will be a walkover. That attitude disgusts me.",
-          "voText": "I'm hearing whispers that you think this will be a walkover. That attitude disgusts me."
+          "text": "Last week wasn't good enough. Don't repeat it.",
+          "voText": "Last week wasn't good enough. Don't repeat it."
         },
         {
           "id": "pre_fav_disappoint_02",
-          "text": "Drop the egos right now. If any of you coast today, you won't wear the shirt next week.",
-          "voText": "Drop the egos right now. If any of you coast today, you won't wear the shirt next week."
+          "text": "I've watched you play down to teams like this. Not today.",
+          "voText": "I've watched you play down to teams like this. Not today."
         },
         {
           "id": "pre_fav_disappoint_03",
-          "text": "{player}, your focus during warmups was poor. Fix it now.",
-          "voText": "your focus during warmups was poor. Fix it now.",
-          "nameSlot": "start"
+          "text": "You switched off last time, {player}. Not today.",
+          "voText": "You switched off last time. Not today.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -134,18 +134,18 @@
       "managerLines": [
         {
           "id": "pre_fav_focus_01",
-          "text": "Every dead ball, every second ball, every defensive transition. Do not switch off.",
-          "voText": "Every dead ball, every second ball, every defensive transition. Do not switch off."
+          "text": "First ten minutes. Win them.",
+          "voText": "First ten minutes. Win them."
         },
         {
           "id": "pre_fav_focus_02",
-          "text": "They will look to hit us on the break. Rest defence must be airtight at all times.",
-          "voText": "They will look to hit us on the break. Rest defence must be airtight at all times."
+          "text": "Do your job. Just your job.",
+          "voText": "Do your job. Just your job."
         },
         {
           "id": "pre_fav_focus_03",
-          "text": "Lock down your channel from minute one, {player}.",
-          "voText": "Lock down your channel from minute one.",
+          "text": "Stay on your man all game, {player}.",
+          "voText": "Stay on your man all game.",
           "nameSlot": "end"
         }
       ],
@@ -162,19 +162,19 @@
       "managerLines": [
         {
           "id": "pre_dog_calm_01",
-          "text": "All the pressure is on them today. Play with freedom, stay compact and frustrate them.",
-          "voText": "All the pressure is on them today. Play with freedom, stay compact and frustrate them."
+          "text": "Nobody expects anything from us. That's freedom.",
+          "voText": "Nobody expects anything from us. That's freedom."
         },
         {
           "id": "pre_dog_calm_02",
-          "text": "Nobody outside this room gives us a prayer. Good. Keep our shape and take our moment.",
-          "voText": "Nobody outside this room gives us a prayer. Good. Keep our shape and take our moment."
+          "text": "Stay in the game. The chance will come.",
+          "voText": "Stay in the game. The chance will come."
         },
         {
           "id": "pre_dog_calm_03",
-          "text": "{player}, do not let the occasion swallow you up.",
-          "voText": "do not let the occasion swallow you up.",
-          "nameSlot": "start"
+          "text": "Keep it simple today, {player}.",
+          "voText": "Keep it simple today.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -188,23 +188,23 @@
       "managerLines": [
         {
           "id": "pre_dog_motivate_01",
-          "text": "This is why we play football! Go out there, shock the entire league and make history!",
-          "voText": "This is why we play football! Go out there, shock the entire league and make history!"
+          "text": "They think it's already won. Let's ruin their day.",
+          "voText": "They think it's already won. Let's ruin their day."
         },
         {
           "id": "pre_dog_motivate_02",
-          "text": "Fight for every inch of turf! Make them hate every second of playing against us!",
-          "voText": "Fight for every inch of turf! Make them hate every second of playing against us!"
+          "text": "Giants fall. Go and push one.",
+          "voText": "Giants fall. Go and push one."
         },
         {
           "id": "pre_dog_motivate_03",
-          "text": "Show them why you belong on this stage, {player}!",
-          "voText": "Show them why you belong on this stage!",
+          "text": "This is your stage, {player}.",
+          "voText": "This is your stage.",
           "nameSlot": "end"
         }
       ],
       "reactions": {
-        "positive": "Thunderous applause and raised fists\u2014the squad is pumped full of adrenaline.",
+        "positive": "Thunderous applause and raised fists—the squad is pumped full of adrenaline.",
         "neutral": "Players look fiercely motivated to cause an upset.",
         "negative": "A couple of youngsters look overwhelmed by the intensity.",
         "mixed": "Passionate energy sweeps the room, with only a few showing nerves."
@@ -214,19 +214,19 @@
       "managerLines": [
         {
           "id": "pre_dog_demand_01",
-          "text": "I don't care how much they earn\u2014you match their work rate or you come off after twenty minutes.",
-          "voText": "I don't care how much they earn\u2014you match their work rate or you come off after twenty minutes."
+          "text": "Run until it hurts. Then run again.",
+          "voText": "Run until it hurts. Then run again."
         },
         {
           "id": "pre_dog_demand_02",
-          "text": "No hiding today! If you back down from a tackle against their stars, you're done here.",
-          "voText": "No hiding today! If you back down from a tackle against their stars, you're done here."
+          "text": "If we lose, they'll know they were in a game.",
+          "voText": "If we lose, they'll know they were in a game."
         },
         {
           "id": "pre_dog_demand_03",
-          "text": "{player}, win your individual battle or we are in trouble.",
-          "voText": "win your individual battle or we are in trouble.",
-          "nameSlot": "start"
+          "text": "I need ninety minutes from you, {player}.",
+          "voText": "I need ninety minutes from you.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -240,18 +240,18 @@
       "managerLines": [
         {
           "id": "pre_dog_praise_01",
-          "text": "You've shown tremendous resilience this season. You belong on the same pitch as them.",
-          "voText": "You've shown tremendous resilience this season. You belong on the same pitch as them."
+          "text": "You've worked for this. Go and enjoy it.",
+          "voText": "You've worked for this. Go and enjoy it."
         },
         {
           "id": "pre_dog_praise_02",
-          "text": "Believe in your own ability. You have the tools to hurt them if we back ourselves.",
-          "voText": "Believe in your own ability. You have the tools to hurt them if we back ourselves."
+          "text": "Every one of you deserves to be out there.",
+          "voText": "Every one of you deserves to be out there."
         },
         {
           "id": "pre_dog_praise_03",
-          "text": "I have complete faith in your heart today, {player}.",
-          "voText": "I have complete faith in your heart today.",
+          "text": "Proud of you already, {player}.",
+          "voText": "Proud of you already.",
           "nameSlot": "end"
         }
       ],
@@ -266,19 +266,19 @@
       "managerLines": [
         {
           "id": "pre_dog_disappoint_01",
-          "text": "I can see defeat in your eyes already. Have some pride in that badge on your chest!",
-          "voText": "I can see defeat in your eyes already. Have some pride in that badge on your chest!"
+          "text": "We were timid last time. I won't watch that again.",
+          "voText": "We were timid last time. I won't watch that again."
         },
         {
           "id": "pre_dog_disappoint_02",
-          "text": "If you're already beaten before we leave the tunnel, tell me now and I'll play the reserves.",
-          "voText": "If you're already beaten before we leave the tunnel, tell me now and I'll play the reserves."
+          "text": "They bullied us last time. Never again.",
+          "voText": "They bullied us last time. Never again."
         },
         {
           "id": "pre_dog_disappoint_03",
-          "text": "{player}, look at me. Drop the fear right now.",
-          "voText": "look at me. Drop the fear right now.",
-          "nameSlot": "start"
+          "text": "You hid last time, {player}. Don't.",
+          "voText": "You hid last time. Don't.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -292,18 +292,18 @@
       "managerLines": [
         {
           "id": "pre_dog_focus_01",
-          "text": "Stick to the low block. Deny them space between the lines and strike on the break.",
-          "voText": "Stick to the low block. Deny them space between the lines and strike on the break."
+          "text": "Two banks of four. Compact. Patient.",
+          "voText": "Two banks of four. Compact. Patient."
         },
         {
           "id": "pre_dog_focus_02",
-          "text": "Organisation is everything today. If one man breaks the line, the whole structure fails.",
-          "voText": "Organisation is everything today. If one man breaks the line, the whole structure fails."
+          "text": "Set pieces. That's our chance.",
+          "voText": "Set pieces. That's our chance."
         },
         {
           "id": "pre_dog_focus_03",
-          "text": "Track every single runner into the box, {player}.",
-          "voText": "Track every single runner into the box.",
+          "text": "He's their danger. Stay on him, {player}.",
+          "voText": "He's their danger. Stay on him.",
           "nameSlot": "end"
         }
       ],
@@ -320,19 +320,19 @@
       "managerLines": [
         {
           "id": "pre_even_calm_01",
-          "text": "It's an even contest on paper, but we have the discipline to tilt it. Steady minds.",
-          "voText": "It's an even contest on paper, but we have the discipline to tilt it. Steady minds."
+          "text": "Even game. Small details decide it.",
+          "voText": "Even game. Small details decide it."
         },
         {
           "id": "pre_even_calm_02",
-          "text": "Trust the process. No rash challenges early on; let the game come to us.",
-          "voText": "Trust the process. No rash challenges early on; let the game come to us."
+          "text": "Stay patient. It'll open up.",
+          "voText": "Stay patient. It'll open up."
         },
         {
           "id": "pre_even_calm_03",
-          "text": "{player}, keep our shape compact and communicate.",
-          "voText": "keep our shape compact and communicate.",
-          "nameSlot": "start"
+          "text": "Steady hands today, {player}.",
+          "voText": "Steady hands today.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -346,18 +346,18 @@
       "managerLines": [
         {
           "id": "pre_even_motivate_01",
-          "text": "This is our level\u2014now prove we belong in the tier above them! Win your individual battles!",
-          "voText": "This is our level\u2014now prove we belong in the tier above them! Win your individual battles!"
+          "text": "Fifty-fifty. Make it sixty-forty.",
+          "voText": "Fifty-fifty. Make it sixty-forty."
         },
         {
           "id": "pre_even_motivate_02",
-          "text": "Tight games are won in the heart and the lungs. Outwork them from minute one!",
-          "voText": "Tight games are won in the heart and the lungs. Outwork them from minute one!"
+          "text": "Somebody wins the battles. Make it us.",
+          "voText": "Somebody wins the battles. Make it us."
         },
         {
           "id": "pre_even_motivate_03",
-          "text": "Take the game to them from the opening whistle, {player}!",
-          "voText": "Take the game to them from the opening whistle!",
+          "text": "Big moment for you, {player}. Take it.",
+          "voText": "Big moment for you. Take it.",
           "nameSlot": "end"
         }
       ],
@@ -372,19 +372,19 @@
       "managerLines": [
         {
           "id": "pre_even_demand_01",
-          "text": "These are our direct rivals in the table. Dropping points here is simply not an option.",
-          "voText": "These are our direct rivals in the table. Dropping points here is simply not an option."
+          "text": "Every second ball is ours. Every single one.",
+          "voText": "Every second ball is ours. Every single one."
         },
         {
           "id": "pre_even_demand_02",
-          "text": "I want to see ruthlessness today. Win every 50-50 and impose our will on them.",
-          "voText": "I want to see ruthlessness today. Win every 50-50 and impose our will on them."
+          "text": "Win your duel. That's all I ask.",
+          "voText": "Win your duel. That's all I ask."
         },
         {
           "id": "pre_even_demand_03",
-          "text": "{player}, I need complete authority from you out there.",
-          "voText": "I need complete authority from you out there.",
-          "nameSlot": "start"
+          "text": "I want you everywhere today, {player}.",
+          "voText": "I want you everywhere today.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -398,19 +398,19 @@
       "managerLines": [
         {
           "id": "pre_even_praise_01",
-          "text": "You've worked tirelessly to get into this position. Play with joy and trust each other.",
-          "voText": "You've worked tirelessly to get into this position. Play with joy and trust each other."
+          "text": "You've earned this run. Keep it going.",
+          "voText": "You've earned this run. Keep it going."
         },
         {
           "id": "pre_even_praise_02",
-          "text": "We have more chemistry and hunger than this lot. Go out there and show it.",
-          "voText": "We have more chemistry and hunger than this lot. Go out there and show it."
+          "text": "Training was sharp. Take it out there.",
+          "voText": "Training was sharp. Take it out there."
         },
         {
           "id": "pre_even_praise_03",
-          "text": "You are in prime condition, {player}. Trust your instincts.",
-          "voText": "You are in prime condition. Trust your instincts.",
-          "nameSlot": "start"
+          "text": "Brilliant week, {player}. Keep it up.",
+          "voText": "Brilliant week. Keep it up.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -424,19 +424,19 @@
       "managerLines": [
         {
           "id": "pre_even_disappoint_01",
-          "text": "I wasn't happy with the warm-up. Too sloppy, too casual. Fix it right now.",
-          "voText": "I wasn't happy with the warm-up. Too sloppy, too casual. Fix it right now."
+          "text": "We dropped points we shouldn't have. Make up for it.",
+          "voText": "We dropped points we shouldn't have. Make up for it."
         },
         {
           "id": "pre_even_disappoint_02",
-          "text": "If you carry that half-hearted attitude into kickoff, we will be two down in ten minutes.",
-          "voText": "If you carry that half-hearted attitude into kickoff, we will be two down in ten minutes."
+          "text": "Last week was soft. Not today.",
+          "voText": "Last week was soft. Not today."
         },
         {
           "id": "pre_even_disappoint_03",
-          "text": "{player}, do not switch off on defensive transitions.",
-          "voText": "do not switch off on defensive transitions.",
-          "nameSlot": "start"
+          "text": "You were off it last week, {player}.",
+          "voText": "You were off it last week.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -450,18 +450,18 @@
       "managerLines": [
         {
           "id": "pre_even_focus_01",
-          "text": "Matches like this turn on a single mistake or set piece. Do not switch off for a second.",
-          "voText": "Matches like this turn on a single mistake or set piece. Do not switch off for a second."
+          "text": "Concentration. Ninety minutes of it.",
+          "voText": "Concentration. Ninety minutes of it."
         },
         {
           "id": "pre_even_focus_02",
-          "text": "Manage the game phases intelligently. When we have the momentum, twist the knife.",
-          "voText": "Manage the game phases intelligently. When we have the momentum, twist the knife."
+          "text": "Shape. Shape. Shape.",
+          "voText": "Shape. Shape. Shape."
         },
         {
           "id": "pre_even_focus_03",
-          "text": "Watch the space between the lines, {player}.",
-          "voText": "Watch the space between the lines.",
+          "text": "Stay in your lane, {player}.",
+          "voText": "Stay in your lane.",
           "nameSlot": "end"
         }
       ],
@@ -478,19 +478,19 @@
       "managerLines": [
         {
           "id": "ht_win_calm_01",
-          "text": "Good first half, but the job is only half done. Keep our structure and stay in control.",
-          "voText": "Good first half, but the job is only half done. Keep our structure and stay in control."
+          "text": "Good half. Same again.",
+          "voText": "Good half. Same again."
         },
         {
           "id": "ht_win_calm_02",
-          "text": "Keep doing what got us ahead. Don't get frantic, don't invite pressure.",
-          "voText": "Keep doing what got us ahead. Don't get frantic, don't invite pressure."
+          "text": "Keep the ball. Let them chase it.",
+          "voText": "Keep the ball. Let them chase it."
         },
         {
           "id": "ht_win_calm_03",
-          "text": "{player}, manage the game clock and keep possession.",
-          "voText": "manage the game clock and keep possession.",
-          "nameSlot": "start"
+          "text": "Keep doing exactly that, {player}.",
+          "voText": "Keep doing exactly that.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -504,19 +504,19 @@
       "managerLines": [
         {
           "id": "ht_win_motivate_01",
-          "text": "Don't let them back into this! Come out flying and kill the game off with a second!",
-          "voText": "Don't let them back into this! Come out flying and kill the game off with a second!"
+          "text": "One more and it's done. Go and get it.",
+          "voText": "One more and it's done. Go and get it."
         },
         {
           "id": "ht_win_motivate_02",
-          "text": "They are reeling! Go finish them off in the first fifteen minutes of the half!",
-          "voText": "They are reeling! Go finish them off in the first fifteen minutes of the half!"
+          "text": "They're there for the taking. Finish it.",
+          "voText": "They're there for the taking. Finish it."
         },
         {
           "id": "ht_win_motivate_03",
-          "text": "Keep driving forward, {player}. Do not let them off the hook!",
-          "voText": "Keep driving forward. Do not let them off the hook!",
-          "nameSlot": "start"
+          "text": "Another one for you, {player}?",
+          "voText": "Another one for you?",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -530,19 +530,19 @@
       "managerLines": [
         {
           "id": "ht_win_demand_01",
-          "text": "We are ahead, but the standards dropped in the last ten minutes. Tighten up!",
-          "voText": "We are ahead, but the standards dropped in the last ten minutes. Tighten up!"
+          "text": "One-nil is nothing. Don't you dare relax.",
+          "voText": "One-nil is nothing. Don't you dare relax."
         },
         {
           "id": "ht_win_demand_02",
-          "text": "Don't you dare get comfortable! Two-goal leads are dangerous if you stop running.",
-          "voText": "Don't you dare get comfortable! Two-goal leads are dangerous if you stop running."
+          "text": "We've been lucky. Wake up.",
+          "voText": "We've been lucky. Wake up."
         },
         {
           "id": "ht_win_demand_03",
-          "text": "{player}, I WANT A CLEAN SHEET! DO NOT LET UP!",
-          "voText": "I WANT A CLEAN SHEET! DO NOT LET UP!",
-          "nameSlot": "start"
+          "text": "Tighter at the back, {player}.",
+          "voText": "Tighter at the back.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -556,18 +556,18 @@
       "managerLines": [
         {
           "id": "ht_win_praise_01",
-          "text": "Superb forty-five minutes. That was football of the highest order. Keep it going!",
-          "voText": "Superb forty-five minutes. That was football of the highest order. Keep it going!"
+          "text": "Brilliant. Best half we've played.",
+          "voText": "Brilliant. Best half we've played."
         },
         {
           "id": "ht_win_praise_02",
-          "text": "Brilliant execution, every single one of you. The fans are loving every minute.",
-          "voText": "Brilliant execution, every single one of you. The fans are loving every minute."
+          "text": "That's exactly what I asked for.",
+          "voText": "That's exactly what I asked for."
         },
         {
           "id": "ht_win_praise_03",
-          "text": "Superb shift in that first half, {player}. More of the same.",
-          "voText": "Superb shift in that first half. More of the same.",
+          "text": "Different class, {player}.",
+          "voText": "Different class.",
           "nameSlot": "end"
         }
       ],
@@ -582,19 +582,19 @@
       "managerLines": [
         {
           "id": "ht_win_disappoint_01",
-          "text": "Yes, we're winning, but that performance was nowhere near our benchmark.",
-          "voText": "Yes, we're winning, but that performance was nowhere near our benchmark."
+          "text": "We're winning and I'm still not happy.",
+          "voText": "We're winning and I'm still not happy."
         },
         {
           "id": "ht_win_disappoint_02",
-          "text": "We got lucky to be ahead. If we play like that in the second half, we lose this.",
-          "voText": "We got lucky to be ahead. If we play like that in the second half, we lose this."
+          "text": "We're ahead in spite of ourselves.",
+          "voText": "We're ahead in spite of ourselves."
         },
         {
           "id": "ht_win_disappoint_03",
-          "text": "{player}, STOP SHOWBOATING! FINISH THIS MATCH OFF!",
-          "voText": "STOP SHOWBOATING! FINISH THIS MATCH OFF!",
-          "nameSlot": "start"
+          "text": "You've given it away all half, {player}.",
+          "voText": "You've given it away all half.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -608,18 +608,18 @@
       "managerLines": [
         {
           "id": "ht_win_focus_01",
-          "text": "They will come out aggressive and throw bodies forward. Protect the half-spaces.",
-          "voText": "They will come out aggressive and throw bodies forward. Protect the half-spaces."
+          "text": "Next goal decides it. Make it ours.",
+          "voText": "Next goal decides it. Make it ours."
         },
         {
           "id": "ht_win_focus_02",
-          "text": "Game management now. Draw their fouls, manage the tempo, kill their momentum.",
-          "voText": "Game management now. Draw their fouls, manage the tempo, kill their momentum."
+          "text": "Same shape. Same work.",
+          "voText": "Same shape. Same work."
         },
         {
           "id": "ht_win_focus_03",
-          "text": "Watch their substitute on the flank, {player}.",
-          "voText": "Watch their substitute on the flank.",
+          "text": "Stay switched on, {player}.",
+          "voText": "Stay switched on.",
           "nameSlot": "end"
         }
       ],
@@ -636,19 +636,19 @@
       "managerLines": [
         {
           "id": "ht_draw_calm_01",
-          "text": "It's tight, as expected. Don't rush, don't get frustrated. Our moment will come.",
-          "voText": "It's tight, as expected. Don't rush, don't get frustrated. Our moment will come."
+          "text": "It's level. We're fine. Keep going.",
+          "voText": "It's level. We're fine. Keep going."
         },
         {
           "id": "ht_draw_calm_02",
-          "text": "Breathe. We are well in this game. Stick to the plan and let their patience wear thin.",
-          "voText": "Breathe. We are well in this game. Stick to the plan and let their patience wear thin."
+          "text": "Nothing's changed. Trust the plan.",
+          "voText": "Nothing's changed. Trust the plan."
         },
         {
           "id": "ht_draw_calm_03",
-          "text": "{player}, stay composed. The opening will come.",
-          "voText": "stay composed. The opening will come.",
-          "nameSlot": "start"
+          "text": "Keep doing your job, {player}.",
+          "voText": "Keep doing your job.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -662,19 +662,19 @@
       "managerLines": [
         {
           "id": "ht_draw_motivate_01",
-          "text": "This game is there for the taking! Who wants to be the hero today?!",
-          "voText": "This game is there for the taking! Who wants to be the hero today?!"
+          "text": "This is there for us. Go and take it.",
+          "voText": "This is there for us. Go and take it."
         },
         {
           "id": "ht_draw_motivate_02",
-          "text": "Step up the tempo! Another ten percent effort will break this deadlock!",
-          "voText": "Step up the tempo! Another ten percent effort will break this deadlock!"
+          "text": "Forty-five minutes. Make them count.",
+          "voText": "Forty-five minutes. Make them count."
         },
         {
           "id": "ht_draw_motivate_03",
-          "text": "Raise the intensity, {player}. The game is there for the taking!",
-          "voText": "Raise the intensity. The game is there for the taking!",
-          "nameSlot": "start"
+          "text": "Win it for us, {player}.",
+          "voText": "Win it for us.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -688,19 +688,19 @@
       "managerLines": [
         {
           "id": "ht_draw_demand_01",
-          "text": "That was far too tame. I need to see more urgency, more hunger in the final third!",
-          "voText": "That was far too tame. I need to see more urgency, more hunger in the final third!"
+          "text": "Level isn't good enough. More.",
+          "voText": "Level isn't good enough. More."
         },
         {
           "id": "ht_draw_demand_02",
-          "text": "Stop waiting for things to happen! Make them happen or I'll make substitutions!",
-          "voText": "Stop waiting for things to happen! Make them happen or I'll make substitutions!"
+          "text": "We're letting them off the hook.",
+          "voText": "We're letting them off the hook."
         },
         {
           "id": "ht_draw_demand_03",
-          "text": "{player}, SNAP INTO TACKLES! WE ARE SECOND TO EVERY BALL!",
-          "voText": "SNAP INTO TACKLES! WE ARE SECOND TO EVERY BALL!",
-          "nameSlot": "start"
+          "text": "I need more from you, {player}.",
+          "voText": "I need more from you.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -714,18 +714,18 @@
       "managerLines": [
         {
           "id": "ht_draw_praise_01",
-          "text": "Solid shift so far. We've matched them physically and tactically. Good job.",
-          "voText": "Solid shift so far. We've matched them physically and tactically. Good job."
+          "text": "Good effort. Now add a goal.",
+          "voText": "Good effort. Now add a goal."
         },
         {
           "id": "ht_draw_praise_02",
-          "text": "I'm pleased with the effort against a tricky opponent. Keep believing.",
-          "voText": "I'm pleased with the effort against a tricky opponent. Keep believing."
+          "text": "You're the better side. Keep at it.",
+          "voText": "You're the better side. Keep at it."
         },
         {
           "id": "ht_draw_praise_03",
-          "text": "You are holding our spine together, {player}. Keep leading.",
-          "voText": "You are holding our spine together. Keep leading.",
+          "text": "Unlucky not to score, {player}.",
+          "voText": "Unlucky not to score.",
           "nameSlot": "end"
         }
       ],
@@ -740,44 +740,44 @@
       "managerLines": [
         {
           "id": "ht_draw_disappoint_01",
-          "text": "That was forty-five minutes wasted. No spark, no creativity, no desire.",
-          "voText": "That was forty-five minutes wasted. No spark, no creativity, no desire."
+          "text": "That was flat. Where's the hunger?",
+          "voText": "That was flat. Where's the hunger?"
         },
         {
           "id": "ht_draw_disappoint_02",
-          "text": "Is this the best we can produce? I expected so much more from this team today.",
-          "voText": "Is this the best we can produce? I expected so much more from this team today."
+          "text": "Too many passengers out there.",
+          "voText": "Too many passengers out there."
         },
         {
           "id": "ht_draw_disappoint_03",
-          "text": "{player}, WAKE UP! YOU ARE GIVING THE BALL AWAY TOO EASILY!",
-          "voText": "WAKE UP! YOU ARE GIVING THE BALL AWAY TOO EASILY!",
-          "nameSlot": "start"
+          "text": "You've gone missing, {player}.",
+          "voText": "You've gone missing.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
         "positive": "Pride wounded, several players vow to prove the gaffer wrong.",
         "neutral": "Quiet, stung expressions fill the room.",
         "negative": "Heads drop into towels; morale takes a noticeable hit.",
-        "mixed": "Divisive reaction\u2014some fire up, but morale suffers slightly."
+        "mixed": "Divisive reaction—some fire up, but morale suffers slightly."
       }
     },
     "Focus": {
       "managerLines": [
         {
           "id": "ht_draw_focus_01",
-          "text": "Notice how they leave space behind their right back? Exploit it on transition.",
-          "voText": "Notice how they leave space behind their right back? Exploit it on transition."
+          "text": "One chance. That's all it takes. Be ready.",
+          "voText": "One chance. That's all it takes. Be ready."
         },
         {
           "id": "ht_draw_focus_02",
-          "text": "Win the second balls in midfield. That is where this match will be won or lost.",
-          "voText": "Win the second balls in midfield. That is where this match will be won or lost."
+          "text": "Keep the shape. The goal will come.",
+          "voText": "Keep the shape. The goal will come."
         },
         {
           "id": "ht_draw_focus_03",
-          "text": "Be sharper on the second ball around the box, {player}.",
-          "voText": "Be sharper on the second ball around the box.",
+          "text": "Be in that box, {player}.",
+          "voText": "Be in that box.",
           "nameSlot": "end"
         }
       ],
@@ -794,19 +794,19 @@
       "managerLines": [
         {
           "id": "ht_lose_calm_01",
-          "text": "Do not panic. One goal changes everything in football. Stay composed and work back.",
-          "voText": "Do not panic. One goal changes everything in football. Stay composed and work back."
+          "text": "One goal. That's all. Plenty of time.",
+          "voText": "One goal. That's all. Plenty of time."
         },
         {
           "id": "ht_lose_calm_02",
-          "text": "Keep your heads up. We gave away a cheap one, but we have forty-five minutes to fix it.",
-          "voText": "Keep your heads up. We gave away a cheap one, but we have forty-five minutes to fix it."
+          "text": "Breathe. We know how to fix this.",
+          "voText": "Breathe. We know how to fix this."
         },
         {
           "id": "ht_lose_calm_03",
-          "text": "{player}, take a deep breath. We stick to the tactical plan.",
-          "voText": "take a deep breath. We stick to the tactical plan.",
-          "nameSlot": "start"
+          "text": "Keep your head, {player}.",
+          "voText": "Keep your head.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -820,23 +820,23 @@
       "managerLines": [
         {
           "id": "ht_lose_motivate_01",
-          "text": "Show some character! We have forty-five minutes to turn this around\u2014believe in it!",
-          "voText": "Show some character! We have forty-five minutes to turn this around\u2014believe in it!"
+          "text": "Forty-five minutes to change this. Go.",
+          "voText": "Forty-five minutes to change this. Go."
         },
         {
           "id": "ht_lose_motivate_02",
-          "text": "Nobody leaves this pitch with regret today! Fight for every ball and turn the tide!",
-          "voText": "Nobody leaves this pitch with regret today! Fight for every ball and turn the tide!"
+          "text": "Nobody leaves this pitch without a fight.",
+          "voText": "Nobody leaves this pitch without a fight."
         },
         {
           "id": "ht_lose_motivate_03",
-          "text": "We can turn this around, {player}. Believe in it!",
-          "voText": "We can turn this around. Believe in it!",
-          "nameSlot": "start"
+          "text": "Go and turn it around, {player}.",
+          "voText": "Go and turn it around.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
-        "positive": "Electrifying rally cry\u2014players shout in defiance and slap hands.",
+        "positive": "Electrifying rally cry—players shout in defiance and slap hands.",
         "neutral": "Energy levels surge back from the deficit.",
         "negative": "A couple of dejected starters still look crestfallen.",
         "mixed": "Brings the fight right back into the squad, lifting morale."
@@ -846,18 +846,18 @@
       "managerLines": [
         {
           "id": "ht_lose_demand_01",
-          "text": "That was totally unacceptable! You were soft in the tackle and sloppy in possession!",
-          "voText": "That was totally unacceptable! You were soft in the tackle and sloppy in possession!"
+          "text": "That was soft. Every one of you. Soft.",
+          "voText": "That was soft. Every one of you. Soft."
         },
         {
           "id": "ht_lose_demand_02",
-          "text": "Sort it out! I will not sit here and watch you throw away ninety minutes of hard work!",
-          "voText": "Sort it out! I will not sit here and watch you throw away ninety minutes of hard work!"
+          "text": "Look at me. That's not good enough. Not close.",
+          "voText": "Look at me. That's not good enough. Not close."
         },
         {
           "id": "ht_lose_demand_03",
-          "text": "{player}, LOOK AT ME! SHOW SOME PRIDE IN THAT SHIRT!",
-          "voText": "LOOK AT ME! SHOW SOME PRIDE IN THAT SHIRT!",
+          "text": "{player}! Look at me! Show some pride!",
+          "voText": "Look at me! Show some pride!",
           "nameSlot": "start"
         }
       ],
@@ -865,32 +865,32 @@
         "positive": "Stung to their core, leaders shout back that they will fix it.",
         "neutral": "Grim silence as the hair-dryer treatment lands.",
         "negative": "Some players shrink into their seats, intimidated.",
-        "mixed": "High risk\u2014hard men fire up with fury while fragile players wilt."
+        "mixed": "High risk—hard men fire up with fury while fragile players wilt."
       }
     },
     "Praise": {
       "managerLines": [
         {
           "id": "ht_lose_praise_01",
-          "text": "Unlucky to be trailing. The performance has been decent\u2014keep knocking on the door.",
-          "voText": "Unlucky to be trailing. The performance has been decent\u2014keep knocking on the door."
+          "text": "We've played well. Keep going.",
+          "voText": "We've played well. Keep going."
         },
         {
           "id": "ht_lose_praise_02",
-          "text": "Don't let the score fool you, we are playing good football. Keep faith.",
-          "voText": "Don't let the score fool you, we are playing good football. Keep faith."
+          "text": "The goal's coming. I can feel it.",
+          "voText": "The goal's coming. I can feel it."
         },
         {
           "id": "ht_lose_praise_03",
-          "text": "You are the only one fighting out there, {player}. Drag them with you.",
-          "voText": "You are the only one fighting out there. Drag them with you.",
-          "nameSlot": "start"
+          "text": "Best man out there, {player}.",
+          "voText": "Best man out there.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
         "positive": "A small comfort to know the boss isn't turning on them.",
         "neutral": "Polite nods, but players know they are behind.",
-        "negative": "Players look bewildered\u2014why are we being praised when losing?",
+        "negative": "Players look bewildered—why are we being praised when losing?",
         "mixed": "Mildly soothing, but risks sounding disconnected from reality."
       }
     },
@@ -898,44 +898,44 @@
       "managerLines": [
         {
           "id": "ht_lose_disappoint_01",
-          "text": "I feel sorry for the fans who travelled to watch that rubbish. Utterly pathetic.",
-          "voText": "I feel sorry for the fans who travelled to watch that rubbish. Utterly pathetic."
+          "text": "I'm embarrassed. That wasn't us.",
+          "voText": "I'm embarrassed. That wasn't us."
         },
         {
           "id": "ht_lose_disappoint_02",
-          "text": "You've let yourselves down, you've let the club down, and you've let me down.",
-          "voText": "You've let yourselves down, you've let the club down, and you've let me down."
+          "text": "Worst half I've seen from you lot.",
+          "voText": "Worst half I've seen from you lot."
         },
         {
           "id": "ht_lose_disappoint_03",
-          "text": "{player}, THAT FIRST HALF DEFENDING WAS AN ABSOLUTE DISGRACE!",
-          "voText": "THAT FIRST HALF DEFENDING WAS AN ABSOLUTE DISGRACE!",
-          "nameSlot": "start"
+          "text": "You've let them run past you, {player}.",
+          "voText": "You've let them run past you.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
         "positive": "Proud players stew with bitter rage, desperate to make amends.",
         "neutral": "Heavy, suffocating gloom descends on the bench.",
         "negative": "Morale takes a nosedive; heads drop completely.",
-        "mixed": "Harsh medicine that divides the room\u2014anger vs despair."
+        "mixed": "Harsh medicine that divides the room—anger vs despair."
       }
     },
     "Focus": {
       "managerLines": [
         {
           "id": "ht_lose_focus_01",
-          "text": "Stop forcing the long ball. Work the overloads out wide and get bodies in the box.",
-          "voText": "Stop forcing the long ball. Work the overloads out wide and get bodies in the box."
+          "text": "One goal first. Then we see.",
+          "voText": "One goal first. Then we see."
         },
         {
           "id": "ht_lose_focus_02",
-          "text": "We need to stop their counter-attacks at source. Tactical fouls if necessary.",
-          "voText": "We need to stop their counter-attacks at source. Tactical fouls if necessary."
+          "text": "Get it wide. Get crosses in.",
+          "voText": "Get it wide. Get crosses in."
         },
         {
           "id": "ht_lose_focus_03",
-          "text": "Cut out the cross at source, {player}.",
-          "voText": "Cut out the cross at source.",
+          "text": "Get on the ball, {player}.",
+          "voText": "Get on the ball.",
           "nameSlot": "end"
         }
       ],
@@ -952,19 +952,19 @@
       "managerLines": [
         {
           "id": "ft_win_calm_01",
-          "text": "Good professional win. Enjoy the evening, but recovery starts tomorrow morning.",
-          "voText": "Good professional win. Enjoy the evening, but recovery starts tomorrow morning."
+          "text": "Good. Rest up. Next one.",
+          "voText": "Good. Rest up. Next one."
         },
         {
           "id": "ft_win_calm_02",
-          "text": "Three points in the bag. Keep your feet on the ground\u2014plenty of football left.",
-          "voText": "Three points in the bag. Keep your feet on the ground\u2014plenty of football left."
+          "text": "Three points. Enjoy it tonight.",
+          "voText": "Three points. Enjoy it tonight."
         },
         {
           "id": "ft_win_calm_03",
-          "text": "{player}, great professional performance to see it out.",
-          "voText": "great professional performance to see it out.",
-          "nameSlot": "start"
+          "text": "Well played, {player}. Rest up.",
+          "voText": "Well played. Rest up.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -978,25 +978,25 @@
       "managerLines": [
         {
           "id": "ft_win_motivate_01",
-          "text": "That's the benchmark! Now let's build a real run of momentum off this result!",
-          "voText": "That's the benchmark! Now let's build a real run of momentum off this result!"
+          "text": "That's the standard now. Keep it.",
+          "voText": "That's the standard now. Keep it."
         },
         {
           "id": "ft_win_motivate_02",
-          "text": "Look around this room\u2014that's what victory feels like! Let's get addicted to it!",
-          "voText": "Look around this room\u2014that's what victory feels like! Let's get addicted to it!"
+          "text": "Get used to this feeling.",
+          "voText": "Get used to this feeling."
         },
         {
           "id": "ft_win_motivate_03",
-          "text": "Enjoy tonight, {player}. We go again next week.",
-          "voText": "Enjoy tonight. We go again next week.",
-          "nameSlot": "start"
+          "text": "More of that next week, {player}.",
+          "voText": "More of that next week.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
         "positive": "Roars of delight! Squad cohesion and belief hit top gear.",
         "neutral": "Great high-spirited banter among teammates.",
-        "negative": "None\u2014hard to complain after a passionate victory speech.",
+        "negative": "None—hard to complain after a passionate victory speech.",
         "mixed": "Tremendous energy and enthusiasm for upcoming fixtures."
       }
     },
@@ -1004,18 +1004,18 @@
       "managerLines": [
         {
           "id": "ft_win_demand_01",
-          "text": "We won, but you made heavy weather of it. You must manage the final minutes better.",
-          "voText": "We won, but you made heavy weather of it. You must manage the final minutes better."
+          "text": "We won, but we were sloppy. Fix it.",
+          "voText": "We won, but we were sloppy. Fix it."
         },
         {
           "id": "ft_win_demand_02",
-          "text": "I'm happy with the points, but don't think for a second that was a flawless display.",
-          "voText": "I'm happy with the points, but don't think for a second that was a flawless display."
+          "text": "Don't believe the papers. We're not there yet.",
+          "voText": "Don't believe the papers. We're not there yet."
         },
         {
           "id": "ft_win_demand_03",
-          "text": "Do not let standards drop in training after this, {player}.",
-          "voText": "Do not let standards drop in training after this.",
+          "text": "Good, but I want more from you, {player}.",
+          "voText": "Good, but I want more from you.",
           "nameSlot": "end"
         }
       ],
@@ -1030,25 +1030,25 @@
       "managerLines": [
         {
           "id": "ft_win_praise_01",
-          "text": "Sensational performance from every single one of you! Absolutely magnificent!",
-          "voText": "Sensational performance from every single one of you! Absolutely magnificent!"
+          "text": "Brilliant. Every single one of you.",
+          "voText": "Brilliant. Every single one of you."
         },
         {
           "id": "ft_win_praise_02",
-          "text": "Take a bow, lads! That was a masterclass and you deserved every bit of it!",
-          "voText": "Take a bow, lads! That was a masterclass and you deserved every bit of it!"
+          "text": "That's what this club is about.",
+          "voText": "That's what this club is about."
         },
         {
           "id": "ft_win_praise_03",
-          "text": "That was an absolute masterclass from you today, {player}.",
-          "voText": "That was an absolute masterclass from you today.",
+          "text": "Outstanding, {player}. Proud of you.",
+          "voText": "Outstanding. Proud of you.",
           "nameSlot": "end"
         }
       ],
       "reactions": {
         "positive": "Euphoric scenes in the dressing room! Morale reaches peak levels.",
         "neutral": "Rapturous applause and smiles across all squad members.",
-        "negative": "None\u2014pure unadulterated post-match joy.",
+        "negative": "None—pure unadulterated post-match joy.",
         "mixed": "Universal morale boost across starters and substitutes alike."
       }
     },
@@ -1056,25 +1056,25 @@
       "managerLines": [
         {
           "id": "ft_win_disappoint_01",
-          "text": "I cannot believe how lucky we got. You were awful despite the scoreline.",
-          "voText": "I cannot believe how lucky we got. You were awful despite the scoreline."
+          "text": "We won ugly. I don't want ugly.",
+          "voText": "We won ugly. I don't want ugly."
         },
         {
           "id": "ft_win_disappoint_02",
-          "text": "If you celebrate that sloppy nonsense, you have no standards. Disgraceful finish.",
-          "voText": "If you celebrate that sloppy nonsense, you have no standards. Disgraceful finish."
+          "text": "Three points, but that was poor.",
+          "voText": "Three points, but that was poor."
         },
         {
           "id": "ft_win_disappoint_03",
-          "text": "{player}, you were sloppy late on. Standards must stay high.",
-          "voText": "you were sloppy late on. Standards must stay high.",
-          "nameSlot": "start"
+          "text": "You coasted, {player}. Don't.",
+          "voText": "You coasted. Don't.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
         "positive": "Only the grumpiest veteran agrees.",
         "neutral": "Shocked looks as music gets cut off.",
-        "negative": "Fury and resentment\u2014ruining a victory speech creates deep unrest.",
+        "negative": "Fury and resentment—ruining a victory speech creates deep unrest.",
         "mixed": "Dressing room atmosphere turns icy; players feel completely cheated."
       }
     },
@@ -1082,19 +1082,19 @@
       "managerLines": [
         {
           "id": "ft_win_focus_01",
-          "text": "Good win. Ice baths, hydration, nutrition. Our next opponent is already watching tape.",
-          "voText": "Good win. Ice baths, hydration, nutrition. Our next opponent is already watching tape."
+          "text": "Recovery tonight. Next game in six days.",
+          "voText": "Recovery tonight. Next game in six days."
         },
         {
           "id": "ft_win_focus_02",
-          "text": "Take the three points, but note the mistakes we got away with. We move on to next week.",
-          "voText": "Take the three points, but note the mistakes we got away with. We move on to next week."
+          "text": "Forget it now. Next one.",
+          "voText": "Forget it now. Next one."
         },
         {
           "id": "ft_win_focus_03",
-          "text": "Recovery starts tonight, {player}. Ice baths first.",
-          "voText": "Recovery starts tonight. Ice baths first.",
-          "nameSlot": "start"
+          "text": "Look after yourself this week, {player}.",
+          "voText": "Look after yourself this week.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -1110,19 +1110,19 @@
       "managerLines": [
         {
           "id": "ft_draw_calm_01",
-          "text": "A point gained in a hard-fought contest. Keep your heads up and move forward.",
-          "voText": "A point gained in a hard-fought contest. Keep your heads up and move forward."
+          "text": "A point. We'll take it.",
+          "voText": "A point. We'll take it."
         },
         {
           "id": "ft_draw_calm_02",
-          "text": "We didn't lose, and in this division every point counts over eighteen rounds.",
-          "voText": "We didn't lose, and in this division every point counts over eighteen rounds."
+          "text": "Not a disaster. We move on.",
+          "voText": "Not a disaster. We move on."
         },
         {
           "id": "ft_draw_calm_03",
-          "text": "{player}, a solid point on the road. Rest up.",
-          "voText": "a solid point on the road. Rest up.",
-          "nameSlot": "start"
+          "text": "Decent shift, {player}.",
+          "voText": "Decent shift.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -1136,18 +1136,18 @@
       "managerLines": [
         {
           "id": "ft_draw_motivate_01",
-          "text": "We showed heart to hold on, but next time we turn that draw into three points!",
-          "voText": "We showed heart to hold on, but next time we turn that draw into three points!"
+          "text": "We were close. Next week, we win it.",
+          "voText": "We were close. Next week, we win it."
         },
         {
           "id": "ft_draw_motivate_02",
-          "text": "That effort proved we can compete with anyone! Keep that hunger burning!",
-          "voText": "That effort proved we can compete with anyone! Keep that hunger burning!"
+          "text": "Take the anger into the next one.",
+          "voText": "Take the anger into the next one."
         },
         {
           "id": "ft_draw_motivate_03",
-          "text": "We dust ourselves down and take three points next time, {player}.",
-          "voText": "We dust ourselves down and take three points next time.",
+          "text": "Next week's yours, {player}.",
+          "voText": "Next week's yours.",
           "nameSlot": "end"
         }
       ],
@@ -1162,19 +1162,19 @@
       "managerLines": [
         {
           "id": "ft_draw_demand_01",
-          "text": "Two points dropped against a side we should be beating. Totally unacceptable.",
-          "voText": "Two points dropped against a side we should be beating. Totally unacceptable."
+          "text": "Two points dropped. Every one of you knows it.",
+          "voText": "Two points dropped. Every one of you knows it."
         },
         {
           "id": "ft_draw_demand_02",
-          "text": "You lacked the killer instinct to finish them off. We must be more clinical.",
-          "voText": "You lacked the killer instinct to finish them off. We must be more clinical."
+          "text": "That should've been a win.",
+          "voText": "That should've been a win."
         },
         {
           "id": "ft_draw_demand_03",
-          "text": "{player}, we should have killed that game off.",
-          "voText": "we should have killed that game off.",
-          "nameSlot": "start"
+          "text": "You need to finish those, {player}.",
+          "voText": "You need to finish those.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -1188,18 +1188,18 @@
       "managerLines": [
         {
           "id": "ft_draw_praise_01",
-          "text": "Tremendous effort out there today against a tough opponent. Proud of the graft.",
-          "voText": "Tremendous effort out there today against a tough opponent. Proud of the graft."
+          "text": "Good point against a good side.",
+          "voText": "Good point against a good side."
         },
         {
           "id": "ft_draw_praise_02",
-          "text": "You gave everything you had on that pitch. No manager can ask for more than that.",
-          "voText": "You gave everything you had on that pitch. No manager can ask for more than that."
+          "text": "Hard work today. I'm happy.",
+          "voText": "Hard work today. I'm happy."
         },
         {
           "id": "ft_draw_praise_03",
-          "text": "Immense defensive commitment today, {player}.",
-          "voText": "Immense defensive commitment today.",
+          "text": "You never stopped running, {player}.",
+          "voText": "You never stopped running.",
           "nameSlot": "end"
         }
       ],
@@ -1214,19 +1214,19 @@
       "managerLines": [
         {
           "id": "ft_draw_disappoint_01",
-          "text": "That was two points thrown away through sheer lack of composure and desire.",
-          "voText": "That was two points thrown away through sheer lack of composure and desire."
+          "text": "That was flat. Really flat.",
+          "voText": "That was flat. Really flat."
         },
         {
           "id": "ft_draw_disappoint_02",
-          "text": "I am bitterly disappointed by what I saw in key moments today. We choked.",
-          "voText": "I am bitterly disappointed by what I saw in key moments today. We choked."
+          "text": "We didn't deserve more.",
+          "voText": "We didn't deserve more."
         },
         {
           "id": "ft_draw_disappoint_03",
-          "text": "{player}, that late conceded chance should never have happened.",
-          "voText": "that late conceded chance should never have happened.",
-          "nameSlot": "start"
+          "text": "Not good enough today, {player}.",
+          "voText": "Not good enough today.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -1240,18 +1240,18 @@
       "managerLines": [
         {
           "id": "ft_draw_focus_01",
-          "text": "We'll review the tape on Tuesday and see where the final pass broke down.",
-          "voText": "We'll review the tape on Tuesday and see where the final pass broke down."
+          "text": "Review it tomorrow. Then forget it.",
+          "voText": "Review it tomorrow. Then forget it."
         },
         {
           "id": "ft_draw_focus_02",
-          "text": "Small margins decided that draw. Work on our final third execution starts now.",
-          "voText": "Small margins decided that draw. Work on our final third execution starts now."
+          "text": "Little things. We'll fix them.",
+          "voText": "Little things. We'll fix them."
         },
         {
           "id": "ft_draw_focus_03",
-          "text": "We analyze the video on Monday, {player}.",
-          "voText": "We analyze the video on Monday.",
+          "text": "We'll work on your finishing, {player}.",
+          "voText": "We'll work on your finishing.",
           "nameSlot": "end"
         }
       ],
@@ -1268,19 +1268,19 @@
       "managerLines": [
         {
           "id": "ft_lose_calm_01",
-          "text": "Tough result to swallow, but we do not unravel. We stick together, learn and bounce back.",
-          "voText": "Tough result to swallow, but we do not unravel. We stick together, learn and bounce back."
+          "text": "One bad day. We go again.",
+          "voText": "One bad day. We go again."
         },
         {
           "id": "ft_lose_calm_02",
-          "text": "Keep your chins up. One defeat does not define this season. We react on Monday.",
-          "voText": "Keep your chins up. One defeat does not define this season. We react on Monday."
+          "text": "Heads up. It's one game.",
+          "voText": "Heads up. It's one game."
         },
         {
           "id": "ft_lose_calm_03",
-          "text": "{player}, keep your chin up. We stick together.",
-          "voText": "keep your chin up. We stick together.",
-          "nameSlot": "start"
+          "text": "Head up, {player}. It happens.",
+          "voText": "Head up. It happens.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -1294,23 +1294,23 @@
       "managerLines": [
         {
           "id": "ft_lose_motivate_01",
-          "text": "Use this agony! Remember how this feels right now and make sure it never happens again!",
-          "voText": "Use this agony! Remember how this feels right now and make sure it never happens again!"
+          "text": "Remember this feeling. Use it.",
+          "voText": "Remember this feeling. Use it."
         },
         {
           "id": "ft_lose_motivate_02",
-          "text": "We are down, but we are not out! We come back twice as hungry next matchday!",
-          "voText": "We are down, but we are not out! We come back twice as hungry next matchday!"
+          "text": "Next week, somebody pays for this.",
+          "voText": "Next week, somebody pays for this."
         },
         {
           "id": "ft_lose_motivate_03",
-          "text": "Remember this bitter feeling, {player}. Use it as fuel.",
-          "voText": "Remember this bitter feeling. Use it as fuel.",
-          "nameSlot": "start"
+          "text": "Bounce back for me, {player}.",
+          "voText": "Bounce back for me.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
-        "positive": "Fists clench and eyes narrow\u2014the squad is eager to make amends.",
+        "positive": "Fists clench and eyes narrow—the squad is eager to make amends.",
         "neutral": "Players shake off the sorrow and rally around each other.",
         "negative": "Tired, dejected players struggle to summon the energy to fire back.",
         "mixed": "Replaces sorrow with determination for the vast majority."
@@ -1320,19 +1320,19 @@
       "managerLines": [
         {
           "id": "ft_lose_demand_01",
-          "text": "That performance was nowhere near the standard required for this football club.",
-          "voText": "That performance was nowhere near the standard required for this football club."
+          "text": "Unacceptable. All of it.",
+          "voText": "Unacceptable. All of it."
         },
         {
           "id": "ft_lose_demand_02",
-          "text": "I expect an immediate reaction in training this week. Places are on the line.",
-          "voText": "I expect an immediate reaction in training this week. Places are on the line."
+          "text": "That was a disgrace, and you know it.",
+          "voText": "That was a disgrace, and you know it."
         },
         {
           "id": "ft_lose_demand_03",
-          "text": "{player}, that level of effort will not be tolerated again.",
-          "voText": "that level of effort will not be tolerated again.",
-          "nameSlot": "start"
+          "text": "You were nowhere today, {player}.",
+          "voText": "You were nowhere today.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -1346,18 +1346,18 @@
       "managerLines": [
         {
           "id": "ft_lose_praise_01",
-          "text": "You gave everything you had against a top side. The score didn't do you justice.",
-          "voText": "You gave everything you had against a top side. The score didn't do you justice."
+          "text": "You gave everything. That's all I ask.",
+          "voText": "You gave everything. That's all I ask."
         },
         {
           "id": "ft_lose_praise_02",
-          "text": "Hold your heads high. You fought until the final whistle and I'm proud of the effort.",
-          "voText": "Hold your heads high. You fought until the final whistle and I'm proud of the effort."
+          "text": "We were unlucky. Keep your heads up.",
+          "voText": "We were unlucky. Keep your heads up."
         },
         {
           "id": "ft_lose_praise_03",
-          "text": "You can hold your head high today, {player}.",
-          "voText": "You can hold your head high today.",
+          "text": "Nothing more you could have done, {player}.",
+          "voText": "Nothing more you could have done.",
           "nameSlot": "end"
         }
       ],
@@ -1372,19 +1372,19 @@
       "managerLines": [
         {
           "id": "ft_lose_disappoint_01",
-          "text": "I am furious with what I just witnessed. You threw that match away with zero heart.",
-          "voText": "I am furious with what I just witnessed. You threw that match away with zero heart."
+          "text": "I'm not angry. I'm disappointed. That's worse.",
+          "voText": "I'm not angry. I'm disappointed. That's worse."
         },
         {
           "id": "ft_lose_disappoint_02",
-          "text": "You gave up in the second half. That is the one thing I will never tolerate as manager.",
-          "voText": "You gave up in the second half. That is the one thing I will never tolerate as manager."
+          "text": "That's not the team I know.",
+          "voText": "That's not the team I know."
         },
         {
           "id": "ft_lose_disappoint_03",
-          "text": "{player}, that was completely unacceptable for this football club.",
-          "voText": "that was completely unacceptable for this football club.",
-          "nameSlot": "start"
+          "text": "I expected more from you, {player}.",
+          "voText": "I expected more from you.",
+          "nameSlot": "end"
         }
       ],
       "reactions": {
@@ -1398,18 +1398,18 @@
       "managerLines": [
         {
           "id": "ft_lose_focus_01",
-          "text": "We conceded from simple tactical errors. We go back to basics on the training pitch.",
-          "voText": "We conceded from simple tactical errors. We go back to basics on the training pitch."
+          "text": "We learn from it. Video on Monday.",
+          "voText": "We learn from it. Video on Monday."
         },
         {
           "id": "ft_lose_focus_02",
-          "text": "Clear your heads tonight. On Monday, we dissect every goal conceded and fix it.",
-          "voText": "Clear your heads tonight. On Monday, we dissect every goal conceded and fix it."
+          "text": "Fix the basics. That's all.",
+          "voText": "Fix the basics. That's all."
         },
         {
           "id": "ft_lose_focus_03",
-          "text": "Back on the training pitch Monday morning, {player}.",
-          "voText": "Back on the training pitch Monday morning.",
+          "text": "We'll work on it this week, {player}.",
+          "voText": "We'll work on it this week.",
           "nameSlot": "end"
         }
       ],

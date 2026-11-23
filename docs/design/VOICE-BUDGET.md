@@ -5,22 +5,22 @@ Model cost: `eleven_multilingual_v2` = 1 credit per character; `eleven_flash_v2_
 
 | Group | Lines | Characters |
 |---|---|---|
-| commentary | 257 | 12,459 |
+| commentary | 307 | 15,657 |
 | names | 280 | 1,909 |
 | clubs | 10 | 96 |
-| coach | 408 | 27,576 |
+| coach | 408 | 12,825 |
 | coach_names | 280 | 1,909 |
 | assistant | 41 | 1,136 |
 | owner | 15 | 419 |
 | physio | 8 | 282 |
-| press_questions | 52 | 4,898 |
-| players | 76 | 4,021 |
-| **Total** | **1427** | **54,705** |
+| press_questions | 52 | 2,201 |
+| players | 76 | 2,283 |
+| **Total** | **1477** | **38,717** |
 
-- **With multilingual v2:** about **54,705 credits** for one clean take of everything.
-- **With flash v2.5:** about **27,352 credits**.
-- **Add about 30% for retakes** (bad reads, wrong emphasis): multilingual ≈ 71,116, flash ≈ 35,558.
-- **The "must have" set** (commentary, names, club names, press questions, Theo's stingers): 20,498 characters.
+- **With multilingual v2:** about **38,717 credits** for one clean take of everything.
+- **With flash v2.5:** about **19,358 credits**.
+- **Add about 30% for retakes** (bad reads, wrong emphasis): multilingual ≈ 50,332, flash ≈ 25,166.
+- **The "must have" set** (commentary, names, club names, press questions, Theo's stingers): 20,999 characters.
 - Sound effects, room ambience and music are billed separately; see the SFX list in `tools/eleven/sfx.json`.
 
 **Fallback:** the local Kokoro voice in `tools/voice/` is free. Any group that doesn't fit the plan (players' replies first, then the physio) can use it, while the headline voices stay ElevenLabs for the sponsor track.

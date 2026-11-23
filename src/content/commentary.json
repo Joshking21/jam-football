@@ -122,13 +122,32 @@
       "id": "atmosphere_01",
       "key": "ATMOSPHERE",
       "voice": "PBP",
+      "text": "The gulls have stopped circling. Even they want to see how this ends.",
+      "voText": "The gulls have stopped circling. Even they want to see how this ends.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "atmosphere_02",
+      "key": "ATMOSPHERE",
+      "voice": "PBP",
+      "text": "A cold night, a warm crowd, and the smell of chips drifting across the stand.",
+      "voText": "A cold night, a warm crowd, and the smell of chips drifting across the stand.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["night"]
+    },
+    {
+      "id": "atmosphere_03",
+      "key": "ATMOSPHERE",
+      "voice": "PBP",
       "text": "Listen to this place. You could bottle the noise and sell it.",
       "voText": "Listen to this place. You could bottle the noise and sell it.",
       "nameSlot": "none",
       "intensity": 1
     },
     {
-      "id": "atmosphere_02",
+      "id": "atmosphere_04",
       "key": "ATMOSPHERE",
       "voice": "PBP",
       "text": "The floodlights turn the rain to silver. It's a proper football night.",
@@ -138,7 +157,7 @@
       "tags": ["night"]
     },
     {
-      "id": "atmosphere_03",
+      "id": "atmosphere_05",
       "key": "ATMOSPHERE",
       "voice": "PBP",
       "text": "The shadows are stretching across the pitch. Time is moving on.",
@@ -148,7 +167,7 @@
       "tags": ["afternoon"]
     },
     {
-      "id": "atmosphere_04",
+      "id": "atmosphere_06",
       "key": "ATMOSPHERE",
       "voice": "PBP",
       "text": "The ball is skidding off this surface like a stone on water.",
@@ -158,7 +177,7 @@
       "tags": ["rain"]
     },
     {
-      "id": "atmosphere_05",
+      "id": "atmosphere_07",
       "key": "ATMOSPHERE",
       "voice": "PBP",
       "text": "The home crowd has gone quiet. The kind of quiet that worries a manager.",
@@ -168,7 +187,7 @@
       "tags": ["homeLosing"]
     },
     {
-      "id": "atmosphere_06",
+      "id": "atmosphere_08",
       "key": "ATMOSPHERE",
       "voice": "PBP",
       "text": "They're singing now, all four sides of the ground.",
@@ -178,7 +197,7 @@
       "tags": ["homeWinning"]
     },
     {
-      "id": "atmosphere_07",
+      "id": "atmosphere_09",
       "key": "ATMOSPHERE",
       "voice": "COL",
       "text": "You can feel every tackle in the stands. Nobody wants to lose this one.",
@@ -188,7 +207,7 @@
       "tags": ["derby"]
     },
     {
-      "id": "atmosphere_08",
+      "id": "atmosphere_10",
       "key": "ATMOSPHERE",
       "voice": "COL",
       "text": "The away end has found its voice. Two hundred miles, and still singing.",
@@ -668,13 +687,31 @@
       "id": "shot_save_01",
       "key": "SHOT_SAVE",
       "voice": "PBP",
+      "text": "Saved! A wall in gloves. You'd need a tide to get past him.",
+      "voText": "Saved! A wall in gloves. You'd need a tide to get past him.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "shot_save_02",
+      "key": "SHOT_SAVE",
+      "voice": "PBP",
+      "text": "What a stop! He's made himself as big as the moment.",
+      "voText": "What a stop! He's made himself as big as the moment.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "shot_save_03",
+      "key": "SHOT_SAVE",
+      "voice": "PBP",
       "text": "Saved! Strong hands, and he holds on.",
       "voText": "Saved! Strong hands, and he holds on.",
       "nameSlot": "none",
       "intensity": 2
     },
     {
-      "id": "shot_save_02",
+      "id": "shot_save_04",
       "key": "SHOT_SAVE",
       "voice": "PBP",
       "text": "Tipped away at full stretch. What a save.",
@@ -683,7 +720,7 @@
       "intensity": 2
     },
     {
-      "id": "shot_save_03",
+      "id": "shot_save_05",
       "key": "SHOT_SAVE",
       "voice": "PBP",
       "text": "Straight at him, and he gathers.",
@@ -692,7 +729,7 @@
       "intensity": 2
     },
     {
-      "id": "shot_save_04",
+      "id": "shot_save_06",
       "key": "SHOT_SAVE",
       "voice": "PBP",
       "text": "Pushed round the post. The keeper kept them alive there.",
@@ -701,7 +738,7 @@
       "intensity": 2
     },
     {
-      "id": "shot_save_05",
+      "id": "shot_save_07",
       "key": "SHOT_SAVE",
       "voice": "PBP",
       "text": "{player} lets fly, and the goalkeeper says no.",
@@ -710,7 +747,7 @@
       "intensity": 2
     },
     {
-      "id": "shot_save_06",
+      "id": "shot_save_08",
       "key": "SHOT_SAVE",
       "voice": "PBP",
       "text": "{player} forces the save of the night.",
@@ -719,7 +756,7 @@
       "intensity": 2
     },
     {
-      "id": "shot_save_07",
+      "id": "shot_save_09",
       "key": "SHOT_SAVE",
       "voice": "PBP",
       "text": "Another save. The goalkeeper is holding this together on his own.",
@@ -729,7 +766,7 @@
       "tags": ["keeperBusy"]
     },
     {
-      "id": "shot_save_08",
+      "id": "shot_save_10",
       "key": "SHOT_SAVE",
       "voice": "PBP",
       "text": "Saved, and that might be the moment they remember.",
@@ -742,13 +779,41 @@
       "id": "shot_miss_01",
       "key": "SHOT_MISS",
       "voice": "PBP",
+      "text": "High, wide, and not even slightly handsome.",
+      "voText": "High, wide, and not even slightly handsome.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_miss_02",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
+      "text": "That's gone into the car park. Somebody check on the windscreens.",
+      "voText": "That's gone into the car park. Somebody check on the windscreens.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_miss_03",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
+      "text": "Skied into the rain. It might come down by Tuesday.",
+      "voText": "Skied into the rain. It might come down by Tuesday.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["rain"]
+    },
+    {
+      "id": "shot_miss_04",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
       "text": "Over. Into the stand, where a man in row Z keeps it as a souvenir.",
       "voText": "Over. Into the stand, where a man in row Z keeps it as a souvenir.",
       "nameSlot": "none",
       "intensity": 1
     },
     {
-      "id": "shot_miss_02",
+      "id": "shot_miss_05",
       "key": "SHOT_MISS",
       "voice": "PBP",
       "text": "Wide. The post never had to worry.",
@@ -757,7 +822,7 @@
       "intensity": 1
     },
     {
-      "id": "shot_miss_03",
+      "id": "shot_miss_06",
       "key": "SHOT_MISS",
       "voice": "PBP",
       "text": "Dragged across the face of goal. So close, so far.",
@@ -766,7 +831,7 @@
       "intensity": 1
     },
     {
-      "id": "shot_miss_04",
+      "id": "shot_miss_07",
       "key": "SHOT_MISS",
       "voice": "PBP",
       "text": "Snatched at it, and he knows.",
@@ -775,7 +840,7 @@
       "intensity": 1
     },
     {
-      "id": "shot_miss_05",
+      "id": "shot_miss_08",
       "key": "SHOT_MISS",
       "voice": "PBP",
       "text": "{player} shoots, and it whistles past the post.",
@@ -784,7 +849,7 @@
       "intensity": 1
     },
     {
-      "id": "shot_miss_06",
+      "id": "shot_miss_09",
       "key": "SHOT_MISS",
       "voice": "PBP",
       "text": "{player} goes for the spectacular. The spectacular says no.",
@@ -793,7 +858,7 @@
       "intensity": 1
     },
     {
-      "id": "shot_miss_07",
+      "id": "shot_miss_10",
       "key": "SHOT_MISS",
       "voice": "PBP",
       "text": "{player} again, and again it won't go in for him.",
@@ -803,7 +868,7 @@
       "tags": ["outOfForm"]
     },
     {
-      "id": "shot_miss_08",
+      "id": "shot_miss_11",
       "key": "SHOT_MISS",
       "voice": "PBP",
       "text": "Wide, and the clock keeps ticking.",
@@ -853,13 +918,22 @@
       "id": "post_01",
       "key": "POST",
       "voice": "PBP",
+      "text": "The post! Ninety years that post's stood there, and tonight it chose a side.",
+      "voText": "The post! Ninety years that post's stood there, and tonight it chose a side.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "post_02",
+      "key": "POST",
+      "voice": "PBP",
       "text": "The post! The woodwork says no!",
       "voText": "The post! The woodwork says no!",
       "nameSlot": "none",
       "intensity": 2
     },
     {
-      "id": "post_02",
+      "id": "post_03",
       "key": "POST",
       "voice": "PBP",
       "text": "Off the crossbar, and the whole ground holds its breath.",
@@ -868,7 +942,7 @@
       "intensity": 2
     },
     {
-      "id": "post_03",
+      "id": "post_04",
       "key": "POST",
       "voice": "PBP",
       "text": "Inches. Just inches.",
@@ -877,7 +951,7 @@
       "intensity": 2
     },
     {
-      "id": "post_04",
+      "id": "post_05",
       "key": "POST",
       "voice": "PBP",
       "text": "{player} hits the post, and he can't believe it.",
@@ -889,13 +963,31 @@
       "id": "big_chance_miss_01",
       "key": "BIG_CHANCE_MISS",
       "voice": "PBP",
+      "text": "Six yards out, and he's found the one place the goal isn't.",
+      "voText": "Six yards out, and he's found the one place the goal isn't.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "big_chance_miss_02",
+      "key": "BIG_CHANCE_MISS",
+      "voice": "PBP",
+      "text": "He's missed it! Even the ball looks embarrassed.",
+      "voText": "He's missed it! Even the ball looks embarrassed.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "big_chance_miss_03",
+      "key": "BIG_CHANCE_MISS",
+      "voice": "PBP",
       "text": "He's missed it! How has he missed it?",
       "voText": "He's missed it! How has he missed it?",
       "nameSlot": "none",
       "intensity": 2
     },
     {
-      "id": "big_chance_miss_02",
+      "id": "big_chance_miss_04",
       "key": "BIG_CHANCE_MISS",
       "voice": "PBP",
       "text": "From there, it's harder to miss than to score.",
@@ -904,7 +996,7 @@
       "intensity": 2
     },
     {
-      "id": "big_chance_miss_03",
+      "id": "big_chance_miss_05",
       "key": "BIG_CHANCE_MISS",
       "voice": "PBP",
       "text": "An open goal, and somehow it's still nil.",
@@ -913,7 +1005,7 @@
       "intensity": 2
     },
     {
-      "id": "big_chance_miss_04",
+      "id": "big_chance_miss_06",
       "key": "BIG_CHANCE_MISS",
       "voice": "PBP",
       "text": "{player} will see that one when he closes his eyes tonight.",
@@ -922,7 +1014,7 @@
       "intensity": 2
     },
     {
-      "id": "big_chance_miss_05",
+      "id": "big_chance_miss_07",
       "key": "BIG_CHANCE_MISS",
       "voice": "PBP",
       "text": "{player}, of all people. He scores those in his sleep.",
@@ -932,7 +1024,7 @@
       "tags": ["topScorer"]
     },
     {
-      "id": "big_chance_miss_06",
+      "id": "big_chance_miss_08",
       "key": "BIG_CHANCE_MISS",
       "voice": "PBP",
       "text": "That was the chance. That was the whole game, right there.",
@@ -945,13 +1037,89 @@
       "id": "goal_01",
       "key": "GOAL",
       "voice": "PBP",
+      "text": "Goal! The net is still shaking, and so is the stand.",
+      "voText": "Goal! The net is still shaking, and so is the stand.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_02",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "It's in! Somewhere a goalkeeper's coach is putting his head in his hands.",
+      "voText": "It's in! Somewhere a goalkeeper's coach is putting his head in his hands.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_03",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "Goal! Like a key turning in a lock that's been stuck all season.",
+      "voText": "Goal! Like a key turning in a lock that's been stuck all season.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_04",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "Goal! Under these lights it looked like it was drawn on the night sky.",
+      "voText": "Goal! Under these lights it looked like it was drawn on the night sky.",
+      "nameSlot": "none",
+      "intensity": 3,
+      "tags": ["night"]
+    },
+    {
+      "id": "goal_05",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "Goal! On a lazy afternoon, somebody just woke the whole town up.",
+      "voText": "Goal! On a lazy afternoon, somebody just woke the whole town up.",
+      "nameSlot": "none",
+      "intensity": 3,
+      "tags": ["afternoon"]
+    },
+    {
+      "id": "goal_06",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "{player}! Poetry. Short poem, mind. Two words: it's in.",
+      "voText": "! Poetry. Short poem, mind. Two words: it's in.",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_07",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "Another! At this rate they'll need a bigger scoreboard.",
+      "voText": "Another! At this rate they'll need a bigger scoreboard.",
+      "nameSlot": "none",
+      "intensity": 3,
+      "tags": ["rout"]
+    },
+    {
+      "id": "goal_08",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "Level! Late, loud and wonderfully unreasonable!",
+      "voText": "Level! Late, loud and wonderfully unreasonable!",
+      "nameSlot": "none",
+      "intensity": 3,
+      "tags": ["late", "equaliser"]
+    },
+    {
+      "id": "goal_09",
+      "key": "GOAL",
+      "voice": "PBP",
       "text": "Goal! And this place has lost its mind.",
       "voText": "Goal! And this place has lost its mind.",
       "nameSlot": "none",
       "intensity": 3
     },
     {
-      "id": "goal_02",
+      "id": "goal_10",
       "key": "GOAL",
       "voice": "PBP",
       "text": "It's in! Low, hard, and beyond the reach of anybody.",
@@ -960,7 +1128,7 @@
       "intensity": 3
     },
     {
-      "id": "goal_03",
+      "id": "goal_11",
       "key": "GOAL",
       "voice": "PBP",
       "text": "Goal! Nobody saw that coming, least of all the goalkeeper.",
@@ -969,7 +1137,7 @@
       "intensity": 3
     },
     {
-      "id": "goal_04",
+      "id": "goal_12",
       "key": "GOAL",
       "voice": "PBP",
       "text": "In it goes! And the stand behind the goal is a sea of arms.",
@@ -978,7 +1146,7 @@
       "intensity": 3
     },
     {
-      "id": "goal_05",
+      "id": "goal_13",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}! And it's in!",
@@ -987,7 +1155,7 @@
       "intensity": 3
     },
     {
-      "id": "goal_06",
+      "id": "goal_14",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player} scores, and he's away to the corner flag.",
@@ -996,7 +1164,7 @@
       "intensity": 3
     },
     {
-      "id": "goal_07",
+      "id": "goal_15",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}! Cool head, quick feet, and it's in.",
@@ -1005,7 +1173,7 @@
       "intensity": 3
     },
     {
-      "id": "goal_08",
+      "id": "goal_16",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player} breaks the deadlock, and the game breaks open with it.",
@@ -1015,7 +1183,7 @@
       "tags": ["opener"]
     },
     {
-      "id": "goal_09",
+      "id": "goal_17",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}! Level! And everything we thought we knew is gone.",
@@ -1025,7 +1193,7 @@
       "tags": ["equaliser"]
     },
     {
-      "id": "goal_10",
+      "id": "goal_18",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}! That could be the one. That could be the winner.",
@@ -1035,7 +1203,7 @@
       "tags": ["winner"]
     },
     {
-      "id": "goal_11",
+      "id": "goal_19",
       "key": "GOAL",
       "voice": "PBP",
       "text": "Late, so late, and the stadium has come apart.",
@@ -1045,7 +1213,7 @@
       "tags": ["late"]
     },
     {
-      "id": "goal_12",
+      "id": "goal_20",
       "key": "GOAL",
       "voice": "PBP",
       "text": "Ninety minutes gone, the legs gone with them, and still… they find one more.",
@@ -1055,7 +1223,7 @@
       "tags": ["late", "winner"]
     },
     {
-      "id": "goal_13",
+      "id": "goal_21",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}! Barely old enough to drive, and tonight the whole ground knows his name.",
@@ -1065,7 +1233,7 @@
       "tags": ["young", "firstGoal"]
     },
     {
-      "id": "goal_14",
+      "id": "goal_22",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}, at last! His first goal for the club, and he'll never forget it.",
@@ -1075,7 +1243,7 @@
       "tags": ["firstGoal"]
     },
     {
-      "id": "goal_15",
+      "id": "goal_23",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}! Signed for exactly this. Worth every penny, so far.",
@@ -1085,7 +1253,7 @@
       "tags": ["newSigning"]
     },
     {
-      "id": "goal_16",
+      "id": "goal_24",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}, against the club that let him go. Football never forgets. Neither does he.",
@@ -1095,7 +1263,7 @@
       "tags": ["formerClub"]
     },
     {
-      "id": "goal_17",
+      "id": "goal_25",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}. Months on the treatment table, and he has waited for this.",
@@ -1105,7 +1273,7 @@
       "tags": ["returning"]
     },
     {
-      "id": "goal_18",
+      "id": "goal_26",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}! The captain grabs this game by the collar.",
@@ -1115,7 +1283,7 @@
       "tags": ["captain"]
     },
     {
-      "id": "goal_19",
+      "id": "goal_27",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}! The years fall away. He's twenty-two again.",
@@ -1125,7 +1293,7 @@
       "tags": ["veteran"]
     },
     {
-      "id": "goal_20",
+      "id": "goal_28",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}! On for ten minutes, and he's changed everything.",
@@ -1135,7 +1303,7 @@
       "tags": ["sub"]
     },
     {
-      "id": "goal_21",
+      "id": "goal_29",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player} again! Two for him, and he's not finished.",
@@ -1145,7 +1313,7 @@
       "tags": ["brace"]
     },
     {
-      "id": "goal_22",
+      "id": "goal_30",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}! A hat-trick! Somebody fetch the match ball!",
@@ -1155,7 +1323,7 @@
       "tags": ["hatTrick"]
     },
     {
-      "id": "goal_23",
+      "id": "goal_31",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}, the centre-half, scoring at the wrong end. Wonderful.",
@@ -1165,7 +1333,7 @@
       "tags": ["defender"]
     },
     {
-      "id": "goal_24",
+      "id": "goal_32",
       "key": "GOAL",
       "voice": "PBP",
       "text": "From two down, they're back! What a turnaround!",
@@ -1175,7 +1343,7 @@
       "tags": ["comeback"]
     },
     {
-      "id": "goal_25",
+      "id": "goal_33",
       "key": "GOAL",
       "voice": "PBP",
       "text": "Another one. This has turned into a procession.",
@@ -1185,7 +1353,7 @@
       "tags": ["rout"]
     },
     {
-      "id": "goal_26",
+      "id": "goal_34",
       "key": "GOAL",
       "voice": "PBP",
       "text": "In a derby! There'll be stories about this in the pubs for years.",
@@ -1195,7 +1363,7 @@
       "tags": ["derby"]
     },
     {
-      "id": "goal_27",
+      "id": "goal_35",
       "key": "GOAL",
       "voice": "PBP",
       "text": "And at the top of the table, the whole picture just changed.",
@@ -1205,7 +1373,7 @@
       "tags": ["titleRace"]
     },
     {
-      "id": "goal_28",
+      "id": "goal_36",
       "key": "GOAL",
       "voice": "PBP",
       "text": "That goal might be worth a whole season to this club.",
@@ -1215,7 +1383,7 @@
       "tags": ["relegation"]
     },
     {
-      "id": "goal_29",
+      "id": "goal_37",
       "key": "GOAL",
       "voice": "PBP",
       "text": "Through the rain, through the bodies, and in!",
@@ -1225,7 +1393,7 @@
       "tags": ["rain"]
     },
     {
-      "id": "goal_30",
+      "id": "goal_38",
       "key": "GOAL",
       "voice": "PBP",
       "text": "{player}! The drought is over! You could see the weight lift off him.",
@@ -1384,13 +1552,22 @@
       "id": "penalty_saved_01",
       "key": "PENALTY_SAVED",
       "voice": "PBP",
+      "text": "Saved! Twelve yards, one man, and the goalkeeper wins the staring contest!",
+      "voText": "Saved! Twelve yards, one man, and the goalkeeper wins the staring contest!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "penalty_saved_02",
+      "key": "PENALTY_SAVED",
+      "voice": "PBP",
       "text": "Saved! The keeper guessed right, and he's a hero!",
       "voText": "Saved! The keeper guessed right, and he's a hero!",
       "nameSlot": "none",
       "intensity": 3
     },
     {
-      "id": "penalty_saved_02",
+      "id": "penalty_saved_03",
       "key": "PENALTY_SAVED",
       "voice": "PBP",
       "text": "Kept out! The tension breaks like a wave!",
@@ -1399,7 +1576,7 @@
       "intensity": 3
     },
     {
-      "id": "penalty_saved_03",
+      "id": "penalty_saved_04",
       "key": "PENALTY_SAVED",
       "voice": "PBP",
       "text": "{player}'s penalty is saved!",
@@ -1408,7 +1585,7 @@
       "intensity": 3
     },
     {
-      "id": "penalty_saved_04",
+      "id": "penalty_saved_05",
       "key": "PENALTY_SAVED",
       "voice": "PBP",
       "text": "{player} misses from the spot, and you can hear the whole ground groan.",
@@ -1569,13 +1746,22 @@
       "id": "red_01",
       "key": "RED",
       "voice": "PBP",
+      "text": "Red! He came on to make a difference. Not that one.",
+      "voText": "Red! He came on to make a difference. Not that one.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "red_02",
+      "key": "RED",
+      "voice": "PBP",
       "text": "Red card! He's off, and the game has changed.",
       "voText": "Red card! He's off, and the game has changed.",
       "nameSlot": "none",
       "intensity": 3
     },
     {
-      "id": "red_02",
+      "id": "red_03",
       "key": "RED",
       "voice": "PBP",
       "text": "Sent off! Ten men, and a long way to go.",
@@ -1584,7 +1770,7 @@
       "intensity": 3
     },
     {
-      "id": "red_03",
+      "id": "red_04",
       "key": "RED",
       "voice": "PBP",
       "text": "{player} is sent off, and he walks the loneliest walk in football.",
@@ -1593,7 +1779,7 @@
       "intensity": 3
     },
     {
-      "id": "red_04",
+      "id": "red_05",
       "key": "RED",
       "voice": "PBP",
       "text": "{player} is sent off in a derby. He'll hear about that for a while.",
@@ -1603,7 +1789,7 @@
       "tags": ["derby"]
     },
     {
-      "id": "red_05",
+      "id": "red_06",
       "key": "RED",
       "voice": "PBP",
       "text": "A late red, and this is boiling over.",
@@ -1616,13 +1802,22 @@
       "id": "injury_01",
       "key": "INJURY",
       "voice": "PBP",
+      "text": "You hate to see that. Whatever the shirt, you hate to see that.",
+      "voText": "You hate to see that. Whatever the shirt, you hate to see that.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "injury_02",
+      "key": "INJURY",
+      "voice": "PBP",
       "text": "He's down, and this doesn't look good.",
       "voText": "He's down, and this doesn't look good.",
       "nameSlot": "none",
       "intensity": 2
     },
     {
-      "id": "injury_02",
+      "id": "injury_03",
       "key": "INJURY",
       "voice": "PBP",
       "text": "{player} is down. The physio's running on.",
@@ -1631,7 +1826,7 @@
       "intensity": 2
     },
     {
-      "id": "injury_03",
+      "id": "injury_04",
       "key": "INJURY",
       "voice": "PBP",
       "text": "{player} is down again. Not him. Not now.",
@@ -1921,13 +2116,101 @@
       "id": "analysis_01",
       "key": "ANALYSIS",
       "voice": "COL",
+      "text": "If I'm in that dugout, I'm changing something now. Not in ten minutes. Now.",
+      "voText": "If I'm in that dugout, I'm changing something now. Not in ten minutes. Now.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["homeLosing"]
+    },
+    {
+      "id": "analysis_02",
+      "key": "ANALYSIS",
+      "voice": "COL",
+      "text": "Somebody has to run in behind. Passing in front of them is just admiring them.",
+      "voText": "Somebody has to run in behind. Passing in front of them is just admiring them.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["possessionSterile"]
+    },
+    {
+      "id": "analysis_03",
+      "key": "ANALYSIS",
+      "voice": "COL",
+      "text": "Get the winger back to help. Leaving that full-back alone out there is cruel.",
+      "voText": "Get the winger back to help. Leaving that full-back alone out there is cruel.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["flankOverload"]
+    },
+    {
+      "id": "analysis_04",
+      "key": "ANALYSIS",
+      "voice": "COL",
+      "text": "Two changes, minimum. Fresh legs win this now.",
+      "voText": "Two changes, minimum. Fresh legs win this now.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["tiredLegs"]
+    },
+    {
+      "id": "analysis_05",
+      "key": "ANALYSIS",
+      "voice": "COL",
+      "text": "Go long. Just once. See how much they enjoy running backwards.",
+      "voText": "Go long. Just once. See how much they enjoy running backwards.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["highLine"]
+    },
+    {
+      "id": "analysis_06",
+      "key": "ANALYSIS",
+      "voice": "COL",
+      "text": "Stop crossing it. Get it into feet and make them defend something new.",
+      "voText": "Stop crossing it. Get it into feet and make them defend something new.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["crossesFailing"]
+    },
+    {
+      "id": "analysis_07",
+      "key": "ANALYSIS",
+      "voice": "COL",
+      "text": "That's lazy defending. Four of them watching the ball, nobody watching the man.",
+      "voText": "That's lazy defending. Four of them watching the ball, nobody watching the man.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "analysis_08",
+      "key": "ANALYSIS",
+      "voice": "COL",
+      "text": "Too many touches. Everything's a second slower than it needs to be.",
+      "voText": "Too many touches. Everything's a second slower than it needs to be.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "analysis_09",
+      "key": "ANALYSIS",
+      "voice": "COL",
+      "text": "Daft. He's left ten teammates to clean up his mess.",
+      "voText": "Daft. He's left ten teammates to clean up his mess.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["tenMen"]
+    },
+    {
+      "id": "analysis_10",
+      "key": "ANALYSIS",
+      "voice": "COL",
       "text": "It's tight. Whoever wins the second balls will win this.",
       "voText": "It's tight. Whoever wins the second balls will win this.",
       "nameSlot": "none",
       "intensity": 1
     },
     {
-      "id": "analysis_02",
+      "id": "analysis_11",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "Watch the full-back. Every time it goes wide he's ten yards too high, and they've spotted it.",
@@ -1937,7 +2220,7 @@
       "tags": ["flankOverload"]
     },
     {
-      "id": "analysis_03",
+      "id": "analysis_12",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "They're going down that side again and again. It's the soft spot.",
@@ -1947,7 +2230,7 @@
       "tags": ["flankOverload"]
     },
     {
-      "id": "analysis_04",
+      "id": "analysis_13",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "The press is a trap. They're showing them inside on purpose.",
@@ -1957,7 +2240,7 @@
       "tags": ["pressingWorking"]
     },
     {
-      "id": "analysis_05",
+      "id": "analysis_14",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "They can't get out. Every pass is under pressure.",
@@ -1967,7 +2250,7 @@
       "tags": ["pressingWorking"]
     },
     {
-      "id": "analysis_06",
+      "id": "analysis_15",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "The press has gone. The legs went about ten minutes ago.",
@@ -1977,7 +2260,7 @@
       "tags": ["pressingTired"]
     },
     {
-      "id": "analysis_07",
+      "id": "analysis_16",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "They keep crossing it, and the centre-halves keep heading it out. Something has to change.",
@@ -1987,7 +2270,7 @@
       "tags": ["crossesFailing"]
     },
     {
-      "id": "analysis_08",
+      "id": "analysis_17",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "That defensive line is very high. One ball over the top and they're in trouble.",
@@ -1997,7 +2280,7 @@
       "tags": ["highLine"]
     },
     {
-      "id": "analysis_09",
+      "id": "analysis_18",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "They've had the ball for twenty minutes and haven't hurt anyone with it.",
@@ -2007,7 +2290,7 @@
       "tags": ["possessionSterile"]
     },
     {
-      "id": "analysis_10",
+      "id": "analysis_19",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "On chances, they should be miles ahead. The finishing has let them down.",
@@ -2017,7 +2300,7 @@
       "tags": ["xgGap"]
     },
     {
-      "id": "analysis_11",
+      "id": "analysis_20",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "Every corner looks like a goal. They have to stop giving them away.",
@@ -2027,7 +2310,7 @@
       "tags": ["setPieceThreat"]
     },
     {
-      "id": "analysis_12",
+      "id": "analysis_21",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "The goalkeeper is having the game of his life. Nobody else is.",
@@ -2037,7 +2320,7 @@
       "tags": ["keeperBusy"]
     },
     {
-      "id": "analysis_13",
+      "id": "analysis_22",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "The momentum's turned. You can feel it in the crowd.",
@@ -2047,7 +2330,7 @@
       "tags": ["momentumShift"]
     },
     {
-      "id": "analysis_14",
+      "id": "analysis_23",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "There are tired legs out there. The bench will decide this.",
@@ -2057,7 +2340,7 @@
       "tags": ["tiredLegs"]
     },
     {
-      "id": "analysis_15",
+      "id": "analysis_24",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "Two of them on yellows, flying into tackles. Somebody needs to calm them down.",
@@ -2067,7 +2350,7 @@
       "tags": ["cardTrouble"]
     },
     {
-      "id": "analysis_16",
+      "id": "analysis_25",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "It's a scrap in midfield. Nobody's getting a moment on the ball.",
@@ -2077,7 +2360,7 @@
       "tags": ["midfieldBattle"]
     },
     {
-      "id": "analysis_17",
+      "id": "analysis_26",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "They're going long and skipping midfield altogether. It's ugly, and it's working.",
@@ -2087,7 +2370,7 @@
       "tags": ["longBallBypass"]
     },
     {
-      "id": "analysis_18",
+      "id": "analysis_27",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "Ten men, and they've dropped into two banks of four. Hard to break down now.",
@@ -2097,7 +2380,7 @@
       "tags": ["tenMen"]
     },
     {
-      "id": "analysis_19",
+      "id": "analysis_28",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "The home side need to be braver. Too many sideways passes.",
@@ -2107,7 +2390,7 @@
       "tags": ["homeLosing"]
     },
     {
-      "id": "analysis_20",
+      "id": "analysis_29",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "It's gone from bad to worse. The heads have dropped.",
@@ -2117,7 +2400,7 @@
       "tags": ["rout"]
     },
     {
-      "id": "analysis_21",
+      "id": "analysis_30",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "The holding midfielder is doing all the quiet work nobody notices.",
@@ -2126,7 +2409,7 @@
       "intensity": 1
     },
     {
-      "id": "analysis_22",
+      "id": "analysis_31",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "Look at the gaps between the lines. Somebody will find that space soon.",
@@ -2135,7 +2418,7 @@
       "intensity": 1
     },
     {
-      "id": "analysis_23",
+      "id": "analysis_32",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "It's a game of patience now. Whoever blinks first loses.",
@@ -2144,7 +2427,7 @@
       "intensity": 1
     },
     {
-      "id": "analysis_24",
+      "id": "analysis_33",
       "key": "ANALYSIS",
       "voice": "COL",
       "text": "Next goal wins it. Both benches know it.",
@@ -2280,6 +2563,196 @@
       "voText": "is everywhere tonight.",
       "nameSlot": "start",
       "intensity": 1
+    },
+    {
+      "id": "goal_reaction_01",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "Spare a thought for the keeper. No chance, and he'll still get the blame.",
+      "voText": "Spare a thought for the keeper. No chance, and he'll still get the blame.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "goal_reaction_02",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "The marking was non-existent. Somebody's getting a video session on Monday.",
+      "voText": "The marking was non-existent. Somebody's getting a video session on Monday.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "goal_reaction_03",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "Cruel on the other lot. They'd given everything.",
+      "voText": "Cruel on the other lot. They'd given everything.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["late"]
+    },
+    {
+      "id": "goal_reaction_04",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "I'll be honest, Callum, I didn't see that coming. Neither did the keeper.",
+      "voText": "I'll be honest, Callum, I didn't see that coming. Neither did the keeper.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "goal_reaction_05",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "Watch it again. The run made the goal before the shot did.",
+      "voText": "Watch it again. The run made the goal before the shot did.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "goal_reaction_06",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "That's the kind of finish you practise for years and do once.",
+      "voText": "That's the kind of finish you practise for years and do once.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "goal_reaction_07",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "He's young enough to think that's easy. Don't anybody tell him it isn't.",
+      "voText": "He's young enough to think that's easy. Don't anybody tell him it isn't.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["young"]
+    },
+    {
+      "id": "goal_reaction_08",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "Experience. He knew where that ball would land before it was crossed.",
+      "voText": "Experience. He knew where that ball would land before it was crossed.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["veteran"]
+    },
+    {
+      "id": "goal_reaction_09",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "Some players hide in the last minute. He went looking for it.",
+      "voText": "Some players hide in the last minute. He went looking for it.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["late"]
+    },
+    {
+      "id": "goal_reaction_10",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "He'll never buy a drink in this town again.",
+      "voText": "He'll never buy a drink in this town again.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["derby"]
+    },
+    {
+      "id": "goal_reaction_11",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "At this point the goalkeeper's just picking it out of the net for exercise.",
+      "voText": "At this point the goalkeeper's just picking it out of the net for exercise.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["rout"]
+    },
+    {
+      "id": "goal_reaction_12",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "Defenders score about twice a season and celebrate like it's a hundred. Fair enough.",
+      "voText": "Defenders score about twice a season and celebrate like it's a hundred. Fair enough.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["defender"]
+    },
+    {
+      "id": "goal_reaction_13",
+      "key": "GOAL_REACTION",
+      "voice": "COL",
+      "text": "Nobody gave them a chance at half-time. Nobody.",
+      "voText": "Nobody gave them a chance at half-time. Nobody.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["comeback"]
+    },
+    {
+      "id": "miss_reaction_01",
+      "key": "MISS_REACTION",
+      "voice": "COL",
+      "text": "You have to feel for him. He did everything right except the last bit.",
+      "voText": "You have to feel for him. He did everything right except the last bit.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "miss_reaction_02",
+      "key": "MISS_REACTION",
+      "voice": "COL",
+      "text": "Don't be hard on him. He'll score a hundred of those before he's twenty-five.",
+      "voText": "Don't be hard on him. He'll score a hundred of those before he's twenty-five.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["young"]
+    },
+    {
+      "id": "miss_reaction_03",
+      "key": "MISS_REACTION",
+      "voice": "COL",
+      "text": "He had all the time in the world to pick a spot. He picked the stand.",
+      "voText": "He had all the time in the world to pick a spot. He picked the stand.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "miss_reaction_04",
+      "key": "MISS_REACTION",
+      "voice": "COL",
+      "text": "He'll want the ground to open up. Then he'll want it to open up again.",
+      "voText": "He'll want the ground to open up. Then he'll want it to open up again.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "miss_reaction_05",
+      "key": "MISS_REACTION",
+      "voice": "COL",
+      "text": "I've seen that miss before, Callum. Usually on a Sunday morning, in the park.",
+      "voText": "I've seen that miss before, Callum. Usually on a Sunday morning, in the park.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "miss_reaction_06",
+      "key": "MISS_REACTION",
+      "voice": "COL",
+      "text": "The hard part was getting there. Somehow that was the easy part he got wrong.",
+      "voText": "The hard part was getting there. Somehow that was the easy part he got wrong.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "miss_reaction_07",
+      "key": "MISS_REACTION",
+      "voice": "COL",
+      "text": "Even the best ones do that. They just do it less often.",
+      "voText": "Even the best ones do that. They just do it less often.",
+      "nameSlot": "none",
+      "intensity": 1,
+      "tags": ["topScorer"]
     },
     {
       "id": "derby_intro_01",
