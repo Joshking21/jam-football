@@ -26,7 +26,7 @@ import { RadarOverlay } from './Match/RadarOverlay';
 import { HalfTimeModal } from './Match/HalfTimeModal';
 import { FullTimeModal } from './Match/FullTimeModal';
 import { TalkTone, getHalfTimeTalkContext } from '../../core/player/talks';
-import { simulateInstant } from '../../core/match/engine';
+import { createMatch, simulateInstant } from '../../core/match/engine';
 import type { ClientToWorkerMessage, WorkerToClientMessage } from '../../workers/match.worker';
 
 export const MatchScreen: React.FC = () => {
@@ -99,6 +99,9 @@ export const MatchScreen: React.FC = () => {
   if (!homeClub || !awayClub || !userClub) return null;
 
   const userSide: Side = fixture.homeId === gameState.userClubId ? 'home' : 'away';
+
+  const captureState =
+    typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('state') : null;
 
   // 1. Initialize Worker & Scene & Playback
   useEffect(() => {
@@ -179,45 +182,117 @@ export const MatchScreen: React.FC = () => {
     });
     sceneRef.current = scene;
 
+    const input: MatchInput = {
+      fixtureId: fixture.id,
+      home: homeSheet,
+      away: awaySheet,
+      isDerby: homeClub.rivals.includes(awayClub.id),
+      weather: fixture.weather,
+      userSide,
+      aiControls: userSide === 'home' ? ['away'] : ['home'],
+    };
+
+    const matchSeed = deriveSeed(gameState.seed, 'match-sim', fixture.id);
+
     // Apply capture states if specified in URL query (?state=...)
-    if (captureState === 'goal') {
-      const scorer = homePlayers[9] ?? homePlayers[0];
-      setCurrentGoalBanner({
-        scorerName: scorer
-          ? (scorer.knownAs ?? `${scorer.firstName} ${scorer.lastName}`)
-          : 'Whitlock',
-        minuteLabel: "34'",
-        side: 'home',
-      });
-    } else if (captureState === 'replay') {
-      playback.isReplay = true;
-      setPlaybackState((prev) => ({ ...prev, isReplay: true }));
-    } else if (captureState === 'halftime') {
-      setIsHalfTime(true);
-      playback.score = { home: 1, away: 0 };
-      setPlaybackState((prev) => ({ ...prev, score: { home: 1, away: 0 }, half: 1, pt: 2700 }));
-    } else if (captureState === 'subs') {
-      setSubsOpen(true);
-    } else if (captureState === 'drawers') {
-      setStatsOpen(true);
-      setAssistantOpen(true);
-    } else if (captureState === 'tactical') {
-      scene.setCameraMode('tactical');
-      setCameraMode('tactical');
-    } else if (captureState === 'freecam') {
-      scene.setCameraMode('player');
-      setCameraMode('player');
-    } else if (captureState === 'timelapse') {
-      playback.pt = 1620;
-      playback.isTimeLapse = true;
-      playback.timeLapseProgress = 0.55;
-      setPlaybackState((prev) => ({
-        ...prev,
-        pt: 1620,
-        isTimeLapse: true,
-        timeLapseProgress: 0.55,
-        speedMultiplier: 60,
-      }));
+    // REVIEW-M4 S3: Execute real seeded engine simulation up-front so headless captures get
+    // authentic match events, real goals, real replay windows, real HT/FT stats, and real positions.
+    if (captureState) {
+      const sim = createMatch(input, matchSeed);
+      const allEvents = sim.runToEnd();
+      const realResult = sim.result();
+      setMatchResult(realResult);
+      playback.addEvents(allEvents);
+
+      const firstGoal = allEvents.find((e) => e.type === 'GOAL') ?? allEvents[0];
+
+      if (captureState === 'kickoff') {
+        playback.seek(0);
+        setPlaybackState((prev) => ({ ...prev, pt: 0, half: 1, score: { home: 0, away: 0 } }));
+      } else if (captureState === 'goal') {
+        if (firstGoal) {
+          const t = firstGoal.t;
+          playback.seek(t);
+          const scorer = firstGoal.playerId ? gameState.players[firstGoal.playerId] : null;
+          const scorerName = scorer
+            ? (scorer.knownAs ?? `${scorer.firstName} ${scorer.lastName}`)
+            : 'Whitlock';
+          setCurrentGoalBanner({
+            scorerName,
+            minuteLabel: firstGoal.minuteLabel,
+            side: firstGoal.side,
+          });
+          const scoreAtGoal = playback.getScoreAt(t);
+          setPlaybackState((prev) => ({
+            ...prev,
+            pt: t,
+            score: scoreAtGoal,
+            lastGoalEvent: firstGoal,
+          }));
+        }
+      } else if (captureState === 'replay') {
+        if (firstGoal) {
+          const replayStart = Math.max(0, firstGoal.t - 3);
+          playback.seek(replayStart);
+          playback.isReplay = true;
+          playback.replayEndT = firstGoal.t + 10;
+          playback.replayResumePt = firstGoal.t;
+          setPlaybackState((prev) => ({
+            ...prev,
+            pt: replayStart,
+            isReplay: true,
+          }));
+        }
+      } else if (captureState === 'halftime') {
+        playback.seek(2700);
+        const scoreHT = playback.getScoreAt(2700);
+        setIsHalfTime(true);
+        setPlaybackState((prev) => ({
+          ...prev,
+          pt: 2700,
+          half: 1,
+          score: scoreHT,
+        }));
+      } else if (captureState === 'fulltime') {
+        playback.seek(5400);
+        setIsFullTime(true);
+        setPlaybackState((prev) => ({
+          ...prev,
+          pt: 5400,
+          half: 2,
+          score: { home: realResult.homeGoals, away: realResult.awayGoals },
+        }));
+      } else if (captureState === 'subs') {
+        playback.seek(3600);
+        setSubsOpen(true);
+      } else if (captureState === 'drawers') {
+        playback.seek(1800);
+        setStatsOpen(true);
+        setAssistantOpen(true);
+      } else if (captureState === 'tactical') {
+        playback.seek(1200);
+        scene.setCameraMode('tactical');
+        setCameraMode('tactical');
+      } else if (captureState === 'freecam') {
+        playback.seek(1200);
+        scene.setCameraMode('player');
+        setCameraMode('player');
+      } else if (captureState === 'afternoon') {
+        playback.seek(1500);
+      } else if (captureState === 'rain') {
+        playback.seek(1500);
+      } else if (captureState === 'timelapse') {
+        playback.seek(1620);
+        playback.isTimeLapse = true;
+        playback.timeLapseProgress = 0.55;
+        setPlaybackState((prev) => ({
+          ...prev,
+          pt: 1620,
+          isTimeLapse: true,
+          timeLapseProgress: 0.55,
+          speedMultiplier: 60,
+        }));
+      }
     }
 
     // D. Initialize Match Worker
@@ -236,31 +311,6 @@ export const MatchScreen: React.FC = () => {
         console.error('Match worker error:', msg.message);
       }
     };
-
-    const input: MatchInput = {
-      fixtureId: fixture.id,
-      home: homeSheet,
-      away: awaySheet,
-      isDerby: homeClub.rivals.includes(awayClub.id),
-      weather: fixture.weather,
-      userSide,
-      aiControls: userSide === 'home' ? ['away'] : ['home'],
-    };
-
-    const matchSeed = deriveSeed(gameState.seed, 'match-sim', fixture.id);
-
-    if (captureState === 'fulltime') {
-      const instantRes = simulateInstant(input, matchSeed);
-      setMatchResult(instantRes);
-      setIsFullTime(true);
-      playback.score = { home: instantRes.homeGoals, away: instantRes.awayGoals };
-      setPlaybackState((prev) => ({
-        ...prev,
-        score: { home: instantRes.homeGoals, away: instantRes.awayGoals },
-        half: 2,
-        pt: 5400,
-      }));
-    }
 
     worker.postMessage({
       type: 'start',
@@ -637,6 +687,7 @@ export const MatchScreen: React.FC = () => {
               minuteLabel={currentGoalBanner.minuteLabel}
               scoringClub={currentGoalBanner.side === 'home' ? homeClub : awayClub}
               onDismiss={() => setCurrentGoalBanner(null)}
+              persistent={Boolean(captureState)}
             />
           )}
 
@@ -656,7 +707,11 @@ export const MatchScreen: React.FC = () => {
         awayScore={playbackState.score.away}
         homeStats={homeStats}
         awayStats={awayStats}
+        events={matchResult?.events}
         userClubId={gameState.userClubId}
+        fixture={fixture}
+        players={gameState.players}
+        outOfTownScores={outOfTownScores}
         onSecondHalf={handleResumeSecondHalf}
         onOpenSubs={() => setSubsOpen(true)}
         onOpenTactics={() => showToast('Adjust tactics in the drawer or pause', 'info')}
@@ -669,6 +724,10 @@ export const MatchScreen: React.FC = () => {
         awayClub={awayClub}
         matchResult={matchResult}
         userClubId={gameState.userClubId}
+        fixture={fixture}
+        leagueTable={gameState.table}
+        players={gameState.players}
+        outOfTownScores={outOfTownScores}
         onProceed={handleProceedToPostMatch}
       />
     </div>

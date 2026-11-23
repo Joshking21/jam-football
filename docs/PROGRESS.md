@@ -76,4 +76,27 @@ Only the latest entries are kept here; older ones are in `docs/PROGRESS-archive.
 
 REVIEW REQUESTED: M4 (second pass)
 
+## 2026-11-23 · M4 Design Review Third Pass (S1–S10) and Full-Time Redesign
+- Changed: docs/screens/M4/*, scripts/capture-screens.ts, src/config/balance.ts, src/core/match/kits.ts, src/core/match/ratings.ts, src/core/math.ts, src/render3d/choreographer.ts, src/render3d/lights.ts, src/render3d/pitch.ts, src/render3d/players.ts, src/render3d/stadium.ts, src/ui/components/TelestratorPitch.tsx, src/ui/screens/DevGalleryScreen.tsx, src/ui/screens/Match/AssistantDrawer.tsx, src/ui/screens/Match/FullTimeModal.tsx, src/ui/screens/Match/GoalBanner.tsx, src/ui/screens/Match/HalfTimeModal.tsx, src/ui/screens/Match/playback.ts, src/ui/screens/MatchScreen.tsx, src/ui/screens/PreMatchScreen.tsx, src/ui/screens/TacticsScreen.tsx, tests/core/match/kits.test.ts
+- Ran:
+  - `npm run check`:
+    - `prettier --check .` PASS
+    - `tsc --noEmit` PASS
+    - `vitest run`: 35 test files passed (227 tests passed in 22.64s) PASS
+    - `vite build`: main chunk 1,301.31 kB (gzip 281.65 kB <= 350 kB budget) / three.js chunk 489.80 kB, built in 12.11s PASS
+- Notes:
+  - Addressed all items from Claude's second-pass M4 design review (`docs/design/REVIEW-M4.md`):
+    - **S1 (Kit Clash & Colours):** Implemented pure kit contrast resolver `resolveMatchKits` in `src/core/match/kits.ts` with CIELAB Delta E >= 25 check in `src/core/math.ts`. Applied outfield shirt sleeves, collar, side trim, sock cuff trim, and tagged shirt canvas texture with `THREE.SRGBColorSpace` for accurate color rendering. Added 4 unit tests in `tests/core/match/kits.test.ts`.
+    - **S2 (Kickoff Formation & Player Positions):** Anchored all outfield players strictly inside their own halves (x <= 51.0 in own frame) in `src/render3d/choreographer.ts`, with kickoff taker at (52.0, 34.0) facing opponent.
+    - **S3 (Real Seeded Matches for Capture States):** In `src/ui/screens/MatchScreen.tsx`, synchronously simulate match and preload events when `captureState` query param is present. Goal banner persists on goal frame; replay frame shows real goal replay sequence; halftime and fulltime frames render seeded match moments.
+    - **S4 & S10 (SPEC Labels & Telestrator Clearance):** Removed all user-facing SPEC labels from modals and screen components. Moved "THROUGH THE MIDDLE" telestrator annotation in `src/ui/components/TelestratorPitch.tsx` to (138, 170), clearing player #5. Replaced assistant drawer header with Theo Vance portrait and title.
+    - **S5, S6, S7 (Lighting, Stand Geometry & Grass Albedo):** Softened spotlight penumbra (0.85) and widened cone angle (pi / 3.0), reduced rain opacity to 0.15, added back wall geometry in `src/render3d/stadium.ts` to occlude sky gap under canopy, and set `pitchTexture.colorSpace = THREE.SRGBColorSpace` to restore rich turf hue.
+    - **S8 (Full-Time & Half-Time Broadcast Panels):** Rebuilt `FullTimeModal.tsx` and `HalfTimeModal.tsx` to match approved `docs/design/fulltime/` design reference: split-pane broadcast layout, club badges, 128px tabular scoreline, MOTM print card with halftone portrait and rating stamp, 8 split stat comparison bars, player rating grid ("Your XI, rated"), 2D SVG shot map with xG dot scaling, cumulative xG worm chart, and turning point narrative.
+    - **S9 (Tactical Camera Name Tags):** Enlarged name tag sprite scale in `src/render3d/players.ts` (>= 12px tall on broadcast and tactical cameras).
+    - **N3 (Ratings Calibration):** Softened extreme player match ratings in `src/core/match/ratings.ts` with compression above 9.0 (`9.0 + (r - 9.0) * 0.35`).
+    - Recaptured all 13 match states plus `preMatch` at 1280x720 and 1920x1080 via `scripts/capture-screens.ts`, with all frames passing luminance and geometry guards.
+
+REVIEW REQUESTED: M4 (third pass)
+
+
 

@@ -207,8 +207,8 @@ export const TelestratorPitch: React.FC<TelestratorPitchProps> = ({
               strokeWidth="2.2"
               strokeLinecap="round"
             />
-            {/* Opaque Paper-Backed Label placed clearly between lines */}
-            <g transform="translate(198, 150)">
+            {/* Opaque Paper-Backed Label placed clearly in clear space (REVIEW-M4 S10) */}
+            <g transform="translate(138, 170)">
               <rect
                 x="0"
                 y="0"

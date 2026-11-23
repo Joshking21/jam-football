@@ -97,6 +97,24 @@ export class MatchPlayback {
     this.paused = false;
   }
 
+  public getScoreAt(t: number): { home: number; away: number } {
+    let home = 0;
+    let away = 0;
+    for (const ev of this.events) {
+      if (ev.t <= t && ev.type === 'GOAL') {
+        if (ev.side === 'home') home++;
+        else away++;
+      }
+    }
+    return { home, away };
+  }
+
+  public seek(t: number) {
+    this.pt = t;
+    this.half = t >= 2700 ? 2 : 1;
+    this.score = this.getScoreAt(t);
+  }
+
   private recomputeHighlights() {
     this.highlightWindows = computeHighlightWindows(
       this.events,

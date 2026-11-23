@@ -64,7 +64,7 @@ export const DevGalleryScreen: React.FC<{ onBackToTitle: () => void }> = ({ onBa
         <div>
           <h1>Dev Inspection & World Explorer</h1>
           <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-            Meridian League 10 Clubs · 280 Players · 90 Fixtures (SPEC M0.4 & M1)
+            Meridian League 10 Clubs · 280 Players · 90 Fixtures
           </p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>

@@ -252,7 +252,10 @@ async function main() {
           // Apply B1 pitch brightness guard on match captures (allowing for modal overlay dimming)
           if (target.isMatch) {
             const pitchBrightness = checkPitchBrightness(filePath);
-            const isModal = target.name.includes('halftime') || target.name.includes('fulltime');
+            const isModal =
+              target.name.includes('halftime') ||
+              target.name.includes('fulltime') ||
+              target.name.includes('subs');
             const minBrightness = isModal ? 15 : 35;
             if (pitchBrightness < minBrightness) {
               throw new Error(

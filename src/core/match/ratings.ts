@@ -84,6 +84,12 @@ export function computePlayerRating(ctx: PlayerRatingContext): number {
   if (teamWon) r += 0.2;
   if (teamLost) r -= 0.2;
 
+  // Diminishing returns above 9.0 per SPEC §13.14 & REVIEW-M4 N3
+  // Max realistic rating ~9.5, 10.0 extremely rare
+  if (r > 9.0) {
+    r = 9.0 + (r - 9.0) * 0.35;
+  }
+
   // Clamp 3.0 - 10.0 and round to 1 decimal place
   return roundTo(clamp(r, 3.0, 10.0), 1);
 }

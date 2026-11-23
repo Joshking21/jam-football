@@ -465,7 +465,7 @@ export const TacticsScreen: React.FC = () => {
       orders.splice(existingIdx, 1);
     } else {
       if (orders.length >= 3) {
-        showToast('Maximum 3 opposition orders allowed (SPEC §13.17.3)', 'warning');
+        showToast('Maximum 3 opposition orders allowed', 'warning');
         return;
       }
       if (kind === 'doubleUp' && orders.some((o) => o.kind === 'doubleUp')) {

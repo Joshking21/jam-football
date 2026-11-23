@@ -7,6 +7,7 @@ interface GoalBannerProps {
   minuteLabel: string;
   scoringClub: Club;
   onDismiss?: () => void;
+  persistent?: boolean;
 }
 
 export const GoalBanner: React.FC<GoalBannerProps> = ({
@@ -14,10 +15,12 @@ export const GoalBanner: React.FC<GoalBannerProps> = ({
   minuteLabel,
   scoringClub,
   onDismiss,
+  persistent = false,
 }) => {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
+    if (persistent) return;
     // 2.5s slide-in banner per SPEC §14.5
     const timer = setTimeout(() => {
       setVisible(false);
@@ -25,7 +28,7 @@ export const GoalBanner: React.FC<GoalBannerProps> = ({
     }, 2500);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [persistent]);
 
   if (!visible) return null;
 

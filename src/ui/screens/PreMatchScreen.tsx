@@ -680,7 +680,7 @@ export const PreMatchScreen: React.FC = () => {
                           gap: '6px',
                         }}
                       >
-                        <Award size={14} /> DECISIVE MATCHUPS (SPEC §13.17.7)
+                        <Award size={14} /> DECISIVE MATCHUPS
                       </div>
 
                       {/* Duel 1: FB vs Winger */}

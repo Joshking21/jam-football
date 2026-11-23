@@ -65,8 +65,8 @@ export function createLights(
         cfg.keyLight.color,
         candela,
         180,
-        Math.PI / 3.2,
-        0.35,
+        Math.PI / 3.0,
+        0.85,
         decay,
       );
       spot.position.copy(coord);
@@ -155,7 +155,7 @@ export function createLights(
     rainMat = new THREE.LineBasicMaterial({
       color: 0xc8d8e8,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.15,
     });
     rainLines = new THREE.LineSegments(rainGeom, rainMat);
     group.add(rainLines);

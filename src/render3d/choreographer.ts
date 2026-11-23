@@ -66,7 +66,26 @@ export class Choreographer {
     tactics.lineup.forEach((pid, slotIdx) => {
       const slot = formDef.slots[slotIdx];
       const anchor = slot ? slot.anchor : { x: 50, y: 34 };
-      const abs = toAbsolute(anchor.x, anchor.y, side, half);
+      let ownX = anchor.x;
+      let ownY = anchor.y;
+
+      // At kickoff, all players MUST stand strictly in their own half (SPEC §14.3, REVIEW-M4 S2)
+      // Own half is x <= 52.5. Clamped so forwards stay behind the halfway line.
+      if (slotIdx === 9 || slotIdx === 10) {
+        if (slotIdx === 9 && side === 'home') {
+          // Home striker on kickoff spot
+          ownX = 52.0;
+          ownY = 34.0;
+        } else {
+          // Other striker / forwards compressed behind halfway line
+          ownX = Math.min(48.5, anchor.x * 0.68);
+        }
+      } else {
+        // Compress other slots into own half
+        ownX = Math.min(50.0, anchor.x * 0.72);
+      }
+
+      const abs = toAbsolute(ownX, ownY, side, half);
       const scenePos = toSceneCoords(abs.x, abs.y);
 
       this.states.set(pid, {

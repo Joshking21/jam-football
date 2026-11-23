@@ -4,6 +4,7 @@ import { Club, Player, Side } from '../core/types';
 import { RENDER_CONFIG } from '../config/balance';
 import { Player3DVisual, QualityPreset } from './types';
 import { createSafeCanvas } from './canvasHelper';
+import { resolveMatchKits, ResolvedKit } from '../core/match/kits';
 
 export interface PlayersBundle {
   group: THREE.Group;
@@ -46,10 +47,12 @@ export function createPlayers(
     polygonOffsetUnits: -1,
   });
 
+  const resolvedKits = resolveMatchKits(homeClub, awayClub);
+
   const createSinglePlayerFigure = (
     player: Player | null,
     side: Side | 'referee',
-    kitClub: Club,
+    resolvedKit: ResolvedKit,
     num: number,
     isGK: boolean,
   ): Player3DVisual => {
@@ -79,38 +82,31 @@ export function createPlayers(
       metalness: 0.05,
     });
 
-    // Kit Texture (Shirt + Number on Back)
-    const shirtCanvas = createShirtCanvas(kitClub, side, num, isGK);
+    // Kit Texture (Shirt + Collar/Trim + Pattern + Number on Back)
+    const shirtCanvas = createShirtCanvas(resolvedKit, side, num, isGK);
     const shirtTexture = new THREE.CanvasTexture(shirtCanvas);
+    shirtTexture.colorSpace = THREE.SRGBColorSpace;
+    shirtTexture.needsUpdate = true;
     const shirtMaterial = new THREE.MeshStandardMaterial({
       map: shirtTexture,
       roughness: 0.7,
       metalness: 0.0,
     });
 
-    // Shorts & Socks Material
-    const kitData = isGK
-      ? kitClub.kits?.gk
-      : side === 'away'
-        ? kitClub.kits?.away
-        : kitClub.kits?.home;
-
-    let shortsColorHex = kitData?.shorts ?? kitClub.colors.secondary;
-    let socksColorHex = kitData?.socks ?? kitClub.colors.secondary;
-
-    if (side === 'referee') {
-      shortsColorHex = '#16181C';
-      socksColorHex = '#16181C';
-    }
-
     const shortsMaterial = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(shortsColorHex),
+      color: new THREE.Color(resolvedKit.shorts),
       roughness: 0.7,
       metalness: 0.0,
     });
 
     const socksMaterial = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(socksColorHex),
+      color: new THREE.Color(resolvedKit.socks),
+      roughness: 0.65,
+      metalness: 0.0,
+    });
+
+    const sockTrimMaterial = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(resolvedKit.shirt2),
       roughness: 0.65,
       metalness: 0.0,
     });
@@ -154,12 +150,25 @@ export function createPlayers(
       const legGroup = new THREE.Group();
       legGroup.position.set(isLeft ? -0.1 : 0.1, 0.68, 0);
 
-      // Thigh/Knee/Sock (cylinder height 0.65m)
-      const legGeom = new THREE.CylinderGeometry(0.07, 0.055, 0.65, 8);
-      legGeom.translate(0, -0.325, 0);
-      const legMesh = new THREE.Mesh(legGeom, socksMaterial);
-      legMesh.castShadow = quality !== 'Low';
-      legGroup.add(legMesh);
+      // Thigh skin (upper leg)
+      const thighGeom = new THREE.CylinderGeometry(0.068, 0.062, 0.2, 8);
+      thighGeom.translate(0, -0.1, 0);
+      const thighMesh = new THREE.Mesh(thighGeom, skinMaterial);
+      thighMesh.castShadow = quality !== 'Low';
+      legGroup.add(thighMesh);
+
+      // Sock cuff band (club secondary trim)
+      const cuffGeom = new THREE.CylinderGeometry(0.064, 0.062, 0.05, 8);
+      cuffGeom.translate(0, -0.225, 0);
+      const cuffMesh = new THREE.Mesh(cuffGeom, sockTrimMaterial);
+      legGroup.add(cuffMesh);
+
+      // Main Sock
+      const sockGeom = new THREE.CylinderGeometry(0.062, 0.052, 0.42, 8);
+      sockGeom.translate(0, -0.45, 0);
+      const sockMesh = new THREE.Mesh(sockGeom, socksMaterial);
+      sockMesh.castShadow = quality !== 'Low';
+      legGroup.add(sockMesh);
 
       // Boot
       const bootGeom = new THREE.BoxGeometry(0.09, 0.07, 0.18);
@@ -176,15 +185,24 @@ export function createPlayers(
     pGroup.add(rightLeg);
 
     // 5. Arms (Left Arm & Right Arm pivot at y = 1.35m)
+    // Shirt sleeves + skin forearms
     const createArm = (isLeft: boolean): THREE.Group => {
       const armGroup = new THREE.Group();
       armGroup.position.set(isLeft ? -0.25 : 0.25, 1.35, 0);
 
-      const armGeom = new THREE.CylinderGeometry(0.05, 0.045, 0.5, 8);
-      armGeom.translate(0, -0.25, 0);
-      const armMesh = new THREE.Mesh(armGeom, skinMaterial);
-      armMesh.castShadow = quality !== 'Low';
-      armGroup.add(armMesh);
+      // Shirt sleeve (upper arm in kit shirt material)
+      const sleeveGeom = new THREE.CylinderGeometry(0.056, 0.051, 0.18, 8);
+      sleeveGeom.translate(0, -0.09, 0);
+      const sleeveMesh = new THREE.Mesh(sleeveGeom, shirtMaterial);
+      sleeveMesh.castShadow = quality !== 'Low';
+      armGroup.add(sleeveMesh);
+
+      // Forearm (skin material)
+      const forearmGeom = new THREE.CylinderGeometry(0.048, 0.042, 0.32, 8);
+      forearmGeom.translate(0, -0.34, 0);
+      const forearmMesh = new THREE.Mesh(forearmGeom, skinMaterial);
+      forearmMesh.castShadow = quality !== 'Low';
+      armGroup.add(forearmMesh);
 
       return armGroup;
     };
@@ -202,7 +220,7 @@ export function createPlayers(
     // 7. Overhead Name Tag Sprite (Barlow Condensed 600, Kit Chip)
     let nameTag: THREE.Sprite | undefined;
     if (player) {
-      nameTag = createNameTagSprite(num, player.lastName, kitClub);
+      nameTag = createNameTagSprite(num, player.lastName, resolvedKit);
       nameTag.position.set(0, 2.05, 0);
       nameTag.visible = false;
       pGroup.add(nameTag);
@@ -237,7 +255,8 @@ export function createPlayers(
   const homeStarters = homeSquad.slice(0, 11);
   homeStarters.forEach((p, idx) => {
     const isGK = idx === 0;
-    const visual = createSinglePlayerFigure(p, 'home', homeClub, idx + 1, isGK);
+    const kit = isGK ? resolvedKits.homeGk : resolvedKits.homeOutfield;
+    const visual = createSinglePlayerFigure(p, 'home', kit, idx + 1, isGK);
     homeVisuals.push(visual);
     allPlayers.set(p.id, visual);
   });
@@ -246,48 +265,27 @@ export function createPlayers(
   const awayStarters = awaySquad.slice(0, 11);
   awayStarters.forEach((p, idx) => {
     const isGK = idx === 0;
-    const visual = createSinglePlayerFigure(p, 'away', awayClub, idx + 1, isGK);
+    const kit = isGK ? resolvedKits.awayGk : resolvedKits.awayOutfield;
+    const visual = createSinglePlayerFigure(p, 'away', kit, idx + 1, isGK);
     awayVisuals.push(visual);
     allPlayers.set(p.id, visual);
   });
 
   // Build Referee (in black, center pitch)
-  const dummyClub: Club = {
-    ...homeClub,
-    colors: { primary: '#16181C', secondary: '#000000', text: '#ffffff' },
-    kits: {
-      home: {
-        shirt: '#16181C',
-        shirt2: '#16181C',
-        shorts: '#16181C',
-        socks: '#16181C',
-        text: '#ffffff',
-        pattern: 'solid',
-      },
-      away: {
-        shirt: '#16181C',
-        shirt2: '#16181C',
-        shorts: '#16181C',
-        socks: '#16181C',
-        text: '#ffffff',
-        pattern: 'solid',
-      },
-      gk: {
-        shirt: '#16181C',
-        shirt2: '#16181C',
-        shorts: '#16181C',
-        socks: '#16181C',
-        text: '#ffffff',
-        pattern: 'solid',
-      },
-    },
+  const refKit: ResolvedKit = {
+    shirt: '#16181C',
+    shirt2: '#282C34',
+    shorts: '#16181C',
+    socks: '#16181C',
+    text: '#ffffff',
+    pattern: 'solid',
   };
-  const referee = createSinglePlayerFigure(null, 'referee', dummyClub, 0, false);
+  const referee = createSinglePlayerFigure(null, 'referee', refKit, 0, false);
   referee.group.position.set(0, 0, 0);
 
   // Build 2 Linesmen (touchlines)
-  const linesman1 = createSinglePlayerFigure(null, 'referee', dummyClub, 1, false);
-  const linesman2 = createSinglePlayerFigure(null, 'referee', dummyClub, 2, false);
+  const linesman1 = createSinglePlayerFigure(null, 'referee', refKit, 1, false);
+  const linesman2 = createSinglePlayerFigure(null, 'referee', refKit, 2, false);
   linesman1.group.position.set(0, 0, -34.5);
   linesman2.group.position.set(0, 0, 34.5);
   const linesmen: Player3DVisual[] = [linesman1, linesman2];
@@ -387,7 +385,7 @@ export function createPlayers(
 }
 
 function createShirtCanvas(
-  club: Club,
+  kit: ResolvedKit,
   side: Side | 'referee',
   num: number,
   isGK: boolean,
@@ -402,12 +400,10 @@ function createShirtCanvas(
     return canvas;
   }
 
-  const kitData = isGK ? club.kits?.gk : side === 'away' ? club.kits?.away : club.kits?.home;
-
-  const primary = kitData?.shirt ?? (isGK ? '#2E8B57' : club.colors.primary);
-  const secondary = kitData?.shirt2 ?? (isGK ? '#1a4e31' : club.colors.secondary);
-  const textColor = kitData?.text ?? (isGK ? '#ffffff' : club.colors.text);
-  const pattern = kitData?.pattern ?? 'solid';
+  const primary = kit.shirt;
+  const secondary = kit.shirt2;
+  const textColor = kit.text;
+  const pattern = kit.pattern;
 
   // Front & Back base
   ctx.fillStyle = primary;
@@ -437,23 +433,29 @@ function createShirtCanvas(
     ctx.fill();
   }
 
-  // Draw Player Squad Number on the Back (centered around x = 128, y = 120)
+  // Collar & Side trim in secondary accent color
+  ctx.fillStyle = secondary;
+  ctx.fillRect(0, 0, canvas.width, 16); // Collar line
+  ctx.fillRect(0, 0, 14, canvas.height); // Left side panel
+  ctx.fillRect(canvas.width - 14, 0, 14, canvas.height); // Right side panel
+
+  // Draw Player Squad Number on the Back (centered around x = 128, y = 130)
   ctx.fillStyle = textColor;
   ctx.font = 'bold 72px "Barlow Condensed", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(num.toString(), 128, 120);
+  ctx.fillText(num.toString(), 128, 130);
 
   return canvas;
 }
 
-function createNameTagSprite(num: number, surname: string, club: Club): THREE.Sprite {
+function createNameTagSprite(num: number, surname: string, kit: ResolvedKit): THREE.Sprite {
   const canvas = createSafeCanvas(512, 128);
   const ctx = canvas.getContext('2d');
   if (ctx) {
-    const primary = club.colors.primary || '#1E2A38';
-    const secondary = club.colors.secondary || '#F4B41A';
-    const textCol = club.colors.text || '#FFFFFF';
+    const primary = kit.shirt;
+    const secondary = kit.shirt2;
+    const textCol = kit.text;
 
     // Outer chip backing
     ctx.fillStyle = 'rgba(10, 14, 20, 0.9)';
@@ -490,6 +492,7 @@ function createNameTagSprite(num: number, surname: string, club: Club): THREE.Sp
   }
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearFilter;
   const spriteMat = new THREE.SpriteMaterial({
     map: texture,
@@ -498,7 +501,8 @@ function createNameTagSprite(num: number, surname: string, club: Club): THREE.Sp
   });
 
   const sprite = new THREE.Sprite(spriteMat);
-  sprite.scale.set(3.0, 0.75, 1);
+  // S9: Minimum 12px readability on tactical and broadcast camera
+  sprite.scale.set(5.5, 1.4, 1);
   sprite.visible = false;
   return sprite;
 }

@@ -884,7 +884,7 @@ export const RENDER_CONFIG = {
       skyHorizon: '#0D1830',
       hasStars: true,
       starCount: 600,
-      hemisphere: { sky: '#1C2C4D', ground: '#0B1A10', intensity: 0.85 },
+      hemisphere: { sky: '#1C2C4D', ground: '#142012', intensity: 1.15 },
       keyLight: { color: '#FFF0DA', intensity: 1.0 },
       floodlightMult: 1.0,
       beams: { enabled: true, opacityMult: 1.0 },
@@ -918,7 +918,7 @@ export const RENDER_CONFIG = {
   },
   floodlights: {
     color: '#FFF0DA',
-    candela: 10000,
+    candela: 13500,
     decay: 2,
     emissiveIntensity: 6.0,
     targetInsetX: 20,

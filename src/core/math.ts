@@ -56,3 +56,43 @@ export function formatMoney(amount: number): string {
   }
   return `${sign}${CURRENCY}${abs.toLocaleString('en-US')}`;
 }
+
+/**
+ * Computes CIE76 color difference ΔE between two hex color strings (#RRGGBB).
+ */
+export function colorDeltaE(hex1: string, hex2: string): number {
+  const parseHex = (h: string): [number, number, number] => {
+    const clean = h.replace('#', '');
+    const num = parseInt(clean, 16);
+    return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+  };
+
+  const rgbToLab = (rgb: [number, number, number]): [number, number, number] => {
+    // 1. Inverse sRGB gamma
+    const [r, g, b] = rgb.map((c) => {
+      const v = c / 255;
+      return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    }) as [number, number, number];
+
+    // 2. Linear RGB to CIE XYZ (D65)
+    const x = (r * 0.4124564 + g * 0.3575761 + b * 0.1804375) / 0.95047;
+    const y = (r * 0.2126729 + g * 0.7151522 + b * 0.072175) / 1.0;
+    const z = (r * 0.0193339 + g * 0.119192 + b * 0.9503041) / 1.08883;
+
+    // 3. XYZ to Lab
+    const f = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+    const fx = f(x);
+    const fy = f(y);
+    const fz = f(z);
+
+    const L = 116 * fy - 16;
+    const a = 500 * (fx - fy);
+    const bLab = 200 * (fy - fz);
+    return [L, a, bLab];
+  };
+
+  const [L1, a1, b1] = rgbToLab(parseHex(hex1));
+  const [L2, a2, b2] = rgbToLab(parseHex(hex2));
+
+  return Math.sqrt((L1 - L2) ** 2 + (a1 - a2) ** 2 + (b1 - b2) ** 2);
+}

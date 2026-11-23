@@ -1,9 +1,8 @@
-// Implements SPEC §11.17 Half-Time Screen
-import React, { useState } from 'react';
-import { Club, TeamMatchStats } from '../../../core/types';
-import { Crest } from '../../components/Crest';
-import { ArrowRight, MessageSquare, Play, Sparkles } from 'lucide-react';
-import { TalkTone, predictTalkReaction, TALKS_DATA, TalkContext } from '@/core/player/talks';
+// Implements SPEC §11.17 Half-Time Screen & docs/design/fulltime/ (approved 23 Nov)
+import React, { useEffect } from 'react';
+import { Club, TeamMatchStats, MatchEvent, Player, PlayerId, Fixture } from '../../../core/types';
+import { OutOfTownScore } from './AssistantDrawer';
+import { TalkTone } from '@/core/player/talks';
 
 interface HalfTimeModalProps {
   isOpen: boolean;
@@ -13,7 +12,11 @@ interface HalfTimeModalProps {
   awayScore: number;
   homeStats: TeamMatchStats;
   awayStats: TeamMatchStats;
+  events?: MatchEvent[];
   userClubId: string;
+  fixture?: Fixture;
+  players?: Record<PlayerId, Player>;
+  outOfTownScores?: OutOfTownScore[];
   onSecondHalf: (talkTone?: TalkTone) => void;
   onOpenSubs: () => void;
   onOpenTactics: () => void;
@@ -27,12 +30,26 @@ export const HalfTimeModal: React.FC<HalfTimeModalProps> = ({
   awayScore,
   homeStats,
   awayStats,
+  events = [],
   userClubId,
+  fixture,
+  players,
+  outOfTownScores,
   onSecondHalf,
   onOpenSubs,
   onOpenTactics,
 }) => {
-  const [selectedTone, setSelectedTone] = useState<TalkTone>('Calm');
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        onSecondHalf('Calm');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onSecondHalf]);
 
   if (!isOpen) return null;
 
@@ -40,385 +57,945 @@ export const HalfTimeModal: React.FC<HalfTimeModalProps> = ({
   const userScore = isUserHome ? homeScore : awayScore;
   const oppScore = isUserHome ? awayScore : homeScore;
 
-  // Context: HT_WIN, HT_DRAW, HT_LOSE
-  const htContext: TalkContext =
-    userScore > oppScore ? 'HT_WIN' : userScore === oppScore ? 'HT_DRAW' : 'HT_LOSE';
+  const homeColor = homeClub.colors.primary || '#0B1F3A';
+  const homeColor2 = homeClub.colors.secondary || '#F2B705';
+  const awayColor = awayClub.colors.primary || '#111111';
+  const awayColor2 = awayClub.colors.secondary || '#FFFFFF';
 
-  const tones: { id: TalkTone; label: string; desc: string; reaction: string; quote: string }[] = [
+  // Scorers in first half
+  const htEvents = events.filter((e) => e.t <= 2700);
+  const goalEvents = htEvents.filter((e) => e.type === 'GOAL');
+  const homeScorers = goalEvents.filter((e) => e.side === 'home');
+  const awayScorers = goalEvents.filter((e) => e.side === 'away');
+
+  const getScorerName = (ev: MatchEvent) => {
+    const p = ev.playerId && players ? players[ev.playerId] : null;
+    return p ? (p.knownAs ?? p.lastName) : 'Scorer';
+  };
+
+  const homePassPct = Math.round(
+    ((homeStats.passesCompleted || 1) / Math.max(1, homeStats.passes || 1)) * 100,
+  );
+  const awayPassPct = Math.round(
+    ((awayStats.passesCompleted || 1) / Math.max(1, awayStats.passes || 1)) * 100,
+  );
+
+  const totalPoss = (homeStats.possessionSec || 1) + (awayStats.possessionSec || 1);
+  const homePoss = Math.round(((homeStats.possessionSec || 1) / totalPoss) * 100);
+  const awayPoss = 100 - homePoss;
+
+  // 5 stats rows per reference
+  const statsRows = [
     {
-      id: 'Calm',
-      label: 'Calm',
-      desc: 'Keep our heads. Stay disciplined.',
-      reaction: predictTalkReaction(htContext, 'Calm'),
-      quote: TALKS_DATA[htContext].Calm.managerLines[0]!.text,
+      label: 'Possession',
+      hVal: `${homePoss}%`,
+      aVal: `${awayPoss}%`,
+      hNum: homePoss,
+      aNum: awayPoss,
     },
     {
-      id: 'Motivate',
-      label: 'Motivate',
-      desc: 'Step up the tempo and win every duel.',
-      reaction: predictTalkReaction(htContext, 'Motivate'),
-      quote: TALKS_DATA[htContext].Motivate.managerLines[0]!.text,
+      label: 'Expected goals',
+      hVal: (homeStats.xg || 0).toFixed(2),
+      aVal: (awayStats.xg || 0).toFixed(2),
+      hNum: homeStats.xg || 0,
+      aNum: awayStats.xg || 0,
     },
     {
-      id: 'Demand',
-      label: 'Demand More',
-      desc: 'Demand urgency and complete ruthlessness.',
-      reaction: predictTalkReaction(htContext, 'Demand'),
-      quote: TALKS_DATA[htContext].Demand.managerLines[0]!.text,
+      label: 'Shots',
+      hVal: `${homeStats.shots}`,
+      aVal: `${awayStats.shots}`,
+      hNum: homeStats.shots,
+      aNum: awayStats.shots,
     },
     {
-      id: 'Praise',
-      label: 'Praise',
-      desc: 'Praise the graft and build confidence.',
-      reaction: predictTalkReaction(htContext, 'Praise'),
-      quote: TALKS_DATA[htContext].Praise.managerLines[0]!.text,
+      label: 'On target',
+      hVal: `${homeStats.shotsOnTarget}`,
+      aVal: `${awayStats.shotsOnTarget}`,
+      hNum: homeStats.shotsOnTarget,
+      aNum: awayStats.shotsOnTarget,
     },
     {
-      id: 'Disappoint',
-      label: 'Disappointment',
-      desc: 'Call out sub-par standards bluntly.',
-      reaction: predictTalkReaction(htContext, 'Disappoint'),
-      quote: TALKS_DATA[htContext].Disappoint.managerLines[0]!.text,
-    },
-    {
-      id: 'Focus',
-      label: 'Focus',
-      desc: 'Pinpoint tactical tweaks and game management.',
-      reaction: predictTalkReaction(htContext, 'Focus'),
-      quote: TALKS_DATA[htContext].Focus.managerLines[0]!.text,
+      label: 'Passing',
+      hVal: `${homePassPct}%`,
+      aVal: `${awayPassPct}%`,
+      hNum: homePassPct,
+      aNum: awayPassPct,
     },
   ];
+
+  // Theo's §15.5 tactical assessment
+  const theoAnalysis =
+    userScore > oppScore
+      ? {
+          title: 'Managing the lead',
+          text: 'We have dominated the central channels. Maintain compact spacing in the transition and protect the two-goal cushion.',
+          tweak: 'Drop defensive line 5m',
+        }
+      : userScore === oppScore
+        ? {
+            title: 'Breaking the deadlock',
+            text: 'Their backline is stepping high to squeeze play. Direct balls behind their fullbacks will unlock clear chances in the second half.',
+            tweak: 'Pass into space',
+          }
+        : {
+            title: 'Chasing the game',
+            text: 'We are turning over possession in our defensive third. Push the wingers higher and increase pressing intensity to force errors.',
+            tweak: 'High press & higher tempo',
+          };
 
   return (
     <div
       style={{
         position: 'absolute',
         inset: 0,
-        background: 'rgba(5, 8, 15, 0.88)',
-        backdropFilter: 'blur(16px)',
         zIndex: 65,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 24,
+        overflow: 'hidden',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        color: '#F2F4F7',
+        background: '#05070A',
       }}
     >
+      {/* Blurred 3D match background */}
       <div
         style={{
-          width: 840,
-          maxHeight: '90vh',
-          background: '#0F172A',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          borderRadius: 16,
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9)',
+          position: 'absolute',
+          inset: -40,
+          backdropFilter: 'blur(14px) saturate(0.8) brightness(0.45)',
+          background: 'rgba(5, 7, 10, 0.45)',
+          pointerEvents: 'none',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'linear-gradient(180deg, rgba(5,7,10,0.55) 0%, rgba(5,7,10,0.35) 40%, rgba(5,7,10,0.85) 100%)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          padding: '36px 56px 44px',
           display: 'flex',
           flexDirection: 'column',
+          justifyContent: 'space-between',
           overflow: 'hidden',
-          animation: 'fadeInScale 0.25s ease-out',
         }}
       >
-        {/* Header: Scoreboard */}
-        <div
-          style={{
-            background:
-              'linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%)',
-            padding: '24px 32px',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          {/* Home */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <Crest
-              clubId={homeClub.id}
-              code={homeClub.code}
-              primaryColor={homeClub.colors.primary}
-              secondaryColor={homeClub.colors.secondary}
-              size={48}
-            />
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#FFF' }}>{homeClub.name}</div>
-              <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.5)' }}>Home</div>
-            </div>
-          </div>
-
-          {/* Center Score & Badge */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <div
+        {/* Top Header & Scoreband */}
+        <div>
+          {/* Kicker Line */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              fontFamily: 'Barlow Condensed, sans-serif',
+              fontWeight: 600,
+              fontSize: 15,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              color: '#A3ACBA',
+            }}
+          >
+            <span
               style={{
-                background: '#F4B41A',
-                color: '#000',
-                fontFamily: 'var(--font-heading)',
-                fontWeight: 900,
-                fontSize: 12,
-                padding: '2px 10px',
-                borderRadius: 4,
-                letterSpacing: 1,
+                background: homeColor2,
+                color: '#141000',
+                fontWeight: 800,
+                fontSize: 16,
+                letterSpacing: '0.18em',
+                padding: '6px 14px 5px',
+                clipPath: 'polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%)',
               }}
             >
               HALF-TIME
-            </div>
-            <div
-              style={{
-                fontSize: 38,
-                fontWeight: 900,
-                color: '#FFF',
-                fontFamily: 'var(--font-heading)',
-                letterSpacing: 2,
-              }}
-            >
-              {homeScore} - {awayScore}
-            </div>
+            </span>
+            <b style={{ color: '#F2F4F7', fontWeight: 700 }}>Meridian League</b>
+            <i style={{ width: 4, height: 4, background: '#6F7886', transform: 'rotate(45deg)' }} />
+            <span>Matchday {fixture?.matchday ?? 1}</span>
+            <i style={{ width: 4, height: 4, background: '#6F7886', transform: 'rotate(45deg)' }} />
+            <span>{homeClub.stadium.name}</span>
+            <i style={{ width: 4, height: 4, background: '#6F7886', transform: 'rotate(45deg)' }} />
+            <span>
+              Att. {(fixture?.result?.attendance ?? homeClub.stadium.capacity).toLocaleString()}
+            </span>
+            <i style={{ width: 4, height: 4, background: '#6F7886', transform: 'rotate(45deg)' }} />
+            <span>
+              {fixture?.kickoff ?? 'Floodlit'} · {fixture?.weather ?? 'Clear'}
+            </span>
           </div>
 
-          {/* Away */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#FFF' }}>{awayClub.name}</div>
-              <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.5)' }}>Away</div>
-            </div>
-            <Crest
-              clubId={awayClub.id}
-              code={awayClub.code}
-              primaryColor={awayClub.colors.primary}
-              secondaryColor={awayClub.colors.secondary}
-              size={48}
-            />
-          </div>
-        </div>
-
-        {/* Body: Stats + Team Talk */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1.2fr 1fr',
-            gap: 24,
-            padding: '24px 32px',
-            overflowY: 'auto',
-            flex: 1,
-          }}
-        >
-          {/* Stats Overview */}
-          <div>
+          {/* Score Band */}
+          <div
+            style={{
+              position: 'relative',
+              marginTop: 16,
+              height: 140,
+              display: 'grid',
+              gridTemplateColumns: '1fr 280px 1fr',
+            }}
+          >
+            {/* Home Slab */}
             <div
               style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: '#94A3B8',
-                letterSpacing: 0.5,
-                textTransform: 'uppercase',
-                marginBottom: 14,
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: 24,
+                padding: '0 36px',
+                background: homeColor,
+                clipPath: 'polygon(0 0, 100% 0, calc(100% - 32px) 100%, 0 100%)',
+                boxShadow: `inset 0 -5px 0 ${homeColor2}`,
+                overflow: 'hidden',
               }}
             >
-              First Half Match Summary
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[
-                {
-                  label: 'Expected Goals (xG)',
-                  h: homeStats.xg.toFixed(2),
-                  a: awayStats.xg.toFixed(2),
-                },
-                { label: 'Total Shots', h: homeStats.shots, a: awayStats.shots },
-                {
-                  label: 'Shots on Target',
-                  h: homeStats.shotsOnTarget,
-                  a: awayStats.shotsOnTarget,
-                },
-                { label: 'Corners', h: homeStats.corners, a: awayStats.corners },
-                { label: 'Fouls', h: homeStats.fouls, a: awayStats.fouls },
-              ].map((row, i) => (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background:
+                    'repeating-linear-gradient(115deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 22px)',
+                  pointerEvents: 'none',
+                }}
+              />
+              <div style={{ textAlign: 'right', zIndex: 1 }}>
                 <div
-                  key={i}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px 12px',
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    borderRadius: 6,
+                    fontFamily: 'Barlow Condensed, sans-serif',
+                    fontWeight: 800,
+                    fontSize: 58,
+                    lineHeight: 0.9,
+                    letterSpacing: '0.005em',
+                    textTransform: 'uppercase',
                   }}
                 >
-                  <span style={{ fontWeight: 700, fontSize: 14, color: '#FFF' }}>{row.h}</span>
-                  <span style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.5)' }}>
-                    {row.label}
-                  </span>
-                  <span style={{ fontWeight: 700, fontSize: 14, color: '#FFF' }}>{row.a}</span>
+                  {homeClub.name}
                 </div>
-              ))}
+                <div
+                  style={{
+                    fontFamily: 'Barlow Condensed, sans-serif',
+                    fontWeight: 600,
+                    fontSize: 13,
+                    letterSpacing: '0.16em',
+                    textTransform: 'uppercase',
+                    color: 'rgba(255, 255, 255, 0.65)',
+                    marginTop: 6,
+                  }}
+                >
+                  {homeClub.nickname || 'Home'} · Home
+                </div>
+              </div>
             </div>
 
-            {/* Quick Actions */}
-            <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
-              <button
-                onClick={onOpenSubs}
-                style={{
-                  flex: 1,
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  color: '#FFF',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  borderRadius: 6,
-                  padding: '10px 14px',
-                  fontWeight: 600,
-                  fontSize: 13,
-                  cursor: 'pointer',
-                }}
-              >
-                Substitutions
-              </button>
-              <button
-                onClick={onOpenTactics}
-                style={{
-                  flex: 1,
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  color: '#FFF',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  borderRadius: 6,
-                  padding: '10px 14px',
-                  fontWeight: 600,
-                  fontSize: 13,
-                  cursor: 'pointer',
-                }}
-              >
-                Tactics Adjustment
-              </button>
-            </div>
-          </div>
-
-          {/* Half-Time Team Talk */}
-          <div>
+            {/* Score Center Block */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 6,
-                fontSize: 12,
-                fontWeight: 700,
-                color: '#F4B41A',
-                letterSpacing: 0.5,
-                textTransform: 'uppercase',
-                marginBottom: 14,
+                justifyContent: 'center',
+                background: '#F4F1EA',
+                color: '#0A0D12',
+                fontFamily: 'Barlow Condensed, sans-serif',
+                fontWeight: 800,
+                fontSize: 110,
+                lineHeight: 1,
+                letterSpacing: '-0.01em',
+                gap: 16,
+                position: 'relative',
+                fontVariantNumeric: 'tabular-nums',
               }}
             >
-              <MessageSquare size={14} />
-              <span>Dressing Room Team Talk</span>
+              <span>{homeScore}</span>
+              <span
+                style={{ width: 22, height: 7, background: '#0A0D12', display: 'inline-block' }}
+              />
+              <span>{awayScore}</span>
+              <span
+                style={{
+                  position: 'absolute',
+                  bottom: -24,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: '#0A0D12',
+                  color: homeColor2,
+                  fontFamily: 'Barlow Condensed, sans-serif',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  letterSpacing: '0.2em',
+                  padding: '6px 14px',
+                  whiteSpace: 'nowrap',
+                  zIndex: 2,
+                }}
+              >
+                45 MINUTES PLAYED
+              </span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {tones.map((t) => {
-                const isSelected = selectedTone === t.id;
-                const reactionColor =
-                  t.reaction === 'Most will respond well'
-                    ? '#10B981'
-                    : t.reaction === 'Mixed'
-                      ? '#94A3B8'
-                      : '#EF4444';
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => setSelectedTone(t.id)}
+            {/* Away Slab */}
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 24,
+                padding: '0 36px',
+                background: awayColor,
+                clipPath: 'polygon(32px 0, 100% 0, 100% 100%, 0 100%)',
+                boxShadow: `inset 0 -5px 0 ${awayColor2}`,
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background:
+                    'repeating-linear-gradient(115deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 22px)',
+                  pointerEvents: 'none',
+                }}
+              />
+              <div style={{ zIndex: 1 }}>
+                <div
+                  style={{
+                    fontFamily: 'Barlow Condensed, sans-serif',
+                    fontWeight: 800,
+                    fontSize: 58,
+                    lineHeight: 0.9,
+                    letterSpacing: '0.005em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {awayClub.name}
+                </div>
+                <div
+                  style={{
+                    fontFamily: 'Barlow Condensed, sans-serif',
+                    fontWeight: 600,
+                    fontSize: 13,
+                    letterSpacing: '0.16em',
+                    textTransform: 'uppercase',
+                    color: 'rgba(255, 255, 255, 0.65)',
+                    marginTop: 6,
+                  }}
+                >
+                  {awayClub.nickname || 'Away'} · Away
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Scorers Row */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 280px 1fr',
+              marginTop: 12,
+              fontFamily: 'Inter, sans-serif',
+              fontWeight: 500,
+              fontSize: 15,
+            }}
+          >
+            <div style={{ textAlign: 'right', paddingRight: 50 }}>
+              {homeScorers.map((s, idx) => (
+                <span key={idx} style={{ marginLeft: 12 }}>
+                  <span
                     style={{
-                      background: isSelected
-                        ? 'rgba(37, 99, 235, 0.25)'
-                        : 'rgba(255, 255, 255, 0.04)',
-                      border: isSelected
-                        ? '1px solid #2563EB'
-                        : '1px solid rgba(255, 255, 255, 0.08)',
-                      borderRadius: 8,
-                      padding: '10px 14px',
+                      display: 'inline-block',
+                      width: 9,
+                      height: 9,
+                      borderRadius: '50%',
+                      border: '1.5px solid currentColor',
+                      marginRight: 6,
+                      verticalAlign: '1px',
+                      opacity: 0.7,
+                    }}
+                  />
+                  {getScorerName(s)}{' '}
+                  <b
+                    style={{
+                      fontFamily: 'Barlow Condensed',
+                      fontWeight: 700,
+                      color: homeColor2,
+                      marginLeft: 4,
+                    }}
+                  >
+                    {s.minuteLabel ?? `${Math.ceil(s.t / 60)}'`}
+                  </b>
+                </span>
+              ))}
+            </div>
+            <div />
+            <div style={{ paddingLeft: 50 }}>
+              {awayScorers.map((s, idx) => (
+                <span key={idx} style={{ marginRight: 12 }}>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: 9,
+                      height: 9,
+                      borderRadius: '50%',
+                      border: '1.5px solid currentColor',
+                      marginRight: 6,
+                      verticalAlign: '1px',
+                      opacity: 0.7,
+                    }}
+                  />
+                  {getScorerName(s)}{' '}
+                  <b
+                    style={{
+                      fontFamily: 'Barlow Condensed',
+                      fontWeight: 700,
                       color: '#FFF',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'all 0.15s ease',
+                      marginLeft: 4,
+                    }}
+                  >
+                    {s.minuteLabel ?? `${Math.ceil(s.t / 60)}'`}
+                  </b>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Three Central Broadcast Columns */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '360px 1fr 500px',
+            gap: 36,
+            margin: '18px 0',
+            alignItems: 'start',
+          }}
+        >
+          {/* Column 1: Theo's §15.5 Half-Time Brief Card */}
+          <div>
+            <div
+              style={{
+                position: 'relative',
+                background: '#F1ECE2',
+                color: '#0B1F3A',
+                boxShadow: '0 20px 45px rgba(0,0,0,0.65)',
+                padding: '16px 18px',
+                borderRadius: 2,
+              }}
+            >
+              <span
+                style={{
+                  position: 'absolute',
+                  top: -12,
+                  left: 14,
+                  background: homeColor2,
+                  color: '#141000',
+                  fontFamily: 'Barlow Condensed',
+                  fontWeight: 800,
+                  fontSize: 12,
+                  letterSpacing: '0.16em',
+                  padding: '6px 10px 5px',
+                }}
+              >
+                ASSISTANT BRIEFING · THEO VANCE
+              </span>
+
+              <h4
+                style={{
+                  fontFamily: 'Barlow Condensed',
+                  fontWeight: 800,
+                  fontSize: 26,
+                  textTransform: 'uppercase',
+                  color: '#0B1F3A',
+                  marginTop: 8,
+                }}
+              >
+                {theoAnalysis.title}
+              </h4>
+              <p
+                style={{
+                  fontFamily: 'Inter',
+                  fontSize: 13.5,
+                  lineHeight: 1.45,
+                  color: '#343A40',
+                  marginTop: 8,
+                  marginBottom: 16,
+                }}
+              >
+                {theoAnalysis.text}
+              </p>
+
+              <div
+                style={{
+                  borderTop: '1px solid rgba(11, 31, 58, 0.2)',
+                  paddingTop: 12,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: 'Barlow Condensed',
+                    fontWeight: 700,
+                    fontSize: 13,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: '#5B5546',
+                  }}
+                >
+                  Recommended Tweak:
+                </div>
+                <button
+                  onClick={onOpenTactics}
+                  style={{
+                    background: '#0B1F3A',
+                    color: '#FFF',
+                    border: 'none',
+                    padding: '8px 12px',
+                    fontFamily: 'Barlow Condensed',
+                    fontWeight: 700,
+                    fontSize: 14,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                >
+                  ⚡ Apply: {theoAnalysis.tweak}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Column 2: The Numbers (5 Rows) */}
+          <div>
+            <div
+              style={{
+                fontFamily: 'Barlow Condensed',
+                fontWeight: 700,
+                fontSize: 14,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: '#A3ACBA',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                marginBottom: 10,
+              }}
+            >
+              <span style={{ width: 14, height: 3, background: homeColor2 }} />
+              First half numbers
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {statsRows.map((row, idx) => {
+                const total = row.hNum + row.aNum || 1;
+                const hPct = (row.hNum / total) * 100;
+                const aPct = (row.aNum / total) * 100;
+                const hLead = row.hNum > row.aNum;
+                const aLead = row.aNum > row.hNum;
+
+                return (
+                  <div
+                    key={idx}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '55px 1fr 55px',
+                      alignItems: 'center',
+                      gap: 10,
+                      height: 40,
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
                     }}
                   >
                     <div
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
+                        fontFamily: 'Barlow Condensed',
+                        fontWeight: 700,
+                        fontSize: 22,
+                        color: hLead ? homeColor2 : '#F2F4F7',
+                        fontVariantNumeric: 'tabular-nums',
                       }}
                     >
-                      <span
+                      {row.hVal}
+                    </div>
+                    <div style={{ position: 'relative', height: '100%' }}>
+                      <div
                         style={{
-                          fontSize: 13,
-                          fontWeight: 700,
-                          color: isSelected ? '#60A5FA' : '#FFF',
+                          position: 'absolute',
+                          top: 4,
+                          left: 0,
+                          right: 0,
+                          textAlign: 'center',
+                          fontFamily: 'Barlow Condensed',
+                          fontWeight: 600,
+                          fontSize: 11,
+                          letterSpacing: '0.16em',
+                          textTransform: 'uppercase',
+                          color: '#A3ACBA',
                         }}
                       >
-                        {t.label}
-                      </span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: reactionColor }}>
-                        {t.reaction}
-                      </span>
+                        {row.label}
+                      </div>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: 0,
+                          right: 0,
+                          bottom: 5,
+                          height: 6,
+                          display: 'flex',
+                          gap: 4,
+                        }}
+                      >
+                        <div
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            background: 'rgba(255, 255, 255, 0.06)',
+                          }}
+                        >
+                          <i
+                            style={{
+                              display: 'block',
+                              height: '100%',
+                              width: `${hPct}%`,
+                              background: homeColor2,
+                            }}
+                          />
+                        </div>
+                        <div
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            background: 'rgba(255, 255, 255, 0.06)',
+                          }}
+                        >
+                          <i
+                            style={{
+                              display: 'block',
+                              height: '100%',
+                              width: `${aPct}%`,
+                              background: '#E9ECEF',
+                            }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.5)', marginTop: 2 }}>
-                      {t.desc}
+                    <div
+                      style={{
+                        textAlign: 'right',
+                        fontFamily: 'Barlow Condensed',
+                        fontWeight: 700,
+                        fontSize: 22,
+                        color: aLead ? homeColor2 : '#F2F4F7',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {row.aVal}
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
+          </div>
 
-            {/* Speech Bubble */}
-            {selectedTone && (
-              <div
-                style={{
-                  marginTop: 12,
-                  padding: '10px 14px',
-                  borderRadius: 6,
-                  background: 'rgba(255, 255, 255, 0.06)',
-                  borderLeft: '3px solid #2563EB',
-                  fontSize: 12,
-                  fontStyle: 'italic',
-                  color: 'rgba(255, 255, 255, 0.9)',
-                }}
-              >
-                "{tones.find((t) => t.id === selectedTone)?.quote}"
-              </div>
-            )}
+          {/* Column 3: Where the chances came from (First Half Shot Map) */}
+          <div>
+            <div
+              style={{
+                fontFamily: 'Barlow Condensed',
+                fontWeight: 700,
+                fontSize: 14,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: '#A3ACBA',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                marginBottom: 10,
+              }}
+            >
+              <span style={{ width: 14, height: 3, background: homeColor2 }} />
+              First half chances
+            </div>
+
+            <div
+              style={{
+                position: 'relative',
+                height: 230,
+                background: 'linear-gradient(#173520, #122B1A)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                borderRadius: 4,
+                overflow: 'hidden',
+              }}
+            >
+              <svg width="100%" height="100%" viewBox="0 0 105 56">
+                <g stroke="rgba(255,255,255,0.55)" strokeWidth="0.35" fill="none">
+                  <rect x="1" y="1" width="103" height="54" />
+                  <line x1="52.5" y1="1" x2="52.5" y2="55" />
+                  <circle cx="52.5" cy="28" r="7.5" />
+                  <rect x="1" y="12" width="14" height="32" />
+                  <rect x="1" y="21" width="5" height="14" />
+                  <rect x="90" y="12" width="14" height="32" />
+                  <rect x="99" y="21" width="5" height="14" />
+                </g>
+                {htEvents
+                  .filter((e) => e.type === 'SHOT' || e.type === 'GOAL')
+                  .map((s, idx) => {
+                    const isHome = s.side === 'home';
+                    const isGoal = s.type === 'GOAL';
+                    let sx = s.to ? s.to.x : isHome ? 88 : 16;
+                    let sy = s.to ? (s.to.y / 68) * 54 + 1 : 28;
+                    if (!isHome && sx > 52.5) sx = 105 - sx;
+                    if (isHome && sx < 52.5) sx = 105 - sx;
+                    const xg = s.shot?.xg ?? (isGoal ? 0.45 : 0.08);
+                    const r = 0.9 + xg * 3.6;
+                    const col = isHome ? homeColor2 : '#E9ECEF';
+                    return (
+                      <circle
+                        key={idx}
+                        cx={sx}
+                        cy={sy}
+                        r={r}
+                        fill={col}
+                        fillOpacity={isGoal ? 1.0 : 0.55}
+                        stroke={isGoal ? '#FFF' : 'none'}
+                        strokeWidth={isGoal ? 0.6 : 0}
+                      />
+                    );
+                  })}
+              </svg>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                gap: 14,
+                marginTop: 8,
+                fontFamily: 'Inter',
+                fontWeight: 500,
+                fontSize: 11.5,
+                color: '#A3ACBA',
+              }}
+            >
+              <span>
+                <i
+                  style={{
+                    display: 'inline-block',
+                    width: 9,
+                    height: 9,
+                    borderRadius: '50%',
+                    background: homeColor2,
+                    marginRight: 5,
+                  }}
+                />
+                {homeClub.name}
+              </span>
+              <span>
+                <i
+                  style={{
+                    display: 'inline-block',
+                    width: 9,
+                    height: 9,
+                    borderRadius: '50%',
+                    background: '#E9ECEF',
+                    marginRight: 5,
+                  }}
+                />
+                {awayClub.name}
+              </span>
+              <span>Size = chance quality (xG)</span>
+            </div>
           </div>
         </div>
 
-        {/* Footer */}
+        {/* Foot Actions */}
         <div
           style={{
             display: 'flex',
-            alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '16px 32px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-            background: 'rgba(0, 0, 0, 0.3)',
+            alignItems: 'center',
+            marginBottom: 38,
           }}
         >
-          <span style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.5)' }}>
-            Selected team talk will boost focus for the first 20 minutes of the second half.
-          </span>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button
+              onClick={onOpenSubs}
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                color: '#F2F4F7',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                padding: '10px 18px',
+                fontFamily: 'Barlow Condensed',
+                fontWeight: 700,
+                fontSize: 16,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+              }}
+            >
+              Quick Substitutions
+            </button>
+            <button
+              onClick={onOpenTactics}
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                color: '#F2F4F7',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                padding: '10px 18px',
+                fontFamily: 'Barlow Condensed',
+                fontWeight: 700,
+                fontSize: 16,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+              }}
+            >
+              Team Instructions
+            </button>
+          </div>
 
           <button
-            onClick={() => onSecondHalf(selectedTone)}
+            onClick={() => onSecondHalf('Calm')}
             style={{
-              background: '#2563EB',
-              color: '#FFF',
-              border: 'none',
-              borderRadius: 8,
-              padding: '10px 24px',
-              fontSize: 14,
-              fontWeight: 700,
-              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: 8,
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
+              gap: 12,
+              background: homeColor2,
+              color: '#141000',
+              fontFamily: 'Barlow Condensed',
+              fontWeight: 800,
+              fontSize: 22,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              padding: '0 30px 0 24px',
+              height: 48,
+              clipPath: 'polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%)',
+              border: 'none',
+              cursor: 'pointer',
             }}
           >
-            <span>Start Second Half</span>
-            <ArrowRight size={16} />
+            Resume second half
+            <kbd
+              style={{
+                fontFamily: 'Inter',
+                fontWeight: 600,
+                fontSize: 11,
+                border: '1px solid rgba(20, 16, 0, 0.45)',
+                borderRadius: 2,
+                padding: '3px 6px',
+                letterSpacing: 0,
+                textTransform: 'none',
+              }}
+            >
+              Space
+            </kbd>
           </button>
         </div>
+      </div>
+
+      {/* Ticker Bottom Bar */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 38,
+          display: 'flex',
+          alignItems: 'center',
+          background: '#0A0D12',
+          borderTop: '1px solid #1D232C',
+          fontFamily: 'Inter',
+          fontWeight: 500,
+          fontSize: 14,
+          color: '#CFD5DE',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          zIndex: 70,
+        }}
+      >
+        <span
+          style={{
+            background: homeColor2,
+            color: '#141000',
+            fontFamily: 'Barlow Condensed',
+            fontWeight: 800,
+            fontSize: 13,
+            lineHeight: '38px',
+            letterSpacing: '0.16em',
+            padding: '0 16px',
+            marginRight: 16,
+          }}
+        >
+          HALF-TIME AROUND THE LEAGUE
+        </span>
+
+        {outOfTownScores && outOfTownScores.length > 0 ? (
+          outOfTownScores.map((s, idx) => (
+            <React.Fragment key={idx}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 24 }}>
+                <b
+                  style={{
+                    fontFamily: 'Barlow Condensed',
+                    fontWeight: 700,
+                    fontSize: 15,
+                    color: '#FFF',
+                  }}
+                >
+                  {s.homeClub.name} {s.homeScore}–{s.awayScore} {s.awayClub.name}
+                </b>
+              </span>
+              <span
+                style={{
+                  marginRight: 24,
+                  width: 12,
+                  height: 3,
+                  background: `linear-gradient(90deg, ${homeColor2} 50%, #FFF 50%)`,
+                }}
+              />
+            </React.Fragment>
+          ))
+        ) : (
+          <>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 24 }}>
+              <b
+                style={{
+                  fontFamily: 'Barlow Condensed',
+                  fontWeight: 700,
+                  fontSize: 15,
+                  color: '#FFF',
+                }}
+              >
+                Saltmere 0–0 Ironvale
+              </b>
+            </span>
+            <span
+              style={{
+                marginRight: 24,
+                width: 12,
+                height: 3,
+                background: `linear-gradient(90deg, ${homeColor2} 50%, #FFF 50%)`,
+              }}
+            />
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 24 }}>
+              <b
+                style={{
+                  fontFamily: 'Barlow Condensed',
+                  fontWeight: 700,
+                  fontSize: 15,
+                  color: '#FFF',
+                }}
+              >
+                Ashcombe 0–1 Kestrel Bay
+              </b>
+            </span>
+          </>
+        )}
       </div>
     </div>
   );

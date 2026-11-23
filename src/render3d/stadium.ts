@@ -107,6 +107,12 @@ export function createStadium(homeClub: Club, quality: QualityPreset = 'Medium')
       roof.castShadow = quality !== 'Low';
       standGroup.add(roof);
 
+      // Back wall to close any gap behind the top tier under the roof line (REVIEW-M4 S5)
+      const backWallGeom = new THREE.BoxGeometry(length + 4, height + 4, 0.4);
+      const backWall = new THREE.Mesh(backWallGeom, concreteMaterial);
+      backWall.position.set(0, (height + 4) / 2, depth);
+      standGroup.add(backWall);
+
       // Roof Support Pillars
       const pillarCount = 6;
       for (let p = 0; p < pillarCount; p++) {

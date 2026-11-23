@@ -2,6 +2,7 @@
 import React from 'react';
 import { Club, Fixture } from '../../../core/types';
 import { X, CheckCircle, ShieldAlert, Radio } from 'lucide-react';
+import { Portrait } from '../../components/Portrait';
 
 export interface AssistantAdviceItem {
   id: string;
@@ -63,11 +64,23 @@ export const AssistantDrawer: React.FC<AssistantDrawerProps> = ({
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <ShieldAlert size={18} color="#F4B41A" />
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#FFF' }}>
-            Touchline Intelligence
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Portrait initials="TV" size={28} primaryColor="#0B1F3A" secondaryColor="#F4B41A" />
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#FFF', lineHeight: 1.2 }}>
+              Theo Vance
+            </div>
+            <div
+              style={{
+                fontSize: 10,
+                color: 'rgba(255, 255, 255, 0.5)',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              Assistant Manager
+            </div>
+          </div>
         </div>
         <button
           onClick={onClose}
