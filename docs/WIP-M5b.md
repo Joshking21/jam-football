@@ -3,7 +3,8 @@
 **Read this first when picking the work back up.** Claude is doing M5b and the M4 match blockers. The user stopped Gemini for this; Gemini's own unfinished M5 task 10 is still uncommitted in the main folder and is not part of any of this.
 
 ## Branches
-- **`main`** has everything verified: the SPEC 1.8 docs, both reviews, the scout's notes (`src/content/scouting.json` + `src/ui/screens/scoutNote.ts`), and the engine shot-position fix (`0b258e0`).
+- **`main`** has the SPEC 1.8 docs, both reviews and the scout's notes (`src/content/scouting.json` + `src/ui/screens/scoutNote.ts`).
+- **The engine shot-position fix (`0b258e0`) is only on `claude/physics`:** Gemini has uncommitted edits to `src/core/match/engine.ts` in the main folder, so it couldn't be fast-forwarded. Merge it after Gemini commits task 10 (it only touches `processShotResult` and adds `shotOrigin`).
 - **`claude/physics`** also has the **work in progress** below (one WIP commit on top of `0b258e0`). It is **not merged to main** because `tests/render3d/choreographer.test.ts` still tests the old behaviour and will fail.
 
 ## Done and verified
