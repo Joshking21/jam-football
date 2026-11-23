@@ -1,0 +1,64 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{background:radial-gradient(ellipse at 50% 30%,#1b1f26 0%,#0b0d11 60%,#050608 100%)}
+.rain{position:absolute;inset:0;background:repeating-linear-gradient(100deg,rgba(255,255,255,.025) 0 1px,transparent 1px 9px);opacity:.7}
+.news{position:absolute;left:90px;top:70px;width:780px;height:940px;background:#E6E1D4;color:#141414;transform:rotate(-3deg);box-shadow:0 30px 60px rgba(0,0,0,.7);padding:24px 30px;filter:saturate(.7)}
+.news .mast{text-align:center;font:900 62px/1 'Playfair Display',serif}
+.news .dl{display:flex;justify-content:space-between;font:600 12px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:#3a3630;border-top:3px double #141414;border-bottom:3px double #141414;padding:7px 0;margin-top:8px}
+.news .kk{font:700 14px/1 'Barlow Condensed';letter-spacing:.2em;color:#a0221a;text-transform:uppercase;margin-top:18px;text-align:center}
+.news h1{font:800 132px/.82 'Barlow Condensed';text-transform:uppercase;text-align:center;margin-top:10px;letter-spacing:-.01em}
+.news .sf{font:600 22px/1.3 'Source Serif 4',serif;text-align:center;margin-top:14px}
+.news .ph{height:300px;margin-top:18px;background:#e3dccb;overflow:hidden}
+.news .cap{font:italic 400 13px/1.3 'Source Serif 4',serif;margin-top:6px}
+.news .cols{columns:3;column-gap:16px;column-rule:1px solid #c9c0ae;font:400 13px/1.42 'Source Serif 4',serif;margin-top:12px;text-align:justify}
+.letter{position:absolute;left:830px;top:150px;width:760px;height:800px;background:#f6f2e8;color:var(--ink);transform:rotate(1.5deg);box-shadow:0 34px 70px rgba(0,0,0,.75);padding:44px 54px}
+.lh{display:flex;align-items:center;gap:16px;border-bottom:3px double var(--ink);padding-bottom:12px}
+.lh b{font:900 24px/1 'Playfair Display',serif}.lh small{display:block;font:600 11px/1.3 'Barlow Condensed';letter-spacing:.16em;color:var(--pdim);text-transform:uppercase}
+.lh .r{margin-left:auto;font:600 12px/1.4 'Barlow Condensed';letter-spacing:.14em;color:var(--pdim);text-transform:uppercase;text-align:right}
+.letter p{font:400 18px/1.6 'Source Serif 4',serif;margin-top:20px}
+.rec{margin-top:24px;border:2px solid var(--ink);display:grid;grid-template-columns:repeat(4,1fr)}
+.rec div{padding:12px 14px;border-right:1px solid var(--rule)}.rec div:last-child{border:0}
+.rec span{display:block;font:700 11px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--pdim)}
+.rec b{display:block;font:800 30px/1 'Barlow Condensed';margin-top:6px}
+.grade{position:absolute;right:70px;top:560px;width:130px;height:130px;border-radius:50%;border:5px solid var(--red);outline:2px solid var(--red);outline-offset:4px;color:var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg);background:rgba(246,242,232,.6)}
+.grade b{font:800 76px/.8 'Barlow Condensed'}.grade span{font:700 12px/1 'Barlow Condensed';letter-spacing:.22em;margin-top:4px}
+.sig{margin-top:30px;font:italic 400 32px/1 'Playfair Display',serif;color:#2b4fa8}
+.sig small{display:block;font:600 12px/1.3 'Barlow Condensed';letter-spacing:.14em;color:var(--pdim);font-style:normal;margin-top:6px;text-transform:uppercase}
+.foot{position:absolute;right:120px;bottom:48px;display:flex;gap:12px}
+.b2{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);font:700 18px/1 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;padding:16px 22px;color:#fff}
+.b1{display:flex;align-items:center;gap:12px;background:#F4F1EA;color:#0a0d12;font:800 22px/1 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase;padding:16px 30px 16px 24px;clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%)}
+.kick{position:absolute;left:90px;top:22px;font:600 14px/1 'Barlow Condensed';letter-spacing:.2em;text-transform:uppercase;color:#7d8696}
+</style></head><body>
+<div class="rain"></div>
+<div class="kick">Matchday 12 · Port Calloway FC</div>
+<div class="news">
+ <div class="mast">The Calloway Gazette</div>
+ <div class="dl"><span>Sunday 24 January 2027</span><span>Special edition</span><span>80p</span></div>
+ <div class="kk">The Lanternworks · Breaking</div>
+ <h1>Mariners<br>wield the axe</h1>
+ <div class="sf">Manager sacked after five straight defeats leave the club ninth</div>
+ <div class="ph"><svg id="ph" width="720" height="300"></svg></div>
+ <div class="cap">An empty dugout at The Lanternworks last night. Picture: Gazette staff</div>
+ <div class="cols">Port Calloway acted within hours of the 0–3 home defeat to Saltmere, a result that left the title favourites ninth and closer to the drop than the top. Owner Margaret Holloway said the club "could not wait any longer". Theo Vance takes charge until a replacement is found. Supporters' groups had called for change after the derby, the fifth loss in a row.</div>
+</div>
+<div class="letter">
+ <div class="lh"><svg width="44" height="50" viewBox="0 0 30 34"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#F2B705" stroke="#0B1F3A" stroke-width="1.4"/><path d="M15 8 v18 M9 13 h12 M8.5 20 q6.5 7 13 0" stroke="#0B1F3A" stroke-width="2.2" fill="none"/></svg><div><b>Port Calloway FC</b><small>Office of the owner · The Lanternworks</small></div><div class="r">24 January 2027<br>By hand</div></div>
+ <p>Dear Alex,</p>
+ <p>The board met this morning. After five defeats in a row and a fall to ninth, we have decided to end your time as manager, effective today.</p>
+ <p>You were brought here to win this league. We gave you the budget and the squad to do it, and we have run out of time to wait for the turnaround. Thank you for your work. I wish you well.</p>
+ <div class="rec"><div><span>Record</span><b>W3 D4 L5</b></div><div><span>Position</span><b>9th</b></div><div><span>Board confidence</span><b>11</b></div><div><span>Target</span><b>Win the league</b></div></div>
+ <div class="sig">Margaret Holloway<small>Owner, Port Calloway FC</small></div>
+ <div class="grade"><b>F</b><span>GRADE</span></div>
+</div>
+<div class="foot"><div class="b2">Title screen</div><div class="b2">New game</div><div class="b1">Load last save <kbd>Space</kbd></div></div>
+<script src="base.js"></script>
+<script>
+// empty dugout in the rain: dark roof, empty seats, light from the right
+halftone('ph',720,300,4.6,(x,y)=>{let l=0.5+0.3*sm(0,720,x)-0.15*(y/300);
+ if(y<70) l=0.18+0.1*sm(0,720,x); // roof
+ if(y>=70&&y<80) l=0.85;
+ if(y>110&&y<230){const sx=(x%60);if(sx>8&&sx<50&&y>130&&y<200) l=0.3+0.12*sm(0,720,x); if(sx>8&&sx<50&&y>=200&&y<215) l=0.2;}
+ if(y>=230) l=0.55+0.25*Math.sin(x*0.05)*0.3; // wet grass
+ if((x*7+y*3)%97<3&&y>80) l+=0.25; // rain streaks
+ return Math.max(.03,Math.min(.97,l))});
+</script></body></html>

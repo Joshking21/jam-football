@@ -44,6 +44,7 @@ The Meshy sponsor track judges models "under a camera you do not control", so in
 
 
 #### 11.25.5 Talk scenes: watch, then choose (the user, 22 Nov)
+Concepts: `docs/design/dressing-room/` (team talk) and `docs/design/press/` (press conference).
 **This is the one pattern for every moment in the game where people talk** (the user, 22 Nov): team talks, the pre-match briefing, press conferences, player conversations at the door or locker, board meetings and reviews, the sacking, one-to-one sessions, Theo's office visits and week plan, signing day (§24 extras), and any later scene. No screen ever shows choices while someone is speaking. (The only exception is the live match: touchline shouts use the HUD wheel, §13.21, because the match doesn't stop for them.) Every such moment is a scene made of two kinds of beat:
 - **Speaking beats** (someone talks): no menus or panels on screen, only the caption strip and the scene. The player can't act during them, except to skip:
   - `Space` or a click skips the current line.

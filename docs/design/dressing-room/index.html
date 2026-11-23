@@ -1,0 +1,181 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1920px;height:1080px;overflow:hidden;background:#0b0c0d;font-family:Inter,system-ui,sans-serif;color:#F2F4F7}
+.top{position:absolute;left:0;right:0;top:0;height:56px;display:flex;align-items:center;gap:22px;padding:0 20px;background:rgba(14,18,24,.92);border-bottom:1px solid #2A313D;z-index:5}
+.club{font:700 21px/1 'Barlow Condensed';letter-spacing:.02em;text-transform:uppercase}
+.score{display:flex;align-items:center;margin-left:24px;font:700 20px/1 'Barlow Condensed';letter-spacing:.04em}
+.score .t{padding:8px 12px;background:#13213A;border-left:4px solid #F2C230}
+.score .s{padding:8px 14px;background:#F2F4F7;color:#0E1218}
+.score .o{padding:8px 12px;background:#5a1a22;border-right:4px solid #e8e2d4}
+.score .ht{margin-left:12px;font:600 14px/1 'Barlow Condensed';letter-spacing:.14em;color:#F2C230}
+.room{position:absolute;left:28px;top:76px;z-index:5;font:700 15px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:#F2C230;background:rgba(10,12,16,.72);border:1px solid #2A313D;padding:10px 14px}
+.room span{color:#A3ACBA;margin-left:8px}
+.hint{position:absolute;right:28px;top:76px;z-index:5;display:flex;gap:8px;align-items:center;font:500 13px/1 Inter;color:#cfd5de;background:rgba(10,12,16,.72);border:1px solid #2A313D;padding:9px 12px}
+.hint kbd{font:600 11px/1 Inter;border:1px solid #4a5260;border-radius:2px;padding:3px 6px}
+.choice{position:absolute;left:50%;bottom:30px;transform:translateX(-50%) rotate(-.3deg);width:1300px;z-index:5;background:#EFEBE3;color:#1B1A17;border-radius:3px;box-shadow:0 24px 60px rgba(0,0,0,.7);padding:22px 26px 24px}
+.ch{display:flex;align-items:baseline;gap:18px;margin-bottom:16px}
+.ch h3{font:700 34px/1 'Barlow Condensed';text-transform:uppercase;letter-spacing:.01em}
+.ch .ctx{font-size:14px;color:#5E574E}.ch .ctx b{color:#C42B2B}
+.ch .theo{margin-left:auto;font-size:14px;color:#1B1A17;font-style:italic}
+.ch .theo span{font:700 12px/1 'Barlow Condensed';letter-spacing:.12em;font-style:normal;color:#5E574E;margin-right:6px}
+.opts{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.opt{position:relative;border:2px solid #1B1A17;padding:16px 12px 14px;min-height:120px}
+.opt .k{position:absolute;top:8px;right:8px;font:600 11px/1 Inter;border:1px solid #9a9184;border-radius:2px;padding:2px 5px;color:#5E574E}
+.opt .n{font:700 22px/1 'Barlow Condensed';letter-spacing:.04em;text-transform:uppercase}
+.opt .line{font-size:13px;line-height:1.35;margin-top:8px;color:#3b372f}
+.opt .p{font:600 12px/1.2 Inter;margin-top:10px}
+.opt.hov{background:#1B1A17;color:#EFEBE3;transform:translateY(-6px);box-shadow:0 10px 0 -4px #F2C230}
+.opt.hov .line{color:#d6cfc1}.opt.hov .k{color:#cfc6b6;border-color:#6a6358}
+.good{color:#1E7B3C}.mix{color:#a8740c}.bad{color:#C42B2B}
+.opt.hov .good{color:#5fd08e}.opt.hov .mix{color:#F2C230}
+</style></head><body>
+<div class="top">
+  <svg width="30" height="34" viewBox="0 0 30 34"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#F2C230" stroke="#13213A" stroke-width="2"/><path d="M8 14 h14 M15 8 v18" stroke="#13213A" stroke-width="2.4"/></svg>
+  <div class="club">Port Calloway FC</div>
+  <div class="score"><span class="t">PCF</span><span class="s">0 – 1</span><span class="o">ASH</span><span class="ht">HALF-TIME</span></div>
+</div>
+
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" style="position:absolute;inset:0">
+<defs>
+  <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4045"/><stop offset="1" stop-color="#262a2e"/></linearGradient>
+  <linearGradient id="lw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1b1e21"/><stop offset="1" stop-color="#30353a"/></linearGradient>
+  <linearGradient id="rw" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#181b1d"/><stop offset="1" stop-color="#2c3135"/></linearGradient>
+  <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b5053"/><stop offset="1" stop-color="#222527"/></linearGradient>
+  <linearGradient id="locker" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5c4029"/><stop offset="1" stop-color="#382615"/></linearGradient>
+  <linearGradient id="kit" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0f1c33"/><stop offset=".55" stop-color="#1b2e52"/><stop offset="1" stop-color="#13213A"/></linearGradient>
+  <linearGradient id="coat" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0f1116"/><stop offset=".65" stop-color="#1c2029"/><stop offset="1" stop-color="#2e3442"/></linearGradient>
+  <radialGradient id="ring" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#eef6ff" stop-opacity=".9"/><stop offset="1" stop-color="#eef6ff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="cool" cx="50%" cy="10%" r="75%"><stop offset="0" stop-color="#dfeaff" stop-opacity=".2"/><stop offset="1" stop-color="#dfeaff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="vig" cx="50%" cy="42%" r="75%"><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".78"/></radialGradient>
+  <filter id="grain"><feTurbulence baseFrequency=".85" numOctaves="2" seed="11"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .07 0"/></filter>
+  <filter id="b10"><feGaussianBlur stdDeviation="10"/></filter>
+</defs>
+<polygon points="0,0 1920,0 1360,190 560,190" fill="#141618"/>
+<polygon points="0,0 560,190 560,600 0,980" fill="url(#lw)"/>
+<polygon points="1920,0 1360,190 1360,600 1920,980" fill="url(#rw)"/>
+<rect x="560" y="190" width="800" height="410" fill="url(#wall)"/>
+<!-- ceiling light ring -->
+<ellipse cx="960" cy="92" rx="300" ry="34" fill="none" stroke="#eef6ff" stroke-width="10" opacity=".85"/>
+<ellipse cx="960" cy="92" rx="330" ry="60" fill="url(#ring)" opacity=".25" filter="url(#b10)"/>
+<rect width="1920" height="1080" fill="url(#cool)"/>
+<!-- floor -->
+<polygon points="560,600 1360,600 1920,980 1920,1080 0,1080 0,980" fill="url(#floor)"/>
+<g id="tiles"></g>
+<!-- floor crest pattern -->
+<ellipse cx="960" cy="790" rx="420" ry="105" fill="#13213A" opacity=".85"/>
+<ellipse cx="960" cy="790" rx="400" ry="96" fill="none" stroke="#F2C230" stroke-width="4" opacity=".7"/>
+<path d="M960 730 l70 16 v34 q0 34 -70 54 q-70 -20 -70 -54 v-34z" fill="#F2C230" opacity=".75" transform="translate(0,0) scale(1,1)"/>
+<path d="M915 768 h90 M960 742 v84" stroke="#13213A" stroke-width="6" opacity=".9"/>
+<g id="lockers"></g>
+<g id="people"></g>
+<rect width="1920" height="1080" filter="url(#grain)"/>
+<rect width="1920" height="1080" fill="url(#vig)"/>
+</svg>
+
+<div class="room">Dressing room <span>· Half-time</span></div>
+<div class="hint">Your call: <kbd>1</kbd>–<kbd>6</kbd> or <kbd>←</kbd><kbd>→</kbd> <kbd>Enter</kbd></div>
+
+<div class="choice">
+  <div class="ch"><h3>What do you tell them?</h3><span class="ctx">Half-time · losing <b>0–1</b> to Ashcombe · xG 0.9 – 0.6</span><span class="theo"><span>THEO</span>"They're rattled, not beaten."</span></div>
+  <div class="opts">
+    <div class="opt"><span class="k">1</span><div class="n">Calm</div><div class="line">"Breathe. We're the better side."</div><div class="p good">Most will respond well</div></div>
+    <div class="opt"><span class="k">2</span><div class="n">Motivate</div><div class="line">"Forty-five minutes. Go and take it."</div><div class="p good">Most will respond well</div></div>
+    <div class="opt hov"><span class="k">3</span><div class="n">Demand more</div><div class="line">"Calder. I need more from you."</div><div class="p mix">Mixed: the leaders will rise</div></div>
+    <div class="opt"><span class="k">4</span><div class="n">Praise</div><div class="line">"Good half. Keep doing that."</div><div class="p bad">Likely to backfire</div></div>
+    <div class="opt"><span class="k">5</span><div class="n">Disappoint</div><div class="line">"That wasn't us out there."</div><div class="p mix">Mixed</div></div>
+    <div class="opt"><span class="k">6</span><div class="n">Focus</div><div class="line">"Win your battle. Nothing else."</div><div class="p good">Most will respond well</div></div>
+  </div>
+</div>
+
+<div class="cap" id="cap" style="display:none;position:absolute;left:50%;transform:translateX(-50%);bottom:60px;z-index:5;align-items:center;gap:14px;background:rgba(8,10,14,.85);border-left:4px solid #F2C230;padding:14px 22px 14px 16px;font:500 24px/1.25 Inter"><span style="display:flex;gap:3px;align-items:center"><i style="width:3px;height:10px;background:#F2C230"></i><i style="width:3px;height:22px;background:#F2C230"></i><i style="width:3px;height:15px;background:#F2C230"></i><i style="width:3px;height:26px;background:#F2C230"></i><i style="width:3px;height:9px;background:#F2C230"></i></span><b style="font:700 16px/1 'Barlow Condensed';letter-spacing:.12em;color:#F2C230">THEO</b>Gaffer. They've had two shots. We've had six. They're rattled, not beaten.</div>
+<script>
+if(location.hash==='#talk'){document.querySelector('.choice').style.display='none';document.getElementById('cap').style.display='flex';document.querySelector('.hint').innerHTML='<kbd>Space</kbd> skip line · <kbd>Esc</kbd> skip to your call';}
+// tiles
+let t='';for(let i=0;i<=24;i++){const xb=560+i*(800/24),xf=-500+i*(2920/24);t+=`<line x1="${xb}" y1="600" x2="${xf}" y2="1080" stroke="#000" stroke-opacity=".22" stroke-width="1.5"/>`}
+let y=600,d=12;while(y<1080){t+=`<line x1="0" y1="${y}" x2="1920" y2="${y}" stroke="#000" stroke-opacity=".2" stroke-width="1.5"/>`;y+=d;d*=1.27}
+document.getElementById('tiles').innerHTML=t;
+
+// lockers: back wall + both side walls in perspective
+let L='';
+const back=[[2,'ACHEBE'],[6,'ACHTERBERG'],[8,'CALDER'],[4,'VARGA'],[10,'PRYCE'],[9,'BANKOLE']];
+const bw=800/6;back.forEach(([n,nm],i)=>{const x=560+i*bw;
+ L+=`<rect x="${x+3}" y="215" width="${bw-6}" height="330" fill="url(#locker)" stroke="#1f150c" stroke-width="3"/>`+
+ `<rect x="${x+bw/2-44}" y="225" width="88" height="17" fill="#d9cfb8"/><text x="${x+bw/2}" y="238" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" font-size="12.5" fill="#1B1A17" letter-spacing="1">${nm}</text>`+
+ `<path d="M${x+bw/2-28} 262 q28 -8 56 0 l13 18 l-10 7 v64 h-62 v-64 l-10 -7z" fill="url(#kit)"/><text x="${x+bw/2}" y="330" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" font-size="36" fill="#F2C230">${n}</text>`});
+L+=`<rect x="570" y="545" width="780" height="16" fill="#6b4a2e"/><rect x="570" y="561" width="780" height="8" fill="#3a2717"/>`;
+function sideLocker(side,t0,t1,n,nm){ // side -1 left, +1 right; t 0 back .. 1 front
+ const P=(t,h)=>{const x=side<0?560-560*t:1360+560*t;const fl=600+380*t, cl=190-190*t;const top=cl+(fl-cl)*0.06, bot=cl+(fl-cl)*0.86;return [x, top+(bot-top)*h]};
+ const [x0,a0]=P(t0,0),[,b0]=P(t0,1),[x1,a1]=P(t1,0),[,b1]=P(t1,1);
+ let s=`<polygon points="${x0},${a0} ${x1},${a1} ${x1},${b1} ${x0},${b0}" fill="url(#locker)" stroke="#1f150c" stroke-width="3"/>`;
+ // shirt as a skewed quad-ish shape
+ const tm=(t0+t1)/2,[xm,am]=P(tm,0.12),[,bm]=P(tm,0.5);const w=Math.abs(x1-x0)*0.42;
+ s+=`<polygon points="${xm-w},${am+6} ${xm+w},${am+6+(side<0?-6:6)} ${xm+w*.8},${bm} ${xm-w*.8},${bm+(side<0?6:-6)}" fill="url(#kit)"/>`;
+ s+=`<text x="${xm}" y="${(am+bm)/2+14}" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" font-size="${(bm-am)*0.27}" fill="#F2C230" transform="skewY(${side<0?-14:14})" transform-origin="${xm} ${(am+bm)/2}">${n}</text>`;
+ return s}
+[[0,.2,7,'MENSAH-LOWE'],[.2,.45,11,'ILORI'],[.45,.75,5,'FAIRCLOUGH']].forEach(([a,b,n,nm])=>L+=sideLocker(-1,a,b,n,nm));
+[[0,.2,1,'DOYLE'],[.2,.45,3,'WHITLOCK'],[.45,.75,14,'NWOSU']].forEach(([a,b,n,nm])=>L+=sideLocker(1,a,b,n,nm));
+// side benches
+L+=`<polygon points="560,560 560,572 120,860 100,846" fill="#6b4a2e"/><polygon points="1360,560 1360,572 1800,860 1820,846" fill="#6b4a2e"/>`;
+document.getElementById('lockers').innerHTML=L;
+
+// ---------- people ----------
+const SK=['#F1D3BC','#E0B18F','#C68B63','#A0694A','#7A4B33','#4E3022'],HR=['#1A1410','#3B2A1E','#6A4A30','#A07A4C'];
+function face(cx,cy,r,mood,turn){cx+=turn*r*.32;const e=r*.31,ey=cy-r*.06,c='#1a1210';let s='';
+ const eye=x=>`<ellipse cx="${x}" cy="${ey}" rx="${r*.085}" ry="${r*.11}" fill="${c}"/>`;s+=eye(cx-e)+eye(cx+e);
+ const by=ey-r*.24,bw=r*.2;const brow=(x,sd)=>{let y1=by,y2=by;if(mood==='angry'){y1=sd<0?by-4:by+5;y2=sd<0?by+5:by-4}if(mood==='worried'){y1=sd<0?by+3:by-5;y2=sd<0?by-5:by+3}if(mood==='happy'){y1=y2=by-2}return `<line x1="${x-bw}" y1="${y1}" x2="${x+bw}" y2="${y2}" stroke="${c}" stroke-width="${r*.07}" stroke-linecap="round"/>`};
+ s+=brow(cx-e,-1)+brow(cx+e,1);const my=cy+r*.42,mw=r*.26;
+ if(mood==='happy')s+=`<path d="M${cx-mw} ${my-3} q${mw} ${r*.24} ${mw*2} 0" stroke="${c}" stroke-width="${r*.06}" fill="none" stroke-linecap="round"/>`;
+ else if(mood==='angry')s+=`<path d="M${cx-mw} ${my+4} q${mw} ${-r*.2} ${mw*2} 0" stroke="${c}" stroke-width="${r*.06}" fill="none" stroke-linecap="round"/>`;
+ else if(mood==='worried')s+=`<path d="M${cx-mw*.7} ${my+2} q${mw*.7} ${-r*.1} ${mw*1.4} 0" stroke="${c}" stroke-width="${r*.055}" fill="none"/>`;
+ else s+=`<line x1="${cx-mw*.8}" y1="${my}" x2="${cx+mw*.8}" y2="${my}" stroke="${c}" stroke-width="${r*.055}" stroke-linecap="round"/>`;
+ return s}
+function head(cx,cy,r,skin,hair,mood,turn){let s='';
+ s+=`<rect x="${cx-r*.42}" y="${cy+r*.6}" width="${r*.84}" height="${r*.8}" fill="${skin}"/>`;
+ if(turn<=.3)s+=`<ellipse cx="${cx+r*.98}" cy="${cy+r*.05}" rx="${r*.14}" ry="${r*.22}" fill="${skin}"/>`;
+ if(turn>=-.3)s+=`<ellipse cx="${cx-r*.98}" cy="${cy+r*.05}" rx="${r*.14}" ry="${r*.22}" fill="${skin}"/>`;
+ s+=`<ellipse cx="${cx}" cy="${cy}" rx="${r*.95}" ry="${r*1.08}" fill="${skin}"/>`;
+ s+=`<path d="M${cx-r*.96} ${cy-r*.1} q${-r*.05} ${-r*1.05} ${r*.96} ${-r*1.02} q${r} 0 ${r*.96} ${r*1.0} q${-r*.3} ${-r*.55} ${-r*.96} ${-r*.58} q${-r*.6} 0 ${-r*.96} ${r*.6}z" fill="${hair}"/>`;
+ s+=face(cx,cy+r*.12,r,mood,turn);
+ return s}
+// seated player drawn around (0, seat=0), r=30
+function seated(mood,skin,hair,num,turn,pose){const r=30,hy=-180,sh=hy+r+14;let s='';
+ s+=`<ellipse cx="0" cy="132" rx="78" ry="12" fill="#000" opacity=".35"/>`;
+ s+=`<path d="M-44 0 l-14 70 h30 l12 -58 z" fill="#0f1c33"/><path d="M44 0 l14 70 h-30 l-12 -58z" fill="#0f1c33"/>`;
+ s+=`<rect x="-58" y="66" width="26" height="54" fill="#13213A"/><rect x="32" y="66" width="26" height="54" fill="#13213A"/><rect x="-58" y="66" width="26" height="8" fill="#F2C230"/><rect x="32" y="66" width="26" height="8" fill="#F2C230"/>`;
+ s+=`<ellipse cx="-46" cy="124" rx="20" ry="8" fill="#111"/><ellipse cx="46" cy="124" rx="20" ry="8" fill="#111"/><path d="M-58 0 h116 l6 22 h-128z" fill="#0f1c33"/>`;
+ s+=`<path d="M-50 ${sh+6} q50 -14 100 0 l8 ${-sh-2} h-116z" fill="url(#kit)"/><path d="M-14 ${sh-2} l14 16 l14 -16" stroke="#F2C230" stroke-width="3" fill="none"/>`;
+ const arm=d=>`<path d="${d}" stroke="#13213A" stroke-width="20" stroke-linecap="round" fill="none"/>`,hand=(x,y)=>`<circle cx="${x}" cy="${y}" r="10" fill="${skin}"/>`;
+ if(pose==='folded')s+=`<rect x="-52" y="${sh+38}" width="104" height="30" rx="14" fill="#24406e" stroke="#0b1424" stroke-width="2"/>`+hand(-46,sh+52)+hand(46,sh+56);
+ else if(pose==='elbows')s+=arm(`M-48 ${sh+12} q-6 60 22 70`)+arm(`M48 ${sh+12} q6 60 -22 70`)+hand(-22,sh+80)+hand(22,sh+80);
+ else s+=arm(`M-48 ${sh+12} q-14 50 -10 ${-sh+8}`)+arm(`M48 ${sh+12} q14 50 10 ${-sh+8}`)+hand(-58,18)+hand(58,18);
+ s+=head(turn*6,hy,r,skin,hair,mood,turn);
+ return s}
+let P='';
+const put=(x,y,s,inner)=>`<g transform="translate(${x},${y}) scale(${s})">${inner}</g>`;
+// back wall (4, gap behind the coach)
+[[640,'neutral',2,1,2,0,'hands'],[770,'angry',0,2,6,0,'folded'],[1150,'neutral',1,3,10,0,'hands'],[1280,'worried',5,0,9,-.1,'elbows']].forEach(([x,m,sk,hr,n,tu,po])=>P+=put(x,560,.7,seated(m,SK[sk],HR[hr],n,tu,po)));
+// left wall, facing right toward the middle
+[[440,660,.9,'neutral',4,0,7,.7,'elbows'],[245,790,1.12,'worried',2,1,11,.75,'hands']].forEach(([x,y,s,m,sk,hr,n,tu,po])=>P+=put(x,y,s,seated(m,SK[sk],HR[hr],n,tu,po)));
+// right wall, facing left
+[[1480,660,.9,'neutral',3,0,1,-.7,'hands'],[1675,790,1.12,'neutral',1,2,3,-.75,'folded']].forEach(([x,y,s,m,sk,hr,n,tu,po])=>P+=put(x,y,s,seated(m,SK[sk],HR[hr],n,tu,po)));
+// Theo by the door, front-left corner, standing
+P+=`<g transform="translate(70,610) scale(1.15)"><ellipse cx="0" cy="250" rx="60" ry="10" fill="#000" opacity=".35"/><path d="M-30 100 l-6 150 h26 l8 -120 l8 120 h26 l-6 -150z" fill="#13213A"/><path d="M-46 -20 q46 -14 92 0 l6 130 h-104z" fill="#22335a"/><path d="M-40 -16 v120" stroke="#F2C230" stroke-width="3" opacity=".8"/><rect x="-48" y="22" width="96" height="28" rx="13" fill="#2b3e66"/><circle cx="-40" cy="36" r="9" fill="#7A4B33"/><circle cx="40" cy="38" r="9" fill="#7A4B33"/>${head(0,-66,28,'#7A4B33','#1A1410','neutral',.5)}</g>`;
+// Coach: standing in the middle, back to camera, hands on hips, waiting for your call
+P+=`<g transform="translate(960,1050) scale(1.25)">
+ <ellipse cx="0" cy="6" rx="130" ry="20" fill="#000" opacity=".45"/>
+ <path d="M-55 -200 l-12 200 h44 l12 -165 l14 165 h44 l-10 -200z" fill="#14161b"/>
+ <path d="M-92 -420 q-30 110 -22 230 q60 20 116 16 q56 -2 96 -20 q8 -120 -30 -226 q-80 -34 -160 0z" fill="url(#coat)"/>
+ <path d="M-90 -400 q-48 50 -40 110 q10 14 30 4" stroke="#1a1e27" stroke-width="34" stroke-linecap="round" fill="none"/>
+ <path d="M78 -400 q48 50 40 110 q-10 14 -30 4" stroke="#20242e" stroke-width="34" stroke-linecap="round" fill="none"/>
+ <path d="M-40 -432 q40 -16 82 0 l-6 24 q-36 -10 -70 0z" fill="#2a2f3b"/>
+ <rect x="-18" y="-472" width="38" height="42" rx="12" fill="#A0694A"/>
+ <ellipse cx="-42" cy="-500" rx="8" ry="14" fill="#8a573c"/><ellipse cx="42" cy="-500" rx="8" ry="14" fill="#A0694A"/>
+ <ellipse cx="0" cy="-508" rx="42" ry="50" fill="#2e2117"/>
+ <path d="M-36 -484 q36 24 72 0 q-4 20 -11 26 q-25 8 -50 0 q-7 -8 -11 -26z" fill="#3a2a1d"/>
+</g>`;
+document.getElementById('people').innerHTML=P;
+</script>
+</body></html>

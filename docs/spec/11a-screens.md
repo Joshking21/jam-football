@@ -39,11 +39,13 @@ Grid of cards:
 - **Assistant tip**: one actionable suggestion with an "Apply" button (§15.3).
 
 ### 11.6 Squad
+**Design reference: `docs/design/squad/` (23 Nov; it wins on layout and look).**
 - Table columns: #, Name (portrait thumb), Pos, Age, OVR (badge), Pot (★ display only: own players show 1–5 stars from potential), Cond (bar), Morale (icon + word), Form (5 dots coloured by rating), Apps, Goals, Assists, Avg rating, Value, Wage, Contract years, Status icons (injury, suspension, transfer listed, promise).
 - Filters: All / GK / DEF / MID / FWD / Injured / Unhappy. Sort by any column. Search by name.
 - Row click → Player Profile.
 
 ### 11.7 Player Profile (modal-sized page, 960 px wide)
+**Design reference: `docs/design/squad/` (23 Nov; it wins on layout and look).**
 - Presented as a player file opened on the desk (Sheet "file" variant, §19.5; opening animation §19.7): manila tab with the name, the portrait clipped to the first sheet, status shown as Stamps (INJURED, SUSPENDED, TRANSFER LISTED, NOT FOR SALE, SCOUTED).
 - Header: portrait (256²), name, number, positions with familiarity chips, age, nationality flag (simple CSS flag or emoji-free SVG; no flag assets needed: draw horizontal/vertical tri-bands per nation in `procedural/flags.ts`), height, foot, personality, OVR badge, potential stars, value, wage, contract, squad role.
 - Tabs: **Attributes** (three columns Technical/Physical/Mental, plus Goalkeeping for GKs; each AttrBar coloured per §19.4; for unscouted other-club players show ranges e.g. "60–72", §12.12), **Stats** (season table + last 5 matches ratings sparkline), **Status** (condition, fatigue, morale with reasons list "Won last match +6", injury details, suspension), **History**.
@@ -67,6 +69,7 @@ Grid of cards:
 - "Last week" panel: growth summary (players who improved, with +OVR), training injuries.
 
 ### 11.10 Transfers (only in windows)
+**Design reference: `docs/design/scouting/` (23 Nov; it wins on layout and look).**
 - Header: window name, "Day 1 of 3 / Day 2 of 3 / Deadline Day" stepper, transfer budget remaining, wage budget used/total, squad size N/26 (min 16, 2 GK).
 - Tabs: **Search** (all non-own players + free agents; filters: position group, age range, OVR range (estimated for unscouted), max value, club; columns: name, club, pos, age, OVR (or range), value, wage, contract), **Shortlist**, **Offers** (my bids with status; incoming bids for my players with Accept/Reject/Counter), **Scouting** (queue up to 2 per day; results next day).
 - Make Offer dialog: fee input with +/− steps (5% of value), shows "Asking price estimate: high/fair/low" only after scouting the player OR if the club's response was a counter; then on acceptance → Contract dialog: wage, years (1–4), role promise (Star/Starter/Rotation/Backup), signing on.
@@ -81,9 +84,11 @@ Tabs: **Table** (full table with form, positions coloured: 1st gold mark, 2–3 
 Your 18 fixtures with result, scorers, attendance, MOTM; upcoming ones show opponent position and form.
 
 ### 11.13 Club
+**Design reference: `docs/design/club/` (23 Nov; it wins on layout and look).**
 Tabs: **Finances** (balance, this season income/expense breakdown bars, weekly wage bill vs budget, projection to season end), **Board** (confidence meter, expectation, history of confidence per matchday as a line chart, messages), **Fans** (mood meter, attendance per home game chart, quotes from §16.6 fan reactions), **Stadium** (name, capacity, image `images/stadium/{clubId}.webp` fallback to a 3D thumbnail or gradient).
 
 ### 11.14 Inbox
+**Design reference: `docs/design/inbox/` (23 Nov; it wins on layout and look).**
 Two-pane: list (kind icon, title, matchday, unread dot) and reading pane (body, action buttons). Items requiring action are pinned to the top until handled.
 
 ### 11.15 Pre-Match
@@ -113,7 +118,7 @@ Stats comparison, assistant's half-time analysis (2–3 bullets with Apply butto
 **Design reference for the result screen and Half-Time: `docs/design/fulltime/` (approved 23 Nov; it wins on layout and look).**
 1. **Result**: final score, scorers with minutes, MOTM card, player ratings for both teams (sortable), full stats, shot map (2D pitch with shot dots sized by xG, filled for goals), xG timeline.
 2. **Team talk** (full-time contexts).
-3. **Press conference** if triggered (§12.6): journalist portrait, voiced question, 3 answers.
+3. **Press conference** if triggered (§12.6): journalist portrait, voiced question, 3 answers. Design reference: `docs/design/press/`.
 4. **Back page**: newspaper-style headline for the match (§16.6) with image.
 5. Continue → WeekSummary.
 
@@ -126,6 +131,7 @@ One screen: other results of the round, updated table excerpt, injuries/returns,
 Sequence of full-screen cards (each Continue): Final table → Awards (§12.15) → Your season in numbers (W/D/L, goals, best win, top scorer, signings) → Board verdict with grade (§12.16) and score → "Share card" (a 1200×630 canvas image the user can download as PNG, with club crest, final position, grade, top scorer) → buttons: New Game, Title.
 
 ### 11.21 Sacked
+**Design reference: `docs/design/sacked/` (23 Nov; it wins on layout and look).**
 Dramatic card: "You have been relieved of your duties." Reason, record, grade F, score. Buttons: Load last save, New Game.
 **v1.7:** the coach is called to the **Boardroom**. The owner tells him to his face (voiced, `club.json`, mood angry or worried by the reason), then the card.
 

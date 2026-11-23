@@ -1,0 +1,74 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{background:#0b0c0f}
+.room{position:absolute;left:28px;top:76px;z-index:5;font:700 15px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--acc);background:rgba(10,12,16,.72);border:1px solid #2A313D;padding:10px 14px}.room span{color:var(--dim);margin-left:8px}
+.hint{position:absolute;right:28px;top:76px;z-index:5;font:500 13px/1 Inter;color:#cfd5de;background:rgba(10,12,16,.72);border:1px solid #2A313D;padding:9px 12px;display:flex;gap:8px;align-items:center}
+.q{position:absolute;left:50%;top:560px;transform:translateX(-50%);z-index:5;display:flex;gap:14px;align-items:center;background:rgba(8,10,14,.86);border-left:4px solid var(--acc);padding:14px 22px 14px 16px;font:500 22px/1.3 Inter;max-width:1200px}
+.q b{font:700 15px/1 'Barlow Condensed';letter-spacing:.12em;color:var(--acc);white-space:nowrap;text-transform:uppercase}
+.q small{display:block;font:500 12px/1 Inter;color:var(--dim);margin-top:4px}
+.choice{position:absolute;left:50%;bottom:30px;transform:translateX(-50%) rotate(-.3deg);width:1380px;z-index:5;background:#EFEBE3;color:var(--ink);box-shadow:0 24px 60px rgba(0,0,0,.7);padding:22px 26px 24px}
+.ch{display:flex;align-items:baseline;gap:18px;margin-bottom:14px}
+.ch h3{font:800 32px/1 'Barlow Condensed';text-transform:uppercase}
+.ch span{font:500 14px/1 Inter;color:var(--pdim)}
+.ch .theo{margin-left:auto;font:italic 400 15px/1.3 'Source Serif 4',serif}.ch .theo b{font:700 12px/1 'Barlow Condensed';letter-spacing:.14em;font-style:normal;color:var(--pdim);margin-right:6px}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.opt{position:relative;border:2px solid var(--ink);padding:16px 16px 14px}
+.opt .k{position:absolute;top:10px;right:10px;font:600 11px/1 Inter;border:1px solid #9a9184;border-radius:2px;padding:2px 5px;color:var(--pdim)}
+.opt .tn{font:700 12px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;color:var(--pdim)}
+.opt .ln{font:600 19px/1.3 'Source Serif 4',serif;margin-top:8px}
+.opt .fx{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.opt .fx span{font:700 12px/1 'Barlow Condensed';letter-spacing:.08em;padding:5px 7px 4px;border:1.5px solid currentColor}
+.opt .risk{font:500 12px/1.35 Inter;color:var(--red);margin-top:8px}
+.opt.hov{background:var(--ink);color:var(--paper);transform:translateY(-6px);box-shadow:0 10px 0 -4px var(--acc)}
+.opt.hov .tn,.opt.hov .k{color:#cfc6b6}.opt.hov .risk{color:#ff8a8a}
+.g{color:#1E7B3C}.b{color:#C42B2B}.n{color:#5E574E}.opt.hov .g{color:#5fd08e}.opt.hov .b{color:#ff8a8a}.opt.hov .n{color:#cfc6b6}
+</style></head><body>
+<svg width="1920" height="1080" style="position:absolute;inset:0" id="sc"></svg>
+<div class="room">Press room <span>· After the match</span></div>
+<div class="hint">Your answer: <kbd>1</kbd>–<kbd>3</kbd> or <kbd>←</kbd><kbd>→</kbd> <kbd>Enter</kbd></div>
+<div class="q"><b>Ellis Marr<small>Calloway Gazette</small></b>"Second, two points behind Saltmere. Be honest: is this the year Port Calloway win the league?"</div>
+<div class="choice">
+ <div class="ch"><h3>Your answer</h3><span>Post-match · 2–1 v Corvallen · question 2 of 3</span><span class="theo"><b>THEO</b>"Saltmere will read whatever you say."</span></div>
+ <div class="opts">
+  <div class="opt"><span class="k">1</span><div class="tn">Confident</div><div class="ln">"Yes. We're good enough, and everyone in that dressing room knows it."</div><div class="fx"><span class="g">Fans +3</span><span class="g">Squad morale +2</span><span class="n">Board 0</span></div><div class="risk">If we lose next week: fans −3 more</div></div>
+  <div class="opt hov"><span class="k">2</span><div class="tn">Calm</div><div class="ln">"One game at a time. Ironvale away is the only game I'm thinking about."</div><div class="fx"><span class="g">Board +1</span><span class="n">Fans 0</span><span class="n">Squad 0</span></div><div class="risk" style="color:inherit;opacity:.6">Safe. No risk.</div></div>
+  <div class="opt"><span class="k">3</span><div class="tn">Mind games</div><div class="ln">"All the pressure's on Saltmere. They were supposed to run away with it."</div><div class="fx"><span class="g">Fans +2</span><span class="g">Saltmere morale −2</span><span class="b">Board −1</span></div><div class="risk">Saltmere's next derby talk gets a boost</div></div>
+ </div>
+</div>
+<script src="base.js"></script>
+<script>
+topbar('','Port Calloway <b>2–1</b> Corvallen · Full-time','');
+// ---- scene: backdrop with crest pattern, table, mics, coach, reporters ----
+const SK='#A0694A';let s=`<defs><linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#132238"/><stop offset="1" stop-color="#0b1626"/></linearGradient>
+<pattern id="crests" width="120" height="110" patternUnits="userSpaceOnUse"><g transform="translate(40,26) scale(1.3)" opacity=".22"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#F2B705"/></g><g transform="translate(100,81) scale(1.3)" opacity=".14"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#fff"/></g></pattern>
+<radialGradient id="spot" cx="50%" cy="20%" r="60%"><stop offset="0" stop-color="#fff3dc" stop-opacity=".28"/><stop offset="1" stop-color="#fff3dc" stop-opacity="0"/></radialGradient>
+<radialGradient id="flash" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".2" stop-color="#fff" stop-opacity=".4"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<radialGradient id="vig" cx="50%" cy="40%" r="75%"><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".75"/></radialGradient></defs>`;
+s+=`<rect width="1920" height="1080" fill="url(#wall)"/><rect x="360" y="56" width="1200" height="520" fill="url(#crests)"/>`;
+s+=`<rect x="360" y="56" width="1200" height="520" fill="none" stroke="#F2B705" stroke-opacity=".25" stroke-width="3"/>`;
+s+=`<rect width="1920" height="1080" fill="url(#spot)"/>`;
+// coach seated, front, behind table
+const cx=960;
+s+=`<path d="M${cx-130} 470 q130 -46 260 0 l20 170 h-300z" fill="#1c2029"/><path d="M${cx-26} 440 l26 34 l26 -34" fill="#e9e4da"/><path d="M${cx-8} 450 l8 8 l8 -8 l-4 60 l-4 6 l-4 -6z" fill="#F2B705"/>`;
+s+=`<rect x="${cx-24}" y="400" width="48" height="50" rx="14" fill="${SK}"/>`;
+s+=`<ellipse cx="${cx-58}" cy="356" rx="10" ry="17" fill="${SK}"/><ellipse cx="${cx+58}" cy="356" rx="10" ry="17" fill="#8a573c"/><ellipse cx="${cx}" cy="350" rx="56" ry="64" fill="${SK}"/>`;
+s+=`<path d="M${cx-57} 340 q-2 -66 57 -68 q60 2 57 66 q-14 -34 -57 -36 q-42 2 -57 38z" fill="#3B2A1E"/>`;
+// painted face: neutral, listening (brows slightly raised)
+s+=`<ellipse cx="${cx-20}" cy="352" rx="5" ry="6" fill="#1a1210"/><ellipse cx="${cx+20}" cy="352" rx="5" ry="6" fill="#1a1210"/><line x1="${cx-32}" y1="334" x2="${cx-10}" y2="332" stroke="#1a1210" stroke-width="4" stroke-linecap="round"/><line x1="${cx+10}" y1="332" x2="${cx+32}" y2="334" stroke="#1a1210" stroke-width="4" stroke-linecap="round"/><line x1="${cx-12}" y1="386" x2="${cx+12}" y2="386" stroke="#1a1210" stroke-width="3.5" stroke-linecap="round"/>`;
+// table, cloth, nameplate, mics
+s+=`<rect x="520" y="520" width="880" height="130" fill="#0B1F3A"/><rect x="520" y="520" width="880" height="10" fill="#F2B705"/><rect x="520" y="530" width="880" height="120" fill="url(#crests)" opacity=".6"/>`;
+[[cx-150,'#C42B2B'],[cx-100,'#1F4FBF'],[cx+100,'#2a2a2a'],[cx+150,'#1E7B3C'],[cx+60,'#C98A12'],[cx-60,'#eee']].forEach(([x,c],i)=>{s+=`<line x1="${x}" y1="520" x2="${cx+(x>cx?18:-18)}" y2="470" stroke="#333" stroke-width="5"/><rect x="${x-14}" y="500" width="28" height="22" fill="${c}"/><ellipse cx="${cx+(x>cx?18:-18)}" cy="466" rx="9" ry="12" fill="#222"/>`});
+s+=`<rect x="${cx-90}" y="486" width="180" height="34" fill="#f4f1ea"/><text x="${cx}" y="509" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" font-size="17" fill="#0B1F3A" letter-spacing="2">THE MANAGER</text>`;
+s+=`<rect x="${cx+170}" y="488" width="22" height="32" fill="#9fd0e6" opacity=".7"/>`;
+// camera flashes
+s+=`<circle cx="430" cy="420" r="120" fill="url(#flash)"/><circle cx="1520" cy="380" r="90" fill="url(#flash)" opacity=".7"/>`;
+// tripod cameras at sides
+[[300,430],[1620,420]].forEach(([x,y])=>{s+=`<rect x="${x-40}" y="${y-26}" width="80" height="52" fill="#151515"/><circle cx="${x+(x<960?40:-40)}" cy="${y}" r="20" fill="#222" stroke="#444" stroke-width="4"/><path d="M${x} ${y+26} l-40 260 M${x} ${y+26} l40 260 M${x} ${y+26} v260" stroke="#151515" stroke-width="6"/>`});
+// reporters foreground: backs of heads in a row, one standing (Ellis Marr) on the right with notepad
+for(let i=0;i<9;i++){const x=160+i*200,y=1010+(i%2)*18;if(i===6)continue;
+ s+=`<path d="M${x-90} 1080 q0 -110 90 -120 q90 10 90 120z" fill="#0d0f14"/><ellipse cx="${x}" cy="${y-170}" rx="46" ry="54" fill="${['#1a1410','#3b2a1e','#151515','#6a4a30'][i%4]}"/><path d="M${x-90} 1080 q0 -110 90 -120 q90 10 90 120" fill="none" stroke="#9fb8e0" stroke-opacity=".12" stroke-width="3"/>`}
+// standing reporter (asking)
+const rx=1380;s+=`<path d="M${rx-80} 1080 q-10 -190 80 -210 q90 20 80 210z" fill="#1c222c"/><ellipse cx="${rx}" cy="830" rx="40" ry="48" fill="#3b2a1e"/><path d="M${rx+52} 940 l50 -40" stroke="#1c222c" stroke-width="26" stroke-linecap="round"/><rect x="${rx+88}" y="880" width="34" height="44" fill="#f4f1ea" transform="rotate(-20 ${rx+105} 902)"/>`;
+s+=`<rect width="1920" height="1080" fill="url(#vig)"/>`;
+document.getElementById('sc').innerHTML=s;
+</script></body></html>

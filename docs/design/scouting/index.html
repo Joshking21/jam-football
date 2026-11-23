@@ -1,0 +1,104 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+.main{display:grid;grid-template-columns:560px 1fr 360px;gap:28px;padding:22px 24px}
+/* card index box */
+.box{position:relative;height:990px}
+.box .hd{display:flex;align-items:baseline;gap:12px;color:var(--text)}
+.box .hd .h2{font-size:38px}
+.box .hd small{font:600 13px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.filters{display:flex;gap:6px;margin-top:14px}
+.filters span{font:700 13px/1 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;padding:8px 11px;background:rgba(255,255,255,.06);color:var(--dim);border:1px solid rgba(255,255,255,.12)}.filters span.on{background:#F4F1EA;color:#0a0d12}
+.drawer{position:relative;margin-top:16px;height:860px;background:linear-gradient(#3a2a1a,#24180e);border-radius:4px;padding:16px 16px 0;box-shadow:inset 0 8px 18px rgba(0,0,0,.6),0 18px 36px rgba(0,0,0,.5)}
+.card{position:relative;background:#fbf8f1;color:var(--ink);padding:10px 14px;margin-bottom:-8px;border-radius:3px 3px 0 0;box-shadow:0 -1px 0 rgba(0,0,0,.15),0 -6px 10px rgba(0,0,0,.18);display:grid;grid-template-columns:1fr auto;gap:4px 10px}
+.card .tab{position:absolute;top:-14px;font:700 11px/1 'Barlow Condensed';letter-spacing:.12em;padding:5px 8px 4px;border-radius:3px 3px 0 0;background:#e9dfc6;color:#5b4a2a}
+.card b{font:700 21px/1 'Barlow Condensed';text-transform:uppercase}
+.card small{font:600 11.5px/1 'Barlow Condensed';letter-spacing:.1em;color:var(--pdim);text-transform:uppercase}
+.card .o{grid-row:1/3;grid-column:2;text-align:right;font:800 26px/1 'Barlow Condensed'}
+.card .o span{display:block;font:600 10.5px/1 'Barlow Condensed';letter-spacing:.1em;color:var(--pdim)}
+.card.sel{background:#fff;outline:3px solid var(--blue);z-index:3;transform:translateX(18px)}
+.card .kn{grid-column:1/-1;height:4px;background:#e6dfd0;margin-top:4px}.card .kn i{display:block;height:100%;background:var(--green)}
+/* report */
+.rep{position:relative;height:990px}
+.rep .pg{position:absolute;inset:8px 0 0 0;padding:28px 32px;transform:rotate(-.4deg)}
+.lhd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px double var(--ink);padding-bottom:8px}
+.lhd .t{font:900 26px/1 'Playfair Display',serif}
+.lhd .r{font:600 12px/1.3 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--pdim);text-align:right}
+.ph{display:grid;grid-template-columns:140px 1fr auto;gap:22px;margin-top:18px;padding-bottom:14px;border-bottom:2px solid var(--ink)}
+.ph .pic{height:160px;background:#efe3bd;overflow:hidden}
+.ph h2{font:800 48px/.9 'Barlow Condensed';text-transform:uppercase}
+.ph .meta{font:500 13.5px/1.5 Inter;color:var(--pdim);margin-top:8px}.ph .meta b{color:var(--ink);font-weight:600}
+.ovb{text-align:right}.ovb b{display:block;font:800 60px/.85 'Barlow Condensed'}.ovb span{font:700 12px/1 'Barlow Condensed';letter-spacing:.12em;color:var(--pdim)}
+.ovb .band{font:700 15px/1 'Barlow Condensed';color:var(--amber);letter-spacing:.06em;display:block;margin-top:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:16px}
+.at{display:grid;grid-template-columns:110px 1fr 54px;align-items:center;gap:10px;height:25px;font-size:13px}
+.at .rg{position:relative;height:8px;background:#e6dfd0}
+.at .rg i{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(90deg,#9aa6b2 0 4px,#b9c3cc 4px 8px)}
+.at .rg u{position:absolute;top:0;bottom:0;left:0;background:var(--bink)}
+.at b{font:700 15px/1 'Barlow Condensed';text-align:right}
+.verdict{margin-top:16px;border:2px solid var(--ink);padding:14px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.verdict div span{display:block;font:700 11px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--pdim)}
+.verdict div b{display:block;font:800 22px/1.05 'Barlow Condensed';margin-top:6px;text-transform:uppercase}
+.verdict div small{display:block;font:500 12px/1.3 Inter;color:var(--pdim);margin-top:4px}
+.scoutq{margin-top:14px;font:italic 400 15px/1.5 'Source Serif 4',serif;border-left:4px solid var(--ink);padding:4px 0 4px 14px}
+.scoutq b{font-style:normal;font:700 11px/1 'Barlow Condensed';letter-spacing:.14em;display:block;color:var(--pdim);margin-bottom:5px}
+.acts{display:flex;gap:10px;margin-top:18px;align-items:center}
+.acts .note{font:500 12.5px/1.3 Inter;color:var(--pdim)}
+.stampx{position:absolute;right:46px;bottom:60px;transform:rotate(-10deg);font-size:30px;padding:12px 16px 9px;border-width:4px}
+.cmp{margin-top:22px;border-top:2px solid var(--ink);padding-top:12px;width:62%}.cr{display:grid;grid-template-columns:110px 1fr 1fr;gap:10px;align-items:center;height:26px;font-size:13px}.cr .b{height:8px;background:#e6dfd0;position:relative;margin-right:36px}.cr .b i{position:absolute;top:0;bottom:0;left:0}.cr .b span{position:absolute;right:-30px;top:-4px;font:700 13px/1 'Barlow Condensed'}.cmph{display:grid;grid-template-columns:110px 1fr 1fr;gap:10px;font:700 12px/1 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase;margin:8px 0 4px}
+/* right rail */
+.rail{display:flex;flex-direction:column;gap:16px}
+.pan{background:rgba(12,16,22,.86);border:1px solid #2A313D;padding:16px 18px}
+.pan .l{font:700 12px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.pan .v{font:800 34px/1 'Barlow Condensed';margin-top:8px}
+.pan .v small{font:600 14px/1 'Barlow Condensed';color:var(--dim);letter-spacing:.06em;margin-left:6px}
+.pan p{font:500 13.5px/1.45 Inter;color:#cfd5de;margin-top:8px}
+.scouts div{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08);font:500 13.5px/1.3 Inter}
+.scouts div b{font:700 15px/1 'Barlow Condensed';letter-spacing:.06em;text-transform:uppercase}
+.win{border-left:4px solid var(--acc)}
+</style></head><body>
+<div class="main">
+ <div class="box">
+  <div class="hd"><div class="h2">Scouting</div><small>Shortlist · 7 players</small></div>
+  <div class="filters"><span class="on">Shortlist</span><span>Search</span><span>By position</span><span>Free agents</span></div>
+  <div class="drawer" id="drawer"></div>
+ </div>
+ <div class="rep"><div class="pg paper">
+  <div class="lhd"><div class="t">Scout's report</div><div class="r">Port Calloway FC · Head of scouting<br>File No. 0214 · Matchday 8</div></div>
+  <div class="ph"><div class="pic"><svg id="pic" width="140" height="160"></svg></div>
+   <div><h2>Esteban Escalante</h2><div class="meta"><b>23</b> · Argentina · <b>Left foot</b> · 1.76 m · Ambitious<br>Kestrel Bay FC · LW / ST · <b>9 goals</b> this season · contract 2 years</div>
+    <div class="chips" style="display:flex;gap:6px;margin-top:10px"><span class="chip" style="background:var(--ink);color:var(--paper)">LW 100</span><span class="chip" style="border:1.5px solid var(--ink)">ST 84</span><span class="chip" style="border:1.5px solid var(--blue);color:var(--blue)">Cuts inside</span><span class="chip" style="border:1.5px solid var(--blue);color:var(--blue)">Shoots from distance</span></div></div>
+   <div class="ovb"><b>77–81</b><span>OVR AT LW</span><span class="band">KNOWLEDGE 62%</span></div></div>
+  <div class="grid"><div id="a1"></div><div id="a2"></div></div>
+  <div class="verdict">
+   <div><span>Would he start?</span><b>Yes, at LW</b><small>Better than Ilori now (75)</small></div>
+   <div><span>Asking price (estimate)</span><b>€19–23M</b><small>Kestrel Bay value him highly</small></div>
+   <div><span>Would he come?</span><b>Likely</b><small>Ambitious: we're higher in the table</small></div>
+  </div>
+  <div class="scoutq"><b>Scout's note</b>"Quick, direct, and hungry. He drifts inside onto his left and he'll shoot from anywhere. His work rate dips late in games, so don't build your press around him."</div>
+  <div class="acts"><span class="btn">Make an offer</span><span class="btn ghost">Scout him fully</span><span class="btn ghost">Remove from shortlist</span><span class="note">Offers open with the window, after Matchday 9.</span></div>
+  <div class="cmp"><div class="lab">Him against your left wing</div><div id="cmp"></div></div>
+  <div class="stampx stamp">TARGET</div>
+ </div></div>
+ <div class="rail">
+  <div class="pan win"><div class="l">Transfer window</div><div class="v">Closed <small>opens after MD9</small></div><p>Three days: Day 1, Day 2, Deadline Day. You can scout and plan now, and bid when it opens.</p></div>
+  <div class="pan"><div class="l">Budget</div><div class="v">€40M <small>transfer</small></div><div class="v" style="font-size:26px">€46K <small>/ week wage room</small></div></div>
+  <div class="pan scouts"><div class="l" style="margin-bottom:6px">Your scouts this round</div>
+   <div><b>Fernandez</b><span>Watching Gil (IVA) · back Thursday</span></div>
+   <div><b>Free slot</b><span style="color:var(--acc)">Send a scout</span></div>
+   <div style="border:0"><span style="color:var(--dim)">Head of scouting ★★★: knowledge +15% a week</span></div></div>
+  <div class="pan"><div class="l">Theo says</div><p>"If Mensah-Lowe wants out, Escalante is the one. Kestrel Bay won't sell cheap to a rival, so expect a counter."</p></div>
+ </div>
+</div>
+<script src="base.js"></script>
+<script>
+topbar('Scouting','MD <b>8/18</b> · <b>2nd</b> · <b>17 pts</b>','Continue');
+const L=[['LW · KBF','Escalante','Kestrel Bay · 23','77–81',62,1],['ST · IVA','Gil','Ironvale · 26','74–78',40],['CB · SAL','Rourke','Saltmere · 28','75',100],['DM · NGA','Hale','Northgate · 24','70–76',25],['GK · BWC','Marsh','Brightwater · 29','72–76',30],['RB · LIN','Brandt','Lindenfield · 21','66–72',18],['AM · free','Dorsey','Free agent · 31','70',100]];
+document.getElementById('drawer').innerHTML=L.map(([t,n,c,o,k,sel],i)=>`<div class="card ${sel?'sel':''}" style="margin-top:${i?22:18}px"><span class="tab" style="left:${16+i*62}px">${t}</span><div><b>${n}</b></div><small>${c}</small><div class="o">${o}<span>OVR</span></div><div class="kn"><i style="width:${k}%"></i></div></div>`).join('');
+halftone('pic',140,160,3.2,portraitLum(140,160,2),'#141414');
+const A1=[['Pace',84,88],['Dribbling',80,84],['Finishing',76,80],['Long shots',75,83],['First touch',74,78],['Crossing',66,74]];
+const A2=[['Decisions',68,76],['Off the ball',77,77],['Composure',70,78],['Work rate',58,66],['Stamina',70,74],['Strength',60,68]];
+const row=([n,lo,hi])=>`<div class="at"><span>${n}</span><span class="rg">${lo==hi?`<u style="width:${lo}%"></u>`:`<u style="width:${lo}%"></u><i style="left:${lo}%;width:${hi-lo}%"></i>`}</span><b>${lo==hi?lo:lo+'–'+hi}</b></div>`;
+document.getElementById('a1').innerHTML='<div class="lab" style="margin-bottom:6px">Technical</div>'+A1.map(row).join('');
+document.getElementById('cmp').innerHTML='<div class="cmph"><span></span><span style="color:#1F4FBF">Escalante (mid-band)</span><span style="color:#0B1F3A">Ilori (yours)</span></div>'+[['Pace',86,82],['Dribbling',82,79],['Finishing',78,71],['Decisions',72,69],['Work rate',62,77],['Age',23,21]].map(([n,a,b])=>`<div class="cr"><span>${n}</span><div class="b"><i style="width:${n=='Age'?a*2.5:a}%;background:#1F4FBF"></i><span>${a}</span></div><div class="b"><i style="width:${n=='Age'?b*2.5:b}%;background:#0B1F3A"></i><span>${b}</span></div></div>`).join('');
+document.getElementById('a2').innerHTML='<div class="lab" style="margin-bottom:6px">Mental · physical</div>'+A2.map(row).join('');
+</script></body></html>

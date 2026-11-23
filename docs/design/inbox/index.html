@@ -1,0 +1,67 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{background:radial-gradient(ellipse at 40% 40%,#2a2118 0%,#16110c 60%,#0c0907 100%)}
+.desk{position:absolute;inset:56px 0 0 0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 3px,transparent 3px 140px),radial-gradient(ellipse at 40% 50%,#3a2a1c 0%,#22170f 70%)}
+.hd{position:absolute;left:48px;top:84px;display:flex;align-items:baseline;gap:14px}
+.hd small{font:600 13px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.trays{position:absolute;left:48px;top:140px;display:flex;gap:6px}
+.trays span{font:700 13px/1 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;padding:8px 11px;background:rgba(255,255,255,.06);color:var(--dim);border:1px solid rgba(255,255,255,.12)}.trays span.on{background:#F4F1EA;color:#0a0d12}
+.pile{position:absolute;left:48px;top:196px;width:620px}
+.memo{position:relative;background:#fbf8f1;color:var(--ink);padding:14px 18px 14px 22px;margin-bottom:-22px;box-shadow:0 2px 0 rgba(0,0,0,.2),0 10px 18px rgba(0,0,0,.35);display:grid;grid-template-columns:1fr auto;gap:2px 12px;border-left:6px solid var(--c)}
+.memo .ty{font:700 11px/1 'Barlow Condensed';letter-spacing:.16em;color:var(--c);text-transform:uppercase}
+.memo b{font:700 19px/1.15 'Barlow Condensed';text-transform:uppercase;grid-column:1}
+.memo small{font:500 12.5px/1.35 Inter;color:var(--pdim);grid-column:1}
+.memo .when{grid-row:1/3;grid-column:2;text-align:right;font:600 11px/1.3 'Barlow Condensed';letter-spacing:.12em;color:var(--pdim);text-transform:uppercase}
+.memo .dot{position:absolute;right:14px;bottom:14px;width:9px;height:9px;border-radius:50%;background:var(--red)}
+.memo.sel{transform:translateX(26px) rotate(0deg)!important;outline:3px solid var(--blue);z-index:5}
+.memo.act:after{content:"ACTION";position:absolute;right:40px;bottom:10px;font:800 11px/1 'Barlow Condensed';letter-spacing:.18em;color:var(--red);border:2px solid var(--red);padding:3px 5px 2px;transform:rotate(-6deg)}
+.letter{position:absolute;left:740px;top:104px;width:860px;height:860px;padding:40px 52px;transform:rotate(.7deg);background:#f6f2e8;color:var(--ink);box-shadow:0 30px 60px rgba(0,0,0,.6)}
+.lh{display:flex;justify-content:space-between;align-items:center;border-bottom:3px double var(--ink);padding-bottom:12px}
+.lh .t{display:flex;align-items:center;gap:14px}.lh .t b{font:900 24px/1 'Playfair Display',serif}
+.lh .t small{display:block;font:600 11px/1.3 'Barlow Condensed';letter-spacing:.16em;color:var(--pdim);text-transform:uppercase}
+.lh .r{font:600 12px/1.4 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--pdim);text-align:right}
+.letter h1{font:800 46px/.95 'Barlow Condensed';text-transform:uppercase;margin-top:26px}
+.letter .to{font:600 13px/1 'Barlow Condensed';letter-spacing:.14em;color:var(--pdim);text-transform:uppercase;margin-top:10px}
+.letter p{font:400 17px/1.6 'Source Serif 4',serif;margin-top:18px}
+.terms{margin-top:22px;border:2px solid var(--ink);display:grid;grid-template-columns:repeat(4,1fr)}
+.terms div{padding:12px 14px;border-right:1px solid var(--rule)}.terms div:last-child{border:0}
+.terms span{display:block;font:700 11px/1 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase;color:var(--pdim)}
+.terms b{display:block;font:800 26px/1 'Barlow Condensed';margin-top:6px}
+.terms small{display:block;font:500 11.5px/1.3 Inter;color:var(--pdim);margin-top:3px}
+.sig{margin-top:26px;font:italic 400 30px/1 'Playfair Display',serif;color:#2b4fa8}
+.sig small{display:block;font:600 12px/1.3 'Barlow Condensed';letter-spacing:.14em;color:var(--pdim);font-style:normal;margin-top:6px;text-transform:uppercase}
+.acts .btn{white-space:nowrap}.acts{position:absolute;left:52px;right:52px;bottom:40px;display:flex;gap:10px;align-items:center;border-top:2px solid var(--ink);padding-top:18px}
+.acts .theo{margin-left:auto;font:500 13px/1.35 Inter;color:var(--pdim);max-width:300px}
+.acts .theo b{font:700 11px/1 'Barlow Condensed';letter-spacing:.14em;color:var(--ink);display:block;margin-bottom:3px}
+.paperclip{position:absolute;left:60px;top:-18px;width:24px;height:70px;border:4px solid #9aa1a8;border-radius:12px;transform:rotate(8deg)}
+.mug{position:absolute;right:42px;bottom:60px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#3a2414 0 44%,#e9e4da 45% 58%,rgba(0,0,0,.35) 60%,transparent 70%)}
+</style></head><body>
+<div class="desk"></div>
+<div class="hd"><div class="h2">The in-tray</div><small>7 memos · 2 need you before Saturday</small></div>
+<div class="trays"><span class="on">All 7</span><span>Needs action 2</span><span>Board</span><span>Players</span><span>Medical</span><span>Scouting</span><span>Press</span></div>
+<div class="pile" id="pile"></div>
+<div class="letter"><div class="paperclip"></div>
+ <div class="lh"><div class="t"><div style="width:46px;height:46px;border:3px solid #1B1A17;display:flex;align-items:center;justify-content:center;font:900 26px/1 'Playfair Display',serif">H</div><div><b>Harbourline Sports Management</b><small>Representing Rhys Calder · Kestrel Bay office</small></div></div><div class="r">Thursday 12 November<br>Private and confidential</div></div>
+ <h1>Calder's contract: the next step</h1>
+ <div class="to">To the manager, Port Calloway FC</div>
+ <p>Rhys has loved his season and wants to stay at The Lanternworks. With one year left on his deal and eleven assists already, he has had calls. Before we answer anyone, we would like to sit down with you.</p>
+ <p>He is looking for a long-term contract that reflects his place in the side. We think the terms below are fair. They are a starting point, not a final word.</p>
+ <div class="terms"><div><span>Wage</span><b>€38K/wk</b><small>now €29K</small></div><div><span>Length</span><b>4 years</b><small>to 2031</small></div><div><span>Role</span><b>Star</b><small>a starter's promise</small></div><div><span>Signing-on</span><b>€1.2M</b><small>once</small></div></div>
+ <p>We are happy to meet whenever suits you this week.</p>
+ <div class="sig">Daniel Okoro<small>Agent · Harbourline Sports Management</small></div>
+ <div class="acts"><span class="btn">Open talks</span><span class="btn ghost">Not now</span><span class="btn ghost">Let him go in summer</span>
+  <div class="theo"><b>Theo</b>"Ask for three years and the wage will come down. He wants to stay."</div></div>
+</div>
+<div class="mug"></div>
+<script src="base.js"></script>
+<script>
+topbar('Inbox','MD <b>8/18</b> · <b>2nd</b> · <b>17 pts</b>','Continue');
+const M=[['#C98A12','Agent','Calder\'s contract: the next step','Harbourline Sports Management wants talks about a new deal.','Thu',1,1,1],
+['#C42B2B','Discipline','Mensah-Lowe late for training','Second time this month. The lads noticed.','Thu',1,1],
+['#1F4FBF','Board','Second, and two points off the top','Margaret Holloway: "Keep the wage bill where it is."','Wed',1],
+['#1E7B3C','Medical','Achebe: twisted ankle','Out for 2 matchdays. Strand is fit again.','Tue'],
+['#5E574E','Scouting','Report: Esteban Escalante','Fernandez has filed his first look. Knowledge 62%.','Tue'],
+['#0B1F3A','Theo','Ironvale: what to expect','They go long to Gil. Their full-backs push on.','Mon'],
+['#7a7062','Press','Gazette wants an interview','Ellis Marr would like 10 minutes after training.','Mon']];
+document.getElementById('pile').innerHTML=M.map(([c,t,h,s,w,unread,act,sel],i)=>`<div class="memo ${sel?'sel':''} ${act?'act':''}" style="--c:${c};transform:rotate(${[-1,.8,-.5,1.1,-.9,.6,-1.2][i]}deg);margin-top:${i?0:0}px;z-index:${10-i}"><div class="ty">${t}</div><b>${h}</b><small>${s}</small><div class="when">${w}</div>${unread?'<span class="dot"></span>':''}</div>`).join('').replace(/margin-bottom:-22px/g,'');
+</script></body></html>
