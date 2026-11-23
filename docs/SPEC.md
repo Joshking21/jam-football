@@ -1,8 +1,10 @@
 # TOUCHLINE (working title) — Complete Build Specification
 
-Version 1.7 · 22 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
+Version 1.8 · 23 November 2026 · Target: OpenGame Game Jam #1 (entries close **18 December 2026, 23:59 PT**)
 
 This is the single source of truth for building the game. It is written for an AI coding agent (Gemini) doing most of the implementation, with Claude producing art, models, audio and asset tools in parallel. Every number, file path, screen and rule needed to build the game is here. If something you need is missing, follow §0.4. Do not invent it silently.
+
+**Changes in 1.8 (23 Nov):** **physics and contact, top priority** (§14.12, new part `spec/14c-physics.md`, milestone **M5b**, started right after M5 task 10). The user lifted the physics-engine ban: Rapier is added (§4). The ball gets real flight, spin, bounce and roll, solved to hit the sim's targets. Players get bodies that barge, tackle, jostle and fall (active ragdolls with get-ups), foot IK so the ball leaves the boot, and grass that bends, springs back and tears. In the club (M6b task 3b), the coach walks with a character controller, pushes doors, touches walls, desks and the board, and his coat and tie swing. **The sim still decides everything; physics only acts it out.** Related edits: §3 note, §4, §5, §11.25.4, §14.3, §14.7, §18.3 bones and clips, §21 budgets and presets, §23 (M5b, M6b), §24.
 
 **Changes in 1.7 (22 Nov):** the game becomes a club you live in. Every screen sits in a room of one 3D club building (office, boardroom, dressing room, tunnel, training ground, press room). The coach walks between rooms, and the player can look around each room with the mouse (§11.25). People share one rig and have painted face layers whose mouths move with their voices (§14.11). Players knock on the office door for conversations, Theo the assistant is a visible person, and the match gets touchline cuts of the coach and bench (§14.11). The coach is voiced (§17.4), and every room has its own sound (§17.5). New content file `club.json` (§16.9), asset contracts (§18.2, §18.3, §18.6), budgets (§21), and milestone **M6b** (§23). Depth still comes first: rooms frame the screens and never replace them. **Training in detail** (§12.18, M5 task 8): a planned week of sessions, personal plans, one-to-ones, training ratings and progress. **Set pieces in detail** (§13.20, M5 task 9): player jobs, routines, takers by foot, free kicks by area, defending corners and free kicks. **Touchline shouts, match plans and player traits** (§13.21–13.23, M5 task 10). **Injury and discipline decisions** (§12.19–12.20, M5 task 11): knocks, rushing players back, warm-up scares, and incidents (late, sent off, press, bust-ups) with fines, drops and warnings. Referees, contract talks and matchday atmosphere are in §24 as real-life extras, if time allows. **Free walking** (WASD coach, E to interact) is the top-priority extra in §24; M6b is built so it can be added without rework. A separate shape without the ball is listed in §24 as one of the last items. **Tactics returns to the sideways board** (v3 look, "v5 layout", §11.8); the v1.6 vertical three-column layout is withdrawn. Proposal record: `docs/design/SPEC-1.7-PROPOSAL.md`.
 
@@ -52,6 +54,7 @@ The spec used to be one 290 KB file. Reading all of it on every step was slow an
 | `spec/13c-set-pieces-shouts-plans-traits.md` | §13.20–13.23 Set pieces, shouts, match plans, traits | 17 KB | M5 tasks 9, 10 |
 | `spec/14a-match-presentation.md` | §14.1–14.10 Match presentation, cameras, HUD, realism pass | 15 KB | 3D match and HUD |
 | `spec/14b-people-and-faces.md` | §14.11 People and painted faces | 6 KB | M6b |
+| `spec/14c-physics.md` | §14.12 Physics and contact (ball, bodies, ragdolls, IK, grass, the coach's controller) | 15 KB | M5b, M6b tasks 1 and 3b |
 | `spec/15-assistant.md` | §15 The assistant coach | 4 KB | assistant rules |
 | `spec/16-content.md` | §16 Content files | 7 KB | writing content JSON |
 | `spec/17-audio.md` | §17 Audio | 4 KB | audio and voice |
@@ -76,8 +79,10 @@ The spec used to be one 290 KB file. Reading all of it on every step was slow an
 | M5 task 9: set pieces | 13c (§13.20), 13b (§13.17.5, §13.18.8), 13a (§13.8), 11a (§11.8) |
 | M5 task 10: shouts, plans, traits | 13c (§13.21–13.23), 13a (§13.12, §13.13), 09 (world gen for traits) |
 | M5 task 11: injury and discipline decisions | 12b (§12.19–12.20), 12a (§12.5–12.6, §12.9), 13a (§13.12) |
+| **M5b physics and contact (top priority, after M5 task 10)** | 14c, 14a (§14.2, §14.3, §14.7), 18 (§18.3), 21, 04 (the Rapier row); step 0 also `docs/design/REVIEW-M4.md` (third pass) and `REVIEW-M5.md` R1–R3 |
+| Club and Squad rebuild (after M5b) | `docs/design/REVIEW-M5.md` R4–R5, 11a (§11.6, §11.13), 19b, `docs/design/club/`, `docs/design/squad/` |
 | M6 assistant and audio | 15, 17, 16 |
-| M6b club spaces | 11b (incl. §11.25.6 time of day), 14b, 17 (§17.4–17.5), 18 (§18.6), 21 |
+| M6b club spaces | 11b (incl. §11.25.6 time of day), 14b, 14c (§14.12.7, tasks 1 and 3b), 17 (§17.4–17.5), 18 (§18.6), 21 |
 | M7 polish | 19a, 19b, 11a, 22 |
 | M8 assets and performance | 18, 21 |
 | M9 ship | 01, 03, 23 |
@@ -194,6 +199,7 @@ The spec used to be one 290 KB file. Reading all of it on every step was slow an
 | 14.9 | `spec/14a-match-presentation.md` |
 | 14.10 | `spec/14a-match-presentation.md` |
 | 14.11 | `spec/14b-people-and-faces.md` |
+| 14.12 | `spec/14c-physics.md` |
 | 15.1 | `spec/15-assistant.md` |
 | 15.2 | `spec/15-assistant.md` |
 | 15.3 | `spec/15-assistant.md` |

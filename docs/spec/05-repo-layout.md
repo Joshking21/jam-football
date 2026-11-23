@@ -46,6 +46,8 @@ jam-football/
 │  ├─ render3d/ MatchScene.ts  pitch.ts  stadium.ts  crowd.ts  players.ts  ball.ts  cameras.ts
 │  │            choreographer.ts  replay.ts  quality.ts  weather.ts  topdown2d.ts
 │  │            post.ts  environment.ts  beams.ts   (§14.10)  touchline.ts (§14.11.5)
+│  ├─ physics/  world.ts  ball.ts  aim.ts  bodies.ts  contact.ts  ragdoll.ts  ik.ts  reach.ts
+│  │            grass.ts  trample.ts  replayBuffer.ts   (§14.12, presentation only)
 │  ├─ club3d/   ClubScene.ts  rooms.ts  walk.ts  people.ts  behaviours.ts  faces.ts  mouth.ts   (§11.25, §14.11)
 │  └─ ui/
 │     ├─ styles/ tokens.css  global.css

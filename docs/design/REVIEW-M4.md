@@ -132,3 +132,80 @@ These are faked or mismatched states. As asked twice before: **play a real seede
 
 ## Minor
 - **N3. Ratings:** a 10.0 rating should be almost impossible (§13.14). Check the rating cap and its spread over a calibration run: the max should be about 9.5, and a 10 very rare.
+
+---
+
+# Third pass (23 Nov, evening)
+
+Screens: the `docs/screens/M4/` match captures from 1ced13d (13 match states and Pre-Match, at 1280 and 1920). The other screens in that folder are from 22 Nov and predate M5.6–M5.9, so they aren't reviewed here.
+
+## Verdict: not passed. Much better, but the match still doesn't show the match.
+**Fixed:**
+- **S1 kits:** the two teams are clearly different.
+- **S2 kick-off:** each team now stands in its own half.
+- **S4:** no SPEC labels on screen.
+- **S6:** the afternoon grass is a deep, striped pitch and looks right.
+- **S7:** rain no longer fogs the frame.
+- **S8:** half-time and full-time now follow the `fulltime` reference closely. The score band, MOTM print card and numbers look good.
+- **S10:** the telestrator label is clear of #5, and the drawer is Theo's.
+
+**Order for Gemini:** fix T1–T5 as one task straight after M5 task 10, **before M5b**. M5b physics drives bodies from the choreographer's targets, so T1 must work first. Fix T6–T14 inside M5b, because its captures re-shoot every M4 state anyway. Then write `REVIEW REQUESTED: M4 (fourth pass)` together with the M5b request.
+
+## Blockers
+**T1. The goal isn't shown.**
+- **Seen:** in "goal", "replay" and "rain", the ball is near the halfway line and all 22 players stand in their formation shapes. Nobody is near either box at the moment of a goal.
+- The layout is the same as at kick-off, only seen from another angle, so S2's second half ("players never move") is still open.
+- **Expected:** the goal window (§14.6, 25 s before the shot) plays the real attack: passes up the pitch, runners into the box, a shot, and the ball in the net.
+- **Fix:** check in live play, not only in captures, that the §14.3 event roles move the actor, receiver and defender, and that the shape follows the ball. Then capture "goal" at the moment the ball crosses the line, and "replay" 2 s before it.
+
+**T2. No goals on the pitch.**
+- **Seen:** the tactical camera shows both goal mouths empty. Each keeper's tag sits outside the goal line, and in every broadcast and replay frame the goal frame is missing.
+- `goals.ts` builds the posts (white, metalness 0.8) and the net lines. Check that they are actually in the scene at the right x (±52.5).
+- Check whether metalness 0.8 makes them render dark against the grass. ART-DIRECTION wants painted white posts, so metalness should be 0.1 and roughness 0.4.
+- A goal must be clearly visible from every camera.
+
+**T3. The replay and afternoon cameras sit inside or behind a stand.**
+- A third of the frame is a blank stand wall, and the goal it's meant to show is behind it.
+- Place both cameras so they look at the goal from the open side, and add a test that a camera's position is never inside a stand's bounding box.
+
+**T4. Stats and scorers ignore the match time.**
+- At 10', the stats drawer shows the full-match numbers (29 shots, 4.07 xG).
+- Half-time shows the full-match stats and **five** scorers under a 1–0 score.
+- Every panel must show the numbers **as of that moment**: filter events and stats by `t` up to now (half-time is t ≤ the first half's end, including stoppage).
+- If this is only the capture path (one synchronous sim), fix it there too: a capture must look exactly like live play at that moment.
+
+**T5. Pre-Match shows the wrong opponent.**
+- Pre-Match reports on **Kestrel Bay**, but the match is against **Corvallen**.
+- `PreMatchScreen` finds the fixture by `gameState.matchday`. Check whether `matchday` is off by one against the fixture's `matchday` (the earlier "Matchday 1 display" fix may have hidden it).
+- The capture must open Pre-Match and the match from the same fixture.
+
+## Major
+**T6 (S5 still open). The floodlight pools are hard shapes.**
+- The pitch shows big overlapping fan and polygon shapes from the spotlight cones, in every night frame.
+- The black V in the middle of the far stand above the seats is still there (kick-off, goal).
+- Target: even TV lighting with no visible pool edges. If the penumbra can't hide them, light the pitch with the hemisphere light plus one soft key light, and keep the spots only for the beams and glare.
+
+**T7. The broadcast camera is far too wide.**
+- It shows the whole pitch, with players about 30 px tall at 1080p.
+- §14.4: FOV 32–40, following the ball, which should show about a third of the pitch. Check the FOV and that the camera tracks the ball x.
+
+**T8. The replay badge** is hidden behind the scoreboard (top left), and it also shows outside replays ("goal", "rain", "tactical"). The replay's top letterbox bar is missing. Show the badge only during a replay, in clear space, with both letterbox bars.
+
+**T9. The caption strip shows dev labels:** "INTERCEPTION - Minute 10", "KICKOFF - Minute 1". Show the commentary line (`commentary.json` exists now). Until commentary is wired in M6, hide the strip; never show raw event types.
+
+**T10 (S9 still open). Tactical-camera name tags** are about 7 px at 1280. They need to be at least 12 px at every resolution: scale them by screen height, not world size.
+
+**T11. Full-time doesn't fit 1280×720.** The shot map is cut off on the right, and "Your XI, rated" and the MOTM stats are cut off at the bottom. Fit it like the reference (it is designed at 1280×720), or let only the inner column scroll.
+
+**T12. "Around the league" is fake.** Every other game reads 0–0 at 1', at 10' and at full-time. Use the round's real results and live minutes from the season worker (§7.4).
+
+**T13. The momentum chart** in the stats drawer is three empty blocks. Draw the real rolling xG (§11.16), or hide it until there is data.
+
+**T14. The crowd reads as unfinished:** scattered yellow blocks on mostly empty dark seats, at an attendance of 52,000. Fill the stands to the real attendance (§12.10) with the §14.2 fallback quads in both clubs' colours. Empty dark rows only when the ground really is half-empty.
+
+## Minor
+- **N4.** The capture match ends 6–3 with 29 shots and 15 on target. Capture states must use a seed with a typical result (for example 2–1). Also paste one `npm run calibrate` line for goals and shots per match, to show the engine is still in band after M5.7–M5.9 (§13.16).
+- **N5.** Half-time: a stray scorer ring with no name at the end of the first line.
+- **N6.** Theo's drawer: a trophy icon where his portrait should be (use the Portrait component), and "Assistant manager" in one place but "assistant coach" in another. Use **assistant coach** (§15).
+- **N7.** Pre-Match at 1280: the Continue button's `Space` chip is cut off at the right edge.
+- **N8.** Faint clipped text shows under the right-hand control strip in every match capture. Remove it, or give it space.

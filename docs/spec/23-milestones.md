@@ -75,6 +75,35 @@
 11. **Injury and discipline decisions (§12.19–12.20, v1.7):** knocks with the KNOCK event and command, rushing players back, warm-up scares, the Knocks setting, the injury log; discipline incidents, choices, the consistency rule, records; `club.json` physio and incident lines. Build them as choice cards on the current screens now; M6b turns them into talk scenes (§11.25.5).
 **Accept:** every system visibly changes something the player can see within a season; transfer window rounds behave per the tests; content files meet minimum counts.
 
+### M5b — Physics and contact (SPEC 1.8, TOP PRIORITY, approved by the user 23 Nov)
+**When:** start as soon as the M5 task in progress (task 10) is committed. M5 task 11 and everything after it wait until M5b is accepted. Read `spec/14c-physics.md` (§14.12) first.
+0. **First, the M4 third-pass blockers T1–T5** (`docs/design/REVIEW-M4.md`) and the M5 screen blockers R1–R3 (`docs/design/REVIEW-M5.md`: MD8 capture state, matchday off by one, top bar), as one commit. Physics drives bodies from the choreographer's targets, so the players must really move with play first. Fix T6–T14 during M5b.
+1. **Set-up:** the Rapier dependency, the lazy `physics` chunk, init during match load, the fixed-step world, the debug view (`?dev=physics`), the replay ring buffer, and the kinematic fallback (§14.12.1).
+2. **Ball:** body, drag, Magnus, bounce and roll; the launch solver; the goal frame, net and boards colliders; the outcome contracts; the net ripple at the contact point (§14.12.2).
+3. **Bodies and contact:** capsules driven by the §14.3 steering, mass from strength, shoulder charges, standing and sliding tackles, aerial duels, set-piece jostle, the keeper's body, the priority rule (§14.12.3).
+4. **IK:** foot planting, the kick contact frame lined up with `event.t`, headers, head look-at (§14.12.5).
+5. **Ragdolls:** active ragdoll falls, get-ups and injuries, with the Low fall-clip path (§14.12.4).
+6. **Grass:** blades, physical stripes, wind, the trample map and its sheen, the wear map, turf and spray particles, all on the §21.2 presets (§14.12.6).
+7. Tests (§14.12.8), a performance run on Medium, captures of every §14.12.8 state plus every M4 state in `docs/screens/M5b/`, then `REVIEW REQUESTED: M5b`. This is a Claude design gate.
+
+**Accept:**
+- Every §14.12.8 test passes.
+- The §21.1 match frame budget still holds on Medium with physics on.
+- Goals still visibly match the events (M4 accept).
+- A match at Key highlights still takes 50–80 s.
+- With Rapier blocked, the game plays on the §14.3 fallback.
+- The M5b design review is passed.
+
+**If time runs short, cut in this order** (record each in `DECISIONS.md`):
+1. turf and spray particles
+2. the wear map (keep the trample map)
+3. grass blades on Medium (keep them on High)
+4. set-piece jostle
+
+The ball physics, body contact, foot IK and ragdoll falls stay.
+
+**After M5b is accepted, before M6:** rebuild Club and Squad to their references (`docs/design/REVIEW-M5.md` R4–R5), then M5 task 11.
+
 ### M6 — Assistant and audio (8–10 Dec)
 1. Advice engine (§15) with Apply actions in Pre-Match, Hub, match drawer, Half-Time, post-match.
 2. Audio engine, buses, settings wiring, crowd danger mix, SFX hooks, music.
@@ -83,9 +112,10 @@
 
 ### M6b — Club spaces (SPEC 1.7; starts when M6 is accepted, about 6–7 days; Gemini is ahead of schedule)
 Build everything with fallbacks first (box rooms, capsule people, no faces, caption-rhythm mouths), then switch to real assets as they appear in the manifest.
-1. `ClubScene` and scene manager, corridor, camera rails, the coach's walk with skip, **built so free walking (§24, top extra) can be added later without rework:** all rooms sit on one connected floor plan in one coordinate space, joined by the corridor (no teleports between unrelated spaces). Walk paths run on a nav graph of the floor. Every wall and prop has a simple box or capsule collider. Every interactive thing (desk, whiteboard, locker, TV, door, person) is a data-defined **hotspot** `{ id, position, radius, opens: screen | scene }`. Clicking a hotspot does the same thing a future `E` key will do. tab and Continue routing through rooms, the walks setting, and look-around in every room (§11.25.1–11.25.2, §11.25.4).
+1. `ClubScene` and scene manager, corridor, camera rails, the coach's walk with skip, **built so free walking (§24, top extra) can be added later without rework:** all rooms sit on one connected floor plan in one coordinate space, joined by the corridor (no teleports between unrelated spaces). Walk paths run on a nav graph of the floor. Every wall and prop has a simple box or capsule collider, built as a Rapier collider (v1.8, §14.12.7). The coach walks with the Rapier character controller fed by the nav graph, and doors are hinged bodies. Every interactive thing (desk, whiteboard, locker, TV, door, person) is a data-defined **hotspot** `{ id, position, radius, opens: screen | scene }`. Clicking a hotspot does the same thing a future `E` key will do. tab and Continue routing through rooms, the walks setting, and look-around in every room (§11.25.1–11.25.2, §11.25.4).
 2. Room shells in code, and every screen re-framed in its room (§11.25.3). Frame cap and the Low-preset still frame (§21).
 3. People: shared rig loader, clip mixer with fallbacks, marks and paths, sitting (§14.11.1).
+3b. **The coach touches the world (v1.8, §14.12.7):** hotspot `touch` points, hand IK on door handles, walls, the desk, the board table and the whiteboard (following the magnet drag), locker doors, chairs, loose props, feet IK on steps and slopes, head look-at, coat and tie spring bones, and camera sphere casts. Capture the `door`, `corridor-brush`, `desk-rest` and `board-reach` states for the M6b review.
 4. Faces and mouths: `Face` shader, moods, blink, head tilt and gaze, audio-driven and caption-rhythm mouths (§14.11.6–14.11.7).
 5. **Talk scenes (§11.25.5), used by every scene where people talk: speaking beats with Skip only, choice beats with the choice card.** Dressing room (the U of lockers, §11.25.1): Squad lockers, the pre-match briefing, team-talk reactions from real §12.8 results; Pre-Match, Half-Time and Full-Time here (§14.11.2). Boardroom: Board Meeting, reviews, Sacked.
 6. Players at the door: §12.9 conversations as office scenes, and "Talk to player" at the locker (§14.11.3).

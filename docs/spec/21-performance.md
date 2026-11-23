@@ -16,6 +16,7 @@
 | Each room (v1.7) | ≤ 120k triangles, ≤ 120 draw calls, ≤ 40 MB GPU textures, ≤ 12 animated people |
 | Club spaces download (v1.7) | ≤ 12 MB, loaded lazily after the Title is interactive; never delays first paint or the Title |
 | Next room ready (v1.7) | before the walk ends (≤ 2.5 s); first-ever visit ≤ 1.0 s extra with a fade |
+| Physics (v1.8, §14.12.8) | match step ≤ 2.0 ms, grass ≤ 2.5 ms GPU, club rooms ≤ 1.0 ms; physics chunk ≤ 1.8 MB gzip (Rapier 0.21.0 measured at 1.66 MB), lazy: prefetched in the background once the Title is interactive, so it never delays first paint or the Title and the match load budget still holds |
 | Total build size | < 150 MB |
 
 ### 21.2 Presets
@@ -37,6 +38,14 @@
 | Club rooms: people (v1.7) | still frame after the camera settles; walks become cuts | animated, ≤ 12 | animated, ≤ 12 |
 | Club rooms: shadows (v1.7) | off | 1024 map, 1 light | 2048 map, 1 light |
 | Touchline cuts (v1.7) | coach only | coach, Theo, bench | coach, Theo, bench |
+| Ball physics, player bodies, foot IK (v1.8) | yes | yes | yes |
+| Ragdolls at once (v1.8) | 0 (fall clips) | 2 | 3 |
+| Grass blades (v1.8) | off (stripe multiplier) | ≤ 250k, within 30 m of the camera | ≤ 600k, within 45 m |
+| Trample map (v1.8) | 256×160, sheen only | 512×320 | 1024×640 |
+| Wear map (v1.8) | 512×320 | 1024×640 | 1024×640 |
+| Turf and spray particles (v1.8) | off | 6 per slide | 12 per slide |
+| Coach hand IK and door bodies (v1.8) | yes | yes | yes |
+| Spring bones (coat, tie) (v1.8) | off | yes | yes |
 **Auto**: start Medium; measure the average frame time over the first 3 s of each match; if > 22 ms drop one level (toast "Graphics set to Low for smoother play"); if < 10 ms on Medium for 10 s, offer High (toast with a button), never switch up automatically.
 
 ---

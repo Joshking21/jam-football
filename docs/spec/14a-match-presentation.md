@@ -46,6 +46,7 @@ Computes each player's target position every frame from the current event and te
 - **Steering**: max speed `5.5 + 3.5 × pace/99` m/s (sprinting only when > 70% of max), acceleration 6 m/s², arrival radius 0.6 m, separation force between players within 1.2 m. Facing: velocity direction, or toward the ball when slow.
 - **Animation state** from speed: idle < 0.4, jog < 3.0, run < 6.0, sprint above; one-shot clips at event moments (Pass, Shoot, Header, Tackle, GK dive left/right by target.y sign, GK catch, Throw for throw-ins, Celebrate for the scorer and 3 nearest teammates, Dejected for the conceding GK). Cross-fade 0.15 s.
 - **Ball flight**: ground passes linear with ease-out over `duration × 0.5`; lofted (long, cross, switch, clearance) parabolic with apex 4–12 m scaled by distance; shots: fast straight/curved path to `target` over 0.4–0.8 s; dribble: ball at the carrier's feet offset 0.7 m forward, small bounces. After a goal the ball rests in the net.
+- **v1.8:** when physics is loaded, the steering above becomes the drive for physical bodies, and the ball curves above are replaced by real flight with drag, spin and bounce, solved to hit the same targets (§14.12). These kinematic rules stay as the fallback.
 
 ### 14.4 Cameras (`cameras.ts`)
 - **Broadcast** (default): positioned at (x = ball.x × 0.85, y = 22, z = −62) looking at the ball with damping (0.08), FOV 32–40 zooming in when the ball is in a box.
@@ -67,7 +68,7 @@ Highlight windows (computed on the event stream as it arrives):
 Merge overlapping windows. Extended adds every possession that enters the ATT third (from entry − 6 s until it ends).
 
 ### 14.7 Goal replays
-After each goal (Key/Extended: always; Full: if the setting is on): replay the last 10 sim seconds before the goal from a different camera (behind-goal low or side close), at 0.6× speed for the final 3 s, with a "REPLAY" corner badge and a letterbox. `R` replays the last goal on demand. Skippable with Space/click.
+After each goal (Key/Extended: always; Full: if the setting is on): replay the last 10 sim seconds before the goal from a different camera (behind-goal low or side close), at 0.6× speed for the final 3 s, with a "REPLAY" corner badge and a letterbox. `R` replays the last goal on demand. Skippable with Space/click. v1.8: replays play back the recorded physics buffer (§14.12.1), so falls and bounces repeat exactly.
 
 ### 14.8 Performance rules for the scene
 - One `requestAnimationFrame` loop. No allocation per frame in hot paths (reuse vectors).

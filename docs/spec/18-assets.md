@@ -41,6 +41,18 @@ Claude produces assets in parallel with your work and drops them into `public/as
   - **Clips added to all three:** `Walk`, `DoorOpen`, `Sit`, `SitIdle`, `SitNod`, `SitHeadDown`, `SitClap`, `Listen`, `Nod`, `TalkGesture`, `ArmsFolded`, `FistPump`, `HeadInHands`, `Shout`, `Write`, `RaiseHand`, plus `Point`, `Clap`, `Celebrate` and `Dejected` on everyone.
   - **Fallbacks:** `Sit*` → `SitIdle` → `Idle`; `Walk` → `Jog` → `Idle`; `FistPump` → `Celebrate` → `Idle`; `HeadInHands` → `Dejected` → `Idle`; everything else → `Idle`.
   - A bone named `Head` is required.
+  - **v1.8 (physics, §14.12):**
+    - **Bone names follow the Mixamo set** (an optional `mixamorig:` prefix is fine): `Hips`, `Spine`, `Spine1`, `Spine2`, `Neck`, `Head`, `LeftShoulder`, `LeftArm`, `LeftForeArm`, `LeftHand`, `LeftUpLeg`, `LeftLeg`, `LeftFoot`, `LeftToeBase`, and the same for `Right*`. The ragdoll and IK find bones through an alias table in `src/physics/ragdoll.ts`, so other common names also work.
+    - **Clips added to `player.glb`:** `Stumble`, `SlideTackle`, `Jump`, `FallForward`, `FallBack`, `GetUpFront`, `GetUpBack`, `HoldLeg`, `Cross`, `Clear`.
+    - **Fallbacks:**
+      - `Cross` and `Clear` → `Pass`
+      - `SlideTackle` → `Tackle`
+      - `Jump` → `Header`
+      - `Fall*` → `Dejected`
+      - `GetUp*` → `Idle`
+      - `Stumble` → `Run`
+      - `HoldLeg` → `Dejected`
+    - **Optional in `manager.glb`:** `Coat_Tail_1..3` and `Tie_1..3` bones for spring-bone secondary motion.
   - Speaking characters carry a `Face` mesh (§18.6).
 
 ### 18.4 What you build vs what Claude builds

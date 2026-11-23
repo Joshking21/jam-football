@@ -36,7 +36,7 @@ Each room is one small three.js set. Walls, floors, ceilings and windows are bui
 The Meshy sponsor track judges models "under a camera you do not control", so in every room the player can move the camera.
 - **Mouse:** hold the right mouse button and drag to turn the camera around the room's mark: yaw ±60°, pitch −20° to +15°. The scroll wheel leans in or out by up to 1.5 m along the view. **Keyboard:** `Shift` + arrow keys turn, and `Shift` + `+`/`−` lean.
 - **Limits:**
-  - The camera never passes through walls or props (clamp against the room's bounding box minus 0.3 m).
+  - The camera never passes through walls or props (clamp against the room's bounding box minus 0.3 m; v1.8: sphere casts against the Rapier colliders, §14.12.7).
   - It never gets closer than 1.2 m to any person's head, so the §14.11.8 framing rule still holds.
 - **Release:** let go and the camera eases back to the room's normal shot over 600 ms (spring, §19.7). A screen panel stays where it is while you look; panels fade to 30% while the button is held, so the room can be seen behind them.
 - **Not available during a walk, a cutscene or a touchline cut.** In the match, the existing Free camera (§14.4) does this job.

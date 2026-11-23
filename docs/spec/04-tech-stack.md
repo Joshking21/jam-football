@@ -13,6 +13,7 @@ Node 24 is installed on the dev machine. Use **npm**. Pin exact versions (no `^`
 | @types/react-dom | 18.3.1 | types |
 | three | 0.171.0 | 3D match view |
 | @types/three | 0.171.0 | types |
+| @dimforge/rapier3d-compat | 0.21.0 | physics: ball, bodies, ragdolls, the coach's controller (v1.8, §14.12; lazy chunk) |
 | zustand | 5.0.2 | app state |
 | idb-keyval | 6.2.1 | IndexedDB saves |
 | lucide-react | 0.468.0 | icons (tree-shaken named imports only) |
@@ -22,7 +23,7 @@ Node 24 is installed on the dev machine. Use **npm**. Pin exact versions (no `^`
 | prettier | 3.4.2 | formatting (dev) |
 | tsx | 4.19.2 | run TS scripts (dev) |
 
-**Not allowed:** React Three Fiber, drei, any physics engine, any UI kit (MUI, Chakra, Tailwind, etc.), chart libraries, lodash, moment/dayjs, any CDN.
+**Not allowed:** React Three Fiber, drei, any physics engine other than Rapier (v1.8: the user lifted the ban for realism, §14.12), any UI kit (MUI, Chakra, Tailwind, etc.), chart libraries, lodash, moment/dayjs, any CDN.
 
 **npm scripts (exact names):**
 ```json
@@ -41,7 +42,7 @@ Node 24 is installed on the dev machine. Use **npm**. Pin exact versions (no `^`
 }
 ```
 
-`vite.config.ts` MUST set `base: './'`, `build.target: 'es2022'`, `build.assetsInlineLimit: 0`, `worker.format: 'es'`, and split three.js into its own chunk (`manualChunks: { three: ['three'] }`).
+`vite.config.ts` MUST set `base: './'`, `build.target: 'es2022'`, `build.assetsInlineLimit: 0`, `worker.format: 'es'`, and split three.js and Rapier into their own chunks (`manualChunks: { three: ['three'], physics: ['@dimforge/rapier3d-compat'] }`).
 
 `tsconfig.json`: `strict: true`, `noUncheckedIndexedAccess: true`, `noImplicitOverride: true`, `exactOptionalPropertyTypes: false`, `target: ES2022`, `module: ESNext`, `moduleResolution: Bundler`, `jsx: react-jsx`, path alias `@/*` → `src/*`.
 
