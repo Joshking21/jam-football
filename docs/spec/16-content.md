@@ -50,3 +50,12 @@ Lines for §11.25 and §14.11, each with `id`, `speaker` (`coach`, `owner`, `dir
 
 ---
 
+### 16.10 Content written by Claude (23 Nov)
+Claude wrote `commentary.json`, `assistant.json`, `club.json` and `training.json` from the builders in `tools/content/` (edit the builder, not the JSON). Shapes:
+- `commentary.json`: `{lines: [{id, key, voice, text, voText, nameSlot, intensity}]}`. `voText` is the line without the name, for `nameSlot: "start"` lines. Extra key `KNOCK` (§12.19).
+- `assistant.json`: `{rules: {ruleId: {variants[], reason}}, remarks[], stingers[], greetings[], halfTimeOpeners[], postMatchOpeners[]}`. Rule ids cover §15.2–15.5, §12.18.4 (`tw_*`), §13.20.9 (`sp_*`), §13.21 shouts (`im_shout_*`) and §13.22 (`im_plan_b`).
+- `club.json`: `{lines: [{id, speaker, set, mood, text, voText, voiced, nameSlot?}]}`. Speakers are owner, director, coach, assistant, physio and player. `set` names the moment: `welcome`, `review_happy`, `shout_pushForward`, `discipline_fine`, `knock_read`, `reply_fine_hot`, and so on.
+- `training.json`: `{coachNotes: {signal: [{id, text}]}, oneToOne: [line as club.json], theoWeek: {rule: [{id, text}]}}`.
+
+A line's audio path is `vo/<folder>/<id>.mp3` (§17.4). Names chain by `nameSlot` (§16.3).
+

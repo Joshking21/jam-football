@@ -1,0 +1,2317 @@
+{
+  "lines": [
+    {
+      "id": "kickoff_01",
+      "key": "KICKOFF",
+      "voice": "PBP",
+      "text": "And we're underway.",
+      "voText": "And we're underway.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "kickoff_02",
+      "key": "KICKOFF",
+      "voice": "PBP",
+      "text": "The referee checks his watch, and we're off.",
+      "voText": "The referee checks his watch, and we're off.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "kickoff_03",
+      "key": "KICKOFF",
+      "voice": "PBP",
+      "text": "Kick-off. Ninety minutes to settle it.",
+      "voText": "Kick-off. Ninety minutes to settle it.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "kickoff_04",
+      "key": "KICKOFF",
+      "voice": "PBP",
+      "text": "Away we go, under the lights.",
+      "voText": "Away we go, under the lights.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "kickoff_05",
+      "key": "KICKOFF",
+      "voice": "PBP",
+      "text": "The whistle goes, and this one is up and running.",
+      "voText": "The whistle goes, and this one is up and running.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "kickoff_06",
+      "key": "KICKOFF",
+      "voice": "PBP",
+      "text": "We're off. Plenty riding on this one.",
+      "voText": "We're off. Plenty riding on this one.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "pass_run_01",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Patient from them, working it across the back.",
+      "voText": "Patient from them, working it across the back.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_02",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Neat and tidy in midfield.",
+      "voText": "Neat and tidy in midfield.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_03",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "They're happy to keep the ball for now.",
+      "voText": "They're happy to keep the ball for now.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_04",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Probing, looking for a way through.",
+      "voText": "Probing, looking for a way through.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_05",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Short passes, nobody in a hurry.",
+      "voText": "Short passes, nobody in a hurry.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_06",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Recycled back to the centre-halves.",
+      "voText": "Recycled back to the centre-halves.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_07",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Switched out to the other flank.",
+      "voText": "Switched out to the other flank.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_08",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Moved on quickly, one touch, two touch.",
+      "voText": "Moved on quickly, one touch, two touch.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_09",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Building again from the back.",
+      "voText": "Building again from the back.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_10",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "No way through, so they go round.",
+      "voText": "No way through, so they go round.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_11",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Into midfield, and the tempo picks up.",
+      "voText": "Into midfield, and the tempo picks up.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_12",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Nice little triangle on the right.",
+      "voText": "Nice little triangle on the right.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_13",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Worked down the left now.",
+      "voText": "Worked down the left now.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_14",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Keeping it, waiting for the gap.",
+      "voText": "Keeping it, waiting for the gap.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_15",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Composed in possession.",
+      "voText": "Composed in possession.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_16",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "They're dictating the rhythm of this.",
+      "voText": "They're dictating the rhythm of this.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_17",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Played into feet, and laid off.",
+      "voText": "Played into feet, and laid off.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_18",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "Across the halfway line, and they're on the move.",
+      "voText": "Across the halfway line, and they're on the move.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_19",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "{player} takes it on the half-turn.",
+      "voText": "takes it on the half-turn.",
+      "nameSlot": "start",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_20",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "{player} picks it up in space.",
+      "voText": "picks it up in space.",
+      "nameSlot": "start",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_21",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "{player} keeps it simple.",
+      "voText": "keeps it simple.",
+      "nameSlot": "start",
+      "intensity": 0
+    },
+    {
+      "id": "pass_run_22",
+      "key": "PASS_RUN",
+      "voice": "PBP",
+      "text": "{player} looks up, plenty of options.",
+      "voText": "looks up, plenty of options.",
+      "nameSlot": "start",
+      "intensity": 0
+    },
+    {
+      "id": "long_ball_01",
+      "key": "LONG_BALL",
+      "voice": "PBP",
+      "text": "Long ball forward, no messing about.",
+      "voText": "Long ball forward, no messing about.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "long_ball_02",
+      "key": "LONG_BALL",
+      "voice": "PBP",
+      "text": "Launched towards the front man.",
+      "voText": "Launched towards the front man.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "long_ball_03",
+      "key": "LONG_BALL",
+      "voice": "PBP",
+      "text": "Hit long, over the midfield.",
+      "voText": "Hit long, over the midfield.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "long_ball_04",
+      "key": "LONG_BALL",
+      "voice": "PBP",
+      "text": "Straight down the middle, looking for a flick.",
+      "voText": "Straight down the middle, looking for a flick.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "long_ball_05",
+      "key": "LONG_BALL",
+      "voice": "PBP",
+      "text": "{player} goes long.",
+      "voText": "goes long.",
+      "nameSlot": "start",
+      "intensity": 0
+    },
+    {
+      "id": "long_ball_06",
+      "key": "LONG_BALL",
+      "voice": "PBP",
+      "text": "{player} picks out the run with a raking pass.",
+      "voText": "picks out the run with a raking pass.",
+      "nameSlot": "start",
+      "intensity": 0
+    },
+    {
+      "id": "dribble_01",
+      "key": "DRIBBLE",
+      "voice": "PBP",
+      "text": "He's skipped past one.",
+      "voText": "He's skipped past one.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "dribble_02",
+      "key": "DRIBBLE",
+      "voice": "PBP",
+      "text": "Lovely feet there, in and out.",
+      "voText": "Lovely feet there, in and out.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "dribble_03",
+      "key": "DRIBBLE",
+      "voice": "PBP",
+      "text": "Running at the defence now.",
+      "voText": "Running at the defence now.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "dribble_04",
+      "key": "DRIBBLE",
+      "voice": "PBP",
+      "text": "Drives forward into space.",
+      "voText": "Drives forward into space.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "dribble_05",
+      "key": "DRIBBLE",
+      "voice": "PBP",
+      "text": "{player} goes on the outside, and he's beaten his man.",
+      "voText": "goes on the outside, and he's beaten his man.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "dribble_06",
+      "key": "DRIBBLE",
+      "voice": "PBP",
+      "text": "{player} takes on two and comes away with it.",
+      "voText": "takes on two and comes away with it.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "dribble_07",
+      "key": "DRIBBLE",
+      "voice": "PBP",
+      "text": "{player} with a drop of the shoulder.",
+      "voText": "with a drop of the shoulder.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "dribble_08",
+      "key": "DRIBBLE",
+      "voice": "PBP",
+      "text": "{player} carries it through midfield.",
+      "voText": "carries it through midfield.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "tackle_01",
+      "key": "TACKLE",
+      "voice": "PBP",
+      "text": "Superb tackle. Clean as you like.",
+      "voText": "Superb tackle. Clean as you like.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "tackle_02",
+      "key": "TACKLE",
+      "voice": "PBP",
+      "text": "Won it back with a strong challenge.",
+      "voText": "Won it back with a strong challenge.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "tackle_03",
+      "key": "TACKLE",
+      "voice": "PBP",
+      "text": "Timed that one to perfection.",
+      "voText": "Timed that one to perfection.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "tackle_04",
+      "key": "TACKLE",
+      "voice": "PBP",
+      "text": "In with a block tackle, ball won.",
+      "voText": "In with a block tackle, ball won.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "tackle_05",
+      "key": "TACKLE",
+      "voice": "PBP",
+      "text": "{player} slides in and takes the ball.",
+      "voText": "slides in and takes the ball.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "tackle_06",
+      "key": "TACKLE",
+      "voice": "PBP",
+      "text": "{player} with a crunching, fair challenge.",
+      "voText": "with a crunching, fair challenge.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "tackle_07",
+      "key": "TACKLE",
+      "voice": "PBP",
+      "text": "{player} snuffs that out.",
+      "voText": "snuffs that out.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "tackle_08",
+      "key": "TACKLE",
+      "voice": "PBP",
+      "text": "{player} reads it and steps in.",
+      "voText": "reads it and steps in.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "interception_01",
+      "key": "INTERCEPTION",
+      "voice": "PBP",
+      "text": "Cut out. Good reading of the game.",
+      "voText": "Cut out. Good reading of the game.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "interception_02",
+      "key": "INTERCEPTION",
+      "voice": "PBP",
+      "text": "Intercepted, and they can go.",
+      "voText": "Intercepted, and they can go.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "interception_03",
+      "key": "INTERCEPTION",
+      "voice": "PBP",
+      "text": "Picked off in midfield.",
+      "voText": "Picked off in midfield.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "interception_04",
+      "key": "INTERCEPTION",
+      "voice": "PBP",
+      "text": "Straight into the opponent's path.",
+      "voText": "Straight into the opponent's path.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "interception_05",
+      "key": "INTERCEPTION",
+      "voice": "PBP",
+      "text": "{player} intercepts.",
+      "voText": "intercepts.",
+      "nameSlot": "start",
+      "intensity": 0
+    },
+    {
+      "id": "interception_06",
+      "key": "INTERCEPTION",
+      "voice": "PBP",
+      "text": "{player} gets a toe to it.",
+      "voText": "gets a toe to it.",
+      "nameSlot": "start",
+      "intensity": 0
+    },
+    {
+      "id": "cross_01",
+      "key": "CROSS",
+      "voice": "PBP",
+      "text": "Cross comes in.",
+      "voText": "Cross comes in.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "cross_02",
+      "key": "CROSS",
+      "voice": "PBP",
+      "text": "Whipped into the box.",
+      "voText": "Whipped into the box.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "cross_03",
+      "key": "CROSS",
+      "voice": "PBP",
+      "text": "Floated towards the far post.",
+      "voText": "Floated towards the far post.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "cross_04",
+      "key": "CROSS",
+      "voice": "PBP",
+      "text": "Low and hard across the six-yard box.",
+      "voText": "Low and hard across the six-yard box.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "cross_05",
+      "key": "CROSS",
+      "voice": "PBP",
+      "text": "Early ball in, looking for a head.",
+      "voText": "Early ball in, looking for a head.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "cross_06",
+      "key": "CROSS",
+      "voice": "PBP",
+      "text": "{player} crosses.",
+      "voText": "crosses.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "cross_07",
+      "key": "CROSS",
+      "voice": "PBP",
+      "text": "{player} gets to the byline and pulls it back.",
+      "voText": "gets to the byline and pulls it back.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "cross_08",
+      "key": "CROSS",
+      "voice": "PBP",
+      "text": "{player} swings it in.",
+      "voText": "swings it in.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "header_01",
+      "key": "HEADER",
+      "voice": "PBP",
+      "text": "Rises highest, but it's over.",
+      "voText": "Rises highest, but it's over.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "header_02",
+      "key": "HEADER",
+      "voice": "PBP",
+      "text": "Headed clear.",
+      "voText": "Headed clear.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "header_03",
+      "key": "HEADER",
+      "voice": "PBP",
+      "text": "Won in the air, flicked on.",
+      "voText": "Won in the air, flicked on.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "header_04",
+      "key": "HEADER",
+      "voice": "PBP",
+      "text": "Big header from the defender.",
+      "voText": "Big header from the defender.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "header_05",
+      "key": "HEADER",
+      "voice": "PBP",
+      "text": "{player} wins it in the air.",
+      "voText": "wins it in the air.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "header_06",
+      "key": "HEADER",
+      "voice": "PBP",
+      "text": "{player} attacks the ball.",
+      "voText": "attacks the ball.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "through_ball_01",
+      "key": "THROUGH_BALL",
+      "voice": "PBP",
+      "text": "Through ball! Split them open.",
+      "voText": "Through ball! Split them open.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "through_ball_02",
+      "key": "THROUGH_BALL",
+      "voice": "PBP",
+      "text": "Slipped in behind the defence.",
+      "voText": "Slipped in behind the defence.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "through_ball_03",
+      "key": "THROUGH_BALL",
+      "voice": "PBP",
+      "text": "What a pass that is.",
+      "voText": "What a pass that is.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "through_ball_04",
+      "key": "THROUGH_BALL",
+      "voice": "PBP",
+      "text": "Threaded between the centre-backs.",
+      "voText": "Threaded between the centre-backs.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "through_ball_05",
+      "key": "THROUGH_BALL",
+      "voice": "PBP",
+      "text": "{player} plays him through.",
+      "voText": "plays him through.",
+      "nameSlot": "start",
+      "intensity": 2
+    },
+    {
+      "id": "through_ball_06",
+      "key": "THROUGH_BALL",
+      "voice": "PBP",
+      "text": "{player} with the eye for a pass.",
+      "voText": "with the eye for a pass.",
+      "nameSlot": "start",
+      "intensity": 2
+    },
+    {
+      "id": "offside_01",
+      "key": "OFFSIDE",
+      "voice": "PBP",
+      "text": "The flag is up. Offside.",
+      "voText": "The flag is up. Offside.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "offside_02",
+      "key": "OFFSIDE",
+      "voice": "PBP",
+      "text": "Mistimed the run, and he's been caught.",
+      "voText": "Mistimed the run, and he's been caught.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "offside_03",
+      "key": "OFFSIDE",
+      "voice": "PBP",
+      "text": "Offside, and that's a good call.",
+      "voText": "Offside, and that's a good call.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "offside_04",
+      "key": "OFFSIDE",
+      "voice": "PBP",
+      "text": "Too early with the run.",
+      "voText": "Too early with the run.",
+      "nameSlot": "none",
+      "intensity": 0
+    },
+    {
+      "id": "offside_05",
+      "key": "OFFSIDE",
+      "voice": "PBP",
+      "text": "{player} is offside.",
+      "voText": "is offside.",
+      "nameSlot": "start",
+      "intensity": 0
+    },
+    {
+      "id": "offside_06",
+      "key": "OFFSIDE",
+      "voice": "PBP",
+      "text": "{player} strayed beyond the last man.",
+      "voText": "strayed beyond the last man.",
+      "nameSlot": "start",
+      "intensity": 0
+    },
+    {
+      "id": "shot_save_01",
+      "key": "SHOT_SAVE",
+      "voice": "PBP",
+      "text": "Saved! Good hands from the keeper.",
+      "voText": "Saved! Good hands from the keeper.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "shot_save_02",
+      "key": "SHOT_SAVE",
+      "voice": "PBP",
+      "text": "Pushed away at full stretch.",
+      "voText": "Pushed away at full stretch.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "shot_save_03",
+      "key": "SHOT_SAVE",
+      "voice": "PBP",
+      "text": "Straight at the goalkeeper.",
+      "voText": "Straight at the goalkeeper.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "shot_save_04",
+      "key": "SHOT_SAVE",
+      "voice": "PBP",
+      "text": "Tipped round the post. What a save.",
+      "voText": "Tipped round the post. What a save.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "shot_save_05",
+      "key": "SHOT_SAVE",
+      "voice": "PBP",
+      "text": "The keeper gets down well to that one.",
+      "voText": "The keeper gets down well to that one.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "shot_save_06",
+      "key": "SHOT_SAVE",
+      "voice": "PBP",
+      "text": "Parried, and it's scrambled clear.",
+      "voText": "Parried, and it's scrambled clear.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "shot_save_07",
+      "key": "SHOT_SAVE",
+      "voice": "PBP",
+      "text": "Big save. He had to be alert.",
+      "voText": "Big save. He had to be alert.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "shot_save_08",
+      "key": "SHOT_SAVE",
+      "voice": "PBP",
+      "text": "{player} shoots, and it's saved.",
+      "voText": "shoots, and it's saved.",
+      "nameSlot": "start",
+      "intensity": 2
+    },
+    {
+      "id": "shot_save_09",
+      "key": "SHOT_SAVE",
+      "voice": "PBP",
+      "text": "{player} forces a save.",
+      "voText": "forces a save.",
+      "nameSlot": "start",
+      "intensity": 2
+    },
+    {
+      "id": "shot_save_10",
+      "key": "SHOT_SAVE",
+      "voice": "PBP",
+      "text": "{player} tests the keeper from distance.",
+      "voText": "tests the keeper from distance.",
+      "nameSlot": "start",
+      "intensity": 2
+    },
+    {
+      "id": "shot_miss_01",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
+      "text": "Over the bar.",
+      "voText": "Over the bar.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_miss_02",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
+      "text": "Wide of the post.",
+      "voText": "Wide of the post.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_miss_03",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
+      "text": "Dragged wide. He'll feel he should test the keeper there.",
+      "voText": "Dragged wide. He'll feel he should test the keeper there.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_miss_04",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
+      "text": "Sails into the crowd.",
+      "voText": "Sails into the crowd.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_miss_05",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
+      "text": "Just past the far post.",
+      "voText": "Just past the far post.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_miss_06",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
+      "text": "Skied it.",
+      "voText": "Skied it.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_miss_07",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
+      "text": "Not far away, that one.",
+      "voText": "Not far away, that one.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_miss_08",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
+      "text": "{player} shoots, and it's wide.",
+      "voText": "shoots, and it's wide.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "shot_miss_09",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
+      "text": "{player} goes for goal, but over.",
+      "voText": "goes for goal, but over.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "shot_miss_10",
+      "key": "SHOT_MISS",
+      "voice": "PBP",
+      "text": "{player} snatches at it.",
+      "voText": "snatches at it.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "shot_block_01",
+      "key": "SHOT_BLOCK",
+      "voice": "PBP",
+      "text": "Blocked!",
+      "voText": "Blocked!",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_block_02",
+      "key": "SHOT_BLOCK",
+      "voice": "PBP",
+      "text": "Charged down.",
+      "voText": "Charged down.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_block_03",
+      "key": "SHOT_BLOCK",
+      "voice": "PBP",
+      "text": "Bodies on the line.",
+      "voText": "Bodies on the line.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_block_04",
+      "key": "SHOT_BLOCK",
+      "voice": "PBP",
+      "text": "Deflected away for a corner.",
+      "voText": "Deflected away for a corner.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "shot_block_05",
+      "key": "SHOT_BLOCK",
+      "voice": "PBP",
+      "text": "{player} throws himself in front of it.",
+      "voText": "throws himself in front of it.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "shot_block_06",
+      "key": "SHOT_BLOCK",
+      "voice": "PBP",
+      "text": "{player} gets the block in.",
+      "voText": "gets the block in.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "post_01",
+      "key": "POST",
+      "voice": "PBP",
+      "text": "Off the post!",
+      "voText": "Off the post!",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "post_02",
+      "key": "POST",
+      "voice": "PBP",
+      "text": "Hits the woodwork!",
+      "voText": "Hits the woodwork!",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "post_03",
+      "key": "POST",
+      "voice": "PBP",
+      "text": "Crashes back off the bar.",
+      "voText": "Crashes back off the bar.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "post_04",
+      "key": "POST",
+      "voice": "PBP",
+      "text": "Inches away. The post saves them.",
+      "voText": "Inches away. The post saves them.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "post_05",
+      "key": "POST",
+      "voice": "PBP",
+      "text": "{player} hits the post!",
+      "voText": "hits the post!",
+      "nameSlot": "start",
+      "intensity": 2
+    },
+    {
+      "id": "big_chance_miss_01",
+      "key": "BIG_CHANCE_MISS",
+      "voice": "PBP",
+      "text": "How has that not gone in?",
+      "voText": "How has that not gone in?",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "big_chance_miss_02",
+      "key": "BIG_CHANCE_MISS",
+      "voice": "PBP",
+      "text": "He has to score. He has to.",
+      "voText": "He has to score. He has to.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "big_chance_miss_03",
+      "key": "BIG_CHANCE_MISS",
+      "voice": "PBP",
+      "text": "From six yards, he's missed it!",
+      "voText": "From six yards, he's missed it!",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "big_chance_miss_04",
+      "key": "BIG_CHANCE_MISS",
+      "voice": "PBP",
+      "text": "The goal was gaping.",
+      "voText": "The goal was gaping.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "big_chance_miss_05",
+      "key": "BIG_CHANCE_MISS",
+      "voice": "PBP",
+      "text": "{player} has missed a sitter.",
+      "voText": "has missed a sitter.",
+      "nameSlot": "start",
+      "intensity": 2
+    },
+    {
+      "id": "big_chance_miss_06",
+      "key": "BIG_CHANCE_MISS",
+      "voice": "PBP",
+      "text": "{player} will be seeing that one in his sleep.",
+      "voText": "will be seeing that one in his sleep.",
+      "nameSlot": "start",
+      "intensity": 2
+    },
+    {
+      "id": "goal_01",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "It's in! Goal!",
+      "voText": "It's in! Goal!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_02",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "Goal! Into the bottom corner.",
+      "voText": "Goal! Into the bottom corner.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_03",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "They've scored! The place erupts.",
+      "voText": "They've scored! The place erupts.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_04",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "Goal! Clinical finish.",
+      "voText": "Goal! Clinical finish.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_05",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "In off the post, and it counts!",
+      "voText": "In off the post, and it counts!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_06",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "Goal! The keeper had no chance.",
+      "voText": "Goal! The keeper had no chance.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_07",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "Back of the net!",
+      "voText": "Back of the net!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_08",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "Goal! What a moment.",
+      "voText": "Goal! What a moment.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_09",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "{player}… and it's in! What a finish!",
+      "voText": "and it's in! What a finish!",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_10",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "{player} scores! Cool as you like.",
+      "voText": "scores! Cool as you like.",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_11",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "{player} finds the net!",
+      "voText": "finds the net!",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_12",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "{player} with the goal, and he's off to celebrate.",
+      "voText": "with the goal, and he's off to celebrate.",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_13",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "{player} buries it.",
+      "voText": "buries it.",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_14",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "{player}! Goal!",
+      "voText": "! Goal!",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_15",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "{player} slots it home.",
+      "voText": "slots it home.",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_16",
+      "key": "GOAL",
+      "voice": "PBP",
+      "text": "{player} makes no mistake.",
+      "voText": "makes no mistake.",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_header_01",
+      "key": "GOAL_HEADER",
+      "voice": "PBP",
+      "text": "Headed in! Goal!",
+      "voText": "Headed in! Goal!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_header_02",
+      "key": "GOAL_HEADER",
+      "voice": "PBP",
+      "text": "A towering header, and it's in!",
+      "voText": "A towering header, and it's in!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_header_03",
+      "key": "GOAL_HEADER",
+      "voice": "PBP",
+      "text": "Nodded home!",
+      "voText": "Nodded home!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_header_04",
+      "key": "GOAL_HEADER",
+      "voice": "PBP",
+      "text": "{player} heads it in!",
+      "voText": "heads it in!",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_header_05",
+      "key": "GOAL_HEADER",
+      "voice": "PBP",
+      "text": "{player} rises, and it's in the net!",
+      "voText": "rises, and it's in the net!",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_long_range_01",
+      "key": "GOAL_LONG_RANGE",
+      "voice": "PBP",
+      "text": "Oh, what a strike! From thirty yards!",
+      "voText": "Oh, what a strike! From thirty yards!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_long_range_02",
+      "key": "GOAL_LONG_RANGE",
+      "voice": "PBP",
+      "text": "Unstoppable! Top corner!",
+      "voText": "Unstoppable! Top corner!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_long_range_03",
+      "key": "GOAL_LONG_RANGE",
+      "voice": "PBP",
+      "text": "He's hit that from distance, and it's flown in!",
+      "voText": "He's hit that from distance, and it's flown in!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_long_range_04",
+      "key": "GOAL_LONG_RANGE",
+      "voice": "PBP",
+      "text": "{player}, from range! Stunning!",
+      "voText": "from range! Stunning!",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_long_range_05",
+      "key": "GOAL_LONG_RANGE",
+      "voice": "PBP",
+      "text": "{player} has hit an absolute screamer!",
+      "voText": "has hit an absolute screamer!",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_penalty_01",
+      "key": "GOAL_PENALTY",
+      "voice": "PBP",
+      "text": "Penalty scored. Keeper went the wrong way.",
+      "voText": "Penalty scored. Keeper went the wrong way.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_penalty_02",
+      "key": "GOAL_PENALTY",
+      "voice": "PBP",
+      "text": "Sends him the wrong way. Goal.",
+      "voText": "Sends him the wrong way. Goal.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "goal_penalty_03",
+      "key": "GOAL_PENALTY",
+      "voice": "PBP",
+      "text": "{player} steps up… scores.",
+      "voText": "steps up… scores.",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "goal_penalty_04",
+      "key": "GOAL_PENALTY",
+      "voice": "PBP",
+      "text": "{player} from the spot, and it's in.",
+      "voText": "from the spot, and it's in.",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "penalty_awarded_01",
+      "key": "PENALTY_AWARDED",
+      "voice": "PBP",
+      "text": "Penalty! The referee points to the spot!",
+      "voText": "Penalty! The referee points to the spot!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "penalty_awarded_02",
+      "key": "PENALTY_AWARDED",
+      "voice": "PBP",
+      "text": "He's given it! Penalty!",
+      "voText": "He's given it! Penalty!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "penalty_awarded_03",
+      "key": "PENALTY_AWARDED",
+      "voice": "PBP",
+      "text": "Brought down in the box. Penalty.",
+      "voText": "Brought down in the box. Penalty.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "penalty_awarded_04",
+      "key": "PENALTY_AWARDED",
+      "voice": "PBP",
+      "text": "That's a penalty, no doubt about it.",
+      "voText": "That's a penalty, no doubt about it.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "penalty_awarded_05",
+      "key": "PENALTY_AWARDED",
+      "voice": "PBP",
+      "text": "{player} goes down, and it's a penalty!",
+      "voText": "goes down, and it's a penalty!",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "penalty_saved_01",
+      "key": "PENALTY_SAVED",
+      "voice": "PBP",
+      "text": "Saved! The keeper's guessed right!",
+      "voText": "Saved! The keeper's guessed right!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "penalty_saved_02",
+      "key": "PENALTY_SAVED",
+      "voice": "PBP",
+      "text": "Penalty saved!",
+      "voText": "Penalty saved!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "penalty_saved_03",
+      "key": "PENALTY_SAVED",
+      "voice": "PBP",
+      "text": "{player} sees his penalty saved!",
+      "voText": "sees his penalty saved!",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "penalty_saved_04",
+      "key": "PENALTY_SAVED",
+      "voice": "PBP",
+      "text": "{player} steps up… and it's kept out!",
+      "voText": "steps up… and it's kept out!",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "free_kick_01",
+      "key": "FREE_KICK",
+      "voice": "PBP",
+      "text": "Free kick in a dangerous area.",
+      "voText": "Free kick in a dangerous area.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "free_kick_02",
+      "key": "FREE_KICK",
+      "voice": "PBP",
+      "text": "They'll fancy this one.",
+      "voText": "They'll fancy this one.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "free_kick_03",
+      "key": "FREE_KICK",
+      "voice": "PBP",
+      "text": "Wall's lining up.",
+      "voText": "Wall's lining up.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "free_kick_04",
+      "key": "FREE_KICK",
+      "voice": "PBP",
+      "text": "Free kick, and it's within range.",
+      "voText": "Free kick, and it's within range.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "free_kick_05",
+      "key": "FREE_KICK",
+      "voice": "PBP",
+      "text": "{player} stands over the ball.",
+      "voText": "stands over the ball.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "corner_01",
+      "key": "CORNER",
+      "voice": "PBP",
+      "text": "Corner kick.",
+      "voText": "Corner kick.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "corner_02",
+      "key": "CORNER",
+      "voice": "PBP",
+      "text": "That's a corner.",
+      "voText": "That's a corner.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "corner_03",
+      "key": "CORNER",
+      "voice": "PBP",
+      "text": "Big men going forward for this one.",
+      "voText": "Big men going forward for this one.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "corner_04",
+      "key": "CORNER",
+      "voice": "PBP",
+      "text": "Corner, and they'll want to make it count.",
+      "voText": "Corner, and they'll want to make it count.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "corner_05",
+      "key": "CORNER",
+      "voice": "PBP",
+      "text": "Out for a corner off the defender.",
+      "voText": "Out for a corner off the defender.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "corner_06",
+      "key": "CORNER",
+      "voice": "PBP",
+      "text": "{player} goes over to take it.",
+      "voText": "goes over to take it.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "foul_01",
+      "key": "FOUL",
+      "voice": "PBP",
+      "text": "Free kick given.",
+      "voText": "Free kick given.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "foul_02",
+      "key": "FOUL",
+      "voice": "PBP",
+      "text": "That's a foul.",
+      "voText": "That's a foul.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "foul_03",
+      "key": "FOUL",
+      "voice": "PBP",
+      "text": "Clipped from behind.",
+      "voText": "Clipped from behind.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "foul_04",
+      "key": "FOUL",
+      "voice": "PBP",
+      "text": "The referee blows. Too much there.",
+      "voText": "The referee blows. Too much there.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "foul_05",
+      "key": "FOUL",
+      "voice": "PBP",
+      "text": "{player} catches him late.",
+      "voText": "catches him late.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "foul_06",
+      "key": "FOUL",
+      "voice": "PBP",
+      "text": "{player} goes through the back of him.",
+      "voText": "goes through the back of him.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "yellow_01",
+      "key": "YELLOW",
+      "voice": "PBP",
+      "text": "Yellow card.",
+      "voText": "Yellow card.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "yellow_02",
+      "key": "YELLOW",
+      "voice": "PBP",
+      "text": "Into the book.",
+      "voText": "Into the book.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "yellow_03",
+      "key": "YELLOW",
+      "voice": "PBP",
+      "text": "The referee goes to his pocket. Yellow.",
+      "voText": "The referee goes to his pocket. Yellow.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "yellow_04",
+      "key": "YELLOW",
+      "voice": "PBP",
+      "text": "That's a booking, and he can't complain.",
+      "voText": "That's a booking, and he can't complain.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "yellow_05",
+      "key": "YELLOW",
+      "voice": "PBP",
+      "text": "{player} is booked.",
+      "voText": "is booked.",
+      "nameSlot": "start",
+      "intensity": 2
+    },
+    {
+      "id": "yellow_06",
+      "key": "YELLOW",
+      "voice": "PBP",
+      "text": "{player} sees yellow.",
+      "voText": "sees yellow.",
+      "nameSlot": "start",
+      "intensity": 2
+    },
+    {
+      "id": "red_01",
+      "key": "RED",
+      "voice": "PBP",
+      "text": "Red card! He's off!",
+      "voText": "Red card! He's off!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "red_02",
+      "key": "RED",
+      "voice": "PBP",
+      "text": "Sent off! Down to ten men!",
+      "voText": "Sent off! Down to ten men!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "red_03",
+      "key": "RED",
+      "voice": "PBP",
+      "text": "Straight red! That's a big moment.",
+      "voText": "Straight red! That's a big moment.",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "red_04",
+      "key": "RED",
+      "voice": "PBP",
+      "text": "{player} is sent off!",
+      "voText": "is sent off!",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "red_05",
+      "key": "RED",
+      "voice": "PBP",
+      "text": "{player} sees red, and he has to go.",
+      "voText": "sees red, and he has to go.",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "injury_01",
+      "key": "INJURY",
+      "voice": "PBP",
+      "text": "He's down, and he needs treatment.",
+      "voText": "He's down, and he needs treatment.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "injury_02",
+      "key": "INJURY",
+      "voice": "PBP",
+      "text": "That doesn't look good.",
+      "voText": "That doesn't look good.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "injury_03",
+      "key": "INJURY",
+      "voice": "PBP",
+      "text": "{player} is down, holding his leg.",
+      "voText": "is down, holding his leg.",
+      "nameSlot": "start",
+      "intensity": 2
+    },
+    {
+      "id": "injury_04",
+      "key": "INJURY",
+      "voice": "PBP",
+      "text": "{player} is in some discomfort.",
+      "voText": "is in some discomfort.",
+      "nameSlot": "start",
+      "intensity": 2
+    },
+    {
+      "id": "knock_01",
+      "key": "KNOCK",
+      "voice": "PBP",
+      "text": "He's taken a knock. The physio's on.",
+      "voText": "He's taken a knock. The physio's on.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "knock_02",
+      "key": "KNOCK",
+      "voice": "PBP",
+      "text": "{player} is limping, but he wants to carry on.",
+      "voText": "is limping, but he wants to carry on.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "knock_03",
+      "key": "KNOCK",
+      "voice": "PBP",
+      "text": "{player} took a whack there.",
+      "voText": "took a whack there.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "sub_01",
+      "key": "SUB",
+      "voice": "PBP",
+      "text": "A change coming.",
+      "voText": "A change coming.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "sub_02",
+      "key": "SUB",
+      "voice": "PBP",
+      "text": "Fresh legs on.",
+      "voText": "Fresh legs on.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "sub_03",
+      "key": "SUB",
+      "voice": "PBP",
+      "text": "The board goes up for a substitution.",
+      "voText": "The board goes up for a substitution.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "sub_04",
+      "key": "SUB",
+      "voice": "PBP",
+      "text": "{player} is coming on.",
+      "voText": "is coming on.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "sub_05",
+      "key": "SUB",
+      "voice": "PBP",
+      "text": "{player} makes way, to applause.",
+      "voText": "makes way, to applause.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "half_time_01",
+      "key": "HALF_TIME",
+      "voice": "PBP",
+      "text": "And that's half-time.",
+      "voText": "And that's half-time.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "half_time_02",
+      "key": "HALF_TIME",
+      "voice": "PBP",
+      "text": "The whistle goes for the break.",
+      "voText": "The whistle goes for the break.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "half_time_03",
+      "key": "HALF_TIME",
+      "voice": "PBP",
+      "text": "Half-time, and plenty to talk about.",
+      "voText": "Half-time, and plenty to talk about.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "half_time_04",
+      "key": "HALF_TIME",
+      "voice": "PBP",
+      "text": "Into the dressing rooms they go.",
+      "voText": "Into the dressing rooms they go.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "half_time_05",
+      "key": "HALF_TIME",
+      "voice": "PBP",
+      "text": "That's the end of the first half.",
+      "voText": "That's the end of the first half.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "half_time_06",
+      "key": "HALF_TIME",
+      "voice": "PBP",
+      "text": "Half-time. Forty-five minutes still to play.",
+      "voText": "Half-time. Forty-five minutes still to play.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "full_time_win_home_01",
+      "key": "FULL_TIME_WIN_HOME",
+      "voice": "PBP",
+      "text": "Full-time, and the home crowd can celebrate.",
+      "voText": "Full-time, and the home crowd can celebrate.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "full_time_win_home_02",
+      "key": "FULL_TIME_WIN_HOME",
+      "voice": "PBP",
+      "text": "It's all over. Three points for the home side.",
+      "voText": "It's all over. Three points for the home side.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "full_time_win_home_03",
+      "key": "FULL_TIME_WIN_HOME",
+      "voice": "PBP",
+      "text": "The final whistle goes, and the home fans are on their feet.",
+      "voText": "The final whistle goes, and the home fans are on their feet.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "full_time_win_home_04",
+      "key": "FULL_TIME_WIN_HOME",
+      "voice": "PBP",
+      "text": "Full-time. A home win, and they deserved it.",
+      "voText": "Full-time. A home win, and they deserved it.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "full_time_win_away_01",
+      "key": "FULL_TIME_WIN_AWAY",
+      "voice": "PBP",
+      "text": "Full-time, and the away end is bouncing.",
+      "voText": "Full-time, and the away end is bouncing.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "full_time_win_away_02",
+      "key": "FULL_TIME_WIN_AWAY",
+      "voice": "PBP",
+      "text": "It's over. A big win on the road.",
+      "voText": "It's over. A big win on the road.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "full_time_win_away_03",
+      "key": "FULL_TIME_WIN_AWAY",
+      "voice": "PBP",
+      "text": "The final whistle, and the visitors take the points.",
+      "voText": "The final whistle, and the visitors take the points.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "full_time_win_away_04",
+      "key": "FULL_TIME_WIN_AWAY",
+      "voice": "PBP",
+      "text": "Full-time. They've come here and done the job.",
+      "voText": "Full-time. They've come here and done the job.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "full_time_draw_01",
+      "key": "FULL_TIME_DRAW",
+      "voice": "PBP",
+      "text": "Full-time, and the points are shared.",
+      "voText": "Full-time, and the points are shared.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "full_time_draw_02",
+      "key": "FULL_TIME_DRAW",
+      "voice": "PBP",
+      "text": "It's all over. A draw.",
+      "voText": "It's all over. A draw.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "full_time_draw_03",
+      "key": "FULL_TIME_DRAW",
+      "voice": "PBP",
+      "text": "Final whistle. Honours even.",
+      "voText": "Final whistle. Honours even.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "full_time_draw_04",
+      "key": "FULL_TIME_DRAW",
+      "voice": "PBP",
+      "text": "Full-time. Neither side could find a way.",
+      "voText": "Full-time. Neither side could find a way.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "added_time_01",
+      "key": "ADDED_TIME",
+      "voice": "PBP",
+      "text": "There'll be added time.",
+      "voText": "There'll be added time.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "added_time_02",
+      "key": "ADDED_TIME",
+      "voice": "PBP",
+      "text": "The board goes up. Time added on.",
+      "voText": "The board goes up. Time added on.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "added_time_03",
+      "key": "ADDED_TIME",
+      "voice": "PBP",
+      "text": "We're into stoppage time.",
+      "voText": "We're into stoppage time.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "added_time_04",
+      "key": "ADDED_TIME",
+      "voice": "PBP",
+      "text": "Not long left now.",
+      "voText": "Not long left now.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_01",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "That's the third time they've gone down that flank.",
+      "voText": "That's the third time they've gone down that flank.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_02",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "They're leaving a lot of space between the lines.",
+      "voText": "They're leaving a lot of space between the lines.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_03",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "You can see the full-backs pushing really high.",
+      "voText": "You can see the full-backs pushing really high.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_04",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "The press is working. They can't get out.",
+      "voText": "The press is working. They can't get out.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_05",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "They look dangerous every time it goes wide.",
+      "voText": "They look dangerous every time it goes wide.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_06",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "The holding midfielder is doing a lot of quiet work.",
+      "voText": "The holding midfielder is doing a lot of quiet work.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_07",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "They need a bit more urgency in the final third.",
+      "voText": "They need a bit more urgency in the final third.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_08",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "Set pieces could decide this, the way it's going.",
+      "voText": "Set pieces could decide this, the way it's going.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_09",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "The centre-halves are winning everything in the air.",
+      "voText": "The centre-halves are winning everything in the air.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_10",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "They're too deep. They're inviting pressure.",
+      "voText": "They're too deep. They're inviting pressure.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_11",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "Watch the runs from midfield. That's where the danger is.",
+      "voText": "Watch the runs from midfield. That's where the danger is.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_12",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "It's become a battle in the middle of the park.",
+      "voText": "It's become a battle in the middle of the park.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_13",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "The legs are starting to go now.",
+      "voText": "The legs are starting to go now.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_14",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "The manager will want more from his wide men.",
+      "voText": "The manager will want more from his wide men.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_15",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "They keep giving it away cheaply.",
+      "voText": "They keep giving it away cheaply.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_16",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "That's a well-drilled back line.",
+      "voText": "That's a well-drilled back line.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_17",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "The tempo has dropped. That suits the visitors.",
+      "voText": "The tempo has dropped. That suits the visitors.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_18",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "They're getting a lot of joy from early crosses.",
+      "voText": "They're getting a lot of joy from early crosses.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_19",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "It's all about the second balls now.",
+      "voText": "It's all about the second balls now.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_20",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "You sense the next goal will be massive.",
+      "voText": "You sense the next goal will be massive.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_21",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "{player} is having a fine game.",
+      "voText": "is having a fine game.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "colour_analysis_22",
+      "key": "COLOUR_ANALYSIS",
+      "voice": "COL",
+      "text": "{player} is everywhere tonight.",
+      "voText": "is everywhere tonight.",
+      "nameSlot": "start",
+      "intensity": 1
+    },
+    {
+      "id": "derby_intro_01",
+      "key": "DERBY_INTRO",
+      "voice": "PBP",
+      "text": "It's derby day, and you can feel it in the air.",
+      "voText": "It's derby day, and you can feel it in the air.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "derby_intro_02",
+      "key": "DERBY_INTRO",
+      "voice": "PBP",
+      "text": "Local pride on the line tonight.",
+      "voText": "Local pride on the line tonight.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "derby_intro_03",
+      "key": "DERBY_INTRO",
+      "voice": "PBP",
+      "text": "No game matters more to these supporters.",
+      "voText": "No game matters more to these supporters.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "derby_intro_04",
+      "key": "DERBY_INTRO",
+      "voice": "PBP",
+      "text": "A derby, and the noise is deafening.",
+      "voText": "A derby, and the noise is deafening.",
+      "nameSlot": "none",
+      "intensity": 2
+    },
+    {
+      "id": "late_drama_01",
+      "key": "LATE_DRAMA",
+      "voice": "PBP",
+      "text": "Late, late drama!",
+      "voText": "Late, late drama!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "late_drama_02",
+      "key": "LATE_DRAMA",
+      "voice": "PBP",
+      "text": "In the dying moments!",
+      "voText": "In the dying moments!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "late_drama_03",
+      "key": "LATE_DRAMA",
+      "voice": "PBP",
+      "text": "You couldn't write it!",
+      "voText": "You couldn't write it!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "late_drama_04",
+      "key": "LATE_DRAMA",
+      "voice": "PBP",
+      "text": "Right at the death!",
+      "voText": "Right at the death!",
+      "nameSlot": "none",
+      "intensity": 3
+    },
+    {
+      "id": "late_drama_05",
+      "key": "LATE_DRAMA",
+      "voice": "PBP",
+      "text": "{player} with the last kick of the game!",
+      "voText": "with the last kick of the game!",
+      "nameSlot": "start",
+      "intensity": 3
+    },
+    {
+      "id": "other_goal_01",
+      "key": "OTHER_GOAL",
+      "voice": "PBP",
+      "text": "Meanwhile, news of a goal elsewhere.",
+      "voText": "Meanwhile, news of a goal elsewhere.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "other_goal_02",
+      "key": "OTHER_GOAL",
+      "voice": "PBP",
+      "text": "A goal in one of the other games.",
+      "voText": "A goal in one of the other games.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "other_goal_03",
+      "key": "OTHER_GOAL",
+      "voice": "PBP",
+      "text": "Elsewhere in the league, there's been a goal.",
+      "voText": "Elsewhere in the league, there's been a goal.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "other_goal_04",
+      "key": "OTHER_GOAL",
+      "voice": "PBP",
+      "text": "News from another ground.",
+      "voText": "News from another ground.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "other_goal_05",
+      "key": "OTHER_GOAL",
+      "voice": "PBP",
+      "text": "A goal goes in somewhere else.",
+      "voText": "A goal goes in somewhere else.",
+      "nameSlot": "none",
+      "intensity": 1
+    },
+    {
+      "id": "other_goal_06",
+      "key": "OTHER_GOAL",
+      "voice": "PBP",
+      "text": "Word of a goal from across the league.",
+      "voText": "Word of a goal from across the league.",
+      "nameSlot": "none",
+      "intensity": 1
+    }
+  ]
+}

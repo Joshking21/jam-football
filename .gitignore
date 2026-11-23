@@ -10,3 +10,6 @@ tools/.cache/
 tests-ai/
 tools/.venv/
 tools/voice/models/
+
+# raw downloads from Meshy before cleanup
+tools/meshy/raw/

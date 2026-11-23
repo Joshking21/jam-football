@@ -1,0 +1,353 @@
+{
+  "coachNotes": {
+    "rating_up": [
+      {
+        "id": "note_rating_up_01",
+        "text": "Sharper on the ball this month."
+      },
+      {
+        "id": "note_rating_up_02",
+        "text": "Training like a man who wants a shirt."
+      },
+      {
+        "id": "note_rating_up_03",
+        "text": "Best week he's had in a while."
+      },
+      {
+        "id": "note_rating_up_04",
+        "text": "Flying in the small-sided games."
+      }
+    ],
+    "rating_down": [
+      {
+        "id": "note_rating_down_01",
+        "text": "Going through the motions."
+      },
+      {
+        "id": "note_rating_down_02",
+        "text": "Struggling with the pace of training."
+      },
+      {
+        "id": "note_rating_down_03",
+        "text": "His head isn't fully here this week."
+      },
+      {
+        "id": "note_rating_down_04",
+        "text": "Needs a lift. Something's off."
+      }
+    ],
+    "growth": [
+      {
+        "id": "note_growth_01",
+        "text": "Ready for more minutes."
+      },
+      {
+        "id": "note_growth_02",
+        "text": "Making real progress. You can see it."
+      },
+      {
+        "id": "note_growth_03",
+        "text": "The focus work is paying off."
+      },
+      {
+        "id": "note_growth_04",
+        "text": "Looks a level up from August."
+      }
+    ],
+    "condition_low": [
+      {
+        "id": "note_condition_low_01",
+        "text": "Running on empty. Needs a lighter week."
+      },
+      {
+        "id": "note_condition_low_02",
+        "text": "Tired legs. Watch his minutes."
+      },
+      {
+        "id": "note_condition_low_03",
+        "text": "Body's telling him to slow down."
+      }
+    ],
+    "workload_heavy": [
+      {
+        "id": "note_workload_heavy_01",
+        "text": "Handling the extra work well."
+      },
+      {
+        "id": "note_workload_heavy_02",
+        "text": "The extra sessions are starting to show."
+      },
+      {
+        "id": "note_workload_heavy_03",
+        "text": "Keen, but don't burn him out."
+      }
+    ],
+    "young": [
+      {
+        "id": "note_young_01",
+        "text": "Learning fast. Listens, asks questions."
+      },
+      {
+        "id": "note_young_02",
+        "text": "Raw, but the talent is obvious."
+      },
+      {
+        "id": "note_young_03",
+        "text": "Mentoring is helping. Calmer on the ball."
+      }
+    ],
+    "veteran": [
+      {
+        "id": "note_veteran_01",
+        "text": "Still the standard-setter in training."
+      },
+      {
+        "id": "note_veteran_02",
+        "text": "Knows his body. Trust him on rest days."
+      },
+      {
+        "id": "note_veteran_03",
+        "text": "Leads the warm-up without being asked."
+      }
+    ]
+  },
+  "oneToOne": [
+    {
+      "id": "coach_oto_technique_01",
+      "speaker": "coach",
+      "set": "oto_technique",
+      "mood": "neutral",
+      "text": "Stay out with me. Body shape when they run at you.",
+      "voText": "Stay out with me. Body shape when they run at you."
+    },
+    {
+      "id": "coach_oto_technique_02",
+      "speaker": "coach",
+      "set": "oto_technique",
+      "mood": "neutral",
+      "text": "Ten minutes on your first touch. Then we go again.",
+      "voText": "Ten minutes on your first touch. Then we go again."
+    },
+    {
+      "id": "coach_oto_technique_03",
+      "speaker": "coach",
+      "set": "oto_technique",
+      "mood": "neutral",
+      "text": "{player}, we're working on your weaker foot today.",
+      "voText": "We're working on your weaker foot today.",
+      "nameSlot": "start"
+    },
+    {
+      "id": "coach_oto_confidence_01",
+      "speaker": "coach",
+      "set": "oto_confidence",
+      "mood": "neutral",
+      "text": "You're starting games because you've earned it.",
+      "voText": "You're starting games because you've earned it."
+    },
+    {
+      "id": "coach_oto_confidence_02",
+      "speaker": "coach",
+      "set": "oto_confidence",
+      "mood": "neutral",
+      "text": "Forget last week. You're one of my best players.",
+      "voText": "Forget last week. You're one of my best players."
+    },
+    {
+      "id": "coach_oto_confidence_03",
+      "speaker": "coach",
+      "set": "oto_confidence",
+      "mood": "neutral",
+      "text": "I believe in you, {player}. Now play like it.",
+      "voText": "I believe in you, {player}. Now play like it."
+    },
+    {
+      "id": "coach_oto_fitness_01",
+      "speaker": "coach",
+      "set": "oto_fitness",
+      "mood": "neutral",
+      "text": "Ice bath, then the bike. You'll need legs on Saturday.",
+      "voText": "Ice bath, then the bike. You'll need legs on Saturday."
+    },
+    {
+      "id": "coach_oto_fitness_02",
+      "speaker": "coach",
+      "set": "oto_fitness",
+      "mood": "neutral",
+      "text": "Easy session for you. Recover properly.",
+      "voText": "Easy session for you. Recover properly."
+    },
+    {
+      "id": "coach_oto_fitness_03",
+      "speaker": "coach",
+      "set": "oto_fitness",
+      "mood": "neutral",
+      "text": "Let's get your legs back, {player}.",
+      "voText": "Let's get your legs back.",
+      "nameSlot": "end"
+    },
+    {
+      "id": "coach_oto_video_01",
+      "speaker": "coach",
+      "set": "oto_video",
+      "mood": "neutral",
+      "text": "Look at the second goal. Where should you be?",
+      "voText": "Look at the second goal. Where should you be?"
+    },
+    {
+      "id": "coach_oto_video_02",
+      "speaker": "coach",
+      "set": "oto_video",
+      "mood": "neutral",
+      "text": "Watch this run. You can do that every game.",
+      "voText": "Watch this run. You can do that every game."
+    },
+    {
+      "id": "coach_oto_video_03",
+      "speaker": "coach",
+      "set": "oto_video",
+      "mood": "neutral",
+      "text": "Pause it there. See the space, {player}?",
+      "voText": "Pause it there. See the space?",
+      "nameSlot": "end"
+    },
+    {
+      "id": "player_oto_reply_technique_01",
+      "speaker": "player",
+      "set": "oto_reply_technique",
+      "mood": "happy",
+      "text": "Cheers, boss. I'll stay as long as it takes.",
+      "voText": "Cheers, boss. I'll stay as long as it takes."
+    },
+    {
+      "id": "player_oto_reply_technique_02",
+      "speaker": "player",
+      "set": "oto_reply_technique",
+      "mood": "neutral",
+      "text": "Okay. Show me.",
+      "voText": "Okay. Show me."
+    },
+    {
+      "id": "player_oto_reply_technique_03",
+      "speaker": "player",
+      "set": "oto_reply_technique",
+      "mood": "worried",
+      "text": "I'll try. It's not natural yet.",
+      "voText": "I'll try. It's not natural yet."
+    },
+    {
+      "id": "player_oto_reply_confidence_01",
+      "speaker": "player",
+      "set": "oto_reply_confidence",
+      "mood": "happy",
+      "text": "That means a lot, boss.",
+      "voText": "That means a lot, boss."
+    },
+    {
+      "id": "player_oto_reply_confidence_02",
+      "speaker": "player",
+      "set": "oto_reply_confidence",
+      "mood": "neutral",
+      "text": "Thanks. I'll keep going.",
+      "voText": "Thanks. I'll keep going."
+    },
+    {
+      "id": "player_oto_reply_confidence_03",
+      "speaker": "player",
+      "set": "oto_reply_confidence",
+      "mood": "worried",
+      "text": "I hope so. It's been a tough few weeks.",
+      "voText": "I hope so. It's been a tough few weeks."
+    },
+    {
+      "id": "player_oto_reply_fitness_01",
+      "speaker": "player",
+      "set": "oto_reply_fitness",
+      "mood": "happy",
+      "text": "Thank God. My legs are gone.",
+      "voText": "Thank God. My legs are gone."
+    },
+    {
+      "id": "player_oto_reply_fitness_02",
+      "speaker": "player",
+      "set": "oto_reply_fitness",
+      "mood": "neutral",
+      "text": "Fine by me.",
+      "voText": "Fine by me."
+    },
+    {
+      "id": "player_oto_reply_fitness_03",
+      "speaker": "player",
+      "set": "oto_reply_fitness",
+      "mood": "worried",
+      "text": "I'd rather train, boss, but okay.",
+      "voText": "I'd rather train, boss, but okay."
+    },
+    {
+      "id": "player_oto_reply_video_01",
+      "speaker": "player",
+      "set": "oto_reply_video",
+      "mood": "happy",
+      "text": "I see it. I'll be there next time.",
+      "voText": "I see it. I'll be there next time."
+    },
+    {
+      "id": "player_oto_reply_video_02",
+      "speaker": "player",
+      "set": "oto_reply_video",
+      "mood": "neutral",
+      "text": "Yeah. I was ball-watching.",
+      "voText": "Yeah. I was ball-watching."
+    },
+    {
+      "id": "player_oto_reply_video_03",
+      "speaker": "player",
+      "set": "oto_reply_video",
+      "mood": "worried",
+      "text": "I didn't realise it was that bad.",
+      "voText": "I didn't realise it was that bad."
+    }
+  ],
+  "theoWeek": {
+    "recovery_swap": [
+      {
+        "id": "tw_recovery_swap_01",
+        "text": "Too many tired legs. I've swapped the hard sessions for recovery."
+      },
+      {
+        "id": "tw_recovery_swap_02",
+        "text": "{player} and two others are over 50 fatigue. Recovery in."
+      }
+    ],
+    "shape_work": [
+      {
+        "id": "tw_shape_work_01",
+        "text": "They're not sharp on the system yet. Shape work on Thursday."
+      },
+      {
+        "id": "tw_shape_work_02",
+        "text": "Familiarity is low. One more shape session will help."
+      }
+    ],
+    "opponent_prep": [
+      {
+        "id": "tw_opponent_prep_01",
+        "text": "Friday is for {opponent}. I've a plan for how they play."
+      },
+      {
+        "id": "tw_opponent_prep_02",
+        "text": "Opponent prep on Friday. They have a clear pattern."
+      }
+    ],
+    "set_pieces": [
+      {
+        "id": "tw_set_pieces_01",
+        "text": "Their big man wins everything. Corners on Thursday."
+      },
+      {
+        "id": "tw_set_pieces_02",
+        "text": "Set-piece practice. Their threat in the air worries me."
+      }
+    ]
+  }
+}

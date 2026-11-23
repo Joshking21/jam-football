@@ -1,0 +1,17 @@
+{
+  "_note": "Image jobs (SPEC §18.2 v1.7 rows, ART-DIRECTION). Portraits are added with --portraits. Add news photos only from real match frames (AI-TESTS plan).",
+  "jobs": [
+    { "out": "images/club/exterior.webp", "size": [1920, 1080], "post": "none", "seed": 11,
+      "prompt": "Exterior of an old brick football stadium main stand in a British harbour town at dusk, arched windows lit warm, floodlight pylons switching on, car park with a few cars, fans walking to turnstiles, a harbour crane far behind, wet tarmac reflections, wide shot from the car park" },
+    { "out": "images/club/window_office.webp", "size": [1920, 1080], "post": "none", "seed": 12,
+      "prompt": "View through an office window high in a football stadium stand, looking down onto the empty floodlit pitch at night, mowing stripes, the far stand dark, slight reflection on the glass" },
+    { "out": "images/club/window_boardroom.webp", "size": [1920, 1080], "post": "none", "seed": 13,
+      "prompt": "View from a boardroom window onto a football pitch on an overcast afternoon, groundsman's machine on the grass, empty seats, harbour town roofs beyond" },
+    { "out": "images/club/training_bg.webp", "size": [1920, 1080], "post": "none", "seed": 14,
+      "prompt": "Football training ground on a late autumn afternoon, two pitches, low warm sun, long shadows, small pavilion, mannequins and cones, an old brick stadium in the background, trees at the edge" },
+    { "out": "images/club/press_backdrop.webp", "size": [1920, 1080], "post": "none", "seed": 15,
+      "prompt": "Empty press conference room at a football club, navy and gold patterned backdrop with plain shield shapes only, table with microphones, rows of chairs, camera tripods, soft overhead light" },
+    { "out": "images/ui/title_bg.webp", "size": [1920, 1080], "post": "none", "seed": 16,
+      "prompt": "An old brick football stadium on a matchday night in a coastal town, floodlights blazing into light mist, fans in gold scarves walking up the road, cinematic but natural, wide" }
+  ]
+}

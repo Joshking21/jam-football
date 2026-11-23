@@ -1,0 +1,396 @@
+{
+  "rules": {
+    "pre_play_out_quick": {
+      "variants": [
+        "They press high. Get it out quickly: mix the passing and up the tempo.",
+        "Their press is hungry. Move it fast and we'll be through it."
+      ],
+      "reason": "Their pressing is high and our back line has the pace to play through it."
+    },
+    "pre_go_in_behind": {
+      "variants": [
+        "Their line is high. Go direct and get {player} running in behind.",
+        "Ball over the top, gaffer. {player} will murder that line."
+      ],
+      "reason": "Their defensive line is high and our quickest forward can exploit it."
+    },
+    "pre_attack_weak_side": {
+      "variants": [
+        "Their {lane} is the weak link. Focus our attacks down there.",
+        "Go at their {lane}. That's where they'll crack."
+      ],
+      "reason": "Their weakest defender plays on that side."
+    },
+    "pre_stay_compact": {
+      "variants": [
+        "They're better than us on paper. Sit a bit deeper and stay compact.",
+        "Let's not open up. Defensive mentality, deep line, mid press."
+      ],
+      "reason": "Their average rating is well above ours."
+    },
+    "pre_take_game": {
+      "variants": [
+        "We're the better side. Take the game to them.",
+        "No respect for them today. Attacking mentality from the start."
+      ],
+      "reason": "Our average rating is well above theirs."
+    },
+    "pre_cb_reassure": {
+      "variants": [
+        "They'll put crosses in all day. Let them. Our centre-backs eat those.",
+        "Plenty of balls into the box coming. I'm not worried about that."
+      ],
+      "reason": "Our centre-backs dominate in the air and they play wide."
+    },
+    "pre_set_piece_threat": {
+      "variants": [
+        "Watch their corners. Put {player} on their big man.",
+        "Their target man is dangerous at set pieces. Let's mark him tight."
+      ],
+      "reason": "Their best header is a real threat at set pieces."
+    },
+    "week_rest": {
+      "variants": [
+        "{player} is running on fumes. Give him a rest this week.",
+        "Rest {player}. He's no use to us half-fit."
+      ],
+      "reason": "His fatigue is above 80."
+    },
+    "week_train_tactical": {
+      "variants": [
+        "The lads don't know the shape yet. Let's do more tactical work.",
+        "We need sessions on the shape. They're still learning it."
+      ],
+      "reason": "Familiarity with our formation is under 50."
+    },
+    "week_light_training": {
+      "variants": [
+        "Ease off this week. Too many of them are tired.",
+        "Light week, gaffer. We need legs for Saturday."
+      ],
+      "reason": "Three or more players are under 70% condition."
+    },
+    "week_talk_unhappy": {
+      "variants": [
+        "Have a word with {player}. He's not happy.",
+        "{player} has a face on him. Worth a chat."
+      ],
+      "reason": "An important player is unhappy."
+    },
+    "week_give_minutes": {
+      "variants": [
+        "{player} is ready for minutes. He could be a big player for us.",
+        "Give {player} a run out. The kid's got something."
+      ],
+      "reason": "A high-potential youngster has barely played."
+    },
+    "week_positive": {
+      "variants": [
+        "Training was sharp today. Good mood about the place.",
+        "No complaints this week. They're in a good place."
+      ],
+      "reason": "Nothing needs fixing."
+    },
+    "tw_recovery_swap": {
+      "variants": [
+        "Swap the hard sessions for recovery. {player} and two others are over 50 fatigue.",
+        "Too many tired legs. Recovery in, endurance out."
+      ],
+      "reason": "Four or more starters have fatigue over 50."
+    },
+    "tw_shape_work": {
+      "variants": [
+        "Shape work on Thursday. They're still not sharp on the system.",
+        "Let's do some shape work late in the week. They're not sharp on the system yet."
+      ],
+      "reason": "A familiarity area is below 70."
+    },
+    "tw_opponent_prep": {
+      "variants": [
+        "Friday: opponent prep. They go wide, so let's prep for their wingers.",
+        "Use Friday to prepare for {opponent}. I've a plan for their press."
+      ],
+      "reason": "The next opponent has a clear style to prepare for."
+    },
+    "tw_set_pieces": {
+      "variants": [
+        "Set-piece practice on Thursday. They've a big lad who wins everything.",
+        "Let's drill corners this week. Their aerial threat worries me."
+      ],
+      "reason": "The next opponent is dangerous from set pieces."
+    },
+    "im_flank_exposed": {
+      "variants": [
+        "They're getting joy down our {lane}. Tell {player} to stay back.",
+        "Our {lane} is wide open. {player} needs to hold his position."
+      ],
+      "reason": "Over half their attacks are coming down one side."
+    },
+    "im_drop_press": {
+      "variants": [
+        "The lads are running out of legs. Drop the press.",
+        "We can't keep this press up. Ease it to mid-block."
+      ],
+      "reason": "We're pressing high and our average condition is falling."
+    },
+    "im_keep_floor": {
+      "variants": [
+        "We're losing every header. Keep it on the floor.",
+        "Stop crossing. Their centre-backs are winning everything."
+      ],
+      "reason": "Our crosses aren't working and they're bigger in the air."
+    },
+    "im_go_direct": {
+      "variants": [
+        "Their line is high. Time the runs and go direct.",
+        "Get it in behind them. Their line's up."
+      ],
+      "reason": "Their line is high and we keep getting caught offside."
+    },
+    "im_tired_player": {
+      "variants": ["{player} is out on his feet.", "Get {player} off. He's got nothing left."],
+      "reason": "His condition is below 58."
+    },
+    "im_yellow_risk": {
+      "variants": ["{player} is one tackle from a red.", "Take {player} off before the ref does."],
+      "reason": "He's on a yellow and still committing fouls."
+    },
+    "im_need_goal": {
+      "variants": ["We need a goal. Go for it.", "Throw the kitchen sink at them, gaffer."],
+      "reason": "We're losing with 20 minutes left."
+    },
+    "im_see_it_out": {
+      "variants": [
+        "See it out. Slow it down.",
+        "Game management now. Keep the ball and kill the clock."
+      ],
+      "reason": "We're a goal up with 10 minutes left."
+    },
+    "im_calm_down": {
+      "variants": [
+        "We keep giving it away. Calm it down.",
+        "Too many long balls. Get it on the deck and keep it."
+      ],
+      "reason": "Our possession has dropped under 35%."
+    },
+    "im_plan_b": {
+      "variants": ["Time for Plan B?", "This isn't working. Switch to Plan B?"],
+      "reason": "We're losing after 60 minutes and Plan B is more attacking."
+    },
+    "im_shout_calm": {
+      "variants": [
+        "Two of ours are on yellows. Calm them down?",
+        "Tell them to stay on their feet. We can't go down to ten."
+      ],
+      "reason": "Two or more of our players are on a yellow."
+    },
+    "im_shout_push": {
+      "variants": [
+        "Shout at them to push up. We're sitting too deep.",
+        "Get them forward. We're inviting pressure."
+      ],
+      "reason": "We're losing and pinned in our own half."
+    },
+    "sp_rotate": {
+      "variants": [
+        "They've read our near-post routine. Rotate?",
+        "Same corner every time and they've worked it out. Mix it up."
+      ],
+      "reason": "We've used the same routine three times and lost the headers."
+    },
+    "sp_mark_target": {
+      "variants": [
+        "Put {player} on their big man at corners.",
+        "Their number nine is the threat. Mark him with {player}."
+      ],
+      "reason": "Their best header is a big set-piece threat."
+    },
+    "sp_drop_forward": {
+      "variants": [
+        "Drop a forward back. They're winning everything at corners.",
+        "Bring one back for corners. We're getting bullied in our box."
+      ],
+      "reason": "They've won three or more headers in our box in 20 minutes."
+    },
+    "ht_xg": {
+      "variants": [
+        "Look at the chances. We're not creating enough.",
+        "The xG says we're the better side. Keep going."
+      ],
+      "reason": "Shots and xG so far."
+    },
+    "ht_danger_man": {
+      "variants": [
+        "{player} is running the show for them. Someone needs to get tight.",
+        "Keep an eye on {player}. Everything goes through him."
+      ],
+      "reason": "Their most involved player in shots."
+    },
+    "ht_worst_starter": {
+      "variants": [
+        "{player} is having a nightmare. I'd take him off.",
+        "{player} isn't at it. Worth a change?"
+      ],
+      "reason": "Our lowest-rated starter."
+    },
+    "pm_beat_expectation": {
+      "variants": [
+        "That's a big result. More than we could have asked for.",
+        "Nobody gave us a chance today. Brilliant."
+      ],
+      "reason": "We beat a stronger side."
+    },
+    "pm_met_expectation": {
+      "variants": ["Job done. That's what we came for.", "Professional. Three points and home."],
+      "reason": "The result we expected."
+    },
+    "pm_below_expectation": {
+      "variants": [
+        "We let that one slip. That's on all of us.",
+        "Not good enough today, and the lads know it."
+      ],
+      "reason": "We dropped points we expected to win."
+    },
+    "pm_best_player": {
+      "variants": ["{player} was outstanding. Best on the pitch.", "{player} was different class."],
+      "reason": "Our highest-rated player."
+    },
+    "pm_work_on": {
+      "variants": [
+        "We need to work on finishing this week.",
+        "Defending the box. That's what we drill this week."
+      ],
+      "reason": "The stat that decided the match maps to a training focus."
+    }
+  },
+  "remarks": [
+    "The squad looked sharp in training today.",
+    "{player}'s been staying late to practise his finishing.",
+    "The pitch at the training ground is in good nick after the rain.",
+    "The kitman says the new boots are being worn in.",
+    "{player} has been organising the young lads. Natural leader.",
+    "The canteen ran out of beans. There was nearly a riot.",
+    "Good energy in the dressing room this morning.",
+    "The physio's happy with how the squad is recovering.",
+    "{player} asked me about the offside trap twice today. Keen.",
+    "The groundsman wants the pitch watered before Saturday.",
+    "A few of the lads were doing extra sprints after the session.",
+    "The fans are talking about us. Up the coast and down it.",
+    "{player}'s been watching videos of wingers on his phone all week.",
+    "The rondo got competitive today. {player} didn't let one through.",
+    "{player} is in a good mood. That's usually good news.",
+    "The board sent fruit. Nobody's touched it.",
+    "{player} kept himself to himself today.",
+    "{player} brought his kids to watch training. Lovely moment.",
+    "The youth team coach says there's a lad worth watching.",
+    "The weather's turning. Winter football's coming.",
+    "{player} read the game beautifully in the practice match.",
+    "We tried the new corner routine. Looked decent.",
+    "{player} and {player2} have been inseparable at lunch.",
+    "The lads want to know if there's a team meal this week.",
+    "{player} says his back is feeling better.",
+    "{player} has been shouting at the defence all session. Good.",
+    "I watched their last two games again. I have notes.",
+    "The press officer says the Gazette want five minutes.",
+    "Spirit's good. It's a happy camp.",
+    "Quiet day. Sometimes that's the best kind."
+  ],
+  "stingers": [
+    {
+      "id": "stinger_1",
+      "text": "Gaffer!",
+      "voiced": true
+    },
+    {
+      "id": "stinger_2",
+      "text": "Boss, a word.",
+      "voiced": true
+    },
+    {
+      "id": "stinger_3",
+      "text": "Gaffer, look at this.",
+      "voiced": true
+    },
+    {
+      "id": "stinger_4",
+      "text": "Quick one, boss.",
+      "voiced": true
+    },
+    {
+      "id": "stinger_5",
+      "text": "Boss!",
+      "voiced": true
+    },
+    {
+      "id": "stinger_6",
+      "text": "Hang on, gaffer.",
+      "voiced": true
+    }
+  ],
+  "greetings": [
+    {
+      "id": "greet_1",
+      "text": "Morning, gaffer.",
+      "voiced": true
+    },
+    {
+      "id": "greet_2",
+      "text": "Morning, boss. Coffee's on.",
+      "voiced": true
+    },
+    {
+      "id": "greet_3",
+      "text": "All right, gaffer. Busy week.",
+      "voiced": true
+    },
+    {
+      "id": "greet_4",
+      "text": "Morning. I've got a few things for you.",
+      "voiced": true
+    }
+  ],
+  "halfTimeOpeners": [
+    {
+      "id": "ht_open_1",
+      "text": "Right, a few things, gaffer.",
+      "voiced": true
+    },
+    {
+      "id": "ht_open_2",
+      "text": "Here's what I'm seeing.",
+      "voiced": true
+    },
+    {
+      "id": "ht_open_3",
+      "text": "Not bad, but we can be better.",
+      "voiced": true
+    },
+    {
+      "id": "ht_open_4",
+      "text": "We need to fix something, boss.",
+      "voiced": true
+    }
+  ],
+  "postMatchOpeners": [
+    {
+      "id": "pm_open_1",
+      "text": "Well, gaffer.",
+      "voiced": true
+    },
+    {
+      "id": "pm_open_2",
+      "text": "Right. Let's talk about that one.",
+      "voiced": true
+    },
+    {
+      "id": "pm_open_3",
+      "text": "What a game.",
+      "voiced": true
+    },
+    {
+      "id": "pm_open_4",
+      "text": "Tough one to take.",
+      "voiced": true
+    }
+  ]
+}

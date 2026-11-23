@@ -1,0 +1,31 @@
+{
+  "_note": "Ordered by priority. Test 'person' first (AI-TESTS M1 and SPEC 1.7 §5 risk): one rigged person with 3 clips and a fitted Face patch before spending more.",
+  "jobs": [
+    { "name": "person", "out": "models/person.glb", "tris": 10000, "rig": true, "clips": ["Idle", "Walk", "TalkGesture"],
+      "prompt": "Realistic adult man standing in A-pose, plain dark jacket, shirt, trousers, shoes, short hair, simplified smooth face with no painted features, neutral, game-ready, full body" },
+    { "name": "player", "out": "models/player.glb", "tris": 10000, "rig": true, "clips": ["Idle", "Jog", "Run", "Sprint", "Pass", "Shoot", "Header", "Tackle", "Celebrate", "Dejected"],
+      "prompt": "Realistic male footballer in A-pose, plain white short-sleeved shirt, plain white shorts, white socks, black boots, athletic build, simplified smooth face with no painted features, no logos, no numbers, game-ready, full body" },
+    { "name": "manager", "out": "models/manager.glb", "tris": 10000, "rig": true, "clips": ["Idle", "Point", "Clap", "Celebrate", "Dejected", "HeadInHands", "Shout", "ArmsFolded", "Walk"],
+      "prompt": "Realistic football manager in A-pose, long dark coat over shirt and tie, trousers, leather shoes, short hair, simplified smooth face, game-ready, full body" },
+    { "name": "ball", "out": "models/ball.glb", "tris": 1500, "prompt": "Classic white football with simple dark panels, no logo, clean" },
+    { "name": "goal", "out": "models/goal.glb", "tris": 3000, "prompt": "Full-size football goal frame, white posts and crossbar, net, realistic" },
+    { "name": "floodlight", "out": "models/floodlight.glb", "tris": 4000, "prompt": "Tall steel lattice stadium floodlight pylon with a rectangular bank of lamps at the top" },
+    { "name": "dugout", "out": "models/dugout.glb", "tris": 4000, "prompt": "Football dugout with a curved clear roof, row of padded seats, realistic" },
+    { "name": "desk", "out": "models/club/desk.glb", "tris": 3000, "prompt": "Old wooden office desk, dark oak, drawers, slightly worn" },
+    { "name": "desk_chair", "out": "models/club/desk_chair.glb", "tris": 2500, "prompt": "Leather office swivel chair, worn brown leather" },
+    { "name": "whiteboard", "out": "models/club/whiteboard.glb", "tris": 1500, "prompt": "Wall-mounted whiteboard with aluminium frame and pen tray, blank" },
+    { "name": "locker", "out": "models/club/locker.glb", "tris": 2000, "prompt": "Single wooden football dressing room locker cubicle with bench seat and coat hook, open front" },
+    { "name": "bench", "out": "models/club/bench.glb", "tris": 1500, "prompt": "Long wooden dressing room bench, varnished" },
+    { "name": "board_table", "out": "models/club/board_table.glb", "tris": 3000, "prompt": "Long polished boardroom table, dark wood" },
+    { "name": "board_chair", "out": "models/club/board_chair.glb", "tris": 2500, "prompt": "High-backed leather boardroom chair, oxblood leather" },
+    { "name": "mic_table", "out": "models/club/mic_table.glb", "tris": 2500, "prompt": "Press conference table with a cloth and a cluster of microphones on stands" },
+    { "name": "press_chair", "out": "models/club/press_chair.glb", "tris": 1200, "prompt": "Simple stackable chair, dark grey fabric seat" },
+    { "name": "tripod", "out": "models/club/tripod.glb", "tris": 2000, "prompt": "Broadcast TV camera on a tripod" },
+    { "name": "tv", "out": "models/club/tv.glb", "tris": 800, "prompt": "Flat wall-mounted television, thin black bezel, screen off" },
+    { "name": "lamp", "out": "models/club/lamp.glb", "tris": 1500, "prompt": "Green banker's desk lamp, brass" },
+    { "name": "phone", "out": "models/club/phone.glb", "tris": 1200, "prompt": "Old office desk phone with a cord" },
+    { "name": "cone", "out": "models/club/cone.glb", "tris": 300, "prompt": "Orange football training cone" },
+    { "name": "mannequin", "out": "models/club/mannequin.glb", "tris": 1200, "prompt": "Yellow football training mannequin for free kicks, free-standing" },
+    { "name": "dugout_bench", "out": "models/club/dugout_bench.glb", "tris": 2000, "prompt": "Row of padded stadium dugout seats" }
+  ]
+}

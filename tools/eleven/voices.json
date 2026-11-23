@@ -1,0 +1,20 @@
+{
+  "_note": "ElevenLabs voice ids. Audition in the ElevenLabs voice library, then paste ids. British/Irish/coastal accents; nothing that sounds like a real broadcaster.",
+  "PBP": "TODO: Callum, play-by-play. Warm, quick, rises on goals.",
+  "COL": "TODO: Nadia, co-commentator. Measured, analytical.",
+  "coach": "TODO: the manager. Thirties to forties, firm, northern or coastal English.",
+  "assistant": "TODO: Theo Vance. Fifties, dry, kind, West Country or Scottish.",
+  "owner": "TODO: Margaret Holloway. Sixties, composed, cut-glass but not posh.",
+  "director": "TODO: a board director (or reuse owner with a different setting).",
+  "physio": "TODO: the physio. Practical, calm.",
+  "journalist1": "TODO: Priya Natarajan, Meridian Sport.",
+  "journalist2": "TODO: Joe Kettering, The Saltmere Echo.",
+  "journalist3": "TODO: Femi Adebayo-Clarke, Coastline Radio.",
+  "player1": "TODO: young player voice A.",
+  "player2": "TODO: player voice B.",
+  "player3": "TODO: player voice C.",
+  "_settings": {
+    "PBP": { "stability": 0.35, "similarity_boost": 0.8, "style": 0.4 },
+    "coach": { "stability": 0.4, "similarity_boost": 0.8, "style": 0.3 }
+  }
+}
