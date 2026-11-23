@@ -35,10 +35,10 @@ The user's club's paper is the masthead on Week Summary, the Hub newspaper panel
 
 | Club town | Paper | Reporter (byline) |
 |---|---|---|
-| Port Calloway | The Calloway Gazette | Joe Kettering |
+| Port Calloway | The Calloway Gazette | Ellis Marr |
 | Ironvale | Ironvale Evening Post | Dana Whitcombe |
-| Kestrel Bay | The Bay Herald | Femi Adebayo-Clarke |
-| Saltmere | The Saltmere Echo | Priya Natarajan |
+| Kestrel Bay | The Bay Herald | Hana Brodsky |
+| Saltmere | The Saltmere Echo | Joe Kettering (also a §16.2 press journalist) |
 | Brightwater | The Brightwater Lamp | Callum Reid |
 | Northgate | Northgate Chronicle | Sofia Lindqvist |
 | Ashcombe | Ashcombe Advertiser | Tom Harrow |
