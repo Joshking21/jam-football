@@ -72,9 +72,11 @@ Grid of cards:
 - "Advance day" button (Continue) resolves AI responses and AI activity (§12.13). After Deadline Day the window closes.
 
 ### 11.11 League
+**Design reference: `docs/design/league/` (approved 23 Nov; it wins on layout and look).**
 Tabs: **Table** (full table with form, positions coloured: 1st gold mark, 2–3 accent mark, bottom 2 red mark; rows reorder with FlipList after each matchday), **Results by matchday** (selector 1–18), **Stats** (top scorers, assists, average ratings (min 5 apps), clean sheets (GK), yellow/red cards), **Clubs** (club cards: click → club page with squad (estimated OVRs), stadium, manager, form).
 
 ### 11.12 Fixtures
+**Design reference: `docs/design/fixtures/` (approved 23 Nov; it wins on layout and look).**
 Your 18 fixtures with result, scorers, attendance, MOTM; upcoming ones show opponent position and form.
 
 ### 11.13 Club

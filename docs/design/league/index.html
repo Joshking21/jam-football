@@ -1,0 +1,120 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--acc:#F2B705;--text:#F2F4F7;--dim:#A3ACBA;--faint:#6f7886;--line:rgba(255,255,255,.08);--panel:rgba(12,16,22,.86);--win:#3fd38b;--loss:#ff5d6c}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1920px;height:1080px;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:var(--text);
+ background:radial-gradient(ellipse at 18% 10%,rgba(242,183,5,.08),transparent 40%),radial-gradient(ellipse at 90% 90%,rgba(11,31,58,.9),transparent 55%),linear-gradient(160deg,#0b1220 0%,#070a10 60%,#05070b 100%)}
+.lines{position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.018) 0 2px,transparent 2px 28px)}
+.top{position:absolute;left:0;right:0;top:0;height:56px;display:flex;align-items:center;gap:22px;padding:0 20px;background:#0E1218;border-bottom:1px solid #2A313D;z-index:3}
+.club{font:700 21px/1 'Barlow Condensed';letter-spacing:.02em;text-transform:uppercase}
+.tab{font:600 15px/56px 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase;color:#A3ACBA;padding:0 12px;position:relative}
+.tab.on{color:#fff}.tab.on:after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:3px;background:var(--acc)}
+.status{margin-left:auto;font:600 14px/1 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase;color:#A3ACBA}.status b{color:#fff;font-weight:600}
+.wrap{position:absolute;left:56px;right:56px;top:84px;bottom:60px}
+.kick{display:flex;align-items:center;gap:14px;font:600 15px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.chip{background:var(--acc);color:#141000;font:800 16px/1 'Barlow Condensed';letter-spacing:.18em;padding:7px 12px 6px;clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.kick b{color:#fff;font-weight:600}
+.sub{margin-left:auto;display:flex;gap:4px}.sub span{font:700 14px/1 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase;padding:9px 14px;background:rgba(255,255,255,.05);color:var(--dim)}.sub span.on{background:#F4F1EA;color:#0a0d12}
+.grid{display:grid;grid-template-columns:1040px 1fr;gap:40px;margin-top:22px}
+.h3{font:700 14px/1 'Barlow Condensed';letter-spacing:.18em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.h3:before{content:"";width:16px;height:3px;background:var(--acc)}.h3 span{margin-left:auto;color:var(--faint);letter-spacing:.1em}
+.thead,.row{display:grid;grid-template-columns:46px 40px 1fr repeat(7,46px) 64px 112px 170px;align-items:center;padding:0 16px}
+.thead{font:600 12px/1 'Barlow Condensed';letter-spacing:.14em;color:var(--faint);height:30px}
+.thead span,.row span{text-align:center}.thead span:nth-child(3),.row span:nth-child(3){text-align:left}
+.row{height:66px;background:var(--panel);margin-bottom:4px;font:600 21px/1 'Barlow Condensed';letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.row .p{font:800 28px/1 'Barlow Condensed';color:var(--dim)}
+.row .mv{font:700 14px/1 'Barlow Condensed'}.up{color:var(--win)}.dn{color:var(--loss)}.eq{color:var(--faint)}
+.row .n{display:flex;align-items:center;gap:14px;text-transform:uppercase;font:700 24px/1 'Barlow Condensed'}
+.row .n i{width:6px;height:38px;background:var(--c)}
+.row .n small{display:block;font:600 11px/1 'Barlow Condensed';letter-spacing:.14em;color:var(--faint);margin-top:4px}
+.row .dim{color:var(--dim)}
+.row .pt{font:800 30px/1 'Barlow Condensed';color:#fff}
+.row .fm{display:flex;gap:5px;justify-content:center}.row .fm b{width:15px;height:15px;border-radius:2px;font:700 10px/15px 'Barlow Condensed';color:#0a0d12;text-align:center}
+.W{background:var(--win)}.D{background:#8a93a0}.L{background:var(--loss)}
+.row .nx{text-align:left;font:600 15px/1.15 'Barlow Condensed';letter-spacing:.06em;color:var(--dim);text-transform:uppercase}.row .nx b{color:#fff;font-weight:700}
+.row.us{background:linear-gradient(90deg,rgba(242,183,5,.24),rgba(242,183,5,.05) 60%,rgba(12,16,22,.86));box-shadow:inset 5px 0 0 var(--acc)}
+.row.us .p{color:var(--acc)}
+.zone{display:flex;align-items:center;gap:10px;margin:6px 0 8px;font:700 11px/1 'Barlow Condensed';letter-spacing:.16em;color:var(--acc)}
+.zone:before,.zone:after{content:"";flex:1;height:2px;background:repeating-linear-gradient(90deg,currentColor 0 6px,transparent 6px 10px)}
+.zone.red{color:var(--loss)}
+.race{background:var(--panel);padding:18px 18px 10px}
+.lead{background:var(--panel);margin-top:18px;padding:16px 18px}
+.lead .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.lead h4{font:700 12px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.lead .cols>div>div{display:flex;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font:600 16px/1 'Barlow Condensed';letter-spacing:.04em;text-transform:uppercase}
+.lead .cols>div>div:last-child{border-bottom:0}
+.lead .cols>div>div i{width:4px;height:14px;background:var(--c);align-self:center}
+.lead .cols>div>div small{font:500 11px/1 Inter;color:var(--faint);text-transform:none;letter-spacing:0}
+.lead .cols>div>div b{margin-left:auto;font:800 20px/1 'Barlow Condensed'}
+.lead .cols>div>div.us b{color:var(--acc)}
+.nr{background:var(--panel);margin-top:18px;padding:14px 18px}.nr h4{font:700 12px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}.nr div{display:grid;grid-template-columns:1fr 30px 1fr 170px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font:700 17px/1 'Barlow Condensed';letter-spacing:.04em;text-transform:uppercase}.nr div:last-child{border-bottom:0}.nr div span:first-child{text-align:right}.nr div b{text-align:center;color:var(--faint)}.nr div small{text-align:right;font:500 12px/1 Inter;color:var(--faint);text-transform:none;letter-spacing:0}.nr div.us{color:var(--acc)}
+.ticker{position:absolute;left:0;right:0;bottom:0;height:40px;display:flex;align-items:center;background:#0a0d12;border-top:1px solid #1d232c;font:500 15px/1 Inter;color:#cfd5de;white-space:nowrap;overflow:hidden}
+.ticker .lb{background:var(--acc);color:#141000;font:800 14px/40px 'Barlow Condensed';letter-spacing:.16em;padding:0 16px;margin-right:18px}
+.ticker .it{margin-right:22px}.ticker .it b{font:700 16px/1 'Barlow Condensed';color:#fff;letter-spacing:.04em}
+.ticker .sep{display:inline-block;width:14px;height:4px;background:linear-gradient(90deg,var(--acc) 50%,#fff 50%);margin-right:22px;vertical-align:middle}
+</style></head><body>
+<div class="lines"></div>
+<div class="top">
+  <svg width="30" height="34" viewBox="0 0 30 34"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#F2B705" stroke="#0B1F3A" stroke-width="2"/><path d="M15 8 v18 M9 13 h12 M8.5 20 q6.5 7 13 0" stroke="#0B1F3A" stroke-width="2.2" fill="none"/></svg>
+  <div class="club">Port Calloway FC</div>
+  <div style="display:flex;margin-left:10px"><div class="tab">Hub</div><div class="tab on">League</div><div class="tab">Fixtures</div><div class="tab">Squad</div><div class="tab">Tactics</div><div class="tab">Training</div><div class="tab">Scouting</div><div class="tab">Club</div><div class="tab">Inbox</div></div>
+  <div class="status">MD <b>8/18</b> · <b>2nd</b> · <b>17 pts</b></div>
+</div>
+<div class="wrap">
+  <div class="kick"><span class="chip">MERIDIAN LEAGUE</span><b>The table</b> · after 8 of 18 · 2026/27
+    <div class="sub"><span class="on">Table</span><span>Home / away</span><span>Form</span><span>Leaders</span><span>Clubs</span></div></div>
+  <div class="grid">
+    <div>
+      <div class="thead"><span>Pos</span><span></span><span>Club</span><span>P</span><span>W</span><span>D</span><span>L</span><span>GF</span><span>GA</span><span>GD</span><span>Pts</span><span>Last 5</span><span style="text-align:left">Next</span></div>
+      <div id="tbl"></div>
+    </div>
+    <div>
+      <div class="h3">The race<span>Position after each matchday</span></div>
+      <div class="race"><svg id="race" width="684" height="430"></svg></div>
+      <div class="lead"><div class="cols">
+        <div><h4>Golden Boot</h4><div style="--c:#0f7a6e"><i></i>Escalante<small>KBF</small><b>9</b></div><div class="us" style="--c:#F2B705"><i></i>Bankole<small>PCF</small><b>7</b></div><div style="--c:#a3461f"><i></i>Gil<small>IVA</small><b>6</b></div></div>
+        <div><h4>Assists</h4><div class="us" style="--c:#F2B705"><i></i>Calder<small>PCF</small><b>6</b></div><div style="--c:#0d4a5a"><i></i>Rourke<small>SAL</small><b>5</b></div><div style="--c:#1e6b46"><i></i>Hale<small>NGA</small><b>4</b></div></div>
+        <div><h4>Clean sheets</h4><div style="--c:#0d4a5a"><i></i>Marsh<small>SAL</small><b>4</b></div><div class="us" style="--c:#F2B705"><i></i>Doyle<small>PCF</small><b>3</b></div><div style="--c:#a3461f"><i></i>Okoye<small>IVA</small><b>3</b></div></div>
+      </div></div>
+      <div class="nr"><h4>Next round · Matchday 9 · Saturday</h4>
+        <div class="us"><span>Ironvale</span><b>v</b><span>Port Calloway</span><small>Afternoon</small></div>
+        <div><span>Saltmere</span><b>v</b><span>Kestrel Bay</span><small>Evening · top-of-table</small></div>
+        <div><span>Northgate</span><b>v</b><span>Ashcombe</span><small>Afternoon</small></div>
+        <div><span>Brightwater</span><b>v</b><span>Lindenfield</span><small>Night</small></div>
+        <div><span>Veldmoor</span><b>v</b><span>Corvallen</span><small>Afternoon</small></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="ticker"><span class="lb">AROUND THE LEAGUE</span><span class="it"><b>Saltmere</b> two points clear after a 1–1 with Ironvale</span><span class="sep"></span><span class="it"><b>Veldmoor</b> without a win in six</span><span class="sep"></span><span class="it"><b>Next round:</b> Ironvale v Port Calloway · Saltmere v Kestrel Bay</span></div>
+<script>
+const T=[[1,'eq','Saltmere Rovers','The Rovers','#0d4a5a',8,6,1,1,15,6,19,'WWDWD','Kestrel Bay','H'],
+[2,'up','Port Calloway FC','The Mariners','#F2B705',8,5,2,1,16,9,17,'WLWWW','Ironvale','A',1],
+[3,'dn','Kestrel Bay FC','The Kestrels','#0f7a6e',8,5,1,2,14,8,16,'WWLDW','Saltmere','A'],
+[4,'up','Northgate Albion','The Gate','#1e6b46',8,4,2,2,12,9,14,'LWDWW','Ashcombe','H'],
+[5,'eq','Ironvale Athletic','The Forge','#a3461f',8,4,1,3,11,9,13,'WWDLW','Port Calloway','H'],
+[6,'dn','Ashcombe United','The Ashes','#8c1d2b',8,3,3,2,10,9,12,'WDLWL','Northgate','A'],
+[7,'eq','Brightwater City','The Lamps','#3a7bd5',8,2,4,2,9,11,10,'DLWDD','Lindenfield','H'],
+[8,'dn','Corvallen Wanderers','The Crows','#e9ecef',8,2,2,4,8,12,8,'LDLWL','Veldmoor','A'],
+[9,'dn','Lindenfield FC','The Lindens','#d8b21c',8,1,3,4,7,13,6,'LLDLL','Brightwater','A'],
+[10,'eq','Veldmoor Town','The Moorsmen','#5a3a8c',8,0,4,4,5,16,4,'DLLLD','Corvallen','H']];
+let h='';T.forEach(([p,mv,n,nick,c,P,W,D,L,GF,GA,Pts,f,nx,ha,us])=>{const gd=GF-GA;
+ h+=`<div class="row ${us?'us':''}"><span class="p">${p}</span><span class="mv ${mv}">${mv=='up'?'▲1':mv=='dn'?'▼1':'–'}</span><span class="n"><i style="--c:${c}"></i><div>${n}<small>${nick}</small></div></span><span class="dim">${P}</span><span>${W}</span><span>${D}</span><span>${L}</span><span class="dim">${GF}</span><span class="dim">${GA}</span><span>${gd>0?'+':''}${gd}</span><span class="pt">${Pts}</span><span class="fm">${f.split('').map(x=>`<b class="${x}">${x}</b>`).join('')}</span><span class="nx">${ha=='H'?'v':'@'} <b>${nx}</b><br>Sat · ${ha=='H'?'home':'away'}</span></div>`;
+ if(p==3)h+='<div class="zone">TARGET · TOP 3</div>'; if(p==8)h+='<div class="zone red">DANGER · BOTTOM 2</div>';});
+document.getElementById('tbl').innerHTML=h;
+// bump chart
+const Wd=684,Hd=430,l=40,r=150,tp=16,bt=30,X=m=>l+(m-1)*(Wd-l-r)/7,Y=p=>tp+(p-1)*(Hd-tp-bt)/9;
+const P={ 'Saltmere':['#0d4a5a',[3,2,1,1,2,1,1,1]], 'Port Calloway':['#F2B705',[6,7,5,4,3,3,3,2]], 'Kestrel Bay':['#0f7a6e',[1,1,2,2,1,2,2,3]], 'Northgate':['#1e6b46',[8,6,7,6,5,5,6,4]],'Ironvale':['#a3461f',[2,3,3,3,4,4,5,5]],'Ashcombe':['#8c1d2b',[4,5,4,5,6,6,4,6]],'Brightwater':['#3a7bd5',[5,4,6,7,7,7,7,7]],'Corvallen':['#c9ccd1',[7,8,8,8,8,8,8,8]],'Lindenfield':['#d8b21c',[9,9,9,9,9,9,9,9]],'Veldmoor':['#5a3a8c',[10,10,10,10,10,10,10,10]]};
+let s='';for(let m=1;m<=8;m++)s+=`<line x1="${X(m)}" y1="${tp-6}" x2="${X(m)}" y2="${Hd-bt+4}" stroke="rgba(255,255,255,.06)"/><text x="${X(m)}" y="${Hd-8}" text-anchor="middle" font-family="Barlow Condensed" font-weight="600" font-size="13" fill="#6f7886">MD${m}</text>`;
+for(let p=1;p<=10;p++)s+=`<text x="${l-14}" y="${Y(p)+5}" text-anchor="end" font-family="Barlow Condensed" font-weight="700" font-size="14" fill="${p<=3?'#F2B705':p>=9?'#ff5d6c':'#6f7886'}">${p}</text>`;
+s+=`<rect x="${l-6}" y="${Y(3)+11}" width="${Wd-l-r+12}" height="1.5" fill="#F2B705" opacity=".35"/><rect x="${l-6}" y="${Y(8)+11}" width="${Wd-l-r+12}" height="1.5" fill="#ff5d6c" opacity=".35"/>`;
+for(const[n,[c,a]]of Object.entries(P)){if(n==='Port Calloway')continue;const d=a.map((p,i)=>`${i?'L':'M'}${X(i+1)} ${Y(p)}`).join(' ');
+ s+=`<path d="${d}" fill="none" stroke="${c}" stroke-opacity=".45" stroke-width="2.5"/><circle cx="${X(8)}" cy="${Y(a[7])}" r="4" fill="${c}"/><text x="${X(8)+14}" y="${Y(a[7])+5}" font-family="Barlow Condensed" font-weight="600" font-size="15" fill="#A3ACBA" letter-spacing=".5">${n.toUpperCase()}</text>`}
+const pc=P['Port Calloway'][1];const d=pc.map((p,i)=>`${i?'L':'M'}${X(i+1)} ${Y(p)}`).join(' ');
+s+=`<path d="${d}" fill="none" stroke="#F2B705" stroke-width="5" stroke-linejoin="round"/>`+pc.map((p,i)=>`<circle cx="${X(i+1)}" cy="${Y(p)}" r="5" fill="#0a0d12" stroke="#F2B705" stroke-width="3"/>`).join('')+`<text x="${X(8)+14}" y="${Y(2)+5}" font-family="Barlow Condensed" font-weight="800" font-size="17" fill="#F2B705" letter-spacing=".5">PORT CALLOWAY</text>`;
+s+=`<text x="${X(4)+8}" y="${Y(5)+26}" text-anchor="middle" font-family="Barlow Condensed" font-weight="600" font-size="13" fill="#F2B705">4 wins in 5</text>`;
+document.getElementById('race').innerHTML=s;
+</script>
+</body></html>

@@ -1,0 +1,99 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--acc:#F2B705;--text:#F2F4F7;--dim:#A3ACBA;--faint:#6f7886;--line:rgba(255,255,255,.08);--panel:rgba(12,16,22,.86);--win:#3fd38b;--loss:#ff5d6c;--draw:#8a93a0}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1920px;height:1080px;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:var(--text);
+ background:radial-gradient(ellipse at 18% 10%,rgba(242,183,5,.08),transparent 40%),radial-gradient(ellipse at 90% 90%,rgba(11,31,58,.9),transparent 55%),linear-gradient(160deg,#0b1220 0%,#070a10 60%,#05070b 100%)}
+.lines{position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.018) 0 2px,transparent 2px 28px)}
+.top{position:absolute;left:0;right:0;top:0;height:56px;display:flex;align-items:center;gap:22px;padding:0 20px;background:#0E1218;border-bottom:1px solid #2A313D;z-index:3}
+.club{font:700 21px/1 'Barlow Condensed';letter-spacing:.02em;text-transform:uppercase}
+.tab{font:600 15px/56px 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase;color:#A3ACBA;padding:0 12px;position:relative}
+.tab.on{color:#fff}.tab.on:after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:3px;background:var(--acc)}
+.status{margin-left:auto;font:600 14px/1 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase;color:#A3ACBA}.status b{color:#fff;font-weight:600}
+.wrap{position:absolute;left:56px;right:56px;top:84px;bottom:60px}
+.kick{display:flex;align-items:center;gap:14px;font:600 15px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.chip{background:var(--acc);color:#141000;font:800 16px/1 'Barlow Condensed';letter-spacing:.18em;padding:7px 12px 6px;clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.kick b{color:#fff;font-weight:600}
+.sum{display:flex;gap:14px;margin-top:20px}
+.sum div{background:var(--panel);padding:12px 18px;min-width:180px}
+.sum div span{display:block;font:700 12px/1 'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.sum div b{display:block;font:800 32px/1 'Barlow Condensed';margin-top:6px}
+.sum div b small{font:600 15px/1 'Barlow Condensed';color:var(--dim);margin-left:6px;letter-spacing:.04em}
+.sum .wide{flex:1}
+.diff{display:flex;gap:4px;margin-top:10px}.diff i{flex:1;height:10px}
+.half{font:700 13px/1 'Barlow Condensed';letter-spacing:.18em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.half:before{content:"";width:16px;height:3px;background:var(--acc)}
+.row{display:grid;grid-template-columns:repeat(9,1fr);gap:10px}
+.t{position:relative;height:318px;background:var(--panel);padding:14px 14px 12px;display:flex;flex-direction:column;border-top:6px solid var(--b)}
+.t.h{--b:var(--acc)}.t.a{--b:#e9ecef}
+.t .md{display:flex;justify-content:space-between;align-items:baseline}
+.t .md b{font:800 34px/1 'Barlow Condensed';color:#fff}
+.t .md span{font:700 12px/1 'Barlow Condensed';letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.t .slot{display:flex;align-items:center;gap:6px;font:600 12px/1 'Barlow Condensed';letter-spacing:.12em;color:var(--faint);text-transform:uppercase;margin-top:4px}
+.t .opp{display:flex;align-items:center;gap:10px;margin-top:16px}
+.t .opp div{font:700 21px/1 'Barlow Condensed';text-transform:uppercase;letter-spacing:.02em}
+.t .opp small{display:block;font:600 11px/1 'Barlow Condensed';letter-spacing:.14em;color:var(--faint);margin-top:4px}
+.t .res{margin-top:auto;display:flex;align-items:center;gap:10px}
+.t .res .r{font:800 18px/1 'Barlow Condensed';width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:#0a0d12}
+.t .res .sc{font:800 34px/1 'Barlow Condensed'}
+.t .who{font:500 11.5px/1.35 Inter;color:var(--dim);margin-top:8px;min-height:31px}
+.t.played{opacity:.92}
+.t .pips{margin-top:auto;display:flex;gap:4px;align-items:center}
+.t .pips i{width:16px;height:7px;background:rgba(255,255,255,.12)}
+.t .pips i.f{background:var(--pc)}
+.t .pips span{font:600 11px/1 'Barlow Condensed';letter-spacing:.12em;color:var(--faint);margin-left:6px;text-transform:uppercase}
+.t .ins{font:500 12px/1.35 Inter;color:#cfd5de;margin-top:10px}
+.t .tag{position:absolute;top:-6px;right:10px;font:800 11px/1 'Barlow Condensed';letter-spacing:.16em;padding:5px 7px 4px}
+.t .tag.derby{background:#C42B2B;color:#fff}
+.t.next{background:linear-gradient(180deg,rgba(242,183,5,.18),rgba(12,16,22,.9) 60%);outline:2px solid var(--acc);outline-offset:-2px}
+.t .tag.nx{background:var(--acc);color:#141000;right:auto;left:10px}
+.window{display:flex;align-items:center;gap:14px;margin:18px 0 0;font:700 13px/1 'Barlow Condensed';letter-spacing:.18em;color:var(--acc);text-transform:uppercase}
+.window:before,.window:after{content:"";flex:1;height:2px;background:repeating-linear-gradient(90deg,var(--acc) 0 8px,transparent 8px 14px)}
+.window span{background:rgba(242,183,5,.1);border:1px solid rgba(242,183,5,.5);padding:8px 14px}
+.ticker{position:absolute;left:0;right:0;bottom:0;height:40px;display:flex;align-items:center;background:#0a0d12;border-top:1px solid #1d232c;font:500 15px/1 Inter;color:#cfd5de;white-space:nowrap;overflow:hidden}
+.ticker .lb{background:var(--acc);color:#141000;font:800 14px/40px 'Barlow Condensed';letter-spacing:.16em;padding:0 16px;margin-right:18px}
+.ticker .it{margin-right:22px}.ticker .it b{font:700 16px/1 'Barlow Condensed';color:#fff;letter-spacing:.04em}
+.ticker .sep{display:inline-block;width:14px;height:4px;background:linear-gradient(90deg,var(--acc) 50%,#fff 50%);margin-right:22px;vertical-align:middle}
+</style></head><body>
+<div class="lines"></div>
+<div class="top">
+  <svg width="30" height="34" viewBox="0 0 30 34"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="#F2B705" stroke="#0B1F3A" stroke-width="2"/><path d="M15 8 v18 M9 13 h12 M8.5 20 q6.5 7 13 0" stroke="#0B1F3A" stroke-width="2.2" fill="none"/></svg>
+  <div class="club">Port Calloway FC</div>
+  <div style="display:flex;margin-left:10px"><div class="tab">Hub</div><div class="tab">League</div><div class="tab on">Fixtures</div><div class="tab">Squad</div><div class="tab">Tactics</div><div class="tab">Training</div><div class="tab">Scouting</div><div class="tab">Club</div><div class="tab">Inbox</div></div>
+  <div class="status">MD <b>8/18</b> · <b>2nd</b> · <b>17 pts</b></div>
+</div>
+<div class="wrap">
+  <div class="kick"><span class="chip">THE SEASON</span><b>Port Calloway FC</b> · 18 matchdays · 2026/27</div>
+  <div class="sum">
+    <div><span>Points so far</span><b>17<small>from 8 · 2.1 a game</small></b></div>
+    <div><span>Record</span><b>W5 D2 L1</b></div>
+    <div><span>Home / away</span><b>13 <small>home</small> 4 <small>away</small></b></div>
+    <div class="wide"><span>The run-in · difficulty of the next 10</span><div class="diff" id="diff"></div></div>
+  </div>
+  <div class="half">First half · matchdays 1–9</div>
+  <div class="row" id="r1"></div>
+  <div class="window"><span>Midseason transfer window · 3 days</span></div>
+  <div class="half">Second half · matchdays 10–18</div>
+  <div class="row" id="r2"></div>
+</div>
+<div class="ticker"><span class="lb">AROUND THE LEAGUE</span><span class="it"><b>Derby day</b> on Matchday 11: Saltmere at The Lanternworks</span><span class="sep"></span><span class="it"><b>Toughest run:</b> Kestrel Bay face the top three in a row from Matchday 12</span></div>
+<script>
+const C={IVA:['Ironvale','#a3461f',5,'WWDLW'],KBF:['Kestrel Bay','#0f7a6e',3,'WWLDW'],SAL:['Saltmere','#0d4a5a',1,'WWDWD'],NGA:['Northgate','#1e6b46',4,'LWDWW'],ASH:['Ashcombe','#8c1d2b',6,'WDLWL'],BWC:['Brightwater','#3a7bd5',7,'DLWDD'],LIN:['Lindenfield','#d8b21c',9,'LLDLL'],VDT:['Veldmoor','#5a3a8c',10,'DLLLD'],COR:['Corvallen','#e9ecef',8,'LDLWL']};
+const F=[[1,'KBF','H','Evening','W','3–0',"Bankole 2, Calder"],[2,'SAL','A','Night','D','2–2',"Ilori, Bankole",1],[3,'NGA','A','Afternoon','D','1–1',"Pryce"],[4,'ASH','H','Evening','W','4–1',"Bankole 2, Ilori, Varga"],[5,'BWC','A','Afternoon','L','0–3',""],[6,'LIN','H','Night','W','2–1',"Calder, Bankole"],[7,'VDT','A','Afternoon','W','2–0',"Ilori, Achterberg"],[8,'COR','H','Night','W','2–1',"Bankole, Calder"],[9,'IVA','A','Afternoon',null,null,null,0,1],
+[10,'KBF','A','Evening'],[11,'SAL','H','Night',null,null,null,1],[12,'NGA','H','Afternoon'],[13,'ASH','A','Evening'],[14,'BWC','H','Afternoon'],[15,'LIN','A','Night'],[16,'VDT','H','Afternoon'],[17,'COR','A','Evening'],[18,'IVA','H','Afternoon']];
+const icon=s=>s=='Afternoon'?'<svg width="12" height="12"><circle cx="6" cy="6" r="3.5" fill="#F2B705"/></svg>':s=='Evening'?'<svg width="12" height="12"><path d="M1 8 h10" stroke="#e8a04a" stroke-width="2"/><path d="M3 8 a3 3 0 0 1 6 0" fill="#e8a04a"/></svg>':'<svg width="12" height="12"><path d="M8 2 a4.5 4.5 0 1 0 2 7 a4 4 0 0 1 -2 -7z" fill="#cfd5de"/></svg>';
+const diffOf=k=>{const p=C[k][2];return p<=3?5:p<=5?4:p<=7?3:p<=8?2:1};
+const pcol=d=>d>=5?'#ff5d6c':d>=4?'#e8a04a':d>=3?'#F2B705':'#3fd38b';
+const tile=([md,k,ha,slot,r,sc,who,derby,next])=>{const [n,c,pos,form]=C[k];const played=!!r;const d=diffOf(k);
+ return `<div class="t ${ha=='H'?'h':'a'} ${played?'played':''} ${next?'next':''}">${derby?'<span class="tag derby">DERBY</span>':''}${next?'<span class="tag nx">NEXT</span>':''}
+ <div class="md"><b>${md}</b><span>${ha=='H'?'Home':'Away'}</span></div><div class="slot">${icon(slot)} Sat · ${slot}</div>
+ <div class="opp"><svg width="34" height="38" viewBox="0 0 30 34"><path d="M15 1 L28 5 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V5 Z" fill="${c}" stroke="#fff" stroke-opacity=".5" stroke-width="1"/></svg><div>${n}<small>${played?'':pos+(pos==1?'st':pos==2?'nd':pos==3?'rd':'th')+' · '+form}</small></div></div>
+ ${played?`<div class="res"><span class="r" style="background:${r=='W'?'var(--win)':r=='D'?'var(--draw)':'var(--loss)'}">${r}</span><span class="sc">${sc}</span></div><div class="who">${who||'&nbsp;'}</div>`
+ :`${next?'<div class="ins">They\'re unbeaten in 4. Gil has 6 goals.</div>':''}<div class="pips" style="--pc:${pcol(d)}">${[1,2,3,4,5].map(i=>`<i class="${i<=d?'f':''}"></i>`).join('')}<span>${['','Easy','Fair','Even','Hard','Very hard'][d]}</span></div>`}</div>`};
+document.getElementById('r1').innerHTML=F.slice(0,9).map(tile).join('');
+document.getElementById('r2').innerHTML=F.slice(9).map(tile).join('');
+document.getElementById('diff').innerHTML=F.slice(8).map(f=>`<i style="background:${pcol(diffOf(f[1]))}" title="MD${f[0]}"></i>`).join('');
+</script>
+</body></html>
