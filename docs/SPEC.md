@@ -69,10 +69,10 @@ The spec used to be one 290 KB file. Reading all of it on every step was slow an
 
 | Task | Parts |
 |---|---|
-| M4 review fixes (`docs/design/REVIEW-M4.md`) | 14a, 21, 19b, and the review |
+| M4 review fixes (`docs/design/REVIEW-M4.md`) | 14a, 21, 19b, the review, and `docs/design/fulltime/` for S8 |
 | M5.6 transfers, scouting, news | 12a (§12.10–12.13), 16 (§16.6), 11a (§11.10) |
 | M5.7 club depth | 12b (§12.17), 11a (§11.13) |
-| M5 task 8: training in detail | 12b (§12.18), 11a (§11.9), 12a (§12.1–12.4) |
+| M5 task 8: training in detail | 12b (§12.18), 11a (§11.9), 12a (§12.1–12.4), and `docs/design/training/` |
 | M5 task 9: set pieces | 13c (§13.20), 13b (§13.17.5, §13.18.8), 13a (§13.8), 11a (§11.8) |
 | M5 task 10: shouts, plans, traits | 13c (§13.21–13.23), 13a (§13.12, §13.13), 09 (world gen for traits) |
 | M5 task 11: injury and discipline decisions | 12b (§12.19–12.20), 12a (§12.5–12.6, §12.9), 13a (§13.12) |

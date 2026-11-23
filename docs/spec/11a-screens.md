@@ -58,7 +58,7 @@ Grid of cards:
 - Validation (blocks Kick Off with a clear message): exactly 1 GK in the GK slot, 11 starters, no injured/suspended player in XI or bench, no duplicates.
 
 ### 11.9 Training
-**v1.7 (wins over the bullets below where they differ; rules in §12.18):** the screen lives on the training ground (§11.25), with no page scroll. The board on the left is the **week**: a grid of days × morning and afternoon with session cards (category colour, name, load pips). You drag cards from a library strip under it, or press Enter on a slot to pick one. Above it are the template dropdown, intensity, **Theo's week** (memo and Apply), "Let Theo plan every week", the week's load meter with its condition and injury forecast, and the team's average training rating. The panel on the right has tabs: **Players** (focus, workload, extra sessions, rest, mentor, this week's rating with a 6-week sparkline, injury risk, overload flag; selecting a row opens his file with the attribute arrows), **One-to-one** (the week's pick, the four types with their effects, Theo's suggestion, then the scene), and **Progress** (the selected player's season OVR line, attribute arrows and coach's note). The 3D drills on the training ground follow the category that dominates the week.
+**Design reference: `docs/design/training/` (approved 23 Nov; it wins on layout and look).** **v1.7 (wins over the bullets below where they differ; rules in §12.18):** the screen lives on the training ground (§11.25), with no page scroll. The board on the left is the **week**: a grid of days × morning and afternoon with session cards (category colour, name, load pips). You drag cards from a library strip under it, or press Enter on a slot to pick one. Above it are the template dropdown, intensity, **Theo's week** (memo and Apply), "Let Theo plan every week", the week's load meter with its condition and injury forecast, and the team's average training rating. The panel on the right has tabs: **Players** (focus, workload, extra sessions, rest, mentor, this week's rating with a 6-week sparkline, injury risk, overload flag; selecting a row opens his file with the attribute arrows), **One-to-one** (the week's pick, the four types with their effects, Theo's suggestion, then the scene), and **Progress** (the selected player's season OVR line, attribute arrows and coach's note). The 3D drills on the training ground follow the category that dominates the week.
 
 - Team focus (6 cards with icons and effect descriptions from §12.3), intensity (Light/Normal/Hard with injury-risk and recovery indicators).
 - Individual focus table: players with a dropdown grouped as Attribute / Role / Position (or "None") (§12.17.4), a rest toggle (§12.17.3), and an injury-risk chip (§12.17.6).
@@ -102,9 +102,11 @@ Full-window 3D view (§14) with HUD:
 - Half-time and full-time screens (§11.17, §11.18).
 
 ### 11.17 Half-Time
+**Design reference: `docs/design/fulltime/` README, "Half-time".**
 Stats comparison, assistant's half-time analysis (2–3 bullets with Apply buttons), team talk (half-time contexts), quick substitutions and tactics changes, then "Second half" (Continue). Real-time budget: the user controls it; no timer.
 
 ### 11.18 Full-Time and Post-Match
+**Design reference for the result screen and Half-Time: `docs/design/fulltime/` (approved 23 Nov; it wins on layout and look).**
 1. **Result**: final score, scorers with minutes, MOTM card, player ratings for both teams (sortable), full stats, shot map (2D pitch with shot dots sized by xG, filled for goals), xG timeline.
 2. **Team talk** (full-time contexts).
 3. **Press conference** if triggered (§12.6): journalist portrait, voiced question, 3 answers.

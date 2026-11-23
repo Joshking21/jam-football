@@ -120,7 +120,7 @@ These are faked or mismatched states. As asked twice before: **play a real seede
 
 **S7. Rain washes out the whole frame.** Grey haze covers everything. Rain adds only `+0.0008` haze density (ART-DIRECTION §3.2). Keep the far stand visible, and the floodlights should streak on the wet grass (§14.10), not fog the air.
 
-**S8. Half-time and full-time are small cards in a big empty dark screen.**
+**S8. Half-time and full-time are small cards in a big empty dark screen.** **Build them to the new reference `docs/design/fulltime/` (approved by the user 23 Nov); it replaces the description below.**
 - They're on-air moments. Make them full-height broadcast panels: a score band with scorers and minutes, the stats in large type, the shot map and the xG timeline side by side, and a man-of-the-match card with his printed portrait.
 - Don't over-build: in M6b these move into the dressing room as the panel that sits in the scene (§11.25), so build them as one reusable panel component.
 
