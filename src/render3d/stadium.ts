@@ -126,7 +126,8 @@ export function createStadium(
       d: THREE.Vector3,
       col: THREE.Color,
     ) => {
-      for (const v of [a, b, c, a, c, d]) {
+      // Wound so faces point up (treads) and toward the pitch (risers), i.e. toward the camera.
+      for (const v of [a, c, b, a, d, c]) {
         positions.push(v.x, v.y, v.z);
         colors.push(col.r, col.g, col.b);
       }
@@ -281,7 +282,7 @@ export function createStadium(
   const createAdStrip = (len: number, pos: THREE.Vector3, rotY: number) => {
     const tex = adTexture.clone();
     tex.needsUpdate = true;
-    tex.repeat.set(len / 12, 1);
+    tex.repeat.set(len / 72, 1); // each sponsor gets 6 m of board
     const mat = new THREE.MeshStandardMaterial({
       map: tex,
       emissiveMap: tex,

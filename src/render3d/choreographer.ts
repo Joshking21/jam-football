@@ -54,9 +54,9 @@ export interface TeamTacticsInput {
   lineup: PlayerId[];
 }
 
-type SegKind = 'flight' | 'roll' | 'carry' | 'hold';
+export type SegKind = 'flight' | 'roll' | 'carry' | 'hold';
 
-interface BallSeg {
+export interface BallSeg {
   kind: SegKind;
   t0: number;
   t1: number;
@@ -78,7 +78,7 @@ function segRest(s: BallSeg): THREE.Vector3 {
 
 type SetPiece = 'corner' | 'freekick' | 'throw' | 'goalkick' | 'kickoff' | null;
 
-interface Plan {
+export interface Plan {
   seq: number;
   t: number;
   end: number;
@@ -130,6 +130,10 @@ export class Choreographer {
   public carrierId: PlayerId | null = null;
   /** The plan active at the current time (read by the scene for cameras and physics). */
   public activePlan: Plan | null = null;
+  /** True on a frame where time jumped and everyone was snapped into place. */
+  public jumped = false;
+  /** The ball segment active at the current time (physics launches the real ball from it). */
+  public activeSeg: BallSeg | null = null;
 
   constructor(homeTactics: TeamTacticsInput, awayTactics: TeamTacticsInput, paces: PlayerPaceMap) {
     this.homeTactics = homeTactics;
@@ -183,6 +187,7 @@ export class Choreographer {
 
     const jump = this.lastPt < 0 || Math.abs(pt - this.lastPt) > DIRECTOR.snapJumpSec;
     this.lastPt = pt;
+    this.jumped = jump;
 
     this.activePlan = this.planAt(pt);
     this.updateBall(pt, delta);
@@ -861,6 +866,7 @@ export class Choreographer {
       if (!last && segEnd(s) <= pt) last = s;
     }
     this.carrierId = null;
+    this.activeSeg = seg;
     if (seg) {
       this.evalSeg(seg, pt, this.ballPos);
       if (seg.kind === 'carry' || seg.kind === 'hold') this.carrierId = seg.holderId ?? null;
@@ -1058,7 +1064,12 @@ export class Choreographer {
     });
   }
 
-  private nearest(side: Side, p: THREE.Vector3, count: number, skipGK = true): PlayerId[] {
+  /** Side of a player in this match. */
+  public sideOfPlayer(pid: PlayerId): Side | undefined {
+    return this.sideOf.get(pid);
+  }
+
+  public nearest(side: Side, p: THREE.Vector3, count: number, skipGK = true): PlayerId[] {
     const tac = this.teamTactics(side);
     return tac.lineup
       .filter((pid, slot) => !(skipGK && slot === 0) && this.states.has(pid))

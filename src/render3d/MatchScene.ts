@@ -15,6 +15,7 @@ import { createStadiumEnvironment, StadiumEnvironment } from './environment';
 import { createFloodlightBeams, FloodlightBeams } from './beams';
 import { RENDER_CONFIG } from '../config/balance';
 import { MatchEvent } from '../core/types';
+import { MatchPhysics } from '../physics/matchPhysics';
 
 export class MatchScene {
   public renderer: THREE.WebGLRenderer;
@@ -45,6 +46,11 @@ export class MatchScene {
   private currentHalf: 1 | 2 = 1;
   private lastTriggeredGoalSeq = -1;
   private ballInNet = false;
+  /** §14.12 physics; null until Rapier has loaded (or if it can't), then the director drives. */
+  private physics: MatchPhysics | null = null;
+  private tmpQ = new THREE.Quaternion();
+  private yawQ = new THREE.Quaternion();
+  private upAxis = new THREE.Vector3(0, 1, 0);
   private pendingGoalSide: 'home' | 'away' | null = null;
 
   constructor(ctx: Match3DContext) {
@@ -153,6 +159,21 @@ export class MatchScene {
       );
     }
 
+    // 10b. Physics (§14.12): loads lazily; the director's motion is used until it's ready.
+    {
+      const ids = [...this.choreographerLineups()];
+      const strength: Record<string, number> = {};
+      [...ctx.homePlayers, ...ctx.awayPlayers].forEach(
+        (p) => (strength[p.id] = p.attributes.strength),
+      );
+      void MatchPhysics.create(this.choreographer, ids, strength, ctx.weather === 'rain').then(
+        (p) => {
+          if (this.isDisposed) p?.dispose();
+          else this.physics = p;
+        },
+      );
+    }
+
     // 11. Lighting & Atmosphere
     this.lights = createLights(
       timeSlot,
@@ -225,10 +246,16 @@ export class MatchScene {
     // Update choreographer physics, steering and ball flight
     this.choreographer.update(delta, this.currentPt, this.currentEvent, this.currentHalf);
 
+    // Physics acts the plan out (players' true positions are written back into the director).
+    this.physics?.step(delta, this.currentPt);
+
     // Update 3D ball
-    const bPos = this.choreographer.ballPos;
+    const bPos = this.physics ? this.physics.ballPos : this.choreographer.ballPos;
     this.ball.setPosition(bPos.x, bPos.y, bPos.z);
-    this.ball.updateRotation(this.choreographer.ballVelocity, delta);
+    this.ball.updateRotation(
+      this.physics ? this.physics.ballVel : this.choreographer.ballVelocity,
+      delta,
+    );
 
     // The net bulges and the crowd goes up when the ball actually crosses the line.
     const inNet = Math.abs(bPos.x) > 52.7 && Math.abs(bPos.z) < 3.66 && bPos.y < 2.44;
@@ -237,7 +264,7 @@ export class MatchScene {
         Math.sign(bPos.x) * 52.5,
         bPos.z,
         bPos.y,
-        this.choreographer.ballVelocity.length(),
+        (this.physics ? this.physics.ballVel : this.choreographer.ballVelocity).length(),
       );
       if (this.pendingGoalSide) this.crowd.triggerGoal(this.pendingGoalSide);
       this.pendingGoalSide = null;
@@ -261,6 +288,18 @@ export class MatchScene {
     this.goals.update(delta);
     this.crowd.update(delta);
     this.players.update(delta);
+
+    // Falls (§14.12.4): a knocked-down player follows his body's real rotation.
+    if (this.physics) {
+      const ph = this.physics;
+      this.players.allPlayers.forEach((visual, pid) => {
+        if (!ph.isFallen(pid)) return;
+        const state = this.choreographer.getPlayerState(pid);
+        this.yawQ.setFromAxisAngle(this.upAxis, state ? state.facingAngle : 0);
+        visual.group.quaternion.copy(ph.rotationOf(pid, this.tmpQ)).multiply(this.yawQ);
+        visual.group.position.y = Math.max(-0.75, ph.heightOf(pid));
+      });
+    }
     this.lights.update(delta);
 
     // Update camera target tracking
@@ -298,6 +337,12 @@ export class MatchScene {
   };
 
   /** The full event list so far; the director builds one continuous ball timeline from it. */
+  private *choreographerLineups(): Generator<string> {
+    for (const pid of this.players.allPlayers.keys()) {
+      if (this.choreographer.getPlayerState(pid)) yield pid;
+    }
+  }
+
   public setEvents(events: MatchEvent[]) {
     this.choreographer.setEvents(events);
   }
@@ -333,7 +378,7 @@ export class MatchScene {
     if (carrier && second) {
       const a = this.choreographer.getPlayerState(carrier);
       const b = this.choreographer.getPlayerState(second);
-      if (a && b && a.currentPos.distanceTo(b.currentPos) < 4) second = null;
+      if (a && b && a.currentPos.distanceTo(b.currentPos) < 10) second = null;
     }
     this.players.updateNameTags(carrier, second, showAll);
   }
@@ -368,6 +413,8 @@ export class MatchScene {
     this.cameras.dispose();
     this.lights.dispose();
     this.beams?.dispose();
+    this.physics?.dispose();
+    this.physics = null;
     this.environment?.dispose();
     this.postPipeline?.dispose();
 
