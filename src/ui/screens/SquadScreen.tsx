@@ -2,6 +2,7 @@
 // Detailed squad table with portrait thumb, position, age, OVR badge, potential stars, condition bar,
 // morale icon, form dots, stats (Apps, Goals, Assists, Avg rating), Value, Wage, Contract, Status chips.
 // Filters: All / GK / DEF / MID / FWD / Injured / Unhappy. Sortable. Row click opens Player Profile.
+import { TraitChips } from '../components/TraitChips';
 import React, { useState, useMemo } from 'react';
 import { useStore } from '../../state/store';
 import { Player, Position } from '../../core/types';
@@ -11,7 +12,7 @@ import { Stamp } from '../components/Stamp';
 import { Star, AlertTriangle, ShieldAlert, HeartCrack, Search } from 'lucide-react';
 import { getClubLeaders, getInjuryRisk } from '../../core/club/clubDepth';
 
-type SquadFilter = 'ALL' | 'GK' | 'DEF' | 'MID' | 'FWD' | 'INJURED' | 'UNHAPPY';
+type SquadFilter = 'ALL' | 'GK' | 'DEF' | 'MID' | 'FWD' | 'INJURED' | 'UNHAPPY' | 'TRAITS';
 
 export const SquadScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
@@ -87,6 +88,8 @@ export const SquadScreen: React.FC = () => {
             return p.injury !== null;
           case 'UNHAPPY':
             return p.morale < 40;
+          case 'TRAITS':
+            return (p.traits?.length ?? 0) > 0;
           case 'ALL':
           default:
             return true;
@@ -201,26 +204,26 @@ export const SquadScreen: React.FC = () => {
               border: '1px solid var(--border)',
             }}
           >
-            {(['ALL', 'GK', 'DEF', 'MID', 'FWD', 'INJURED', 'UNHAPPY'] as SquadFilter[]).map(
-              (filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setActiveFilter(filter)}
-                  className="broadcast-label"
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 'var(--radius-s)',
-                    backgroundColor: activeFilter === filter ? 'var(--accent)' : 'transparent',
-                    color: activeFilter === filter ? 'var(--accent-ink)' : 'var(--text-dim)',
-                    fontWeight: 700,
-                    fontSize: '12px',
-                    transition: 'all var(--dur-fast)',
-                  }}
-                >
-                  {filter}
-                </button>
-              ),
-            )}
+            {(
+              ['ALL', 'GK', 'DEF', 'MID', 'FWD', 'INJURED', 'UNHAPPY', 'TRAITS'] as SquadFilter[]
+            ).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className="broadcast-label"
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 'var(--radius-s)',
+                  backgroundColor: activeFilter === filter ? 'var(--accent)' : 'transparent',
+                  color: activeFilter === filter ? 'var(--accent-ink)' : 'var(--text-dim)',
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  transition: 'all var(--dur-fast)',
+                }}
+              >
+                {filter}
+              </button>
+            ))}
           </div>
 
           {/* Search box */}
@@ -451,6 +454,11 @@ export const SquadScreen: React.FC = () => {
                               </span>
                             )}
                           </div>
+                          {(player.traits?.length ?? 0) > 0 && (
+                            <div style={{ marginTop: 2 }}>
+                              <TraitChips traits={player.traits} tone="dark" />
+                            </div>
+                          )}
                           <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
                             {player.nationality} · {player.foot} footed
                           </div>

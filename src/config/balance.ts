@@ -1174,6 +1174,138 @@ export const K = {
       dropForwardBackMinutes: 20,
     },
   },
+  shouts: {
+    durationT: 600, // 10 match minutes (§13.21)
+    cooldownT: 900, // 15 match minutes for half-effect
+    delayT: 10, // takes effect 10s after issuedAtT
+    pushForward: {
+      fatigueDrainMult: 1.1,
+      oppCounterBonus: 0.2,
+    },
+    keepTight: {
+      oppShotCtxMod: -0.04,
+      ourShotUtilMod: -0.2,
+    },
+    getStuckIn: {
+      tackleCtxMod: 0.1,
+      foulMult: 1.4,
+      temperamentalCardMult: 1.3,
+    },
+    calmDown: {
+      foulMult: 0.7,
+      temperamentalCardMult: 0.7,
+      tackleCtxMod: -0.05,
+    },
+    concentrate: {
+      oppShotCtxMod: -0.03,
+      passCtxMod: 0.02,
+      minMinute: 75,
+      concedeWindowSeconds: 300, // within 5' of conceding
+      maxPerHalf: 1,
+    },
+    encourage: {
+      focusBoost: 0.02,
+      minRatingForMorale: 7.0,
+      winningBy2FocusBoost: -0.01,
+    },
+    demandMore: {
+      focusBoost: 0.03,
+      ambitiousLeaderMult: 1.3,
+      relaxedMult: 0.5,
+      temperamentalFlipChance: 0.4,
+      temperamentalFlipFocusBoost: -0.02,
+      winningMoraleDelta: -1,
+    },
+    ai: {
+      minClubReputation: 3,
+      pushForwardMinMinute: 75,
+      keepTightMinMinute: 80,
+    },
+  },
+  matchPlans: {
+    maxRules: 4,
+    askMeFirstTimeoutSeconds: 6,
+  },
+  traits: {
+    worldGen: {
+      baseChance: 0.1, // spec formula base 0.08 gave 50% with ≥1 trait; 0.10 lands in the 55–65% target
+      bonusSlope: 0.25,
+      divisor: 20,
+      maxTraits: 3,
+    },
+    clashes: {
+      moraleWeeklyPenalty: -1,
+      memoWeeks: 3,
+      matchingRoleGainBonus: 0.05,
+    },
+    learning: {
+      baseProgress: 8,
+      youthBonus: 4, // age <= 23
+      veteranPenalty: -3, // age >= 30
+      decisionsBonus: 2, // decisions >= 70
+      completionThreshold: 100,
+      devFactorMult: 0.8,
+    },
+    cutsInside: {
+      attCenterInvShift: 0.2,
+      wideShotUtilMod: 0.2,
+      crossesMult: 0.6,
+      minDribbling: 60,
+    },
+    shootsFromDistance: {
+      outsideShotUtilMod: 0.3,
+      minLongShots: 60,
+    },
+    getsForward: {
+      defToAttInvShift: 0.1,
+      theirCounterShotCtxMod: 0.05,
+      minStamina: 60,
+    },
+    staysBack: {
+      attToDefInvShift: 0.15,
+      theirCounterCtxMod: -0.04,
+    },
+    playsOneTwos: {
+      returnRecvMult: 1.4,
+      passCtxMod: 0.05,
+      dribbleUtilMod: -0.2,
+      minPassing: 60,
+    },
+    killerBalls: {
+      throughUtilMod: 0.3,
+      interceptionMult: 1.15,
+      minPassing: 65,
+    },
+    runsWithBall: {
+      midDribbleUtilMod: 0.25,
+      midBallLostMult: 1.1,
+      minDribbling: 60,
+    },
+    arrivesLate: {
+      cutbackBoxCentralRecvMult: 1.3,
+      defCoverMod: -0.1,
+      minOffTheBall: 60,
+    },
+    holdsUp: {
+      longFirstTouchMod: 0.15,
+      nextStepRecycleMod: 0.2,
+      throughRecvMult: 0.8,
+      minStrength: 65,
+    },
+    comesDeep: {
+      attToMidInvShift: 0.15,
+      boxRecvMult: 0.85,
+    },
+    attacksAir: {
+      sAirMod: 0.1,
+      aerialFoulsMult: 1.2,
+      minHeading: 65,
+    },
+    divesIn: {
+      sTklMod: 0.15,
+      foulsMult: 1.4,
+    },
+  },
 };
 
 export const RENDER_CONFIG = {

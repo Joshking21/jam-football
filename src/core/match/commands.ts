@@ -40,6 +40,11 @@ export function shouldApplyCommand(
     return lastEventType != null && DEAD_BALL_EVENT_TYPES.has(lastEventType);
   }
 
+  if (cmd.kind === 'shout') {
+    // Shouts take effect at first step at or after issuedAtT + 10 (§13.21)
+    return currentT >= cmd.issuedAtT + 10;
+  }
+
   return false;
 }
 

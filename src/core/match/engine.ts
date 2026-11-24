@@ -16,7 +16,11 @@ import {
   PlayerInstruction,
   DefInstruction,
   OppOrder,
+  TraitId,
+  ShoutId,
+  MatchPlanRule,
 } from '../types';
+import { isTraitClashing } from '../player/traits';
 import { createRng, restoreRng, Rng } from '../rng';
 import { z, sigmoid, logit, clamp, roundTo } from '../math';
 import { K, BALANCE } from '@/config/balance';
@@ -90,6 +94,8 @@ export class MatchEngine implements MatchSim {
   private ballPosAbsolute: { x: number; y: number } = { x: 52.5, y: 34 };
   private ballHolderId: PlayerId | null = null;
   private lastPasserId: PlayerId | null = null;
+  private lastPassType: 'short' | 'long' | 'through' | 'cross' | null = null;
+  private holdsUpRecycleBonus: boolean = false;
   private forcedAction: { action: CandidateAction; context?: ShotContext } | null = null;
 
   private phase: MatchPhase = { type: 'OPEN' };
@@ -187,6 +193,85 @@ export class MatchEngine implements MatchSim {
     return f;
   }
 
+  private getEffectivePlayerTraits(playerId: PlayerId, slot?: number): TraitId[] {
+    const sheet = this.getPlayerSheet(playerId);
+    const rawTraits = sheet?.traits ?? [];
+    if (rawTraits.length === 0) return [];
+    let pis: (PlayerInstruction | DefInstruction)[] = [];
+    if (slot !== undefined) {
+      const team = this.homeTeam.lineup[slot] === playerId ? this.homeTeam : this.awayTeam;
+      pis = [
+        ...(team.attInstructions?.[slot] ?? team.playerInstructions[slot] ?? []),
+        ...(team.defInstructions?.[slot] ?? []),
+      ];
+    } else {
+      const homeSlot = this.homeTeam.lineup.indexOf(playerId);
+      if (homeSlot !== -1) {
+        pis = [
+          ...(this.homeTeam.attInstructions?.[homeSlot] ??
+            this.homeTeam.playerInstructions[homeSlot] ??
+            []),
+          ...(this.homeTeam.defInstructions?.[homeSlot] ?? []),
+        ];
+      } else {
+        const awaySlot = this.awayTeam.lineup.indexOf(playerId);
+        if (awaySlot !== -1) {
+          pis = [
+            ...(this.awayTeam.attInstructions?.[awaySlot] ??
+              this.awayTeam.playerInstructions[awaySlot] ??
+              []),
+            ...(this.awayTeam.defInstructions?.[awaySlot] ?? []),
+          ];
+        }
+      }
+    }
+    return rawTraits.filter((t: TraitId) => !isTraitClashing(t, pis).clashes);
+  }
+
+  private getOpponentShotCtxModifier(
+    defendingSide: Side,
+    lane: 'Left' | 'Right' | 'Centre',
+  ): number {
+    const oppTeam = defendingSide === 'home' ? this.homeTeam : this.awayTeam;
+    let mod = 0;
+    if (oppTeam.activeShout?.shout === 'keepTight') {
+      mod += K.shouts.keepTight.oppShotCtxMod * (oppTeam.activeShout.isHalfEffect ? 0.5 : 1.0);
+    }
+    if (oppTeam.activeShout?.shout === 'concentrate') {
+      mod += K.shouts.concentrate.oppShotCtxMod * (oppTeam.activeShout.isHalfEffect ? 0.5 : 1.0);
+    }
+    if (this.phase.type === 'COUNTER') {
+      const fDef = FORMATIONS[oppTeam.formation];
+      for (let slot = 0; slot < oppTeam.lineup.length; slot++) {
+        const pId = oppTeam.lineup[slot];
+        if (!pId) continue;
+        const pos = fDef.slots[slot]?.position || 'CM';
+        const traits = this.getEffectivePlayerTraits(pId, slot);
+        if (traits.includes('getsForward')) {
+          const slotLane = ['LB', 'LWB', 'LM', 'LW'].includes(pos)
+            ? 'Left'
+            : ['RB', 'RWB', 'RM', 'RW'].includes(pos)
+              ? 'Right'
+              : 'Centre';
+          if (slotLane === lane) {
+            mod += K.traits.getsForward.theirCounterShotCtxMod;
+            break;
+          }
+        }
+      }
+      for (let slot = 0; slot < oppTeam.lineup.length; slot++) {
+        const pId = oppTeam.lineup[slot];
+        if (!pId) continue;
+        const traits = this.getEffectivePlayerTraits(pId, slot);
+        if (traits.includes('staysBack')) {
+          mod += K.traits.staysBack.theirCounterCtxMod;
+          break;
+        }
+      }
+    }
+    return mod;
+  }
+
   private getTeamInvolvements(side: Side): ZoneWeights[] {
     const cached = this.teamInvolvementsCache[side];
     if (cached) return cached;
@@ -209,6 +294,7 @@ export class MatchEngine implements MatchSim {
         playerInstructions: pis,
         mentality: team.instructions.mentality,
         width: team.instructions.width,
+        traits: id ? this.getEffectivePlayerTraits(id, slot) : [],
       });
       list.push(weights);
     }
@@ -239,20 +325,35 @@ export class MatchEngine implements MatchSim {
       this.awayTeam.instructions.mentality === 'VeryAttacking'
         ? K.d2.mentality.veryAttackingFatigueMult
         : 1.0;
+    const homeShoutDrain =
+      this.homeTeam.activeShout?.shout === 'pushForward'
+        ? 1 +
+          (K.shouts.pushForward.fatigueDrainMult - 1) *
+            (this.homeTeam.activeShout.isHalfEffect ? 0.5 : 1.0)
+        : 1.0;
+    const awayShoutDrain =
+      this.awayTeam.activeShout?.shout === 'pushForward'
+        ? 1 +
+          (K.shouts.pushForward.fatigueDrainMult - 1) *
+            (this.awayTeam.activeShout.isHalfEffect ? 0.5 : 1.0)
+        : 1.0;
+
     this.homeDrainRate =
       BALANCE.condition.drainPerMinuteBase *
       BALANCE.condition.pressingFactors[this.homeTeam.instructions.pressing] *
       BALANCE.condition.tempoFactors[this.homeTeam.instructions.tempo] *
       homeLossMult *
       homeWinMult *
-      homeVeryAttMult;
+      homeVeryAttMult *
+      homeShoutDrain;
     this.awayDrainRate =
       BALANCE.condition.drainPerMinuteBase *
       BALANCE.condition.pressingFactors[this.awayTeam.instructions.pressing] *
       BALANCE.condition.tempoFactors[this.awayTeam.instructions.tempo] *
       awayLossMult *
       awayWinMult *
-      awayVeryAttMult;
+      awayVeryAttMult *
+      awayShoutDrain;
   }
 
   constructor(input: MatchInput, seed: number, enableSnapshots: boolean = true) {
@@ -327,6 +428,14 @@ export class MatchEngine implements MatchSim {
       redCardedPlayers: [],
       substitutedPlayers: [],
       focusBoostExpiryT: input.home.focusBoost > 0 ? 1200 : 0,
+      activeShout: null,
+      lastShoutEndT: {},
+      shoutCountThisHalf: {},
+      matchPlans: input.home.tactics.matchPlans ? [...input.home.tactics.matchPlans] : [],
+      firedMatchPlans: [],
+      askMeFirst: input.home.tactics.askMeFirst ?? true,
+      playerFocusBoost: {},
+      teamFocusBoost: null,
     };
 
     // Initialize away team state
@@ -392,6 +501,14 @@ export class MatchEngine implements MatchSim {
       redCardedPlayers: [],
       substitutedPlayers: [],
       focusBoostExpiryT: input.away.focusBoost > 0 ? 1200 : 0,
+      activeShout: null,
+      lastShoutEndT: {},
+      shoutCountThisHalf: {},
+      matchPlans: input.away.tactics.matchPlans ? [...input.away.tactics.matchPlans] : [],
+      firedMatchPlans: [],
+      askMeFirst: input.away.tactics.askMeFirst ?? true,
+      playerFocusBoost: {},
+      teamFocusBoost: null,
     };
 
     this.updateDrainRates();
@@ -804,6 +921,200 @@ export class MatchEngine implements MatchSim {
           importance: 0,
         });
       }
+    } else if (cmd.kind === 'shout') {
+      const lastEnd = team.lastShoutEndT?.[cmd.shout] ?? -99999;
+      const isHalfEffect = this.t - lastEnd < 900;
+
+      // SPEC §13.21: concentrate only after 75' or within 5' of conceding; once per half
+      if (cmd.shout === 'concentrate') {
+        const after75 = this.t >= 4500;
+        const recentConcede =
+          team.lastConcededT !== undefined && this.t - team.lastConcededT <= 300;
+        const usedThisHalf = (team.shoutCountThisHalf?.['concentrate'] ?? 0) >= 1;
+        if ((!after75 && !recentConcede) || usedThisHalf) {
+          return; // Ineligible
+        }
+        team.shoutCountThisHalf = {
+          ...team.shoutCountThisHalf,
+          concentrate: (team.shoutCountThisHalf?.['concentrate'] ?? 0) + 1,
+        };
+      }
+
+      if (team.activeShout) {
+        team.lastShoutEndT = {
+          ...team.lastShoutEndT,
+          [team.activeShout.shout]: this.t,
+        };
+      }
+
+      team.activeShout = {
+        shout: cmd.shout,
+        issuedAtT: cmd.issuedAtT,
+        expiresAtT: this.t + 600,
+        isHalfEffect,
+      };
+
+      const ourScore = cmd.side === 'home' ? this.score.home : this.score.away;
+      const oppScore = cmd.side === 'home' ? this.score.away : this.score.home;
+      const goalDiff = ourScore - oppScore;
+
+      if (cmd.shout === 'encourage') {
+        if (goalDiff >= 2) {
+          // Complacency
+          team.teamFocusBoost = {
+            boost: -0.01 * (isHalfEffect ? 0.5 : 1.0),
+            expiresAtT: this.t + 600,
+          };
+        } else {
+          team.teamFocusBoost = {
+            boost: 0.02 * (isHalfEffect ? 0.5 : 1.0),
+            expiresAtT: this.t + 600,
+          };
+          for (const id of team.lineup) {
+            if (!id) continue;
+            const pl = this.playerLines[id];
+            if (pl && pl.rating >= 7.0 && this.players[id]) {
+              this.players[id].morale = Math.min(100, this.players[id].morale + 1);
+            }
+          }
+        }
+      } else if (cmd.shout === 'demandMore') {
+        if (goalDiff > 0) {
+          // Morale -1 for all when winning
+          for (const id of team.lineup) {
+            if (id && this.players[id]) {
+              this.players[id].morale = Math.max(0, this.players[id].morale - 1);
+            }
+          }
+          team.teamFocusBoost = null;
+        } else {
+          team.playerFocusBoost = { ...team.playerFocusBoost };
+          for (const id of team.lineup) {
+            if (!id) continue;
+            const personality = this.getPlayerSheet(id)?.personality;
+            let boost = 0.03;
+            if (personality === 'Leader' || personality === 'Ambitious') {
+              boost = 0.03 * 1.3;
+            } else if (personality === 'Relaxed') {
+              boost = 0.03 * 0.5;
+            } else if (personality === 'Temperamental') {
+              boost = this.rng.chance(0.4) ? -0.02 : 0.03;
+            }
+            if (isHalfEffect) boost *= 0.5;
+            team.playerFocusBoost[id] = {
+              boost,
+              expiresAtT: this.t + 600,
+            };
+          }
+        }
+      }
+
+      if (cmd.shout === 'pushForward') {
+        this.updateDrainRates();
+        this.invalidateTeamInvolvements(cmd.side);
+      } else if (cmd.shout === 'keepTight') {
+        this.invalidateTeamInvolvements(cmd.side);
+      }
+
+      this.emitEvent('SHOUT', 0, {
+        side: cmd.side,
+        importance: 1,
+        data: {
+          shout: cmd.shout,
+          isHalfEffect,
+        },
+      });
+    }
+  }
+
+  private checkShoutExpirations(): void {
+    for (const team of [this.homeTeam, this.awayTeam]) {
+      if (team.activeShout && this.t >= team.activeShout.expiresAtT) {
+        team.lastShoutEndT = {
+          ...team.lastShoutEndT,
+          [team.activeShout.shout]: this.t,
+        };
+        const prevShout = team.activeShout.shout;
+        team.activeShout = null;
+        if (prevShout === 'pushForward') {
+          this.updateDrainRates();
+        }
+        this.invalidateTeamInvolvements(team.side);
+      }
+    }
+  }
+
+  private checkMatchPlans(): void {
+    const currentMin = Math.floor(this.t / 60);
+    for (const team of [this.homeTeam, this.awayTeam]) {
+      const plans = team.matchPlans ?? [];
+      if (plans.length === 0) continue;
+      const fired = team.firedMatchPlans ?? [];
+      const ourScore = team.side === 'home' ? this.score.home : this.score.away;
+      const oppScore = team.side === 'home' ? this.score.away : this.score.home;
+      const goalDiff = ourScore - oppScore;
+      const oppTeam = team.side === 'home' ? this.awayTeam : this.homeTeam;
+
+      for (const rule of plans) {
+        if (fired.includes(rule.id)) continue;
+        if (currentMin < rule.after) continue;
+
+        let matches = false;
+        switch (rule.when) {
+          case 'Losing':
+            matches = goalDiff < 0;
+            break;
+          case 'Drawing':
+            matches = goalDiff === 0;
+            break;
+          case 'Winning1':
+            matches = goalDiff === 1;
+            break;
+          case 'Winning2Plus':
+            matches = goalDiff >= 2;
+            break;
+          case 'DownTo10':
+            matches = team.redCardedPlayers.length >= 1;
+            break;
+          case 'OppDownTo10':
+            matches = oppTeam.redCardedPlayers.length >= 1;
+            break;
+        }
+
+        if (matches) {
+          if (!team.firedMatchPlans) team.firedMatchPlans = [];
+          team.firedMatchPlans.push(rule.id);
+
+          this.emitEvent('MATCH_PLAN_TRIGGERED', 0, {
+            side: team.side,
+            importance: 1,
+            data: {
+              ruleId: rule.id,
+              when: rule.when,
+              after: rule.after,
+              then: rule.then,
+              askMeFirst: team.askMeFirst ?? true,
+            },
+          });
+
+          if (rule.then === 'PlanA' || rule.then === 'PlanB' || rule.then === 'PlanC') {
+            this.applyCommand({
+              kind: 'plan',
+              side: team.side,
+              plan: rule.then === 'PlanA' ? 0 : rule.then === 'PlanB' ? 1 : 2,
+              issuedAtT: this.t,
+            });
+          } else {
+            this.applyCommand({
+              kind: 'shout',
+              side: team.side,
+              shout: rule.then as ShoutId,
+              issuedAtT: this.t,
+            });
+          }
+          break; // First rule in the list wins if multiple match at the same step
+        }
+      }
     }
   }
 
@@ -875,12 +1186,27 @@ export class MatchEngine implements MatchSim {
         subsUsed: team.subsUsed,
         windowsUsed: team.inPlayWindowsUsed,
         players: playerMap,
+        reputation: (teamSheet as any).reputation ?? 3,
+        teamFouls: this.teamStats[side].fouls,
+        hasYellowCard: Object.values(this.players).some(
+          (p) => p.side === side && p.yellowCards > 0,
+        ),
+        activeShout: team.activeShout?.shout ?? null,
       });
 
       if (decision.instructionChanges) {
         team.instructions = { ...team.instructions, ...decision.instructionChanges };
         this.updateDrainRates();
         this.invalidateTeamInvolvements(side);
+      }
+
+      if (decision.shout) {
+        this.applyCommand({
+          kind: 'shout',
+          side,
+          shout: decision.shout,
+          issuedAtT: this.t,
+        });
       }
 
       if (decision.substitutions) {
@@ -925,6 +1251,8 @@ export class MatchEngine implements MatchSim {
         this.half = 2;
         this.t = 2700;
         this.addedTimeAnnounced = false;
+        this.homeTeam.shoutCountThisHalf = {};
+        this.awayTeam.shoutCountThisHalf = {};
 
         // Calculate stoppage 2
         const goals2H = this.score.home + this.score.away;
@@ -978,6 +1306,8 @@ export class MatchEngine implements MatchSim {
         this.events.length > 0 ? this.events[this.events.length - 1]!.type : null,
       );
     }
+    this.checkShoutExpirations();
+    this.checkMatchPlans();
     this.runAiManagerCheck();
 
     // 3. Resolve Current Action / Step
@@ -1676,7 +2006,14 @@ export class MatchEngine implements MatchSim {
         defendingDefRoles,
         defendingLaneDefRole,
         isPressBeaten: this.pressBeatenSteps > 0,
+        holderTraits: this.getEffectivePlayerTraits(holderId),
+        activeShout: team.activeShout?.shout ?? null,
+        isHalfEffectShout: team.activeShout?.isHalfEffect ?? false,
       };
+
+      if (this.holdsUpRecycleBonus) {
+        this.holdsUpRecycleBonus = false;
+      }
 
       action = selectAction(currentThird, currentLane, actionCtx, this.rng);
     }
@@ -1899,6 +2236,14 @@ export class MatchEngine implements MatchSim {
       if (holderPIs.includes('riskyPasses')) {
         ctx += K.d2.pi.riskyPasses.passCtxAdd;
       }
+      if (team.activeShout?.shout === 'concentrate') {
+        ctx += K.shouts.concentrate.passCtxMod * (team.activeShout.isHalfEffect ? 0.5 : 1.0);
+      }
+      const isReturnPass = this.lastPassType === 'short' && this.lastPasserId === receiverId;
+      const holderTraits = this.getEffectivePlayerTraits(holderId);
+      if (holderTraits.includes('playsOneTwos') && isReturnPass) {
+        ctx += K.traits.playsOneTwos.passCtxMod;
+      }
 
       const pPass = sigmoid(
         K.passBase[action] +
@@ -1924,6 +2269,7 @@ export class MatchEngine implements MatchSim {
         });
 
         this.lastPasserId = holderId;
+        this.lastPassType = 'short';
         this.ballHolderId = receiverId;
         this.ballPosAttacking = dest;
         this.ballPosAbsolute = destAbs;
@@ -2032,6 +2378,8 @@ export class MatchEngine implements MatchSim {
             pos: { ax: 105 - dest.ax, ay: dest.ay < 34 ? 0 : 68 },
           };
         }
+        this.lastPasserId = null;
+        this.lastPassType = null;
       }
     } else if (action === 'dribble') {
       const baseDur = this.rng.int(K.durations.dribble[0], K.durations.dribble[1]);

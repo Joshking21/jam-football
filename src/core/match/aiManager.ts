@@ -16,6 +16,7 @@ import {
   CornerTarget,
   SetPieceTactics,
   SetPieceTakers,
+  ShoutId,
 } from '../types';
 import { FORMATIONS, FormationDef, FormationSlot } from '@/config/formations';
 import { ovrAt, getPrimaryOvr } from '../player/ratings';
@@ -436,6 +437,7 @@ export interface InMatchAiDecision {
   substitutions?: { outId: PlayerId; inId: PlayerId; slot: number }[];
   oppositionChanges?: OppOrder[];
   playerInstructionChanges?: { slot: number; instructions: PlayerInstruction[] }[];
+  shout?: ShoutId;
 }
 
 export function determineAiOppositionOrders(params: {
@@ -504,6 +506,10 @@ export function evaluateInMatchAi(params: {
     }
   >;
   oppLineup?: (PlayerId | null)[];
+  reputation?: number;
+  teamFouls?: number;
+  hasYellowCard?: boolean;
+  activeShout?: ShoutId | null;
 }): InMatchAiDecision {
   const {
     minute,
@@ -536,6 +542,17 @@ export function evaluateInMatchAi(params: {
   if (minute >= 80 && goalDiff === 1) {
     instructionChanges.mentality = 'Defensive';
     instructionChanges.tempo = 'Slow';
+  }
+
+  // AI managers touchline shouts (§13.21, reputation >= 3 only)
+  if ((params.reputation ?? 3) >= 3 && !params.activeShout) {
+    if (minute >= 75 && goalDiff < 0) {
+      decision.shout = 'pushForward';
+    } else if (minute >= 80 && goalDiff === 1) {
+      decision.shout = 'keepTight';
+    } else if (params.hasYellowCard && (params.teamFouls ?? 0) >= 8) {
+      decision.shout = 'calmDown';
+    }
   }
 
   // Check substitutions at 60', 70', 78'

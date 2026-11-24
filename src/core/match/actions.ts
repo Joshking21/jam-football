@@ -6,6 +6,8 @@ import {
   PlayerInstruction,
   OppOrder,
   ForceOpp,
+  TraitId,
+  ShoutId,
 } from '../types';
 import { Third, Lane, isInBox } from './frames';
 import { Rng } from '../rng';
@@ -50,6 +52,9 @@ export interface ActionSelectionContext {
   defendingDefRoles?: DefRoleId[];
   defendingLaneDefRole?: DefRoleId;
   isPressBeaten?: boolean;
+  holderTraits?: TraitId[];
+  activeShout?: ShoutId | null;
+  isHalfEffectShout?: boolean;
 }
 
 export function getLegalCandidateActions(
@@ -96,30 +101,75 @@ export function selectAction(
   const utilities = getLegalCandidateActions(third, lane, inBox, ctx.isUnderPressure);
   const { instructions } = ctx;
 
+  // Effective mentality factoring in active touchline shout (§13.21)
+  let effectiveMentality = instructions.mentality;
+  if (ctx.activeShout === 'pushForward') {
+    if (effectiveMentality === 'VeryDefensive') effectiveMentality = 'Defensive';
+    else if (effectiveMentality === 'Defensive') effectiveMentality = 'Balanced';
+    else if (effectiveMentality === 'Balanced') effectiveMentality = 'Attacking';
+    else if (effectiveMentality === 'Attacking') effectiveMentality = 'VeryAttacking';
+  } else if (ctx.activeShout === 'keepTight') {
+    if (effectiveMentality === 'VeryAttacking') effectiveMentality = 'Attacking';
+    else if (effectiveMentality === 'Attacking') effectiveMentality = 'Balanced';
+    else if (effectiveMentality === 'Balanced') effectiveMentality = 'Defensive';
+    else if (effectiveMentality === 'Defensive') effectiveMentality = 'VeryDefensive';
+
+    const shoutMult = ctx.isHalfEffectShout ? 0.5 : 1.0;
+    if (utilities.shot !== undefined) {
+      utilities.shot += shoutMult * K.shouts.keepTight.ourShotUtilMod;
+    }
+  }
+
   // Apply tactical modifiers (SPEC §13.6 & §13.18.1)
-  if (instructions.mentality === 'VeryDefensive') {
+  if (effectiveMentality === 'VeryDefensive') {
     const mult = K.d2.mentality.veryStepMultiplier;
     if (utilities.recycle !== undefined) utilities.recycle += 0.3 * mult;
     if (utilities.progress !== undefined) utilities.progress -= 0.2 * mult;
     if (utilities.shot !== undefined) utilities.shot -= 0.2 * mult;
     if (utilities.long !== undefined) utilities.long += 0.1 * mult;
     if (utilities.shot !== undefined) utilities.shot += K.d2.mentality.veryDefensiveShotUtil;
-  } else if (instructions.mentality === 'Defensive') {
+  } else if (effectiveMentality === 'Defensive') {
     if (utilities.recycle !== undefined) utilities.recycle += 0.3;
     if (utilities.progress !== undefined) utilities.progress -= 0.2;
     if (utilities.shot !== undefined) utilities.shot -= 0.2;
     if (utilities.long !== undefined) utilities.long += 0.1;
-  } else if (instructions.mentality === 'Attacking') {
+  } else if (effectiveMentality === 'Attacking') {
     if (utilities.progress !== undefined) utilities.progress += 0.3;
     if (utilities.through !== undefined) utilities.through += 0.2;
     if (utilities.shot !== undefined) utilities.shot += 0.2;
     if (utilities.recycle !== undefined) utilities.recycle -= 0.3;
-  } else if (instructions.mentality === 'VeryAttacking') {
+  } else if (effectiveMentality === 'VeryAttacking') {
     const mult = K.d2.mentality.veryStepMultiplier;
     if (utilities.progress !== undefined) utilities.progress += 0.3 * mult;
     if (utilities.through !== undefined) utilities.through += 0.2 * mult;
     if (utilities.shot !== undefined) utilities.shot += 0.18 * mult;
     if (utilities.recycle !== undefined) utilities.recycle -= 0.3 * mult;
+  }
+
+  // Player Traits utility modifiers (§13.23)
+  if (ctx.holderTraits && ctx.holderTraits.length > 0) {
+    if (ctx.holderTraits.includes('cutsInside') && third === 'ATT' && lane !== 'Centre') {
+      if (utilities.shot !== undefined) utilities.shot += K.traits.cutsInside.wideShotUtilMod;
+      if (utilities.cross !== undefined) utilities.cross *= K.traits.cutsInside.crossesMult;
+    }
+    if (ctx.holderTraits.includes('shootsFromDistance') && !inBox) {
+      if (utilities.shot !== undefined)
+        utilities.shot += K.traits.shootsFromDistance.outsideShotUtilMod;
+    }
+    if (ctx.holderTraits.includes('killerBalls')) {
+      if (utilities.through !== undefined) utilities.through += K.traits.killerBalls.throughUtilMod;
+    }
+    if (ctx.holderTraits.includes('runsWithBall') && third === 'MID') {
+      if (utilities.dribble !== undefined)
+        utilities.dribble += K.traits.runsWithBall.midDribbleUtilMod;
+    }
+    if (ctx.holderTraits.includes('playsOneTwos')) {
+      if (utilities.dribble !== undefined)
+        utilities.dribble += K.traits.playsOneTwos.dribbleUtilMod;
+    }
+    if (ctx.holderTraits.includes('holdsUp') && ctx.isStepsAfterKeepItWin) {
+      if (utilities.recycle !== undefined) utilities.recycle += K.traits.holdsUp.nextStepRecycleMod;
+    }
   }
 
   // Final Third instructions (SPEC §13.18.2)

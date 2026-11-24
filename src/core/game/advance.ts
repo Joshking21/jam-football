@@ -57,6 +57,11 @@ import {
   applyMoraleSpread,
   initClubStaff,
 } from '../club/clubDepth';
+import {
+  TRAIT_DEFINITIONS,
+  calculateTraitTrainingProgress,
+  isTraitClashing,
+} from '../player/traits';
 
 export interface LineupValidationResult {
   valid: boolean;
@@ -153,6 +158,7 @@ export function buildTeamSheet(
       name: p.knownAs ?? `${p.firstName[0]}. ${p.lastName}`,
       shirt: p.squadNumber ?? 99,
       foot: p.foot,
+      traits: p.traits ?? [],
     };
   }
 
@@ -834,12 +840,100 @@ export function runWeeklyProcessing(state: GameState): GameState {
         }
       }
 
+      // Individual Trait Training (§13.23)
+      let traitTrained = false;
+      if (indFocus?.type === 'trait') {
+        const tId = indFocus.trait;
+        const def = TRAIT_DEFINITIONS[tId];
+        const unlearn = Boolean(indFocus.unlearn);
+        const weeklyGain = calculateTraitTrainingProgress(p, coachStars);
+
+        const currentProgress = p.traitTraining?.trait === tId ? p.traitTraining.progress : 0;
+        const newProgress = currentProgress + weeklyGain;
+        p.traitTraining = { trait: tId, progress: newProgress, unlearn };
+        traitTrained = true;
+
+        if (newProgress >= K.traits.learning.completionThreshold) {
+          const pName = p.knownAs ?? `${p.firstName} ${p.lastName}`;
+          if (unlearn) {
+            p.traits = (p.traits ?? []).filter((t) => t !== tId);
+            if (p.clubId === next.userClubId) {
+              next.counters.inbox++;
+              next.inbox.unshift({
+                id: `inbox_${next.counters.inbox}`,
+                matchday: currentMatchday,
+                kind: 'Player',
+                title: `Trait Unlearned: ${pName}`,
+                body: `${pName} has unlearned "${def?.name ?? tId}" through focused training.`,
+                read: false,
+                requiresAction: false,
+              });
+            }
+          } else {
+            p.traits = Array.from(new Set([...(p.traits ?? []), tId]));
+            if (p.clubId === next.userClubId) {
+              next.counters.inbox++;
+              next.inbox.unshift({
+                id: `inbox_${next.counters.inbox}`,
+                matchday: currentMatchday,
+                kind: 'Player',
+                title: `New Trait: ${pName}`,
+                body: `${pName} now ${def ? def.wording.toLowerCase() : tId}.`,
+                read: false,
+                requiresAction: false,
+              });
+            }
+          }
+          p.traitTraining = undefined;
+          if (club?.trainingPlan.individualFocus) {
+            delete club.trainingPlan.individualFocus[p.id];
+          }
+        }
+      }
+
+      // Check opposing trait clashes (§13.23)
+      if (club && p.traits && p.traits.length > 0) {
+        const slotIdx = club.tactics.lineup.findIndex((lineupId) => lineupId === p.id);
+        if (slotIdx >= 0) {
+          const pis = [
+            ...(club.tactics.playerInstructions?.[slotIdx] ?? []),
+            ...(club.tactics.attInstructions?.[slotIdx] ?? []),
+            ...(club.tactics.defInstructions?.[slotIdx] ?? []),
+          ];
+          const clashing = p.traits.find((t) => isTraitClashing(t, pis).clashes);
+          if (clashing) {
+            p.opposedTraitWeeks = (p.opposedTraitWeeks ?? 0) + 1;
+            p.morale = clamp(p.morale + K.traits.clashes.moraleWeeklyPenalty, 0, 100);
+            if (
+              p.opposedTraitWeeks === K.traits.clashes.memoWeeks &&
+              p.clubId === next.userClubId
+            ) {
+              const def = TRAIT_DEFINITIONS[clashing];
+              const pName = p.knownAs ?? `${p.firstName} ${p.lastName}`;
+              next.counters.inbox++;
+              next.inbox.unshift({
+                id: `inbox_${next.counters.inbox}`,
+                matchday: currentMatchday,
+                kind: 'Player',
+                title: `Tactical Frustration: ${pName}`,
+                body: `${pName} is unhappy playing against his natural game (${def ? def.wording.toLowerCase() : clashing}) for three weeks running.`,
+                read: false,
+                requiresAction: false,
+              });
+            }
+          } else {
+            p.opposedTraitWeeks = 0;
+          }
+        }
+      }
+
       const devRng = createRng(deriveSeed(next.seed, 'player-dev', `${currentMatchday}-${p.id}`));
       const devRes = processPlayerDevelopment(p, {
         focus,
         intensity,
         minutesLastMatch: playedMinutes,
-        individualFocus: positionTrained ? null : (club?.trainingPlan?.individual?.[p.id] ?? null),
+        individualFocus:
+          positionTrained || traitTrained ? null : (club?.trainingPlan?.individual?.[p.id] ?? null),
         rng: devRng,
         schedule,
         workload,
@@ -851,7 +945,7 @@ export function runWeeklyProcessing(state: GameState): GameState {
         oneToOneTechnique: club?.trainingPlan?.lastOneToOnePlayerId === p.id,
       });
 
-      if (positionTrained) coachDevFactor *= 0.8;
+      if (positionTrained || traitTrained) coachDevFactor *= K.traits.learning.devFactorMult;
       if (devRes.player.growth > p.growth) {
         const gained = devRes.player.growth - p.growth;
         devRes.player.growth = p.growth + gained * coachDevFactor;

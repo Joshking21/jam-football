@@ -23,6 +23,7 @@ import { FORMATIONS, getInitialFormationFamiliarity } from '@/config/formations'
 import { getDefaultRoleForPos } from '@/config/roles';
 import { getPositionWeights, rawOvr, getPrimaryOvr } from '../player/ratings';
 import { valueOf, wageFor } from '../player/value';
+import { worldTraitsFor } from '../player/traits';
 import { generateFixtures } from '../season/fixtures';
 import { createInitialTable, sortTable } from '../season/table';
 import { BALANCED_WEEK_SCHEDULE } from '../people/training';
@@ -460,6 +461,7 @@ export function generateWorld(seed: number = WORLD_SEED): WorldSnapshot {
         transferListed: false,
         notForSale: false,
         scoutedBy: [cData.id],
+        traits: worldTraitsFor({ id: pid, attributes, positions: positionsList }),
         growth: 0,
         history: [{ matchday: 0, event: `Joined ${cData.name}` }],
       };
@@ -882,6 +884,7 @@ export function generateWorld(seed: number = WORLD_SEED): WorldSnapshot {
       transferListed: false,
       notForSale: false,
       scoutedBy: [],
+      traits: worldTraitsFor({ id: pid, attributes, positions: [{ pos, familiarity: 100 }] }),
       growth: 0,
       history: [{ matchday: 0, event: 'Free agent' }],
     };

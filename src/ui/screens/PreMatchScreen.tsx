@@ -1,6 +1,8 @@
 // Implements SPEC §11.15 Pre-Match screen (on-air broadcast world)
 // Stepper: 1. Opponent Report, 2. Team Selection, 3. Team Talk.
 // Advances to Match on Kick Off.
+import { TRAIT_DEFINITIONS } from '../../core/player/traits';
+import type { TraitId } from '../../core/types';
 import React, { useState } from 'react';
 import { useStore } from '../../state/store';
 import { Panel } from '../components/Panel';
@@ -609,6 +611,42 @@ export const PreMatchScreen: React.FC = () => {
                       : 'their 9'}{' '}
                     is their primary focal point in the box.
                   </div>
+
+                  {/* Their habits (§13.23): the opponent report names traits worth planning for */}
+                  {(() => {
+                    const COUNTER: Partial<Record<TraitId, string>> = {
+                      cutsInside: 'show him outside',
+                      shootsFromDistance: 'close him down outside the box',
+                      killerBalls: 'press him, cut the passing lanes',
+                      runsWithBall: 'double up on him in midfield',
+                      attacksAir: 'put our best header on him at set pieces',
+                      divesIn: "run at him, he'll give away fouls",
+                      getsForward: 'leave a runner on his side for the counter',
+                      holdsUp: "stay tight, don't let him turn",
+                      playsOneTwos: 'track the runner after he passes',
+                      arrivesLate: 'track his late runs into the box',
+                      comesDeep: "don't follow him into midfield",
+                    };
+                    const lines = oppStarters
+                      .flatMap((p) =>
+                        (p.traits ?? []).filter((t) => COUNTER[t]).map((t) => ({ p, t })),
+                      )
+                      .slice(0, 3);
+                    if (lines.length === 0) return null;
+                    return (
+                      <div
+                        style={{ fontSize: '13px', lineHeight: '1.5', color: 'var(--text-dim)' }}
+                      >
+                        <strong style={{ color: 'var(--text)' }}>Their habits:</strong>{' '}
+                        {lines.map(({ p, t }, i) => (
+                          <span key={`${p.id}-${t}`}>
+                            {i > 0 ? ' ' : ''}
+                            {p.lastName} {TRAIT_DEFINITIONS[t].wording.toLowerCase()}: {COUNTER[t]}.
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })()}
 
                   {/* Preparation Rundown filling vertical height */}
                   <div

@@ -9,6 +9,7 @@ import {
   Side,
   RoleId,
   PlayerInstruction,
+  TraitId,
 } from '../types';
 import { FORMATIONS } from '@/config/formations';
 import { Rng } from '../rng';
@@ -100,6 +101,7 @@ export interface PlayerInvolvementParams {
   roleId?: RoleId;
   fit?: number;
   playerInstructions?: PlayerInstruction[];
+  traits?: TraitId[];
   duty?: Duty;
   mentality: Mentality;
   width: Width;
@@ -434,6 +436,45 @@ export function computePlayerInvolvementFull(params: PlayerInvolvementParams): Z
     }
   }
 
+  // 4b. Player Traits Involvement Modifiers (§13.23)
+  if (params.traits && params.traits.length > 0) {
+    if (params.traits.includes('cutsInside')) {
+      const shiftL = base.AL * K.traits.cutsInside.attCenterInvShift;
+      base.AL -= shiftL;
+      base.AC += shiftL;
+      const shiftR = base.AR * K.traits.cutsInside.attCenterInvShift;
+      base.AR -= shiftR;
+      base.AC += shiftR;
+    }
+    if (params.traits.includes('getsForward')) {
+      for (const l of ['L', 'C', 'R'] as const) {
+        const dKey = `D${l}` as ZoneKey;
+        const aKey = `A${l}` as ZoneKey;
+        const shift = base[dKey] * K.traits.getsForward.defToAttInvShift;
+        base[dKey] -= shift;
+        base[aKey] += shift;
+      }
+    }
+    if (params.traits.includes('staysBack')) {
+      for (const l of ['L', 'C', 'R'] as const) {
+        const aKey = `A${l}` as ZoneKey;
+        const dKey = `D${l}` as ZoneKey;
+        const shift = base[aKey] * K.traits.staysBack.attToDefInvShift;
+        base[aKey] -= shift;
+        base[dKey] += shift;
+      }
+    }
+    if (params.traits.includes('comesDeep')) {
+      for (const l of ['L', 'C', 'R'] as const) {
+        const aKey = `A${l}` as ZoneKey;
+        const mKey = `M${l}` as ZoneKey;
+        const shift = base[aKey] * K.traits.comesDeep.attToMidInvShift;
+        base[aKey] -= shift;
+        base[mKey] += shift;
+      }
+    }
+  }
+
   // 5. Renormalise to sum to 1.0 (SPEC §13.5)
   let total = 0;
   for (const v of Object.values(base)) {
@@ -472,6 +513,9 @@ export function getReceiverWeightMultiplier(params: {
   isThroughBall?: boolean;
   playerInstructions?: PlayerInstruction[];
   isTightMarked?: boolean;
+  traits?: TraitId[];
+  isCutbackOrBoxCentral?: boolean;
+  isReturnOneTwo?: boolean;
 }): number {
   const {
     roleId,
@@ -480,6 +524,9 @@ export function getReceiverWeightMultiplier(params: {
     isThroughBall = false,
     playerInstructions = [],
     isTightMarked = false,
+    traits = [],
+    isCutbackOrBoxCentral = false,
+    isReturnOneTwo = false,
   } = params;
 
   let mult = 1.0;
@@ -528,6 +575,22 @@ export function getReceiverWeightMultiplier(params: {
   // Player Instruction: roam (SPEC §13.18.9)
   if (playerInstructions.includes('roam')) {
     mult *= K.d2.pi.roam.recvMult;
+  }
+
+  // Player Traits receiver multipliers (§13.23)
+  if (isReturnOneTwo) {
+    mult *= K.traits.playsOneTwos.returnRecvMult;
+  }
+  if (traits && traits.length > 0) {
+    if (traits.includes('arrivesLate') && isCutbackOrBoxCentral) {
+      mult *= K.traits.arrivesLate.cutbackBoxCentralRecvMult;
+    }
+    if (traits.includes('holdsUp') && isThroughBall) {
+      mult *= K.traits.holdsUp.throughRecvMult;
+    }
+    if (traits.includes('comesDeep') && third === 'ATT') {
+      mult *= K.traits.comesDeep.boxRecvMult;
+    }
   }
 
   return mult;

@@ -2,6 +2,7 @@
 import { GameState, ClubId, PlayerId } from '../types';
 import { SAVE_VERSION } from '@/config/constants';
 import worldSnapshot from '../world/world.snapshot.json';
+import { ensureWorldTraits } from '../player/traits';
 import { WorldSnapshot } from '../world/generateWorld';
 import { migrateTactics } from './migrations';
 import { createStartingFamiliarity } from './familiarity';
@@ -19,6 +20,9 @@ export function createNewGame(options: NewGameOptions): GameState {
 
   // Deep clone snapshot so mutations in gameplay do not touch snapshot
   const snapshot = JSON.parse(JSON.stringify(worldSnapshot)) as WorldSnapshot;
+
+  // The frozen world snapshot predates traits: give every player his world traits (§13.23).
+  ensureWorldTraits(snapshot.players);
 
   // Ensure all clubs have tactical depth migrated
   for (const club of Object.values(snapshot.clubs)) {

@@ -2,6 +2,9 @@
 // Manila tab with player name, portrait, Stamps (INJURED, SUSPENDED, etc.),
 // Tabs: Attributes (Technical / Physical / Mental / GK), Stats (Season stats + Form), Status (Condition, Fatigue, Morale), History.
 // Actions: Captain toggle, Taker toggles, Transfer List toggle, Training focus.
+import { TRAIT_DEFINITIONS, ALL_TRAIT_IDS } from '../../core/player/traits';
+import type { TraitId } from '../../core/types';
+import { TraitChips } from '../components/TraitChips';
 import React, { useState } from 'react';
 import { useStore } from '../../state/store';
 import { Player, Position, AttributeKey } from '../../core/types';
@@ -24,6 +27,7 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ playerId
   const updateUserTactics = useStore((state) => state.updateUserTactics);
   const updateUserTraining = useStore((state) => state.updateUserTraining);
   const showToast = useStore((state) => state.showToast);
+  const setPlayerIndividualFocus = useStore((state) => state.setPlayerIndividualFocus);
 
   const [activeTab, setActiveTab] = useState<ProfileTab>('ATTRIBUTES');
 
@@ -274,6 +278,95 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ playerId
                   <span>·</span>
                   <span>{player.personality}</span>
                 </div>
+
+                {/* Habits: player traits (§13.23), with clashes against his instructions */}
+                <div style={{ marginTop: '10px' }}>
+                  <span
+                    className="broadcast-label"
+                    style={{ fontSize: '11px', color: 'var(--paper-dim)' }}
+                  >
+                    HABITS
+                  </span>
+                  <div style={{ marginTop: '4px', color: 'var(--paper-ink)' }}>
+                    <TraitChips
+                      traits={player.traits}
+                      variant="list"
+                      instructions={(() => {
+                        const slot = userClub?.tactics.lineup.indexOf(player.id) ?? -1;
+                        if (!userClub || slot < 0) return undefined;
+                        const t = userClub.tactics;
+                        return [
+                          ...(t.attInstructions?.[slot] ?? t.playerInstructions?.[slot] ?? []),
+                          ...(t.defInstructions?.[slot] ?? []),
+                        ];
+                      })()}
+                    />
+                  </div>
+                </div>
+
+                {/* Learn or unlearn a habit in training (§13.23, individual focus "Trait") */}
+                {player.clubId === gameState.userClubId && (
+                  <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--paper-ink)' }}>
+                    <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <span style={{ color: 'var(--paper-dim)' }}>Work on a habit:</span>
+                      <select
+                        value={(() => {
+                          const f = userClub?.trainingPlan?.individualFocus?.[player.id];
+                          return f && f.type === 'trait'
+                            ? `${f.unlearn ? 'u' : 'l'}:${f.trait}`
+                            : '';
+                        })()}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (!v) {
+                            setPlayerIndividualFocus(player.id, null);
+                            return;
+                          }
+                          const [mode, trait] = v.split(':') as ['l' | 'u', TraitId];
+                          setPlayerIndividualFocus(player.id, {
+                            type: 'trait',
+                            trait,
+                            unlearn: mode === 'u',
+                          });
+                          showToast(
+                            `${player.lastName} will ${mode === 'u' ? 'unlearn' : 'learn'}: ${TRAIT_DEFINITIONS[trait].wording.toLowerCase()}`,
+                            'info',
+                          );
+                        }}
+                        style={{
+                          font: 'inherit',
+                          background: 'transparent',
+                          color: 'inherit',
+                          border: '1px solid var(--paper-rule)',
+                          padding: '2px 4px',
+                        }}
+                      >
+                        <option value="">None</option>
+                        {ALL_TRAIT_IDS.filter(
+                          (t) =>
+                            !(player.traits ?? []).includes(t) &&
+                            TRAIT_DEFINITIONS[t].isEligible(player),
+                        ).map((t) => (
+                          <option key={`l-${t}`} value={`l:${t}`}>
+                            Learn: {TRAIT_DEFINITIONS[t].wording}
+                          </option>
+                        ))}
+                        {(player.traits ?? []).map((t) => (
+                          <option key={`u-${t}`} value={`u:${t}`}>
+                            Unlearn: {TRAIT_DEFINITIONS[t].wording}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {player.traitTraining && (
+                      <div style={{ color: 'var(--paper-dim)', marginTop: 4 }}>
+                        {player.traitTraining.unlearn ? 'Unlearning' : 'Learning'}{' '}
+                        {TRAIT_DEFINITIONS[player.traitTraining.trait].wording.toLowerCase()}:{' '}
+                        {Math.round(player.traitTraining.progress)}%
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Positions Chips */}
                 <div

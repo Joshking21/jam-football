@@ -2,6 +2,7 @@
 // Reference: docs/design/tactics/README.md "v5 layout (build this)" & docs/design/tactics/index.html
 // Column 1 (Left): Dominant Whiteboard lying sideways (own goal left, attacking right), bench strip & injured corner under pitch, marker tray
 // Column 2 (Right): Tall Panel: Clipboard when nothing selected, Player File (with RadarChart, Orders & Profile tabs) when player selected
+import { MatchPlanSheet } from './Tactics/MatchPlanSheet';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useStore } from '../../state/store';
 import {
@@ -227,9 +228,9 @@ export const TacticsScreen: React.FC = () => {
   // Ball phase: 'withBall' vs 'withoutBall' (synced between board and orders)
   const [phase, setPhase] = useState<'withBall' | 'withoutBall'>('withBall');
 
-  // Right column active divider: 'buildup' | 'attack' | 'defend' | 'transition' | 'setpieces'
+  // Right column active divider: 'buildup' | 'attack' | 'defend' | 'transition' | 'setpieces' | 'matchplan'
   const [activeDivider, setActiveDivider] = useState<
-    'buildup' | 'attack' | 'defend' | 'transition' | 'setpieces'
+    'buildup' | 'attack' | 'defend' | 'transition' | 'setpieces' | 'matchplan'
   >('buildup');
 
   // Player file sub-tab: 'orders' | 'profile'
@@ -3585,7 +3586,7 @@ export const TacticsScreen: React.FC = () => {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(5, 1fr)',
+                gridTemplateColumns: 'repeat(6, 1fr)',
                 gap: '2px',
                 borderBottom: '2px solid var(--paper-ink)',
                 marginTop: '4px',
@@ -3597,6 +3598,7 @@ export const TacticsScreen: React.FC = () => {
                 { id: 'defend', label: 'Defend' },
                 { id: 'transition', label: 'Transition' },
                 { id: 'setpieces', label: 'Set Pieces' },
+                { id: 'matchplan', label: 'Match plan' },
               ].map(({ id, label }) => (
                 <button
                   key={id}
@@ -4168,6 +4170,10 @@ export const TacticsScreen: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              )}
+
+              {activeDivider === 'matchplan' && (
+                <MatchPlanSheet tactics={tactics} onChange={updateUserTactics} />
               )}
 
               {activeDivider === 'setpieces' && (

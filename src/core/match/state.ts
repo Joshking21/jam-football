@@ -21,6 +21,9 @@ import {
   OppOrder,
   SetPieceTactics,
   SetPieceTakers,
+  ActiveShoutState,
+  ShoutId,
+  MatchPlanRule,
 } from '../types';
 import { RngState } from '../rng';
 
@@ -66,6 +69,15 @@ export interface LiveTeamState {
   redCardedPlayers: PlayerId[];
   substitutedPlayers: PlayerId[];
   focusBoostExpiryT: number;
+  activeShout?: ActiveShoutState | null;
+  lastShoutEndT?: Partial<Record<ShoutId, number>>;
+  shoutCountThisHalf?: Partial<Record<ShoutId, number>>;
+  lastConcededT?: number;
+  matchPlans?: MatchPlanRule[];
+  firedMatchPlans?: string[];
+  askMeFirst?: boolean;
+  playerFocusBoost?: Partial<Record<PlayerId, { boost: number; expiresAtT: number }>>;
+  teamFocusBoost?: { boost: number; expiresAtT: number } | null;
 }
 
 export interface LivePlayerState {

@@ -25,6 +25,8 @@ import { GoalBanner, ReplayOverlay } from './Match/GoalBanner';
 import { RadarOverlay } from './Match/RadarOverlay';
 import { HalfTimeModal } from './Match/HalfTimeModal';
 import { FullTimeModal } from './Match/FullTimeModal';
+import { ShoutWheel, ShoutChip, PlanAskCard, ActiveShout, SHOUTS } from './Match/ShoutWheel';
+import type { ShoutId } from '../../core/types';
 import { TalkTone, getHalfTimeTalkContext } from '../../core/player/talks';
 import { createMatch, simulateInstant } from '../../core/match/engine';
 import { createDefaultSetPieceTactics } from '../../core/match/setPieces';
@@ -65,6 +67,20 @@ export const MatchScreen: React.FC = () => {
     score: { home: 0, away: 0 },
     lastGoalEvent: null,
   });
+
+  // Touchline shouts (§13.21) and match-plan prompts (§13.22)
+  const [shoutOpen, setShoutOpen] = useState(false);
+  const [activeShout, setActiveShout] = useState<ActiveShout | null>(null);
+  const [shoutLastEnd, setShoutLastEnd] = useState<Partial<Record<ShoutId, number>>>({});
+  const [concentrateHalf, setConcentrateHalf] = useState<number | null>(null);
+  const [planAsk, setPlanAsk] = useState<{
+    text: string;
+    then: string;
+    prevPlan: 0 | 1 | 2;
+    deadline: number;
+  } | null>(null);
+  const [planAskLeft, setPlanAskLeft] = useState(0);
+  const planAskRef = useRef<typeof planAsk>(null);
 
   // Overlays & Drawers
   const [statsOpen, setStatsOpen] = useState(false);
@@ -135,6 +151,49 @@ export const MatchScreen: React.FC = () => {
         setIsFullTime(true);
       },
       onEventStarted: (ev) => {
+        if (ev.type === 'MATCH_PLAN_TRIGGERED' && ev.side === userSide && ev.data) {
+          const whenText: Record<string, string> = {
+            Losing: 'Losing',
+            Drawing: 'Level',
+            Winning1: 'Winning by one',
+            Winning2Plus: 'Two or more up',
+            DownTo10: 'Down to ten',
+            OppDownTo10: "They're down to ten",
+          };
+          const then = String(ev.data.then);
+          const planIdx = then === 'PlanA' ? 0 : then === 'PlanB' ? 1 : then === 'PlanC' ? 2 : -1;
+          const planName =
+            planIdx >= 0
+              ? (userClub.tactics.plans?.[planIdx as 0 | 1 | 2]?.name ?? `Plan ${'ABC'[planIdx]}`)
+              : null;
+          const shoutWords = SHOUTS.find((x) => x.id === then)?.words;
+          const action = planName ? `Switch to ${planName}?` : `Shout "${shoutWords}"?`;
+          const text = `${whenText[String(ev.data.when)] ?? 'As planned'} after ${ev.data.after}'. ${action}`;
+          if (ev.data.askMeFirst) {
+            playbackRef.current?.pause();
+            const ask = {
+              text,
+              then,
+              prevPlan: (userClub.tactics.activePlan ?? 0) as 0 | 1 | 2,
+              deadline: performance.now() + 6000,
+            };
+            planAskRef.current = ask;
+            setPlanAsk(ask);
+          } else {
+            showToast(
+              planName ? `${planName} on, as planned` : `"${shoutWords}", as planned`,
+              'info',
+            );
+          }
+        }
+        if (ev.type === 'SHOUT' && ev.side === userSide && ev.data?.shout) {
+          const id = String(ev.data.shout) as ShoutId;
+          setActiveShout((prev) =>
+            prev && prev.id === id && Math.abs(prev.startPt - ev.t) < 15
+              ? prev
+              : { id, startPt: ev.t, endPt: ev.t + 600 },
+          );
+        }
         // Evaluate assistant in-match rules (§15.4)
         if (ev.type === 'YELLOW' && ev.side === userSide) {
           const p = ev.playerId ? gameState.players[ev.playerId] : null;
@@ -496,6 +555,8 @@ export const MatchScreen: React.FC = () => {
         if (playback.lastGoalEvent) {
           playback.triggerGoalReplay(playback.lastGoalEvent);
         }
+      } else if (e.key === 'y' || e.key === 'Y') {
+        setShoutOpen((prev) => !prev);
       } else if (e.key === 's' || e.key === 'S') {
         setSubsOpen((prev) => !prev);
       } else if (e.key === 'h' || e.key === 'H') {
@@ -524,6 +585,63 @@ export const MatchScreen: React.FC = () => {
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
+
+  // §13.21: send a shout; it takes effect 10 s later and lasts 10 minutes.
+  const handleShout = (id: ShoutId) => {
+    const playback = playbackRef.current;
+    if (!playback) return;
+    const pt = playback.pt;
+    if (workerRef.current) {
+      const command: MatchCommand = { kind: 'shout', side: userSide, shout: id, issuedAtT: pt };
+      workerRef.current.postMessage({ type: 'command', command } satisfies ClientToWorkerMessage);
+    }
+    setShoutLastEnd((prev) =>
+      activeShout && pt < activeShout.endPt ? { ...prev, [activeShout.id]: pt } : prev,
+    );
+    setActiveShout({ id, startPt: pt + 10, endPt: pt + 10 + 600 });
+    if (id === 'concentrate') setConcentrateHalf(playback.half);
+    setShoutOpen(false);
+  };
+
+  const concentrateAllowed = (() => {
+    const pt = playbackState.pt;
+    if (concentrateHalf === playbackState.half) return false;
+    const g = playbackState.lastGoalEvent;
+    const justConceded = !!g && g.side !== userSide && pt - g.t <= 300;
+    return pt >= 4500 || justConceded;
+  })();
+
+  // §13.22 "Ask me first": Apply keeps what the plan did; Skip undoes a plan switch.
+  const resolvePlanAsk = useCallback(
+    (apply: boolean) => {
+      const ask = planAskRef.current;
+      if (!ask) return;
+      planAskRef.current = null;
+      setPlanAsk(null);
+      if (!apply && ask.then.startsWith('Plan') && workerRef.current && playbackRef.current) {
+        const command: MatchCommand = {
+          kind: 'plan',
+          side: userSide,
+          plan: ask.prevPlan,
+          issuedAtT: playbackRef.current.pt,
+        };
+        workerRef.current.postMessage({ type: 'command', command } satisfies ClientToWorkerMessage);
+        showToast('Staying with the current plan', 'info');
+      }
+      playbackRef.current?.resume();
+    },
+    [userSide, showToast],
+  );
+
+  useEffect(() => {
+    if (!planAsk) return;
+    const id = window.setInterval(() => {
+      const left = (planAsk.deadline - performance.now()) / 1000;
+      setPlanAskLeft(left);
+      if (left <= 0) resolvePlanAsk(true);
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [planAsk, resolvePlanAsk]);
 
   const handleFinishInstant = () => {
     if (!workerRef.current || !playbackRef.current) return;
@@ -641,6 +759,57 @@ export const MatchScreen: React.FC = () => {
       {/* Broadcast HUD Overlays */}
       {hudVisible && (
         <>
+          {/* Touchline shouts (§13.21): button, active chip, wheel; match-plan prompt (§13.22) */}
+          <div
+            style={{
+              position: 'absolute',
+              left: 24,
+              bottom: 96,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: 8,
+              zIndex: 20,
+            }}
+          >
+            <ShoutChip active={activeShout} pt={playbackState.pt} />
+            <button
+              onClick={() => setShoutOpen((v) => !v)}
+              style={{
+                fontFamily: 'var(--font-head)',
+                fontWeight: 700,
+                fontSize: 13,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                padding: '8px 14px',
+                background: 'rgba(12,16,22,0.9)',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.16)',
+                borderRadius: 4,
+                cursor: 'pointer',
+              }}
+            >
+              Shout <span style={{ opacity: 0.55, marginLeft: 6 }}>Y</span>
+            </button>
+          </div>
+          <ShoutWheel
+            open={shoutOpen}
+            pt={playbackState.pt}
+            active={activeShout}
+            lastEnd={shoutLastEnd}
+            concentrateAllowed={concentrateAllowed}
+            onPick={handleShout}
+            onClose={() => setShoutOpen(false)}
+          />
+          {planAsk && (
+            <PlanAskCard
+              text={planAsk.text}
+              secondsLeft={planAskLeft}
+              onApply={() => resolvePlanAsk(true)}
+              onSkip={() => resolvePlanAsk(false)}
+            />
+          )}
+
           {/* Top Left Scoreboard Bug */}
           <ScoreboardBug
             homeClub={homeClub}

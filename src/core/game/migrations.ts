@@ -1,3 +1,4 @@
+import { ensureWorldTraits } from '../player/traits';
 // Implements SPEC §20.2 Save game version migrations & SPEC §23 M3.0
 import { GameState, Tactics, TacticPlan } from '../types';
 import { SAVE_VERSION } from '@/config/constants';
@@ -83,6 +84,8 @@ export function migrateTactics(t: Partial<Tactics>): Tactics {
     opposition,
     plans: [planA, planB, planC],
     activePlan,
+    matchPlans: t.matchPlans ?? [],
+    askMeFirst: t.askMeFirst ?? true,
   };
 }
 
@@ -124,6 +127,8 @@ export function migrateSave(raw: unknown): GameState {
           }
         }
       }
+      // §13.23: saves from before traits get each player's world traits.
+      if (state.players) ensureWorldTraits(state.players);
       return state;
     }
     default:

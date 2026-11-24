@@ -9,6 +9,8 @@ import {
   Tackling,
   FreeKicks,
   FreeKickTactics,
+  ShoutId,
+  TraitId,
 } from '../types';
 import { Rng } from '../rng';
 import { K } from '@/config/balance';
@@ -21,12 +23,20 @@ export interface FoulerInfo {
   attributes: Pick<Attributes, 'tackling'>;
   currentYellows: number; // 0 or 1
   teamTackling?: Tackling;
+  activeShout?: ShoutId | null;
 }
 
 export function resolveFoulCard(fouler: FoulerInfo, rng: Rng): FoulCardResult {
-  // Fouler personality & tackling factors (§12.6)
+  // Fouler personality & tackling factors (§12.6, §13.21)
   let foulerFactor = 1.0;
-  if (fouler.personality === 'Temperamental') foulerFactor *= 1.3;
+  if (fouler.personality === 'Temperamental') {
+    foulerFactor *= 1.3;
+    if (fouler.activeShout === 'getStuckIn') {
+      foulerFactor *= K.shouts.getStuckIn.temperamentalCardMult;
+    } else if (fouler.activeShout === 'calmDown') {
+      foulerFactor *= K.shouts.calmDown.temperamentalCardMult;
+    }
+  }
   if (fouler.personality === 'Professional') foulerFactor *= 0.85;
   if (fouler.attributes.tackling < 50) foulerFactor *= 1.15;
   if (fouler.teamTackling === 'GetStuckIn') {
@@ -142,11 +152,29 @@ export function getFoulMultiplier(params: {
   playerInstructions?: PlayerInstruction[];
   defInstructions?: DefInstruction[];
   teamTackling?: Tackling;
+  activeShout?: ShoutId | null;
+  defenderTraits?: TraitId[];
+  isAerialDuel?: boolean;
 }): number {
   let mult = 1.0;
   if (params.roleId === 'stopper' || params.defRoleId === 'cb_step') mult *= 1.2;
   if (params.roleId === 'ball_winner' || params.defRoleId === 'dm_win') mult *= 1.5;
   if (params.isTightMarkMarker) mult *= 1.2;
+
+  // Touchline shout foul modifiers (§13.21)
+  if (params.activeShout === 'getStuckIn') {
+    mult *= K.shouts.getStuckIn.foulMult;
+  } else if (params.activeShout === 'calmDown') {
+    mult *= K.shouts.calmDown.foulMult;
+  }
+
+  // Trait foul modifiers (§13.23)
+  if (params.defenderTraits?.includes('divesIn')) {
+    mult *= K.traits.divesIn.foulsMult;
+  }
+  if (params.isAerialDuel && params.defenderTraits?.includes('attacksAir')) {
+    mult *= K.traits.attacksAir.aerialFoulsMult;
+  }
 
   // A player's own stayOnFeet overrides team tackling setting (§13.18.5)
   if (

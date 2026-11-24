@@ -142,7 +142,9 @@ export interface Player {
   growth: number; // fractional OVR progress carried between weeks
   history: { matchday: number; event: string }[]; // e.g. 'Signed from Ironvale for €4.2M'
   promise?: PlayerPromise | null; // active promise (§12.9)
-  traits?: string[];
+  traits?: TraitId[];
+  traitTraining?: TraitTrainingState;
+  opposedTraitWeeks?: number;
   rest?: boolean; // rested this week (§12.17.3)
   consecutiveRestWeeks?: number;
   // SPEC §12.18 Detailed Training properties
@@ -397,6 +399,66 @@ export interface Tactics {
   // SPEC 1.4 additions (§13.18.10)
   plans?: [TacticPlan, TacticPlan, TacticPlan];
   activePlan?: 0 | 1 | 2;
+  matchPlans?: MatchPlanRule[]; // up to 4 rules (§13.22)
+  askMeFirst?: boolean; // default true (§13.22)
+}
+
+// SPEC §13.21 Touchline Shouts
+export type ShoutId =
+  | 'pushForward'
+  | 'keepTight'
+  | 'getStuckIn'
+  | 'calmDown'
+  | 'concentrate'
+  | 'encourage'
+  | 'demandMore';
+
+export interface ActiveShoutState {
+  shout: ShoutId;
+  issuedAtT: number;
+  expiresAtT: number;
+  isHalfEffect: boolean;
+}
+
+// SPEC §13.22 Match Plans
+export type MatchPlanWhen =
+  | 'Losing'
+  | 'Drawing'
+  | 'Winning1'
+  | 'Winning2Plus'
+  | 'DownTo10'
+  | 'OppDownTo10';
+
+export type MatchPlanAfter = 0 | 45 | 60 | 70 | 75 | 80 | 85;
+
+export type MatchPlanThen = 'PlanA' | 'PlanB' | 'PlanC' | ShoutId;
+
+export interface MatchPlanRule {
+  id: string;
+  when: MatchPlanWhen;
+  after: MatchPlanAfter;
+  then: MatchPlanThen;
+}
+
+// SPEC §13.23 Player Traits
+export type TraitId =
+  | 'cutsInside'
+  | 'shootsFromDistance'
+  | 'getsForward'
+  | 'staysBack'
+  | 'playsOneTwos'
+  | 'killerBalls'
+  | 'runsWithBall'
+  | 'arrivesLate'
+  | 'holdsUp'
+  | 'comesDeep'
+  | 'attacksAir'
+  | 'divesIn';
+
+export interface TraitTrainingState {
+  trait: TraitId;
+  progress: number; // 0..100
+  unlearn: boolean;
 }
 
 // --- 8.5 Club ---
@@ -419,7 +481,7 @@ export type IndividualFocus =
   | { type: 'attribute'; attribute: AttributeKey }
   | { type: 'role'; roleId: RoleId }
   | { type: 'position'; position: Position }
-  | { type: 'trait'; trait: string }
+  | { type: 'trait'; trait: TraitId; unlearn?: boolean }
   | { type: 'mentor'; mentorId: PlayerId };
 
 // SPEC §12.18 Training Session & Schedule types
@@ -828,6 +890,7 @@ export interface TeamSheet {
       name: string;
       shirt: number;
       foot?: Foot;
+      traits?: TraitId[];
     }
   >;
   trainingBonus: { attack: number; defence: number; setPieces: number }; // z-units, §12.3
@@ -878,6 +941,8 @@ export type MatchEventType =
   | 'INJURY'
   | 'SUB'
   | 'TACTIC_CHANGE'
+  | 'MATCH_PLAN_TRIGGERED'
+  | 'SHOUT'
   | 'PENALTY_AWARDED'
   | 'ADDED_TIME'
   | 'HALF_TIME'
@@ -907,6 +972,8 @@ export interface MatchEvent {
   importance: 0 | 1 | 2 | 3; // 0 routine, 1 notable, 2 chance/card, 3 goal/red/penalty
   commentaryKey?: string;
   scoreAfter: { home: number; away: number };
+  /** Extra detail for SHOUT and MATCH_PLAN_TRIGGERED events (§13.21, §13.22). */
+  data?: Record<string, string | number | boolean>;
 }
 
 export interface TeamMatchStats {
@@ -1010,6 +1077,12 @@ export type MatchCommand =
       kind: 'plan';
       side: Side;
       plan: 0 | 1 | 2;
+      issuedAtT: number;
+    }
+  | {
+      kind: 'shout';
+      side: Side;
+      shout: ShoutId;
       issuedAtT: number;
     };
 
