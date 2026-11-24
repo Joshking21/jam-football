@@ -250,7 +250,7 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
   if (pBlock > 0 && rng.chance(pBlock)) {
     const roll = rng.next();
     let outcome: 'BLOCK_CORNER' | 'BLOCK_RECYCLE' | 'BLOCK_CLEAR' =
-      roll < 0.45 ? 'BLOCK_CORNER' : roll < 0.65 ? 'BLOCK_RECYCLE' : 'BLOCK_CLEAR';
+      roll < 0.3 ? 'BLOCK_CORNER' : roll < 0.5 ? 'BLOCK_RECYCLE' : 'BLOCK_CLEAR';
     if (shootOnSight) {
       outcome = roll < 0.65 ? 'BLOCK_CLEAR' : roll < 0.85 ? 'BLOCK_CORNER' : 'BLOCK_RECYCLE';
     }
@@ -267,7 +267,7 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
   }
 
   // 2. Goal check
-  const pGoalAdjusted = Math.min(0.95, pGoalRaw / (1 - pBlock));
+  const pGoalAdjusted = Math.min(0.95, (pGoalRaw * 0.9) / (1 - pBlock));
   if (rng.chance(pGoalAdjusted)) {
     return {
       outcome: 'GOAL',
@@ -300,7 +300,7 @@ export function resolveShot(params: ShotParams): ShotResolutionResult {
     // Parry
     const roll = rng.next();
     const outcome =
-      roll < 0.55 ? 'SAVE_PARRY_CORNER' : roll < 0.7 ? 'SAVE_PARRY_REBOUND' : 'SAVE_PARRY_CLEAR';
+      roll < 0.4 ? 'SAVE_PARRY_CORNER' : roll < 0.65 ? 'SAVE_PARRY_REBOUND' : 'SAVE_PARRY_CLEAR';
     return {
       outcome,
       xg: xgRef,

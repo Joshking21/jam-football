@@ -372,9 +372,9 @@ export function resolveCorner(params: {
     ? calculateRoutinePredictability(routineUsesInMatch)
     : 0;
 
-  // Count stayBack jobs if routine has jobs, else fallback to menBack
+  // If legacyMenBack is explicitly 1 or 3, respect it; otherwise count stayBack jobs from routine if available
   let stayBackCount = legacyMenBack;
-  if (routine && routine.jobs) {
+  if (legacyMenBack === 2 && routine && routine.jobs) {
     const count = Object.values(routine.jobs).filter((j) => j === 'stayBack').length;
     if (count >= 1 && count <= 3) stayBackCount = count as MenBack;
   }

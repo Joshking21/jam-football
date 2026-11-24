@@ -18,6 +18,7 @@ import { MatchPlayback, PlaybackMode, PlaybackState } from './Match/playback';
 import { ScoreboardBug } from './Match/ScoreboardBug';
 import { MatchControls } from './Match/MatchControls';
 import { CommentaryStrip } from './Match/CommentaryStrip';
+import { resolveCommentary } from '../../core/match/commentary';
 import { LiveStatsDrawer } from './Match/LiveStatsDrawer';
 import { AssistantDrawer, AssistantAdviceItem, OutOfTownScore } from './Match/AssistantDrawer';
 import { QuickSubsModal } from './Match/QuickSubsModal';
@@ -448,14 +449,35 @@ export const MatchScreen: React.FC = () => {
       .filter((f) => f.matchday === fixture.matchday && f.id !== fixture.id)
       .slice(0, 4);
 
-    const initialScores: OutOfTownScore[] = otherFixtures.map((f) => ({
-      fixtureId: f.id,
-      homeClub: gameState.clubs[f.homeId]!,
-      awayClub: gameState.clubs[f.awayId]!,
-      homeScore: 0,
-      awayScore: 0,
-      minute: 1,
-    }));
+    const initialScores: OutOfTownScore[] = otherFixtures.map((f) => {
+      const hClub = gameState.clubs[f.homeId]!;
+      const aClub = gameState.clubs[f.awayId]!;
+      const curMinute =
+        captureState === 'fulltime'
+          ? 90
+          : captureState === 'halftime'
+            ? 45
+            : Math.min(90, Math.max(1, Math.floor((playbackRef.current?.pt ?? 0) / 60)));
+      const finH = f.result?.homeGoals ?? f.seed % 3;
+      const finA = f.result?.awayGoals ?? (f.seed * 7) % 3;
+      const curH =
+        curMinute >= 80
+          ? finH
+          : curMinute >= 45
+            ? Math.min(finH, 1)
+            : curMinute >= 20 && finH > 1
+              ? 1
+              : 0;
+      const curA = curMinute >= 80 ? finA : curMinute >= 45 ? Math.min(finA, 1) : 0;
+      return {
+        fixtureId: f.id,
+        homeClub: hClub,
+        awayClub: aClub,
+        homeScore: curH,
+        awayScore: curA,
+        minute: curMinute,
+      };
+    });
     setOutOfTownScores(initialScores);
 
     // F. Main Render & Playback Loop
@@ -749,8 +771,108 @@ export const MatchScreen: React.FC = () => {
     bigChances: 0,
   };
 
-  const homeStats = matchResult ? matchResult.stats.home : mockStats;
-  const awayStats = matchResult ? matchResult.stats.away : mockStats;
+  const fullHomeStats = matchResult ? matchResult.stats.home : mockStats;
+  const fullAwayStats = matchResult ? matchResult.stats.away : mockStats;
+
+  // Filter stats up to current playback time (T4)
+  const liveStats = useMemo(() => {
+    if (!matchResult?.events) return { home: fullHomeStats, away: fullAwayStats };
+    const filtered = matchResult.events.filter((e) => e.t <= playbackState.pt);
+    const homeEvents = filtered.filter((e) => e.side === 'home');
+    const awayEvents = filtered.filter((e) => e.side === 'away');
+    const homeShots = homeEvents.filter((e) => e.shot != null);
+    const awayShots = awayEvents.filter((e) => e.shot != null);
+    const homeXg = homeShots.reduce((s, e) => s + (e.shot?.xg ?? 0), 0);
+    const awayXg = awayShots.reduce((s, e) => s + (e.shot?.xg ?? 0), 0);
+    const frac = Math.min(1, Math.max(0.02, playbackState.pt / 5400));
+
+    return {
+      home: {
+        ...fullHomeStats,
+        goals: homeEvents.filter((e) => e.type === 'GOAL').length,
+        shots: homeShots.length,
+        shotsOnTarget: homeShots.filter((e) => e.shot?.onTarget).length,
+        xg: homeXg,
+        possessionSec: Math.round(fullHomeStats.possessionSec * frac),
+        corners: homeEvents.filter((e) => e.type === 'CORNER').length,
+        fouls: homeEvents.filter((e) => e.type === 'FOUL').length,
+        yellow: homeEvents.filter((e) => e.type === 'YELLOW_CARD').length,
+        red: homeEvents.filter((e) => e.type === 'RED_CARD').length,
+      },
+      away: {
+        ...fullAwayStats,
+        goals: awayEvents.filter((e) => e.type === 'GOAL').length,
+        shots: awayShots.length,
+        shotsOnTarget: awayShots.filter((e) => e.shot?.onTarget).length,
+        xg: awayXg,
+        possessionSec: Math.round(fullAwayStats.possessionSec * frac),
+        corners: awayEvents.filter((e) => e.type === 'CORNER').length,
+        fouls: awayEvents.filter((e) => e.type === 'FOUL').length,
+        yellow: awayEvents.filter((e) => e.type === 'YELLOW_CARD').length,
+        red: awayEvents.filter((e) => e.type === 'RED_CARD').length,
+      },
+    };
+  }, [matchResult, playbackState.pt, fullHomeStats, fullAwayStats]);
+
+  // Half-time stats (events with t <= 2700) (T4)
+  const htStats = useMemo(() => {
+    if (!matchResult?.events) return { home: fullHomeStats, away: fullAwayStats };
+    const filtered = matchResult.events.filter((e) => e.t <= 2700);
+    const homeEvents = filtered.filter((e) => e.side === 'home');
+    const awayEvents = filtered.filter((e) => e.side === 'away');
+    const homeShots = homeEvents.filter((e) => e.shot != null);
+    const awayShots = awayEvents.filter((e) => e.shot != null);
+    const homeXg = homeShots.reduce((s, e) => s + (e.shot?.xg ?? 0), 0);
+    const awayXg = awayShots.reduce((s, e) => s + (e.shot?.xg ?? 0), 0);
+
+    return {
+      home: {
+        ...fullHomeStats,
+        goals: homeEvents.filter((e) => e.type === 'GOAL').length,
+        shots: homeShots.length,
+        shotsOnTarget: homeShots.filter((e) => e.shot?.onTarget).length,
+        xg: homeXg,
+        possessionSec: Math.round(fullHomeStats.possessionSec * 0.5),
+        corners: homeEvents.filter((e) => e.type === 'CORNER').length,
+        fouls: homeEvents.filter((e) => e.type === 'FOUL').length,
+        yellow: homeEvents.filter((e) => e.type === 'YELLOW_CARD').length,
+        red: homeEvents.filter((e) => e.type === 'RED_CARD').length,
+      },
+      away: {
+        ...fullAwayStats,
+        goals: awayEvents.filter((e) => e.type === 'GOAL').length,
+        shots: awayShots.length,
+        shotsOnTarget: awayShots.filter((e) => e.shot?.onTarget).length,
+        xg: awayXg,
+        possessionSec: Math.round(fullAwayStats.possessionSec * 0.5),
+        corners: awayEvents.filter((e) => e.type === 'CORNER').length,
+        fouls: awayEvents.filter((e) => e.type === 'FOUL').length,
+        yellow: awayEvents.filter((e) => e.type === 'YELLOW_CARD').length,
+        red: awayEvents.filter((e) => e.type === 'RED_CARD').length,
+      },
+    };
+  }, [matchResult, fullHomeStats, fullAwayStats]);
+
+  // Rolling xG momentum history (T13)
+  const momentumHistory = useMemo(() => {
+    if (!matchResult?.events) return [];
+    const currentT = playbackState.pt;
+    const history: { minute: number; homeXg: number; awayXg: number }[] = [];
+    const maxMinute = Math.min(90, Math.max(5, Math.ceil(currentT / 60)));
+    for (let m = 5; m <= maxMinute; m += 5) {
+      const tMin = (m - 5) * 60;
+      const tMax = m * 60;
+      const segEvents = matchResult.events.filter((e) => e.t >= tMin && e.t < tMax);
+      const hXg = segEvents
+        .filter((e) => e.side === 'home' && e.shot)
+        .reduce((s, e) => s + (e.shot?.xg ?? 0), 0);
+      const aXg = segEvents
+        .filter((e) => e.side === 'away' && e.shot)
+        .reduce((s, e) => s + (e.shot?.xg ?? 0), 0);
+      history.push({ minute: m, homeXg: Number(hXg.toFixed(2)), awayXg: Number(aXg.toFixed(2)) });
+    }
+    return history;
+  }, [matchResult?.events, playbackState.pt]);
 
   return (
     <div
@@ -871,14 +993,22 @@ export const MatchScreen: React.FC = () => {
           />
 
           {/* Bottom Commentary Caption Strip */}
-          <CommentaryStrip
-            text={
-              playbackState.currentEvent
-                ? `${playbackState.currentEvent.type} - Minute ${playbackState.currentEvent.minuteLabel}`
-                : ''
-            }
-            importance={playbackState.currentEvent?.importance ?? 0}
-          />
+          {(() => {
+            const commentary = playbackState.currentEvent
+              ? resolveCommentary(playbackState.currentEvent, gameState.players, {
+                  weather: matchInput.weather,
+                  isDerby: false,
+                  homeScore: score.home,
+                  awayScore: score.away,
+                })
+              : null;
+            return (
+              <CommentaryStrip
+                text={commentary?.text ?? ''}
+                importance={commentary?.importance ?? playbackState.currentEvent?.importance ?? 0}
+              />
+            );
+          })()}
 
           {/* 2D Radar Time-Lapse Overlay during highlights gaps (M4) */}
           {playbackState.isTimeLapse && (
@@ -896,13 +1026,9 @@ export const MatchScreen: React.FC = () => {
             onClose={() => setStatsOpen(false)}
             homeClub={homeClub}
             awayClub={awayClub}
-            homeStats={homeStats}
-            awayStats={awayStats}
-            momentumHistory={[
-              { minute: 15, homeXg: 0.12, awayXg: 0.05 },
-              { minute: 30, homeXg: 0.35, awayXg: 0.22 },
-              { minute: 45, homeXg: 0.48, awayXg: 0.31 },
-            ]}
+            homeStats={liveStats.home}
+            awayStats={liveStats.away}
+            momentumHistory={momentumHistory}
           />
 
           {/* Right Assistant Advice & Around the League Drawer */}
@@ -949,10 +1075,10 @@ export const MatchScreen: React.FC = () => {
         isOpen={isHalfTime}
         homeClub={homeClub}
         awayClub={awayClub}
-        homeScore={playbackState.score.home}
-        awayScore={playbackState.score.away}
-        homeStats={homeStats}
-        awayStats={awayStats}
+        homeScore={htStats.home.goals}
+        awayScore={htStats.away.goals}
+        homeStats={htStats.home}
+        awayStats={htStats.away}
         events={matchResult?.events}
         userClubId={gameState.userClubId}
         fixture={fixture}

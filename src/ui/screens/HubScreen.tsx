@@ -48,9 +48,9 @@ export const HubScreen: React.FC = () => {
   if (!userClub) return null;
 
   // Next fixture determination
+  const targetMD = gameState.matchday === 0 ? 1 : gameState.matchday;
   const nextFixture = gameState.fixtures.find(
-    (f) =>
-      f.matchday === gameState.matchday && (f.homeId === userClub.id || f.awayId === userClub.id),
+    (f) => f.matchday === targetMD && (f.homeId === userClub.id || f.awayId === userClub.id),
   );
 
   const isHome = nextFixture ? nextFixture.homeId === userClub.id : true;

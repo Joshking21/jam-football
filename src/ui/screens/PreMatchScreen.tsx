@@ -54,9 +54,9 @@ export const PreMatchScreen: React.FC = () => {
   const userClub = gameState.clubs[gameState.userClubId];
   if (!userClub) return null;
 
+  const targetMD = gameState.matchday === 0 ? 1 : gameState.matchday;
   const nextFix = gameState.fixtures.find(
-    (f) =>
-      f.matchday === gameState.matchday && (f.homeId === userClub.id || f.awayId === userClub.id),
+    (f) => f.matchday === targetMD && (f.homeId === userClub.id || f.awayId === userClub.id),
   );
 
   const isHome = nextFix ? nextFix.homeId === userClub.id : true;

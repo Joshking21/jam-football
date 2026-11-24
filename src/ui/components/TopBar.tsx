@@ -108,18 +108,19 @@ export const TopBar: React.FC = () => {
       className="app-shell-topbar"
       style={{
         height: '56px',
-        backgroundColor: isOffice ? 'var(--desk-2)' : 'var(--surface)',
-        borderBottom: `1px solid ${isOffice ? 'var(--desk-border)' : 'var(--border)'}`,
+        backgroundColor: '#0F141C',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 20px',
         userSelect: 'none',
-        transition: 'background-color var(--dur-med) var(--ease-snap)',
+        opacity: 1,
+        zIndex: 50,
       }}
     >
       {/* Left: Club Identity */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '160px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
         {userClub ? (
           <>
             <Crest
@@ -129,15 +130,20 @@ export const TopBar: React.FC = () => {
               secondaryColor={userClub.colors.secondary}
               size={32}
             />
-            <div className="topbar-club-name" style={{ lineHeight: 1.1 }}>
+            <div className="topbar-club-name" style={{ lineHeight: 1.1, whiteSpace: 'nowrap' }}>
               <div
                 style={{
                   fontWeight: 700,
-                  fontSize: '17px',
+                  fontSize: '16px',
                   fontFamily: 'var(--font-head)',
                   letterSpacing: '0.02em',
-                  color: isOffice ? 'var(--paper-ink)' : 'var(--text)',
+                  color: '#FFFFFF',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '220px',
                 }}
+                title={userClub.name}
               >
                 {userClub.name.toUpperCase()}
               </div>
@@ -150,6 +156,7 @@ export const TopBar: React.FC = () => {
               fontWeight: 700,
               fontSize: '18px',
               letterSpacing: '0.05em',
+              color: '#FFFFFF',
             }}
           >
             TOUCHLINE
@@ -179,11 +186,7 @@ export const TopBar: React.FC = () => {
                   padding: '0 12px',
                   borderRadius: 'var(--radius-s)',
                   backgroundColor: isActive ? 'var(--accent)' : 'transparent',
-                  color: isActive
-                    ? 'var(--accent-ink)'
-                    : isOffice
-                      ? 'var(--paper-dim)'
-                      : 'var(--text-dim)',
+                  color: isActive ? 'var(--accent-ink)' : '#9CA3AF',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
@@ -197,12 +200,12 @@ export const TopBar: React.FC = () => {
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.color = isOffice ? 'var(--paper-ink)' : 'var(--text)';
+                    e.currentTarget.style.color = '#FFFFFF';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.color = isOffice ? 'var(--paper-dim)' : 'var(--text-dim)';
+                    e.currentTarget.style.color = '#9CA3AF';
                   }
                 }}
               >
@@ -236,11 +239,7 @@ export const TopBar: React.FC = () => {
                   padding: '0 12px',
                   borderRadius: 'var(--radius-s)',
                   backgroundColor: isActive ? 'var(--accent)' : 'transparent',
-                  color: isActive
-                    ? 'var(--accent-ink)'
-                    : isOffice
-                      ? 'var(--paper-dim)'
-                      : 'var(--text-dim)',
+                  color: isActive ? 'var(--accent-ink)' : '#9CA3AF',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
@@ -255,12 +254,12 @@ export const TopBar: React.FC = () => {
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.color = isOffice ? 'var(--paper-ink)' : 'var(--text)';
+                    e.currentTarget.style.color = '#FFFFFF';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.color = isOffice ? 'var(--paper-dim)' : 'var(--text-dim)';
+                    e.currentTarget.style.color = '#9CA3AF';
                   }
                 }}
               >
@@ -288,18 +287,18 @@ export const TopBar: React.FC = () => {
       </nav>
 
       {/* Right: Status chip, Balance, Settings, Continue */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
         {rankLabel && (
           <div
             className="broadcast-label"
             style={{
               fontSize: '13px',
-              color: isOffice ? 'var(--paper-ink)' : 'var(--text)',
+              color: '#FFFFFF',
               letterSpacing: '0.04em',
-              backgroundColor: isOffice ? 'var(--desk)' : 'var(--surface-2)',
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
               padding: '6px 14px',
               borderRadius: 'var(--radius-s)',
-              border: `1px solid ${isOffice ? 'var(--desk-border)' : 'var(--border)'}`,
+              border: '1px solid rgba(255, 255, 255, 0.15)',
               whiteSpace: 'nowrap',
             }}
           >
@@ -308,18 +307,13 @@ export const TopBar: React.FC = () => {
         )}
 
         {userClub && (
-          <div className="topbar-balance" style={{ textAlign: 'right' }}>
+          <div className="topbar-balance" style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
             <div
               className="stat-number tabular-nums"
               style={{
                 fontSize: '14px',
                 fontWeight: 600,
-                color:
-                  userClub.balance >= 0
-                    ? isOffice
-                      ? 'var(--paper-ink)'
-                      : 'var(--text)'
-                    : 'var(--loss)',
+                color: userClub.balance >= 0 ? '#FFFFFF' : '#E0675A',
               }}
             >
               {formatMoney(userClub.balance)}
@@ -327,7 +321,7 @@ export const TopBar: React.FC = () => {
             <div
               style={{
                 fontSize: '10px',
-                color: isOffice ? 'var(--paper-dim)' : 'var(--text-dim)',
+                color: '#9CA3AF',
                 lineHeight: 1,
               }}
             >
@@ -347,16 +341,16 @@ export const TopBar: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: isOffice ? 'var(--paper-dim)' : 'var(--text-dim)',
-            background: isOffice ? 'var(--desk)' : 'var(--surface-2)',
-            border: `1px solid ${isOffice ? 'var(--desk-border)' : 'var(--border)'}`,
+            color: '#9CA3AF',
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
             cursor: 'pointer',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.color = isOffice ? 'var(--paper-ink)' : 'var(--text)';
+            e.currentTarget.style.color = '#FFFFFF';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.color = isOffice ? 'var(--paper-dim)' : 'var(--text-dim)';
+            e.currentTarget.style.color = '#9CA3AF';
           }}
         >
           <Settings size={16} />

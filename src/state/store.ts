@@ -179,7 +179,17 @@ export const useStore = create<AppState>((set, get) => {
       });
       applyClubTheme(initialGameState.userClubId);
 
-      if (scr === 'match') {
+      if (params.get('state') === 'md8') {
+        // Run real engine simulation through 8 matchdays (SPEC §19.8, REVIEW-M5 R1)
+        let state = initialGameState;
+        state = advance(state); // BoardMeeting -> Preseason
+        state = advance(state); // Preseason -> PreMatch MD 1
+        while (state.matchday < 8 || state.phase !== 'PreMatch') {
+          state = advance(state);
+          if (state.phase === 'SeasonEnd') break;
+        }
+        initialGameState = state;
+      } else if (scr === 'match') {
         const firstFix = initialGameState.fixtures[0];
         if (firstFix) initialGameState.pendingMatch = { fixtureId: firstFix.id };
       } else if (scr === 'seasonEnd') {

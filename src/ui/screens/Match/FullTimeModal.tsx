@@ -216,11 +216,12 @@ export const FullTimeModal: React.FC<FullTimeModalProps> = ({
         style={{
           position: 'absolute',
           inset: 0,
-          padding: '36px 56px 44px',
+          padding: '18px 32px 18px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          overflow: 'hidden',
+          overflowY: 'auto',
+          boxSizing: 'border-box',
         }}
       >
         {/* Top Header & Scoreband */}
@@ -504,9 +505,9 @@ export const FullTimeModal: React.FC<FullTimeModalProps> = ({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '360px 1fr 500px',
-            gap: 36,
-            margin: '18px 0',
+            gridTemplateColumns: 'minmax(280px, 320px) 1fr minmax(360px, 460px)',
+            gap: 22,
+            margin: '12px 0',
             alignItems: 'start',
           }}
         >
@@ -542,7 +543,7 @@ export const FullTimeModal: React.FC<FullTimeModalProps> = ({
               {/* Halftone Portrait Graphic */}
               <div
                 style={{
-                  height: 250,
+                  height: 170,
                   background: '#EFE3BD',
                   position: 'relative',
                   overflow: 'hidden',
@@ -972,7 +973,7 @@ export const FullTimeModal: React.FC<FullTimeModalProps> = ({
             <div
               style={{
                 position: 'relative',
-                height: 230,
+                height: 180,
                 background: 'linear-gradient(#173520, #122B1A)',
                 border: '1px solid rgba(255, 255, 255, 0.18)',
                 borderRadius: 4,

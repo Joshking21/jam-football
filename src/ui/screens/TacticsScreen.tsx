@@ -269,9 +269,9 @@ export const TacticsScreen: React.FC = () => {
   const formationDef = FORMATIONS[tactics.formation] ?? FORMATIONS['4-4-2'];
 
   // Next fixture determination for opponent tab
+  const targetMD = gameState.matchday === 0 ? 1 : gameState.matchday;
   const nextFixture = gameState.fixtures.find(
-    (f) =>
-      f.matchday === gameState.matchday && (f.homeId === userClub.id || f.awayId === userClub.id),
+    (f) => f.matchday === targetMD && (f.homeId === userClub.id || f.awayId === userClub.id),
   );
   const isHome = nextFixture ? nextFixture.homeId === userClub.id : true;
   const oppClubId = nextFixture

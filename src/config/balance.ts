@@ -330,8 +330,8 @@ export const K = {
     yellowPerFoul: 0.2,
     directRedPerFoul: 0.002,
   },
-  // Home advantage z-boost (SPEC §13.4)
-  homeAdvantage: 0.11,
+  // Home advantage z-boost (SPEC §13.4, §13a line 66)
+  homeAdvantage: 0.1,
   // Base action utilities by zone (SPEC §13.6 and tuning)
   utilities: {
     inBox: {
@@ -584,7 +584,7 @@ export const K = {
   },
   trans: {
     counterPress: {
-      pressRegainBase: -1.0,
+      pressRegainBase: -1.15,
       pressRegainPressWeight: 0.8,
       pressRegainPassWeight: 0.6,
       failCounterDuration: 2,
@@ -839,8 +839,8 @@ export const K = {
     },
     familiarity: {
       threshold: 70,
-      divisor: 500,
-      maxPenalty: -0.16,
+      divisor: 350,
+      maxPenalty: -0.26,
       weeklyMatchGain: 6,
       tacticalTrainingGain: 6,
       weeklyDecay: 2,
@@ -926,8 +926,8 @@ export const K = {
     },
     st_central: {},
     st_press: {
-      teamOppDefPress: 0.48,
-      oppDefPassCtx: -0.3,
+      teamOppDefPress: 0.52,
+      oppDefPassCtx: -0.28,
       fatigueMult: 1.15,
     },
     st_shoulder: {

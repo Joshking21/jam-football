@@ -1,45 +1,30 @@
-// Implements SPEC §11.13 Club screen (office world)
-// Tabs: Finances (balance, income/expense breakdown, weekly wages),
-// Board (confidence meter, expectations), Fans (mood meter, attendance),
-// Dressing Room (leaders, cohesion, morale spread), Staff (assistant, coach, scout, physio & replacement),
-// Stadium (name, capacity).
-import React, { useState } from 'react';
+// Implements SPEC §11.13 Club and §12.17 matching docs/design/club/
+import React, { useState, useMemo } from 'react';
 import { useStore } from '../../state/store';
-import { Sheet } from '../components/Sheet';
-import { CountUp } from '../components/CountUp';
 import { formatMoney } from '../../core/math';
 import { BALANCE } from '../../config/balance';
-import { Crest } from '../components/Crest';
-import { Portrait } from '../components/Portrait';
-import { StaffRole, StaffMember } from '../../core/types';
+import { StaffRole, StaffMember, ClubId } from '../../core/types';
 import {
   getClubLeaders,
   calculateLeaderScore,
   generateStaffCandidates,
 } from '../../core/club/clubDepth';
-import {
-  DollarSign,
-  TrendingUp,
-  Building,
-  Users,
-  Target,
-  ShieldCheck,
-  Star,
-  Shield,
-  Award,
-  RefreshCw,
-  X,
-  AlertCircle,
-  HeartHandshake,
-} from 'lucide-react';
+import { sortTable } from '../../core/season/table';
+import { Portrait } from '../components/Portrait';
+import { X, Star } from 'lucide-react';
 
-type ClubTab = 'FINANCES' | 'BOARD' | 'FANS' | 'DRESSING_ROOM' | 'STAFF' | 'STADIUM';
+function getOrdinal(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
 
 export const ClubScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
   const hireStaffMember = useStore((state) => state.hireStaffMember);
+  const requestBoardWageIncrease = useStore((state) => state.requestBoardWageIncrease);
   const showToast = useStore((state) => state.showToast);
-  const [activeTab, setActiveTab] = useState<ClubTab>('FINANCES');
+
   const [replacingRole, setReplacingRole] = useState<StaffRole | null>(null);
 
   if (!gameState) return null;
@@ -47,1375 +32,1100 @@ export const ClubScreen: React.FC = () => {
   const userClub = gameState.clubs[gameState.userClubId];
   if (!userClub) return null;
 
-  // Compute total weekly squad wages & staff wages
+  // Compute table standings
+  const sortedTable = sortTable(gameState.table, gameState.fixtures, gameState.clubs);
+  const userRankIndex = sortedTable.findIndex((r) => r.clubId === gameState.userClubId);
+  const userRank = userRankIndex >= 0 ? userRankIndex + 1 : 1;
+  const userRow = sortedTable[userRankIndex];
+  const leaderRow = sortedTable[0];
+  const ptsOffTop = leaderRow && userRow ? Math.max(0, leaderRow.points - userRow.points) : 0;
+
+  // Squad wages & Staff wages
   const squadPlayers = userClub.squad.map((id) => gameState.players[id]).filter((p) => p != null);
   const currentWeeklyWage = squadPlayers.reduce(
     (sum, p) => sum + (p.contract?.wagePerWeek ?? 0),
     0,
   );
-  const staffWages = userClub.staff
-    ? userClub.staff.assistant.wage +
-      userClub.staff.coach.wage +
-      userClub.staff.scout.wage +
-      userClub.staff.physio.wage
+  const staff = userClub.staff;
+  const staffWages = staff
+    ? staff.assistant.wage + staff.coach.wage + staff.scout.wage + staff.physio.wage
+    : 45_000;
+
+  // Operating costs & finances
+  const operatingCosts = BALANCE.finances.operatingCostsWeekly[userClub.reputation] ?? 400_000;
+  const sponsorWeekly = BALANCE.finances.sponsorIncomeWeekly[userClub.reputation] ?? 700_000;
+  const tvWeekly = 600_000;
+
+  // Next fixture / opponent info
+  const nextFixture = gameState.fixtures.find(
+    (f) =>
+      f.matchday === gameState.matchday &&
+      (f.homeClubId === gameState.userClubId || f.awayClubId === gameState.userClubId),
+  );
+  const isHome = nextFixture ? nextFixture.homeClubId === gameState.userClubId : true;
+  const opponentId = nextFixture
+    ? isHome
+      ? nextFixture.awayClubId
+      : nextFixture.homeClubId
+    : null;
+  const opponentClub = opponentId ? gameState.clubs[opponentId] : null;
+
+  // Gate receipts
+  const avgTicketPrice = userClub.stadium.ticketPrice ?? 38;
+  const estAttendance = isHome
+    ? Math.round(userClub.stadium.capacity * (0.68 + (userClub.fanMood / 100) * 0.28))
     : 0;
+  const gateReceipts = isHome ? estAttendance * avgTicketPrice : 0;
+
+  const weekIncome = gateReceipts + tvWeekly + sponsorWeekly;
+  const weekExpense = currentWeeklyWage + staffWages + operatingCosts;
+  const weekNet = weekIncome - weekExpense;
+  const wageRoom = userClub.wageBudget - currentWeeklyWage;
+
+  // Projected prize money
+  const prizeMoneyTable = [24, 18, 14, 11, 8, 6, 4, 3, 2, 1];
+  const projectedPrize = prizeMoneyTable[userRank - 1] ?? 1;
+
+  // Stadium attendance data across home games played
+  const homeFixtures = gameState.fixtures.filter(
+    (f) => f.homeClubId === gameState.userClubId && f.played,
+  );
+  const homeAttendances = homeFixtures.map((f) => f.attendance ?? estAttendance);
+  const defaultAttendances = [
+    Math.round(userClub.stadium.capacity * 0.72),
+    Math.round(userClub.stadium.capacity * 0.76),
+    Math.round(userClub.stadium.capacity * 0.81),
+    estAttendance || Math.round(userClub.stadium.capacity * 0.79),
+  ];
+  const attendancesToShow = homeAttendances.length > 0 ? homeAttendances : defaultAttendances;
+  const biggestAtt = Math.max(...attendancesToShow);
+  const occupancyPct = Math.round((biggestAtt / userClub.stadium.capacity) * 100);
+
+  // Dressing room cohesion & leaders
+  const dressingRoomLeaders = getClubLeaders(userClub, gameState.players).slice(0, 3);
+  const currentCohesion = userClub.cohesion ?? BALANCE.club.cohesionInitial;
+  const cohesionDelta = currentCohesion >= 55 ? 2 : currentCohesion < 45 ? -2 : 0;
+
+  // Fan mood & quotes
+  const fanMood = Math.round(userClub.fanMood);
+  const fanDelta = fanMood >= 60 ? 3 : fanMood < 45 ? -2 : 1;
+  const topScorer =
+    squadPlayers.slice().sort((a, b) => b.stats.goals - a.stats.goals)[0] ?? squadPlayers[0];
+  const unhappyPlayer = squadPlayers.find((p) => p.morale < 45);
+
+  // Board letter copy
+  const ownerName = 'Margaret Holloway';
+  const boardConfidence = Math.round(userClub.boardConfidence);
+  const confDelta = boardConfidence >= 65 ? 4 : boardConfidence < 40 ? -3 : 1;
+
+  const handleBudgetClick = () => {
+    const res = requestBoardWageIncrease();
+    showToast(res.message, res.success ? 'success' : 'warning');
+  };
+
+  const handleStadiumClick = () => {
+    showToast(
+      'The board noted your interest in stadium expansion. Sustained top-four finish required.',
+      'info',
+    );
+  };
 
   const isWindowActive = gameState.window !== null;
-  const dressingRoomLeaders = getClubLeaders(userClub, gameState.players);
-  const meanLeaderMorale =
-    dressingRoomLeaders.length > 0
-      ? Math.round(
-          dressingRoomLeaders.reduce((sum, l) => sum + l.morale, 0) / dressingRoomLeaders.length,
-        )
-      : 55;
-
-  const currentCohesion = userClub.cohesion ?? BALANCE.club.cohesionInitial;
-  const cohesionModifier = (
-    (currentCohesion - 50) *
-    BALANCE.club.cohesionMatchExecutionFactor *
-    100
-  ).toFixed(1);
 
   return (
-    <div className="app-content-area office-surface" style={{ height: '100%' }}>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-          maxWidth: '1000px',
-          margin: '0 auto',
-        }}
-      >
-        {/* Header with Club Crest & Tab Buttons */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'space-between',
-            borderBottom: '2px solid var(--desk-border)',
-            paddingBottom: '0',
-            gap: '16px',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div
-            style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingBottom: '12px' }}
-          >
-            <Crest
-              clubId={userClub.id}
-              code={userClub.code}
-              primaryColor={userClub.colors.primary}
-              secondaryColor={userClub.colors.secondary}
-              size={52}
-            />
-            <div>
-              <h1
-                style={{
-                  fontSize: '32px',
-                  fontFamily: 'var(--font-head)',
-                  color: 'var(--text)',
-                  margin: 0,
-                  letterSpacing: '0.04em',
-                }}
-              >
-                {userClub.name.toUpperCase()} CLUB OVERVIEW
-              </h1>
-              <div
-                className="broadcast-label"
-                style={{ color: 'var(--text-dim)', marginTop: '4px', fontSize: '13px' }}
-              >
-                Founded {userClub.founded} · {userClub.city}
+    <div
+      style={{
+        padding: '24px 26px',
+        color: '#1B1A17',
+        fontFamily: "'Inter', sans-serif",
+        boxSizing: 'border-box',
+        overflowY: 'auto',
+        height: '100%',
+      }}
+    >
+      <style>{`
+        .club-grid {
+          display: grid;
+          grid-template-columns: minmax(680px, 940px) minmax(360px, 1fr);
+          gap: 28px;
+          max-width: 1720px;
+          margin: 0 auto;
+        }
+        @media (max-width: 1380px) {
+          .club-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+        .ledger-book {
+          position: relative;
+          min-height: 610px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          background: #2a1a0e;
+          padding: 14px;
+          border-radius: 6px;
+          box-shadow: 0 24px 50px rgba(0,0,0,0.6);
+        }
+        .ledger-pg {
+          background: #f3eedf;
+          color: #1B1A17;
+          padding: 24px 26px;
+          position: relative;
+          background-image: repeating-linear-gradient(0deg, transparent 0 27px, rgba(31,79,191,0.13) 27px 28px);
+        }
+        .ledger-pg.left {
+          box-shadow: inset -18px 0 22px -14px rgba(0,0,0,0.35);
+        }
+        .ledger-pg.right {
+          box-shadow: inset 18px 0 22px -14px rgba(0,0,0,0.35);
+        }
+        .ledger-h3 {
+          font: 900 26px/1 'Playfair Display', serif;
+          margin: 0;
+          color: #1B1A17;
+        }
+        .ledger-sub {
+          font: 600 12px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #5E574E;
+          margin-top: 6px;
+        }
+        .ledger-bal {
+          font: 800 58px/1 'Barlow Condensed', sans-serif;
+          margin-top: 18px;
+          color: #1B1A17;
+        }
+        .ledger-bal small {
+          font: 600 16px/1 'Barlow Condensed', sans-serif;
+          color: #5E574E;
+          letter-spacing: 0.08em;
+          margin-left: 8px;
+        }
+        .ledger-li {
+          display: grid;
+          grid-template-columns: 1fr 120px;
+          font: 400 14.5px/27px 'Source Serif 4', serif;
+          border-bottom: 0;
+        }
+        .ledger-li b {
+          font: 700 16px/27px 'Barlow Condensed', sans-serif;
+          text-align: right;
+        }
+        .ledger-li.total {
+          border-top: 2px solid #1B1A17;
+          margin-top: 6px;
+          padding-top: 2px;
+          font-weight: 600;
+        }
+        .handwriting {
+          font: italic 400 15px/1.4 'Source Serif 4', serif;
+          color: #2b4fa8;
+          margin-top: 14px;
+        }
+        .club-right-col {
+          display: flex;
+          flex-direction: column;
+          gap: 22px;
+          min-width: 0;
+        }
+        .letter-paper {
+          position: relative;
+          padding: 22px 26px;
+          background: #FBF8F1;
+          border: 1px solid #D6CEC0;
+          box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+          transform: rotate(0.6deg);
+        }
+        .letter-hd {
+          display: flex;
+          justify-content: space-between;
+          border-bottom: 3px double #1B1A17;
+          padding-bottom: 6px;
+        }
+        .letter-hd b {
+          font: 900 22px/1 'Playfair Display', serif;
+        }
+        .letter-hd span {
+          font: 600 11px/1.3 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.14em;
+          color: #5E574E;
+          text-transform: uppercase;
+          text-align: right;
+        }
+        .meters-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 18px;
+          margin-top: 14px;
+        }
+        .meter-box span {
+          display: block;
+          font: 700 11px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.16em;
+          color: #5E574E;
+          text-transform: uppercase;
+        }
+        .meter-box b {
+          font: 800 32px/1 'Barlow Condensed', sans-serif;
+          display: block;
+          margin-top: 4px;
+        }
+        .meter-bar {
+          display: block;
+          height: 7px;
+          background: #ddd6c8;
+          margin-top: 6px;
+          position: relative;
+        }
+        .meter-bar u {
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          background: #1B1A17;
+        }
+        .meter-bar em {
+          position: absolute;
+          top: -4px;
+          bottom: -4px;
+          width: 2px;
+          background: #C42B2B;
+        }
+        .staff-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 14px;
+        }
+        .staff-card {
+          position: relative;
+          padding: 10px 10px 12px;
+          background: #fbf8f1;
+          color: #1B1A17;
+          box-shadow: 0 10px 20px rgba(0,0,0,0.45);
+          cursor: pointer;
+          transition: transform 150ms ease;
+        }
+        .staff-card:hover {
+          transform: translateY(-2px);
+        }
+        .staff-card:before {
+          content: "";
+          position: absolute;
+          top: -8px;
+          left: 50%;
+          width: 14px;
+          height: 14px;
+          margin-left: -7px;
+          border-radius: 50%;
+          background: radial-gradient(circle at 35% 35%, #e05a4a, #8a1f17);
+          box-shadow: 0 2px 3px rgba(0,0,0,0.4);
+          z-index: 2;
+        }
+        .staff-photo {
+          height: 110px;
+          background: #efe3bd;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+        .dressing-paper {
+          padding: 18px 22px;
+          background: #FBF8F1;
+          border: 1px solid #D6CEC0;
+          box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+          transform: rotate(-0.5deg);
+        }
+        .lead-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10px;
+          margin-top: 10px;
+        }
+        .lead-card {
+          border: 2px solid #1B1A17;
+          padding: 8px 10px;
+          background: #FAF6ED;
+        }
+        .why-list div {
+          display: flex;
+          justify-content: space-between;
+          font: 500 12.5px/1.3 'Inter', sans-serif;
+          padding: 4px 0;
+          border-bottom: 1px solid #ddd5c6;
+        }
+        .club-bottom-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 22px;
+          margin-top: 22px;
+        }
+        .fans-card {
+          padding: 18px 22px;
+          background: #EDE8DC;
+          color: #141414;
+          transform: rotate(0.5deg);
+          box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+        }
+        .stadium-card {
+          padding: 18px 22px;
+          background: rgba(12, 16, 22, 0.88);
+          border: 1px solid #2A313D;
+          color: #FFFFFF;
+          box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+        }
+        .attendance-bars {
+          display: flex;
+          align-items: flex-end;
+          gap: 5px;
+          height: 65px;
+          margin-top: 10px;
+        }
+        .attendance-bars i {
+          flex: 1;
+          background: #F2B705;
+          border-radius: 1px 1px 0 0;
+        }
+      `}</style>
+
+      <div className="club-grid">
+        {/* Left Column: Ledger + Fans & Stadium */}
+        <div>
+          <div className="ledger-book">
+            {/* Left Page: Balance & Chart */}
+            <div className="ledger-pg left">
+              <h3 className="ledger-h3">The ledger</h3>
+              <div className="ledger-sub">Season 2026/27 · after Matchday {gameState.matchday}</div>
+              <div className="ledger-bal">
+                {formatMoney(userClub.balance)}
+                <small>balance</small>
+              </div>
+
+              {/* Weekly in/out bar chart SVG */}
+              <div style={{ marginTop: '14px' }}>
+                <svg
+                  width="100%"
+                  height="220"
+                  viewBox="0 0 420 220"
+                  style={{ overflow: 'visible' }}
+                >
+                  {/* Gridlines */}
+                  {[0, 1, 2, 3].map((v) => {
+                    const y = 190 - v * 48;
+                    return (
+                      <g key={v}>
+                        <line
+                          x1={34}
+                          y1={y}
+                          x2={410}
+                          y2={y}
+                          stroke="#1B1A17"
+                          strokeOpacity="0.12"
+                        />
+                        <text
+                          x={28}
+                          y={y + 4}
+                          textAnchor="end"
+                          fontFamily="Barlow Condensed"
+                          fontSize="11"
+                          fill="#5E574E"
+                        >
+                          €{v}M
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  {/* Bars for matchdays 1..8 */}
+                  {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+                    const md = i + 1;
+                    const isH = md % 2 === 1; // alternating sample / fixture logic
+                    const incVal = isH ? 2.8 + (i % 3) * 0.2 : 1.35;
+                    const expVal = 1.05;
+                    const x = 38 + i * 46;
+                    const hInc = incVal * 48;
+                    const hExp = expVal * 48;
+                    return (
+                      <g key={i}>
+                        <rect x={x} y={190 - hInc} width={16} height={hInc} fill="#1E7B3C" />
+                        <rect
+                          x={x + 18}
+                          y={190 - hExp}
+                          width={16}
+                          height={hExp}
+                          fill="#C42B2B"
+                          opacity="0.85"
+                        />
+                        <text
+                          x={x + 17}
+                          y={208}
+                          textAnchor="middle"
+                          fontFamily="Barlow Condensed"
+                          fontWeight="600"
+                          fontSize="11"
+                          fill="#5E574E"
+                        >
+                          {md}
+                          {isH ? 'H' : 'A'}
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  <text
+                    x={410}
+                    y={14}
+                    textAnchor="end"
+                    fontFamily="Barlow Condensed"
+                    fontWeight="700"
+                    fontSize="11"
+                    fill="#5E574E"
+                    letterSpacing="1"
+                  >
+                    IN <tspan fill="#1E7B3C">■</tspan> OUT <tspan fill="#C42B2B">■</tspan> · HOME
+                    GAMES PAY
+                  </text>
+                </svg>
+              </div>
+
+              <div className="handwriting">
+                {userRank <= 3
+                  ? `Gate up 18% since we went ${getOrdinal(userRank)}. Attendance holds firm. — F.`
+                  : `Wages strictly on budget, sound fiscal cushion heading into the window. — F.`}
+              </div>
+            </div>
+
+            {/* Right Page: This week's breakdown */}
+            <div className="ledger-pg right">
+              <h3 className="ledger-h3">This week</h3>
+              <div className="ledger-sub">
+                {isHome ? 'Home' : 'Away'} v {opponentClub?.name ?? 'League Opponent'} · Matchday{' '}
+                {gameState.matchday}
+              </div>
+
+              <div style={{ marginTop: '16px' }}>
+                <div className="ledger-li">
+                  <span>
+                    Gate receipts{' '}
+                    {isHome
+                      ? `(${estAttendance.toLocaleString()} at €${avgTicketPrice})`
+                      : '(Away match)'}
+                  </span>
+                  <b style={{ color: isHome ? '#1E7B3C' : '#5E574E' }}>
+                    {isHome ? `+${formatMoney(gateReceipts)}` : '€0'}
+                  </b>
+                </div>
+                <div className="ledger-li">
+                  <span>Television rights</span>
+                  <b style={{ color: '#1E7B3C' }}>+€600K</b>
+                </div>
+                <div className="ledger-li">
+                  <span>Sponsorship</span>
+                  <b style={{ color: '#1E7B3C' }}>+{formatMoney(sponsorWeekly)}</b>
+                </div>
+                <div className="ledger-li">
+                  <span>Player wages</span>
+                  <b style={{ color: '#C42B2B' }}>−{formatMoney(currentWeeklyWage)}</b>
+                </div>
+                <div className="ledger-li">
+                  <span>Staff wages</span>
+                  <b style={{ color: '#C42B2B' }}>−{formatMoney(staffWages)}</b>
+                </div>
+                <div className="ledger-li">
+                  <span>Running the club</span>
+                  <b style={{ color: '#C42B2B' }}>−{formatMoney(operatingCosts)}</b>
+                </div>
+                <div className="ledger-li total">
+                  <span>Week total</span>
+                  <b style={{ color: weekNet >= 0 ? '#1E7B3C' : '#C42B2B' }}>
+                    {weekNet >= 0
+                      ? `+${formatMoney(weekNet)}`
+                      : `−${formatMoney(Math.abs(weekNet))}`}
+                  </b>
+                </div>
+
+                <div className="ledger-li" style={{ marginTop: '18px' }}>
+                  <span>Transfer budget</span>
+                  <b>{formatMoney(userClub.transferBudget)}</b>
+                </div>
+                <div className="ledger-li">
+                  <span>Wage budget</span>
+                  <b>{formatMoney(userClub.wageBudget)} / wk</b>
+                </div>
+                <div className="ledger-li">
+                  <span>Wages now</span>
+                  <b>{formatMoney(currentWeeklyWage)} / wk</b>
+                </div>
+                <div className="ledger-li">
+                  <span>Wage room</span>
+                  <b style={{ color: wageRoom >= 0 ? '#1E7B3C' : '#C42B2B' }}>
+                    {formatMoney(wageRoom)} / wk
+                  </b>
+                </div>
+                <div className="ledger-li">
+                  <span>Prize money if we finish {getOrdinal(userRank)}</span>
+                  <b>€{projectedPrize}M</b>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Paper index tabs */}
-          <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            {(['FINANCES', 'BOARD', 'FANS', 'DRESSING_ROOM', 'STAFF', 'STADIUM'] as ClubTab[]).map(
-              (tab) => {
-                const isActive = activeTab === tab;
-                const label =
-                  tab === 'DRESSING_ROOM' ? 'DRESSING ROOM' : tab === 'STAFF' ? 'STAFF' : tab;
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className="broadcast-label"
+          {/* Bottom row: Fans and Stadium */}
+          <div className="club-bottom-grid">
+            <div className="fans-card">
+              <div
+                style={{
+                  font: "700 11.5px/1 'Barlow Condensed', sans-serif",
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  color: '#5E574E',
+                }}
+              >
+                The fans · mood {fanMood}{' '}
+                {fanDelta >= 0 ? `▲${fanDelta}` : `▼${Math.abs(fanDelta)}`}
+              </div>
+              <q
+                style={{
+                  display: 'block',
+                  font: "italic 400 14.5px/1.45 'Source Serif 4', serif",
+                  marginTop: '8px',
+                }}
+              >
+                "Best I've seen us play in years. Keep {topScorer.lastName} at all costs."
+              </q>
+              <small
+                style={{
+                  display: 'block',
+                  font: "600 11px/1 'Barlow Condensed', sans-serif",
+                  letterSpacing: '0.12em',
+                  color: '#5E574E',
+                  marginTop: '4px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Dave, North Stand season ticket since 1991 · Gazette letters
+              </small>
+
+              <q
+                style={{
+                  display: 'block',
+                  font: "italic 400 14.5px/1.45 'Source Serif 4', serif",
+                  marginTop: '10px',
+                }}
+              >
+                {unhappyPlayer
+                  ? `"${unhappyPlayer.lastName} looks frustrated with his minutes lately."`
+                  : `"The midfield tempo has been brilliant, real grit off the ball."`}
+              </q>
+              <small
+                style={{
+                  display: 'block',
+                  font: "600 11px/1 'Barlow Condensed', sans-serif",
+                  letterSpacing: '0.12em',
+                  color: '#5E574E',
+                  marginTop: '4px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Priti, Harbour End
+              </small>
+            </div>
+
+            <div className="stadium-card">
+              <div
+                style={{
+                  font: "700 12px/1 'Barlow Condensed', sans-serif",
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  color: '#9CA3AF',
+                }}
+              >
+                {userClub.stadium.name}
+              </div>
+              <b
+                style={{
+                  display: 'block',
+                  font: "800 28px/1 'Barlow Condensed', sans-serif",
+                  marginTop: '6px',
+                  color: '#FFFFFF',
+                }}
+              >
+                {userClub.stadium.capacity.toLocaleString()} · {occupancyPct}% full
+              </b>
+              <p
+                style={{
+                  font: '500 13px/1.4 Inter, sans-serif',
+                  color: '#CBD5E1',
+                  margin: '6px 0 0',
+                }}
+              >
+                Attendance by home game. Biggest: {biggestAtt.toLocaleString()} v{' '}
+                {opponentClub?.name ?? 'Corvallen'}.
+              </p>
+              <div className="attendance-bars">
+                {attendancesToShow.map((att, i) => (
+                  <i
+                    key={i}
                     style={{
-                      padding: '10px 16px 8px',
-                      borderRadius: '6px 6px 0 0',
-                      backgroundColor: isActive ? 'var(--paper)' : 'var(--desk-2)',
-                      color: isActive ? 'var(--paper-ink)' : 'var(--text-dim)',
-                      border: isActive
-                        ? '1px solid var(--paper-rule)'
-                        : '1px solid var(--desk-border)',
-                      borderBottom: isActive ? '2px solid var(--paper)' : 'none',
-                      marginBottom: isActive ? '-2px' : '0',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      boxShadow: isActive ? '0 -2px 6px rgba(0,0,0,0.25)' : 'none',
-                      transition: 'background-color 150ms ease, color 150ms ease',
-                      cursor: 'pointer',
+                      height: `${Math.round((att / userClub.stadium.capacity) * 100)}%`,
                     }}
-                  >
-                    {label}
-                  </button>
-                );
-              },
-            )}
+                    title={`Matchday attendance: ${att.toLocaleString()}`}
+                  />
+                ))}
+                {Array.from({ length: Math.max(0, 9 - attendancesToShow.length) }).map((_, i) => (
+                  <i
+                    key={`empty-${i}`}
+                    style={{
+                      height: '6%',
+                      background: '#2A313D',
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Tab 1: Finances */}
-        {activeTab === 'FINANCES' && (
-          <Sheet id="club-finances-ledger" variant="ledger">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div
-                className="broadcast-label"
-                style={{
-                  color: 'var(--paper-dim)',
-                  borderBottom: '1px solid var(--paper-rule)',
-                  paddingBottom: '8px',
-                }}
-              >
-                FINANCIAL LEDGER & PROJECTIONS
-              </div>
-
-              {/* Main Balance Display */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)',
-                  gap: '16px',
-                  backgroundColor: 'var(--paper-2)',
-                  padding: '16px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--paper-rule)',
-                }}
-              >
-                <div>
-                  <div className="broadcast-label" style={{ color: 'var(--paper-dim)' }}>
-                    OVERALL BALANCE
-                  </div>
-                  <div
-                    className="stat-number tabular-nums"
-                    style={{
-                      fontSize: '28px',
-                      fontWeight: 700,
-                      color: userClub.balance >= 0 ? 'var(--paper-ink)' : 'var(--marker-red)',
-                    }}
-                  >
-                    <CountUp value={userClub.balance} format={formatMoney} />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="broadcast-label" style={{ color: 'var(--paper-dim)' }}>
-                    TRANSFER BUDGET
-                  </div>
-                  <div
-                    className="stat-number tabular-nums"
-                    style={{
-                      fontSize: '28px',
-                      fontWeight: 700,
-                      color: 'var(--paper-ink)',
-                    }}
-                  >
-                    <CountUp value={userClub.transferBudget} format={formatMoney} />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="broadcast-label" style={{ color: 'var(--paper-dim)' }}>
-                    WEEKLY WAGE BUDGET
-                  </div>
-                  <div
-                    className="stat-number tabular-nums"
-                    style={{
-                      fontSize: '28px',
-                      fontWeight: 700,
-                      color: 'var(--paper-ink)',
-                    }}
-                  >
-                    {formatMoney(userClub.wageBudget)}
-                  </div>
-                  <div style={{ fontSize: '12px', color: 'var(--paper-dim)' }}>
-                    Payroll: {formatMoney(currentWeeklyWage + staffWages)}/wk
-                  </div>
-                </div>
-              </div>
-
-              {/* Income / Expense Table */}
-              <table
-                style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                  fontSize: '14px',
-                }}
-              >
-                <thead>
-                  <tr
-                    className="broadcast-label"
-                    style={{
-                      borderBottom: '2px solid var(--paper-rule)',
-                      color: 'var(--paper-dim)',
-                    }}
-                  >
-                    <th style={{ padding: '8px 0', textAlign: 'left' }}>CATEGORY</th>
-                    <th style={{ padding: '8px 0', textAlign: 'right' }}>ESTIMATED PER MATCHDAY</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr style={{ borderBottom: '1px solid var(--paper-rule)' }}>
-                    <td style={{ padding: '10px 0' }}>TV Broadcast Rights</td>
-                    <td
-                      className="tabular-nums"
-                      style={{
-                        padding: '10px 0',
-                        textAlign: 'right',
-                        fontWeight: 600,
-                        color: 'var(--marker-green)',
-                      }}
-                    >
-                      +€600,000
-                    </td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid var(--paper-rule)' }}>
-                    <td style={{ padding: '10px 0' }}>Commercial Sponsorship</td>
-                    <td
-                      className="tabular-nums"
-                      style={{
-                        padding: '10px 0',
-                        textAlign: 'right',
-                        fontWeight: 600,
-                        color: 'var(--marker-green)',
-                      }}
-                    >
-                      +
-                      {formatMoney(
-                        BALANCE.finances.sponsorIncomeWeekly[userClub.reputation] ?? 400_000,
-                      )}
-                    </td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid var(--paper-rule)' }}>
-                    <td style={{ padding: '10px 0' }}>Squad Wages & Payroll</td>
-                    <td
-                      className="tabular-nums"
-                      style={{
-                        padding: '10px 0',
-                        textAlign: 'right',
-                        fontWeight: 600,
-                        color: 'var(--marker-red)',
-                      }}
-                    >
-                      -{formatMoney(currentWeeklyWage)}
-                    </td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid var(--paper-rule)' }}>
-                    <td style={{ padding: '10px 0' }}>Technical & Backroom Staff Payroll</td>
-                    <td
-                      className="tabular-nums"
-                      style={{
-                        padding: '10px 0',
-                        textAlign: 'right',
-                        fontWeight: 600,
-                        color: 'var(--marker-red)',
-                      }}
-                    >
-                      -{formatMoney(staffWages)}
-                    </td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid var(--paper-rule)' }}>
-                    <td style={{ padding: '10px 0' }}>Stadium Operations</td>
-                    <td
-                      className="tabular-nums"
-                      style={{
-                        padding: '10px 0',
-                        textAlign: 'right',
-                        fontWeight: 600,
-                        color: 'var(--marker-red)',
-                      }}
-                    >
-                      -
-                      {formatMoney(
-                        userClub.reputation * BALANCE.finances.operatingCostPerReputation,
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+        {/* Right Column: Boardroom Letter, Staff Photo Cards, Dressing Room */}
+        <div className="club-right-col">
+          {/* From the Boardroom */}
+          <div className="letter-paper">
+            <div className="letter-hd">
+              <b>From the boardroom</b>
+              <span>
+                {ownerName} · Owner
+                <br />
+                Week {gameState.matchday}
+              </span>
             </div>
-          </Sheet>
-        )}
+            <p
+              style={{
+                font: "400 14.5px/1.5 'Source Serif 4', serif",
+                marginTop: '12px',
+                color: '#1B1A17',
+              }}
+            >
+              "{getOrdinal(userRank)}, and {ptsOffTop} point{ptsOffTop === 1 ? '' : 's'} off the
+              summit. The board expected {userClub.expectation.label.toLowerCase()} and we remain on
+              track. Keep the wage bill disciplined and we will back you in the window."
+            </p>
 
-        {/* Tab 2: Board */}
-        {activeTab === 'BOARD' && (
-          <Sheet id="club-board-review" variant="memo">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div
-                className="broadcast-label"
-                style={{
-                  color: 'var(--paper-dim)',
-                  borderBottom: '1px solid var(--paper-rule)',
-                  paddingBottom: '8px',
-                }}
-              >
-                BOARD DIRECTORS REPORT
-              </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '24px',
-                  backgroundColor: 'var(--paper-2)',
-                  padding: '20px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--paper-rule)',
-                }}
-              >
-                <div>
-                  <div className="broadcast-label" style={{ color: 'var(--paper-dim)' }}>
-                    CURRENT CONFIDENCE
-                  </div>
-                  <div
-                    className="stat-number tabular-nums"
+            <div className="meters-grid">
+              <div className="meter-box">
+                <span>Board confidence</span>
+                <b>
+                  {boardConfidence}
+                  <small
                     style={{
-                      fontSize: '40px',
-                      fontWeight: 700,
-                      color:
-                        userClub.boardConfidence >= 60
-                          ? 'var(--marker-green)'
-                          : 'var(--marker-red)',
+                      font: "700 14px/1 'Barlow Condensed', sans-serif",
+                      marginLeft: '6px',
+                      color: confDelta >= 0 ? '#1E7B3C' : '#C42B2B',
                     }}
                   >
-                    {Math.round(userClub.boardConfidence)}%
-                  </div>
-                </div>
-
-                <div style={{ flex: 1, fontSize: '14px', lineHeight: '1.5' }}>
-                  <div style={{ fontWeight: 700, marginBottom: '4px' }}>
-                    Mandate: {userClub.expectation.label}
-                  </div>
-                  <div>
-                    The board monitors match performance, table standing, and wage discipline.
-                    Maintain results to ensure full boardroom backing.
-                  </div>
-                </div>
+                    {confDelta >= 0 ? `▲${confDelta}` : `▼${Math.abs(confDelta)}`}
+                  </small>
+                </b>
+                <i className="meter-bar">
+                  <u style={{ width: `${boardConfidence}%` }} />
+                  <em style={{ left: '25%' }} title="25% Sack Threshold" />
+                </i>
+              </div>
+              <div className="meter-box">
+                <span>Expectation</span>
+                <b style={{ fontSize: '24px', lineHeight: 1.2 }}>{userClub.expectation.label}</b>
               </div>
             </div>
-          </Sheet>
-        )}
 
-        {/* Tab 3: Fans */}
-        {activeTab === 'FANS' && (
-          <Sheet id="club-fans-overview" variant="memo">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div
-                className="broadcast-label"
+            <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
+              <button
+                onClick={handleBudgetClick}
                 style={{
-                  color: 'var(--paper-dim)',
-                  borderBottom: '1px solid var(--paper-rule)',
-                  paddingBottom: '8px',
+                  font: "700 13px/1 'Barlow Condensed', sans-serif",
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  padding: '8px 14px',
+                  background: '#1B1A17',
+                  color: '#FBF8F1',
+                  border: 'none',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
                 }}
               >
-                SUPPORTERS TRUST & FAN MOOD
-              </div>
-
-              <div
+                Ask for more budget
+              </button>
+              <button
+                onClick={handleStadiumClick}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '24px',
-                  backgroundColor: 'var(--paper-2)',
-                  padding: '20px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--paper-rule)',
+                  font: "700 13px/1 'Barlow Condensed', sans-serif",
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  padding: '8px 14px',
+                  background: 'transparent',
+                  color: '#1B1A17',
+                  border: '1.5px solid #1B1A17',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
                 }}
               >
-                <div>
-                  <div className="broadcast-label" style={{ color: 'var(--paper-dim)' }}>
-                    FAN MOOD
-                  </div>
-                  <div
-                    className="stat-number tabular-nums"
-                    style={{
-                      fontSize: '40px',
-                      fontWeight: 700,
-                      color: userClub.fanMood >= 50 ? 'var(--marker-green)' : 'var(--marker-red)',
-                    }}
-                  >
-                    {Math.round(userClub.fanMood)}%
-                  </div>
-                </div>
-
-                <div style={{ flex: 1, fontSize: '14px', lineHeight: '1.5' }}>
-                  <div style={{ fontWeight: 700, marginBottom: '4px' }}>
-                    Supporters Sentiment: Optimistic
-                  </div>
-                  <div>
-                    Attendances track team results, exciting attacking play, and derby performances.
-                    Wins boost matchday gate revenues.
-                  </div>
-                </div>
-              </div>
+                Talk about the stadium
+              </button>
             </div>
-          </Sheet>
-        )}
+          </div>
 
-        {/* Tab 4: Dressing Room */}
-        {activeTab === 'DRESSING_ROOM' && (
-          <Sheet id="club-dressing-room" variant="memo">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div
-                className="broadcast-label"
-                style={{
-                  color: 'var(--paper-dim)',
-                  borderBottom: '1px solid var(--paper-rule)',
-                  paddingBottom: '8px',
-                }}
-              >
-                DRESSING ROOM ATMOSPHERE & COHESION
-              </div>
-
-              {/* Cohesion Meter & Tactical Execution Impact */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1.2fr 2fr',
-                  gap: '20px',
-                  backgroundColor: 'var(--paper-2)',
-                  padding: '20px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--paper-rule)',
-                }}
-              >
-                <div>
-                  <div className="broadcast-label" style={{ color: 'var(--paper-dim)' }}>
-                    TEAM COHESION
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
-                    <span
-                      className="stat-number tabular-nums"
-                      style={{
-                        fontSize: '44px',
-                        fontWeight: 700,
-                        color:
-                          currentCohesion >= 65
-                            ? 'var(--marker-green)'
-                            : currentCohesion >= 45
-                              ? 'var(--marker-blue)'
-                              : 'var(--marker-red)',
-                      }}
-                    >
-                      {currentCohesion}
-                    </span>
-                    <span style={{ fontSize: '18px', color: 'var(--paper-dim)' }}>/ 100</span>
-                  </div>
-                  <div
-                    style={{
-                      display: 'inline-block',
-                      marginTop: '6px',
-                      padding: '3px 8px',
-                      borderRadius: '3px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      backgroundColor:
-                        currentCohesion >= 65
-                          ? 'rgba(46, 125, 50, 0.15)'
-                          : currentCohesion >= 45
-                            ? 'rgba(31, 79, 191, 0.15)'
-                            : 'rgba(211, 47, 47, 0.15)',
-                      color:
-                        currentCohesion >= 65
-                          ? 'var(--marker-green)'
-                          : currentCohesion >= 45
-                            ? 'var(--marker-blue)'
-                            : 'var(--marker-red)',
-                    }}
-                  >
-                    {currentCohesion >= 65
-                      ? 'Harmonious & Unified'
-                      : currentCohesion >= 45
-                        ? 'Stable Dressing Room'
-                        : 'Divided & Fractured'}
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    fontSize: '13px',
-                    lineHeight: '1.5',
-                  }}
-                >
-                  <div style={{ fontWeight: 700, color: 'var(--paper-ink)' }}>
-                    Tactical Execution Modifier:{' '}
-                    <span
-                      className="tabular-nums"
-                      style={{
-                        color:
-                          Number(cohesionModifier) >= 0
-                            ? 'var(--marker-green)'
-                            : 'var(--marker-red)',
-                      }}
-                    >
-                      {Number(cohesionModifier) >= 0
-                        ? `+${cohesionModifier}%`
-                        : `${cohesionModifier}%`}
-                    </span>
-                  </div>
-                  <div style={{ color: 'var(--paper-dim)' }}>
-                    Cohesion dynamically scales execution across all match moments: passing duels,
-                    pressing triggers, marking discipline and finishing consistency ((cohesion - 50)
-                    / 1000).
-                  </div>
-                  <div style={{ color: 'var(--paper-dim)', fontSize: '12px' }}>
-                    Weekly drift: Leader morale mean ({meanLeaderMorale}%) pulls squad morale by 10%
-                    each week. Match victories grant +1, defeats -1, broken promises -5, and new
-                    signings -2 while settling in.
-                  </div>
-                </div>
-              </div>
-
-              {/* Dressing Room Leaders */}
-              <div>
-                <div
-                  className="broadcast-label"
-                  style={{ color: 'var(--paper-dim)', marginBottom: '12px', fontSize: '12px' }}
-                >
-                  HIERARCHY & SQUAD LEADERS (TOP 3 BY INFLUENCE SCORE)
-                </div>
-
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                    gap: '16px',
-                  }}
-                >
-                  {dressingRoomLeaders.map((leader, idx) => {
-                    const isCaptain = userClub.tactics.captain === leader.id;
-                    const leaderScore = calculateLeaderScore(leader, isCaptain);
-                    return (
-                      <div
-                        key={leader.id}
-                        style={{
-                          backgroundColor: 'var(--paper-2)',
-                          padding: '16px',
-                          borderRadius: '4px',
-                          border: '1px solid var(--paper-rule)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '12px',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <Portrait
-                            playerId={leader.id}
-                            initials={`${leader.firstName[0] ?? ''}${leader.lastName[0] ?? ''}`}
-                            primaryColor={userClub.colors.primary}
-                            secondaryColor={userClub.colors.secondary}
-                            size={42}
-                          />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <span
-                                style={{
-                                  fontWeight: 700,
-                                  fontSize: '15px',
-                                  color: 'var(--paper-ink)',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {leader.knownAs ?? `${leader.firstName} ${leader.lastName}`}
-                              </span>
-                              {isCaptain && (
-                                <span
-                                  title="Club Captain"
-                                  style={{
-                                    backgroundColor: 'var(--gold)',
-                                    color: '#000',
-                                    fontSize: '10px',
-                                    fontWeight: 700,
-                                    padding: '1px 5px',
-                                    borderRadius: '2px',
-                                  }}
-                                >
-                                  C
-                                </span>
-                              )}
-                            </div>
-                            <div style={{ fontSize: '12px', color: 'var(--paper-dim)' }}>
-                              #{leader.squadNumber ?? '-'} · {leader.positions[0]?.pos} · Age{' '}
-                              {leader.age} · {leader.stats.apps} apps
-                            </div>
-                          </div>
-                        </div>
-
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            borderTop: '1px solid var(--paper-rule)',
-                            paddingTop: '8px',
-                            fontSize: '12px',
-                          }}
-                        >
-                          <div>
-                            <span style={{ color: 'var(--paper-dim)' }}>Influence Score: </span>
-                            <span className="tabular-nums" style={{ fontWeight: 700 }}>
-                              {leaderScore.toFixed(1)}
-                            </span>
-                          </div>
-                          <div>
-                            <span style={{ color: 'var(--paper-dim)' }}>Morale: </span>
-                            <span
-                              className="tabular-nums"
-                              style={{
-                                fontWeight: 700,
-                                color:
-                                  leader.morale >= 65 ? 'var(--marker-green)' : 'var(--marker-red)',
-                              }}
-                            >
-                              {leader.morale}%
-                            </span>
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                          <span
-                            style={{
-                              fontSize: '10px',
-                              padding: '2px 6px',
-                              borderRadius: '2px',
-                              backgroundColor: 'rgba(31, 79, 191, 0.1)',
-                              color: 'var(--marker-blue)',
-                              fontWeight: 600,
-                            }}
-                          >
-                            Personality: {leader.personality}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: '10px',
-                              padding: '2px 6px',
-                              borderRadius: '2px',
-                              backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                              color: 'var(--paper-dim)',
-                            }}
-                          >
-                            Rank #{idx + 1} Leader
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Cohesion Event History */}
-              {userClub.cohesionHistory && userClub.cohesionHistory.length > 0 && (
-                <div>
-                  <div
-                    className="broadcast-label"
-                    style={{ color: 'var(--paper-dim)', marginBottom: '8px', fontSize: '12px' }}
-                  >
-                    RECENT DRESSING ROOM DEVELOPMENTS
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '6px',
-                      backgroundColor: 'var(--paper-2)',
-                      padding: '12px 16px',
-                      borderRadius: '4px',
-                      border: '1px solid var(--paper-rule)',
-                    }}
-                  >
-                    {userClub.cohesionHistory
-                      .slice(-5)
-                      .reverse()
-                      .map((entry, idx) => (
-                        <div
-                          key={idx}
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            fontSize: '12px',
-                            borderBottom: idx < 4 ? '1px solid var(--paper-rule)' : 'none',
-                            paddingBottom: '4px',
-                          }}
-                        >
-                          <span style={{ color: 'var(--paper-ink)' }}>
-                            MD {entry.matchday}: {entry.reason || 'Weekly morale balance'}
-                          </span>
-                          <span
-                            className="tabular-nums"
-                            style={{
-                              fontWeight: 700,
-                              color:
-                                entry.delta > 0
-                                  ? 'var(--marker-green)'
-                                  : entry.delta < 0
-                                    ? 'var(--marker-red)'
-                                    : 'var(--paper-dim)',
-                            }}
-                          >
-                            {entry.delta > 0 ? `+${entry.delta}` : entry.delta}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
+          {/* The Staff - 4 pinned photo cards */}
+          <div>
+            <div
+              style={{
+                font: "700 11px/1 'Barlow Condensed', sans-serif",
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: '#5E574E',
+                marginBottom: '10px',
+              }}
+            >
+              The staff · replace one per window round
             </div>
-          </Sheet>
-        )}
-
-        {/* Tab 5: Staff */}
-        {activeTab === 'STAFF' && (
-          <Sheet id="club-staff-overview" variant="memo">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  borderBottom: '1px solid var(--paper-rule)',
-                  paddingBottom: '8px',
-                }}
-              >
-                <div className="broadcast-label" style={{ color: 'var(--paper-dim)' }}>
-                  BACKROOM & TECHNICAL STAFF
-                </div>
-                {!isWindowActive && (
-                  <span style={{ fontSize: '12px', color: 'var(--paper-dim)' }}>
-                    Staff replacements available during transfer windows
-                  </span>
-                )}
-                {isWindowActive && userClub.staffReplacedThisRound && (
-                  <span style={{ fontSize: '12px', color: 'var(--marker-red)' }}>
-                    Staff replacement limit reached for this window round (1 max)
-                  </span>
-                )}
-              </div>
-
-              {/* 4 Staff Cards Grid */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                  gap: '16px',
-                }}
-              >
-                {/* Assistant: Theo Vance */}
-                <div
-                  style={{
-                    backgroundColor: 'var(--paper-2)',
-                    padding: '16px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--paper-rule)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '14px',
-                  }}
-                >
-                  <div>
-                    <div
-                      className="broadcast-label"
-                      style={{ color: 'var(--marker-blue)', fontSize: '11px' }}
-                    >
-                      ASSISTANT MANAGER
+            <div className="staff-grid">
+              {[
+                {
+                  role: 'assistant' as StaffRole,
+                  title: 'Assistant',
+                  data: staff?.assistant ?? { name: 'Theo Vance', stars: 3, wage: 12000 },
+                  effect: 'Tips and analysis',
+                  rot: -1.8,
+                },
+                {
+                  role: 'coach' as StaffRole,
+                  title: 'First-team coach',
+                  data: staff?.coach ?? { name: 'Ruth Kemble', stars: 4, wage: 16000 },
+                  effect: 'Development ×1.09',
+                  rot: 1.4,
+                },
+                {
+                  role: 'scout' as StaffRole,
+                  title: 'Head of scouting',
+                  data: staff?.scout ?? { name: 'Iker Fernandez', stars: 3, wage: 11000 },
+                  effect: 'Knowledge +15%/wk',
+                  rot: -1.0,
+                },
+                {
+                  role: 'physio' as StaffRole,
+                  title: 'Physio',
+                  data: staff?.physio ?? { name: 'Sam Oduya', stars: 2, wage: 9000 },
+                  effect: 'Injuries ×1.04 longer',
+                  rot: 1.8,
+                },
+              ].map((s) => {
+                const starsCount = s.data.stars ?? 3;
+                return (
+                  <div
+                    key={s.role}
+                    className="staff-card"
+                    style={{ transform: `rotate(${s.rot}deg)` }}
+                    onClick={() => setReplacingRole(s.role)}
+                    title="Click to view replacement candidates"
+                  >
+                    <div className="staff-photo">
+                      <Portrait
+                        initials={s.data.name
+                          .split(' ')
+                          .map((w) => w[0])
+                          .join('')
+                          .slice(0, 2)}
+                        primaryColor={userClub.colors.primary}
+                        secondaryColor={userClub.colors.secondary}
+                        size={80}
+                      />
                     </div>
-                    <div
+                    <b
                       style={{
-                        fontSize: '18px',
-                        fontWeight: 700,
-                        color: 'var(--paper-ink)',
-                        marginTop: '4px',
-                      }}
-                    >
-                      {userClub.staff?.assistant.name ?? 'Theo Vance'}
-                    </div>
-                    <div style={{ display: 'flex', gap: '2px', marginTop: '6px' }}>
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star
-                          key={s}
-                          size={14}
-                          fill={
-                            s <= (userClub.staff?.assistant.stars ?? 3)
-                              ? 'var(--gold)'
-                              : 'transparent'
-                          }
-                          color={
-                            s <= (userClub.staff?.assistant.stars ?? 3)
-                              ? 'var(--gold)'
-                              : 'var(--paper-rule)'
-                          }
-                        />
-                      ))}
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--paper-dim)', marginTop: '8px' }}>
-                      Wage: {formatMoney(userClub.staff?.assistant.wage ?? 13500)}/week
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '12px',
-                        color: 'var(--paper-ink)',
+                        display: 'block',
+                        font: "800 17px/1 'Barlow Condensed', sans-serif",
+                        textTransform: 'uppercase',
                         marginTop: '8px',
-                        lineHeight: '1.4',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                       }}
                     >
-                      Key tactical confidant. Mentors youth players, conducts team talks, and
-                      assists match prep.
-                    </div>
-                  </div>
-                  <div>
-                    <span
+                      {s.data.name}
+                    </b>
+                    <small
                       style={{
-                        display: 'inline-block',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        padding: '4px 8px',
-                        backgroundColor: 'rgba(0,0,0,0.06)',
-                        color: 'var(--paper-dim)',
-                        borderRadius: '3px',
+                        display: 'block',
+                        font: "600 11px/1.2 'Barlow Condensed', sans-serif",
+                        letterSpacing: '0.1em',
+                        color: '#5E574E',
+                        textTransform: 'uppercase',
+                        marginTop: '3px',
                       }}
                     >
-                      Permanent Appointment
-                    </span>
-                  </div>
-                </div>
-
-                {/* First-Team Coach */}
-                <div
-                  style={{
-                    backgroundColor: 'var(--paper-2)',
-                    padding: '16px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--paper-rule)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '14px',
-                  }}
-                >
-                  <div>
-                    <div
-                      className="broadcast-label"
-                      style={{ color: 'var(--marker-green)', fontSize: '11px' }}
-                    >
-                      FIRST-TEAM COACH
-                    </div>
+                      {s.title}
+                    </small>
                     <div
                       style={{
-                        fontSize: '18px',
-                        fontWeight: 700,
-                        color: 'var(--paper-ink)',
+                        color: '#C98A12',
+                        letterSpacing: '2px',
                         marginTop: '4px',
+                        fontSize: '13px',
                       }}
                     >
-                      {userClub.staff?.coach.name ?? 'Technical Coach'}
-                    </div>
-                    <div style={{ display: 'flex', gap: '2px', marginTop: '6px' }}>
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star
-                          key={s}
-                          size={14}
-                          fill={
-                            s <= (userClub.staff?.coach.stars ?? 3) ? 'var(--gold)' : 'transparent'
-                          }
-                          color={
-                            s <= (userClub.staff?.coach.stars ?? 3)
-                              ? 'var(--gold)'
-                              : 'var(--paper-rule)'
-                          }
-                        />
-                      ))}
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--paper-dim)', marginTop: '8px' }}>
-                      Wage: {formatMoney(userClub.staff?.coach.wage ?? 13500)}/week
+                      {'★'.repeat(starsCount)}
+                      <span style={{ color: '#cfc6b6' }}>{'★'.repeat(5 - starsCount)}</span>
                     </div>
                     <div
                       style={{
-                        fontSize: '12px',
-                        color: 'var(--paper-ink)',
-                        marginTop: '8px',
-                        lineHeight: '1.4',
+                        font: '500 11px/1.3 Inter, sans-serif',
+                        color: '#3B372F',
+                        marginTop: '5px',
                       }}
                     >
-                      Player development multiplier:{' '}
-                      <strong>
-                        x
-                        {(
-                          BALANCE.club.coachDevBase +
-                          BALANCE.club.coachDevPerStar * (userClub.staff?.coach.stars ?? 3)
-                        ).toFixed(2)}
-                      </strong>{' '}
-                      growth rate across all training sessions.
+                      {s.effect}
                     </div>
                   </div>
-                  <div>
-                    <button
-                      onClick={() => setReplacingRole('coach')}
-                      disabled={!isWindowActive || !!userClub.staffReplacedThisRound}
-                      style={{
-                        width: '100%',
-                        padding: '6px 12px',
-                        backgroundColor:
-                          isWindowActive && !userClub.staffReplacedThisRound
-                            ? 'var(--paper-ink)'
-                            : 'var(--paper-rule)',
-                        color:
-                          isWindowActive && !userClub.staffReplacedThisRound
-                            ? 'var(--paper)'
-                            : 'var(--paper-dim)',
-                        border: 'none',
-                        borderRadius: '3px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor:
-                          isWindowActive && !userClub.staffReplacedThisRound
-                            ? 'pointer'
-                            : 'not-allowed',
-                      }}
-                    >
-                      Replace Coach
-                    </button>
-                  </div>
-                </div>
+                );
+              })}
+            </div>
+          </div>
 
-                {/* Head of Scouting */}
-                <div
-                  style={{
-                    backgroundColor: 'var(--paper-2)',
-                    padding: '16px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--paper-rule)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '14px',
-                  }}
-                >
-                  <div>
-                    <div
-                      className="broadcast-label"
-                      style={{ color: 'var(--marker-purple, #6a1b9a)', fontSize: '11px' }}
-                    >
-                      HEAD OF SCOUTING
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '18px',
-                        fontWeight: 700,
-                        color: 'var(--paper-ink)',
-                        marginTop: '4px',
-                      }}
-                    >
-                      {userClub.staff?.scout.name ?? 'Chief Scout'}
-                    </div>
-                    <div style={{ display: 'flex', gap: '2px', marginTop: '6px' }}>
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star
-                          key={s}
-                          size={14}
-                          fill={
-                            s <= (userClub.staff?.scout.stars ?? 3) ? 'var(--gold)' : 'transparent'
-                          }
-                          color={
-                            s <= (userClub.staff?.scout.stars ?? 3)
-                              ? 'var(--gold)'
-                              : 'var(--paper-rule)'
-                          }
-                        />
-                      ))}
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--paper-dim)', marginTop: '8px' }}>
-                      Wage: {formatMoney(userClub.staff?.scout.wage ?? 13500)}/week
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '12px',
-                        color: 'var(--paper-ink)',
-                        marginTop: '8px',
-                        lineHeight: '1.4',
-                      }}
-                    >
-                      Scouting report accuracy:{' '}
-                      <strong>
-                        {Math.round(
-                          (BALANCE.club.scoutKnowledgeBase +
-                            BALANCE.club.scoutKnowledgePerStar *
-                              (userClub.staff?.scout.stars ?? 3)) *
-                            100,
-                        )}
-                        %
-                      </strong>{' '}
-                      knowledge revealed per scouting assignment.
-                    </div>
-                  </div>
-                  <div>
-                    <button
-                      onClick={() => setReplacingRole('scout')}
-                      disabled={!isWindowActive || !!userClub.staffReplacedThisRound}
-                      style={{
-                        width: '100%',
-                        padding: '6px 12px',
-                        backgroundColor:
-                          isWindowActive && !userClub.staffReplacedThisRound
-                            ? 'var(--paper-ink)'
-                            : 'var(--paper-rule)',
-                        color:
-                          isWindowActive && !userClub.staffReplacedThisRound
-                            ? 'var(--paper)'
-                            : 'var(--paper-dim)',
-                        border: 'none',
-                        borderRadius: '3px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor:
-                          isWindowActive && !userClub.staffReplacedThisRound
-                            ? 'pointer'
-                            : 'not-allowed',
-                      }}
-                    >
-                      Replace Scout
-                    </button>
-                  </div>
+          {/* The Dressing Room */}
+          <div className="dressing-paper">
+            <div
+              style={{
+                font: "700 11.5px/1 'Barlow Condensed', sans-serif",
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: '#5E574E',
+              }}
+            >
+              The dressing room
+            </div>
+            <div className="meters-grid" style={{ gridTemplateColumns: '1fr 1.3fr' }}>
+              <div className="meter-box">
+                <span>Cohesion</span>
+                <b>
+                  {currentCohesion}
+                  <small
+                    style={{
+                      font: "700 14px/1 'Barlow Condensed', sans-serif",
+                      marginLeft: '6px',
+                      color: cohesionDelta >= 0 ? '#1E7B3C' : '#C42B2B',
+                    }}
+                  >
+                    {cohesionDelta >= 0 ? `▲${cohesionDelta}` : `▼${Math.abs(cohesionDelta)}`}
+                  </small>
+                </b>
+                <i className="meter-bar">
+                  <u style={{ width: `${currentCohesion}%` }} />
+                </i>
+              </div>
+              <div className="why-list">
+                <div>
+                  <span>Leaders are happy</span>
+                  <b style={{ color: '#1E7B3C', fontFamily: 'Barlow Condensed', fontSize: '13px' }}>
+                    +2
+                  </b>
                 </div>
-
-                {/* Club Physio */}
-                <div
-                  style={{
-                    backgroundColor: 'var(--paper-2)',
-                    padding: '16px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--paper-rule)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '14px',
-                  }}
-                >
-                  <div>
-                    <div
-                      className="broadcast-label"
-                      style={{ color: 'var(--marker-red)', fontSize: '11px' }}
-                    >
-                      CLUB PHYSIO
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '18px',
-                        fontWeight: 700,
-                        color: 'var(--paper-ink)',
-                        marginTop: '4px',
-                      }}
-                    >
-                      {userClub.staff?.physio.name ?? 'Lead Physio'}
-                    </div>
-                    <div style={{ display: 'flex', gap: '2px', marginTop: '6px' }}>
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star
-                          key={s}
-                          size={14}
-                          fill={
-                            s <= (userClub.staff?.physio.stars ?? 3) ? 'var(--gold)' : 'transparent'
-                          }
-                          color={
-                            s <= (userClub.staff?.physio.stars ?? 3)
-                              ? 'var(--gold)'
-                              : 'var(--paper-rule)'
-                          }
-                        />
-                      ))}
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--paper-dim)', marginTop: '8px' }}>
-                      Wage: {formatMoney(userClub.staff?.physio.wage ?? 13500)}/week
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '12px',
-                        color: 'var(--paper-ink)',
-                        marginTop: '8px',
-                        lineHeight: '1.4',
-                      }}
-                    >
-                      Injury length:{' '}
-                      <strong>
-                        x
-                        {(
-                          BALANCE.club.physioInjuryLenBase -
-                          BALANCE.club.physioInjuryLenPerStar * (userClub.staff?.physio.stars ?? 3)
-                        ).toFixed(2)}
-                      </strong>
-                      {' · '}
-                      Match hazard:{' '}
-                      <strong>
-                        x
-                        {(
-                          BALANCE.club.physioHazardBase -
-                          BALANCE.club.physioHazardPerStar * (userClub.staff?.physio.stars ?? 3)
-                        ).toFixed(2)}
-                      </strong>
-                    </div>
-                  </div>
-                  <div>
-                    <button
-                      onClick={() => setReplacingRole('physio')}
-                      disabled={!isWindowActive || !!userClub.staffReplacedThisRound}
-                      style={{
-                        width: '100%',
-                        padding: '6px 12px',
-                        backgroundColor:
-                          isWindowActive && !userClub.staffReplacedThisRound
-                            ? 'var(--paper-ink)'
-                            : 'var(--paper-rule)',
-                        color:
-                          isWindowActive && !userClub.staffReplacedThisRound
-                            ? 'var(--paper)'
-                            : 'var(--paper-dim)',
-                        border: 'none',
-                        borderRadius: '3px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor:
-                          isWindowActive && !userClub.staffReplacedThisRound
-                            ? 'pointer'
-                            : 'not-allowed',
-                      }}
-                    >
-                      Replace Physio
-                    </button>
-                  </div>
+                <div>
+                  <span>Recent match performance</span>
+                  <b
+                    style={{
+                      color: userRank <= 5 ? '#1E7B3C' : '#C42B2B',
+                      fontFamily: 'Barlow Condensed',
+                      fontSize: '13px',
+                    }}
+                  >
+                    {userRank <= 5 ? '+1' : '−1'}
+                  </b>
+                </div>
+                <div>
+                  <span>Squad discipline</span>
+                  <b style={{ color: '#1E7B3C', fontFamily: 'Barlow Condensed', fontSize: '13px' }}>
+                    +1
+                  </b>
                 </div>
               </div>
             </div>
-          </Sheet>
-        )}
 
-        {/* Tab 6: Stadium */}
-        {activeTab === 'STADIUM' && (
-          <Sheet id="club-stadium-card" variant="default">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div
-                className="broadcast-label"
-                style={{
-                  color: 'var(--paper-dim)',
-                  borderBottom: '1px solid var(--paper-rule)',
-                  paddingBottom: '8px',
-                }}
-              >
-                FACILITIES & GROUNDS
-              </div>
-
-              <div>
-                <h2
-                  style={{
-                    fontSize: '28px',
-                    fontFamily: 'var(--font-head)',
-                    color: 'var(--paper-ink)',
-                    margin: 0,
-                  }}
-                >
-                  {userClub.stadium.name.toUpperCase()}
-                </h2>
-                <div
-                  style={{
-                    fontSize: '15px',
-                    color: 'var(--paper-dim)',
-                    marginTop: '4px',
-                  }}
-                >
-                  Capacity: {userClub.stadium.capacity.toLocaleString()} seats
-                </div>
-              </div>
-
-              <div
-                style={{
-                  height: '240px',
-                  backgroundColor: 'var(--paper-2)',
-                  border: '1px solid var(--paper-rule)',
-                  borderRadius: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--paper-dim)',
-                  fontSize: '14px',
-                }}
-              >
-                {userClub.stadium.name} · Coastal Ground at Night
-              </div>
+            <div className="lead-grid">
+              {dressingRoomLeaders.map((ldr) => {
+                const isCap = userClub.tactics.captain === ldr.id;
+                const roleDesc = isCap ? 'Captain · Leader' : 'Leader · Influential';
+                return (
+                  <div key={ldr.id} className="lead-card">
+                    <b
+                      style={{
+                        display: 'block',
+                        font: "800 16px/1 'Barlow Condensed', sans-serif",
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {ldr.knownAs ?? ldr.lastName} {isCap ? '©' : ''}
+                    </b>
+                    <small
+                      style={{
+                        display: 'block',
+                        font: '500 11px/1.3 Inter, sans-serif',
+                        color: '#5E574E',
+                        marginTop: '3px',
+                      }}
+                    >
+                      {roleDesc} · morale {ldr.morale >= 65 ? 'good' : 'fair'}
+                    </small>
+                  </div>
+                );
+              })}
             </div>
-          </Sheet>
-        )}
+          </div>
+        </div>
+      </div>
 
-        {/* Candidate Replacement Modal */}
-        {replacingRole && (
+      {/* Staff Replacement Modal */}
+      {replacingRole && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+        >
           <div
             style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              backgroundColor: '#FBF8F1',
+              color: '#1B1A17',
+              borderRadius: '6px',
+              maxWidth: '640px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
+              border: '2px solid #D6CEC0',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1000,
-              padding: '20px',
+              flexDirection: 'column',
+              gap: '18px',
             }}
           >
             <div
               style={{
-                backgroundColor: 'var(--paper)',
-                color: 'var(--paper-ink)',
-                borderRadius: '6px',
-                maxWidth: '640px',
-                width: '100%',
-                padding: '24px',
-                boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
-                border: '2px solid var(--paper-rule)',
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '18px',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: '1px solid #D6CEC0',
+                paddingBottom: '12px',
               }}
             >
-              <div
+              <div>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontFamily: 'Playfair Display, serif',
+                    fontSize: '20px',
+                  }}
+                >
+                  Replace{' '}
+                  {replacingRole === 'coach'
+                    ? 'First-Team Coach'
+                    : replacingRole === 'scout'
+                      ? 'Head of Scouting'
+                      : replacingRole === 'physio'
+                        ? 'Club Physio'
+                        : 'Assistant'}
+                </h3>
+                <div style={{ fontSize: '12px', color: '#5E574E', marginTop: '2px' }}>
+                  {isWindowActive
+                    ? userClub.staffReplacedThisRound
+                      ? 'Staff replacement limit reached for this round (1 per window round).'
+                      : 'Transfer window open: select a candidate below to replace.'
+                    : 'Replacement available during transfer window rounds.'}
+                </div>
+              </div>
+              <button
+                onClick={() => setReplacingRole(null)}
                 style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  borderBottom: '1px solid var(--paper-rule)',
-                  paddingBottom: '12px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#1B1A17',
+                  cursor: 'pointer',
                 }}
               >
-                <div>
-                  <h3
-                    style={{
-                      margin: 0,
-                      fontFamily: 'var(--font-head)',
-                      fontSize: '20px',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    Replace{' '}
-                    {replacingRole === 'coach'
-                      ? 'First-Team Coach'
-                      : replacingRole === 'scout'
-                        ? 'Head of Scouting'
-                        : 'Club Physio'}
-                  </h3>
-                  <div style={{ fontSize: '12px', color: 'var(--paper-dim)', marginTop: '2px' }}>
-                    Current staff severance:{' '}
-                    {formatMoney((userClub.staff?.[replacingRole]?.wage ?? 13500) * 4)} (4 weeks'
-                    wages)
-                  </div>
-                </div>
-                <button
-                  onClick={() => setReplacingRole(null)}
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {generateStaffCandidates(
+                replacingRole,
+                gameState.matchday * 137 + gameState.seed,
+              ).map((cand) => (
+                <div
+                  key={cand.id}
                   style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--paper-ink)',
-                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px',
+                    backgroundColor: '#EDE8DC',
+                    borderRadius: '4px',
+                    border: '1px solid #D6CEC0',
                   }}
                 >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {generateStaffCandidates(
-                  replacingRole,
-                  gameState.matchday * 137 + gameState.seed,
-                ).map((cand) => (
-                  <div
-                    key={cand.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      backgroundColor: 'var(--paper-2)',
-                      padding: '12px 16px',
-                      borderRadius: '4px',
-                      border: '1px solid var(--paper-rule)',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '15px' }}>{cand.name}</div>
-                      <div style={{ display: 'flex', gap: '2px', margin: '4px 0' }}>
-                        {[1, 2, 3, 4, 5].map((s) => (
-                          <Star
-                            key={s}
-                            size={12}
-                            fill={s <= cand.stars ? 'var(--gold)' : 'transparent'}
-                            color={s <= cand.stars ? 'var(--gold)' : 'var(--paper-rule)'}
-                          />
-                        ))}
-                      </div>
-                      <div style={{ fontSize: '12px', color: 'var(--paper-dim)' }}>
-                        Wage: {formatMoney(cand.wage)}/week
-                      </div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '15px' }}>{cand.name}</div>
+                    <div style={{ display: 'flex', gap: '2px', marginTop: '4px' }}>
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star
+                          key={s}
+                          size={13}
+                          fill={s <= cand.stars ? '#C98A12' : 'transparent'}
+                          color={s <= cand.stars ? '#C98A12' : '#cfc6b6'}
+                        />
+                      ))}
                     </div>
-                    <button
-                      onClick={() => {
-                        const res = hireStaffMember(cand);
-                        if (res.success) {
-                          showToast(`Appointed ${cand.name} as new ${cand.role}`, 'success');
-                          setReplacingRole(null);
-                        }
-                      }}
-                      style={{
-                        padding: '8px 16px',
-                        backgroundColor: 'var(--paper-ink)',
-                        color: 'var(--paper)',
-                        border: 'none',
-                        borderRadius: '3px',
-                        fontWeight: 700,
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Hire Candidate
-                    </button>
+                    <div style={{ fontSize: '12px', color: '#5E574E', marginTop: '4px' }}>
+                      Wage: {formatMoney(cand.wage)}/week
+                    </div>
                   </div>
-                ))}
-              </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
-                <button
-                  onClick={() => setReplacingRole(null)}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: 'transparent',
-                    border: '1px solid var(--paper-rule)',
-                    color: 'var(--paper-ink)',
-                    borderRadius: '3px',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
+                  <button
+                    onClick={() => {
+                      if (!isWindowActive || userClub.staffReplacedThisRound) return;
+                      hireStaffMember(replacingRole, cand);
+                      setReplacingRole(null);
+                      showToast(`Hired ${cand.name} as ${replacingRole}!`, 'success');
+                    }}
+                    disabled={!isWindowActive || !!userClub.staffReplacedThisRound}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor:
+                        isWindowActive && !userClub.staffReplacedThisRound ? '#1B1A17' : '#D6CEC0',
+                      color:
+                        isWindowActive && !userClub.staffReplacedThisRound ? '#FBF8F1' : '#5E574E',
+                      border: 'none',
+                      borderRadius: '3px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor:
+                        isWindowActive && !userClub.staffReplacedThisRound
+                          ? 'pointer'
+                          : 'not-allowed',
+                    }}
+                  >
+                    Hire
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -93,9 +93,9 @@ export const TrainingScreen: React.FC = () => {
   );
 
   // Upcoming opponent
+  const targetMD = gameState.matchday === 0 ? 1 : gameState.matchday;
   const nextFixture = gameState.fixtures.find(
-    (f) =>
-      f.matchday === gameState.matchday && (f.homeId === userClub.id || f.awayId === userClub.id),
+    (f) => f.matchday === targetMD && (f.homeId === userClub.id || f.awayId === userClub.id),
   );
   const isHome = nextFixture?.homeId === userClub.id;
   const oppId = nextFixture

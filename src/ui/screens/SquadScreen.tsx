@@ -1,27 +1,27 @@
-// Implements SPEC §11.6 Squad screen (office world)
-// Detailed squad table with portrait thumb, position, age, OVR badge, potential stars, condition bar,
-// morale icon, form dots, stats (Apps, Goals, Assists, Avg rating), Value, Wage, Contract, Status chips.
-// Filters: All / GK / DEF / MID / FWD / Injured / Unhappy. Sortable. Row click opens Player Profile.
-import { TraitChips } from '../components/TraitChips';
+// Implements SPEC §11.6 Squad and §11.7 Player Profile matching docs/design/squad/
 import React, { useState, useMemo } from 'react';
 import { useStore } from '../../state/store';
-import { Player, Position } from '../../core/types';
-import { Portrait } from '../components/Portrait';
+import { Player, Position, AttributeKey } from '../../core/types';
 import { formatMoney } from '../../core/math';
-import { Stamp } from '../components/Stamp';
-import { Star, AlertTriangle, ShieldAlert, HeartCrack, Search } from 'lucide-react';
+import { Portrait } from '../components/Portrait';
+import { RadarChart } from '../components/RadarChart';
 import { getClubLeaders, getInjuryRisk } from '../../core/club/clubDepth';
+import { isGoalkeeper } from '../../core/player/roleShapes';
 
-type SquadFilter = 'ALL' | 'GK' | 'DEF' | 'MID' | 'FWD' | 'INJURED' | 'UNHAPPY' | 'TRAITS';
+type SquadFilter = 'ALL' | 'GK' | 'DEF' | 'MID' | 'FWD' | 'INJURED' | 'UNHAPPY' | 'CONTRACTS';
 
 export const SquadScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
+  const setScreen = useStore((state) => state.setScreen);
+  const showToast = useStore((state) => state.showToast);
+  const setGameState = useStore((state) => state.setGameState);
   const openPlayerProfile = useStore((state) => state.openPlayerProfile);
+  const openConversationModal = useStore((state) => state.openConversationModal);
 
   const [activeFilter, setActiveFilter] = useState<SquadFilter>('ALL');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortField, setSortField] = useState<string>('ovr');
-  const [sortAsc, setSortAsc] = useState<boolean>(false);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [sortCol, setSortCol] = useState<string>('pos');
+  const [sortAsc, setSortAsc] = useState<boolean>(true);
 
   if (!gameState) return null;
 
@@ -35,720 +35,1205 @@ export const SquadScreen: React.FC = () => {
     .map((id) => gameState.players[id])
     .filter((p): p is Player => p != null);
 
-  // Helper for potential stars (SPEC §12.12)
-  const getPotentialStars = (pot: number): number => {
-    if (pot >= 85) return 5;
-    if (pot >= 78) return 4;
-    if (pot >= 71) return 3;
-    if (pot >= 64) return 2;
-    return 1;
-  };
+  // Default selection: Captain or first star player
+  const captainId = userClub.tactics.captain;
+  const currentSelectedId =
+    selectedPlayerId ??
+    squadPlayers.find((p) => p.id === captainId)?.id ??
+    squadPlayers[0]?.id ??
+    null;
+  const selectedPlayer = squadPlayers.find((p) => p.id === currentSelectedId) ?? squadPlayers[0];
 
-  // Helper for OVR color (SPEC §19.4)
-  const getOvrColor = (ovr: number): string => {
-    if (ovr >= 85) return 'var(--attr-elite)';
-    if (ovr >= 75) return 'var(--attr-great)';
-    if (ovr >= 65) return 'var(--attr-good)';
-    if (ovr >= 55) return 'var(--attr-avg)';
-    if (ovr >= 40) return 'var(--attr-subpar)';
-    return 'var(--attr-poor)';
-  };
+  // Counts for tabs
+  const injuredCount = squadPlayers.filter((p) => p.injury !== null).length;
+  const unhappyCount = squadPlayers.filter((p) => p.morale < 45).length;
+  const expiringContractsCount = squadPlayers.filter(
+    (p) => (p.contract?.yearsLeft ?? 2) <= 1,
+  ).length;
 
-  // Helper for form dot color (SPEC §19.4)
-  const getFormColor = (rating: number): string => {
-    if (rating >= 8.0) return 'var(--gold)';
-    if (rating >= 7.0) return 'var(--win)';
-    if (rating >= 6.0) return 'var(--text-dim)';
-    return 'var(--loss)';
-  };
+  // Average age & total wages
+  const totalWage = squadPlayers.reduce((s, p) => s + (p.contract?.wagePerWeek ?? 0), 0);
+  const avgAge =
+    squadPlayers.length > 0
+      ? squadPlayers.reduce((s, p) => s + p.age, 0) / squadPlayers.length
+      : 25.5;
 
-  // Filtered & sorted squad
-  const displayedPlayers = useMemo(() => {
-    return squadPlayers
-      .filter((p) => {
-        // Search query
-        if (searchQuery.trim()) {
-          const q = searchQuery.toLowerCase();
-          const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
-          if (!fullName.includes(q)) return false;
-        }
+  // Filter players
+  const filteredPlayers = useMemo(() => {
+    return squadPlayers.filter((p) => {
+      const primaryPos = p.positions[0]?.pos ?? '';
+      switch (activeFilter) {
+        case 'GK':
+          return primaryPos === 'GK';
+        case 'DEF':
+          return ['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(primaryPos);
+        case 'MID':
+          return ['DM', 'CM', 'AM', 'LM', 'RM'].includes(primaryPos);
+        case 'FWD':
+          return ['LW', 'RW', 'ST'].includes(primaryPos);
+        case 'INJURED':
+          return p.injury !== null;
+        case 'UNHAPPY':
+          return p.morale < 45;
+        case 'CONTRACTS':
+          return (p.contract?.yearsLeft ?? 2) <= 1;
+        case 'ALL':
+        default:
+          return true;
+      }
+    });
+  }, [squadPlayers, activeFilter]);
 
-        // Category filter
-        const primaryPos = p.positions[0]?.pos ?? '';
-        switch (activeFilter) {
-          case 'GK':
-            return primaryPos === 'GK';
-          case 'DEF':
-            return ['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(primaryPos);
-          case 'MID':
-            return ['DM', 'CM', 'AM', 'LM', 'RM'].includes(primaryPos);
-          case 'FWD':
-            return ['LW', 'RW', 'ST'].includes(primaryPos);
-          case 'INJURED':
-            return p.injury !== null;
-          case 'UNHAPPY':
-            return p.morale < 40;
-          case 'TRAITS':
-            return (p.traits?.length ?? 0) > 0;
-          case 'ALL':
-          default:
-            return true;
-        }
-      })
-      .sort((a, b) => {
-        let valA: any;
-        let valB: any;
+  // Group into GK / DEF / MID / FWD
+  const groups = useMemo(() => {
+    const gk: Player[] = [];
+    const def: Player[] = [];
+    const mid: Player[] = [];
+    const fwd: Player[] = [];
 
-        switch (sortField) {
-          case 'name':
-            valA = a.lastName;
-            valB = b.lastName;
-            break;
-          case 'pos':
-            valA = a.positions[0]?.pos ?? '';
-            valB = b.positions[0]?.pos ?? '';
-            break;
-          case 'age':
-            valA = a.age;
-            valB = b.age;
-            break;
-          case 'ovr':
-            // Approximate OVR by primary attributes
-            valA = Math.round(
-              (a.attributes.passing +
-                a.attributes.finishing +
-                a.attributes.tackling +
-                a.attributes.pace) /
-                4,
-            );
-            valB = Math.round(
-              (b.attributes.passing +
-                b.attributes.finishing +
-                b.attributes.tackling +
-                b.attributes.pace) /
-                4,
-            );
-            break;
-          case 'pot':
-            valA = a.potential;
-            valB = b.potential;
-            break;
-          case 'cond':
-            valA = a.condition;
-            valB = b.condition;
-            break;
-          case 'apps':
-            valA = a.stats.apps;
-            valB = b.stats.apps;
-            break;
-          case 'goals':
-            valA = a.stats.goals;
-            valB = b.stats.goals;
-            break;
-          case 'assists':
-            valA = a.stats.assists;
-            valB = b.stats.assists;
-            break;
-          case 'rating':
-            valA = a.stats.ratedApps > 0 ? a.stats.ratingSum / a.stats.ratedApps : 0;
-            valB = b.stats.ratedApps > 0 ? b.stats.ratingSum / b.stats.ratedApps : 0;
-            break;
-          default:
-            valA = a.squadNumber ?? 99;
-            valB = b.squadNumber ?? 99;
-        }
+    const posOrder: Record<string, number> = {
+      GK: 0,
+      RB: 1,
+      RWB: 2,
+      CB: 3,
+      LB: 4,
+      LWB: 5,
+      DM: 6,
+      CM: 7,
+      RM: 8,
+      LM: 9,
+      AM: 10,
+      RW: 11,
+      LW: 12,
+      ST: 13,
+    };
 
-        if (valA < valB) return sortAsc ? -1 : 1;
-        if (valA > valB) return sortAsc ? 1 : -1;
-        return 0;
-      });
-  }, [squadPlayers, activeFilter, searchQuery, sortField, sortAsc]);
+    filteredPlayers.forEach((p) => {
+      const pos = p.positions[0]?.pos ?? 'CM';
+      if (pos === 'GK') gk.push(p);
+      else if (['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(pos)) def.push(p);
+      else if (['DM', 'CM', 'AM', 'LM', 'RM'].includes(pos)) mid.push(p);
+      else fwd.push(p);
+    });
 
-  const handleSort = (field: string) => {
-    if (sortField === field) {
+    const sortFn = (a: Player, b: Player) => {
+      if (sortCol === 'number') {
+        const diff = (a.squadNumber ?? 99) - (b.squadNumber ?? 99);
+        return sortAsc ? diff : -diff;
+      }
+      if (sortCol === 'name') {
+        const diff = a.lastName.localeCompare(b.lastName);
+        return sortAsc ? diff : -diff;
+      }
+      if (sortCol === 'age') {
+        const diff = a.age - b.age;
+        return sortAsc ? diff : -diff;
+      }
+      if (sortCol === 'ovr') {
+        const diff = (b.bestOvr ?? b.ovr) - (a.bestOvr ?? a.ovr);
+        return sortAsc ? -diff : diff;
+      }
+      if (sortCol === 'cond') {
+        const diff = b.condition - a.condition;
+        return sortAsc ? -diff : diff;
+      }
+      if (sortCol === 'morale') {
+        const diff = b.morale - a.morale;
+        return sortAsc ? -diff : diff;
+      }
+      if (sortCol === 'val') {
+        const diff = b.marketValue - a.marketValue;
+        return sortAsc ? -diff : diff;
+      }
+      // default: pos order
+      const pA = posOrder[a.positions[0]?.pos ?? 'CM'] ?? 99;
+      const pB = posOrder[b.positions[0]?.pos ?? 'CM'] ?? 99;
+      return pA - pB;
+    };
+
+    return [
+      { name: 'GOALKEEPERS', players: gk.sort(sortFn) },
+      { name: 'DEFENDERS', players: def.sort(sortFn) },
+      { name: 'MIDFIELDERS', players: mid.sort(sortFn) },
+      { name: 'FORWARDS', players: fwd.sort(sortFn) },
+    ].filter((g) => g.players.length > 0);
+  }, [filteredPlayers, sortCol, sortAsc]);
+
+  const handleHeaderSort = (col: string) => {
+    if (sortCol === col) {
       setSortAsc(!sortAsc);
     } else {
-      setSortField(field);
-      setSortAsc(false);
+      setSortCol(col);
+      setSortAsc(true);
     }
   };
 
-  return (
-    <div className="app-content-area office-surface" style={{ height: '100%' }}>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-          height: '100%',
-        }}
-      >
-        {/* Controls Bar: Filters & Search */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '16px',
-            flexWrap: 'wrap',
-          }}
-        >
-          {/* Category Tabs */}
-          <div
-            style={{
-              display: 'flex',
-              gap: '6px',
-              backgroundColor: 'var(--surface)',
-              padding: '4px',
-              borderRadius: 'var(--radius-m)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            {(
-              ['ALL', 'GK', 'DEF', 'MID', 'FWD', 'INJURED', 'UNHAPPY', 'TRAITS'] as SquadFilter[]
-            ).map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className="broadcast-label"
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 'var(--radius-s)',
-                  backgroundColor: activeFilter === filter ? 'var(--accent)' : 'transparent',
-                  color: activeFilter === filter ? 'var(--accent-ink)' : 'var(--text-dim)',
-                  fontWeight: 700,
-                  fontSize: '12px',
-                  transition: 'all var(--dur-fast)',
-                }}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
+  // Helper colors
+  const getOvrColor = (o: number) => {
+    if (o >= 78) return '#1E7B3C';
+    if (o >= 73) return '#2f6f9a';
+    if (o >= 68) return '#C98A12';
+    return '#7a7062';
+  };
 
-          {/* Search box */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              backgroundColor: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-m)',
-              padding: '6px 12px',
-              minWidth: '240px',
-            }}
-          >
-            <Search size={16} color="var(--text-dim)" />
-            <input
-              type="text"
-              placeholder="Search squad..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                color: 'var(--text)',
-                fontSize: '14px',
-                width: '100%',
-              }}
-            />
+  const getMoraleLabel = (m: number) => {
+    if (m >= 80) return { label: 'Superb', color: '#1E7B3C' };
+    if (m >= 60) return { label: 'Good', color: '#1E7B3C' };
+    if (m >= 45) return { label: 'Okay', color: '#5E574E' };
+    return { label: 'Unhappy', color: '#C42B2B' };
+  };
+
+  // Selected player attributes breakdown
+  const isGk = selectedPlayer ? isGoalkeeper(selectedPlayer) : false;
+  const bestPos = selectedPlayer?.positions[0]?.pos ?? 'CM';
+  const bestOvr = selectedPlayer?.bestOvr ?? selectedPlayer?.ovr ?? 70;
+  const potStars = selectedPlayer
+    ? selectedPlayer.potential >= 85
+      ? 5
+      : selectedPlayer.potential >= 78
+        ? 4
+        : selectedPlayer.potential >= 71
+          ? 3
+          : 2
+    : 3;
+
+  const trainingRating = selectedPlayer?.trainingHistory?.slice(-1)[0]?.rating ?? 7.2;
+  const injuryRisk = selectedPlayer ? getInjuryRisk(selectedPlayer) : { level: 'Low' };
+
+  // Attribute tables
+  const technicalAttrs: [string, number, number, boolean][] = selectedPlayer
+    ? isGk
+      ? [
+          ['Reflexes', selectedPlayer.attributes.reflexes, 1, true],
+          ['Handling', selectedPlayer.attributes.handling, 0, true],
+          ['One-on-ones', selectedPlayer.attributes.oneOnOnes, 1, true],
+          ['Aerial command', selectedPlayer.attributes.aerialCommand, 0, false],
+          ['Passing', selectedPlayer.attributes.passing, 0, false],
+          ['First touch', selectedPlayer.attributes.firstTouch, 0, false],
+        ]
+      : [
+          ['Passing', selectedPlayer.attributes.passing, 1, ['CM', 'AM', 'DM'].includes(bestPos)],
+          ['First touch', selectedPlayer.attributes.firstTouch, 0, false],
+          [
+            'Dribbling',
+            selectedPlayer.attributes.dribbling,
+            0,
+            ['LW', 'RW', 'AM'].includes(bestPos),
+          ],
+          [
+            'Crossing',
+            selectedPlayer.attributes.crossing,
+            0,
+            ['LW', 'RW', 'LB', 'RB'].includes(bestPos),
+          ],
+          [
+            'Finishing',
+            selectedPlayer.attributes.finishing,
+            1,
+            ['ST', 'LW', 'RW'].includes(bestPos),
+          ],
+          ['Long shots', selectedPlayer.attributes.longShots, 0, false],
+          ['Set pieces', selectedPlayer.attributes.setPieces, 0, false],
+        ]
+    : [];
+
+  const mentalAttrs: [string, number, number, boolean][] = selectedPlayer
+    ? [
+        ['Decisions', selectedPlayer.attributes.decisions, 1, true],
+        [
+          'Vision',
+          selectedPlayer.attributes.passing > 70
+            ? Math.min(99, selectedPlayer.attributes.passing - 2)
+            : 65,
+          0,
+          true,
+        ],
+        ['Composure', selectedPlayer.attributes.composure, 0, false],
+        [
+          'Off the ball',
+          selectedPlayer.attributes.offTheBall,
+          0,
+          ['ST', 'LW', 'RW', 'AM'].includes(bestPos),
+        ],
+        [
+          'Positioning',
+          selectedPlayer.attributes.positioning,
+          -1,
+          ['CB', 'DM', 'GK'].includes(bestPos),
+        ],
+        ['Work rate', selectedPlayer.attributes.workRate, 0, true],
+        ['Leadership', selectedPlayer.personality === 'Leader' ? 82 : 68, 0, false],
+      ]
+    : [];
+
+  const physicalAttrs: [string, number, number, boolean][] = selectedPlayer
+    ? [
+        ['Stamina', selectedPlayer.attributes.stamina, 0, true],
+        ['Pace', selectedPlayer.attributes.pace, 0, false],
+        ['Strength', selectedPlayer.attributes.strength, 0, false],
+        [
+          'Tackling',
+          selectedPlayer.attributes.tackling,
+          1,
+          ['CB', 'DM', 'LB', 'RB'].includes(bestPos),
+        ],
+        ['Heading', selectedPlayer.attributes.heading, 0, ['CB', 'ST'].includes(bestPos)],
+        [
+          'Balance',
+          Math.round((selectedPlayer.attributes.pace + selectedPlayer.attributes.dribbling) / 2),
+          0,
+          false,
+        ],
+        [
+          'Agility',
+          Math.round((selectedPlayer.attributes.pace + selectedPlayer.attributes.firstTouch) / 2),
+          0,
+          false,
+        ],
+      ]
+    : [];
+
+  // Actions
+  const handleMakeCaptain = () => {
+    if (!selectedPlayer) return;
+    const next = JSON.parse(JSON.stringify(gameState));
+    next.clubs[next.userClubId].tactics.captain = selectedPlayer.id;
+    setGameState(next);
+    showToast(
+      `${selectedPlayer.knownAs ?? selectedPlayer.lastName} appointed Club Captain!`,
+      'success',
+    );
+  };
+
+  const handleTransferList = () => {
+    if (!selectedPlayer) return;
+    const next = JSON.parse(JSON.stringify(gameState));
+    const p = next.players[selectedPlayer.id];
+    if (p) {
+      p.transferListed = !p.transferListed;
+      setGameState(next);
+      showToast(
+        p.transferListed
+          ? `${p.lastName} added to transfer list.`
+          : `${p.lastName} removed from transfer list.`,
+        'info',
+      );
+    }
+  };
+
+  const handleContractOffer = () => {
+    if (!selectedPlayer) return;
+    const next = JSON.parse(JSON.stringify(gameState));
+    const p = next.players[selectedPlayer.id];
+    if (p && p.contract) {
+      p.contract.yearsLeft = (p.contract.yearsLeft ?? 1) + 2;
+      setGameState(next);
+      showToast(`Offered 2-year contract extension to ${p.lastName}. Deal agreed!`, 'success');
+    }
+  };
+
+  const handleTalkToPlayer = () => {
+    if (!selectedPlayer) return;
+    openConversationModal();
+  };
+
+  const handleTrainingFocus = () => {
+    setScreen('training');
+  };
+
+  return (
+    <div
+      style={{
+        padding: '22px 24px',
+        color: '#1B1A17',
+        fontFamily: "'Inter', sans-serif",
+        boxSizing: 'border-box',
+        overflowY: 'auto',
+        height: '100%',
+      }}
+    >
+      <style>{`
+        .squad-layout {
+          display: grid;
+          grid-template-columns: 1fr 720px;
+          gap: 28px;
+          max-width: 1720px;
+          margin: 0 auto;
+        }
+        @media (max-width: 1440px) {
+          .squad-layout {
+            grid-template-columns: 1fr 620px;
+            gap: 20px;
+          }
+        }
+        @media (max-width: 1240px) {
+          .squad-layout {
+            grid-template-columns: 1fr;
+          }
+        }
+        .sheetwrap {
+          position: relative;
+          min-height: 980px;
+        }
+        .sheetwrap .back {
+          position: absolute;
+          inset: 20px 6px 0 12px;
+          background: #EAE3D2;
+          transform: rotate(0.8deg);
+          box-shadow: 0 14px 30px rgba(0,0,0,0.5);
+          border-radius: 4px;
+        }
+        .sheetwrap .clipper {
+          position: absolute;
+          top: 6px;
+          left: 50%;
+          margin-left: -75px;
+          width: 150px;
+          height: 24px;
+          background: #2a313d;
+          border-radius: 4px;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+          z-index: 10;
+        }
+        .sheet {
+          position: relative;
+          margin: 30px 16px 8px 0;
+          padding: 30px 26px 18px;
+          background: #FBF8F1;
+          box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+          border: 1px solid #D6CEC0;
+        }
+        .hdr {
+          display: flex;
+          align-items: flex-end;
+          gap: 18px;
+          border-bottom: 3px solid #1B1A17;
+          padding-bottom: 10px;
+          flex-wrap: wrap;
+        }
+        .hdr .h2 {
+          font: 800 32px/1 'Barlow Condensed', sans-serif;
+          text-transform: uppercase;
+        }
+        .hdr small {
+          font: 600 13px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #5E574E;
+        }
+        .ftabs {
+          margin-left: auto;
+          display: flex;
+          gap: 4px;
+          flex-wrap: wrap;
+        }
+        .ftabs span {
+          font: 700 12.5px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 7px 10px;
+          background: #ddd6c8;
+          color: #5E574E;
+          cursor: pointer;
+          user-select: none;
+        }
+        .ftabs span.on {
+          background: #1B1A17;
+          color: #FBF8F1;
+        }
+        table.squad-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 8px;
+        }
+        table.squad-table th {
+          font: 600 10.5px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #5E574E;
+          text-align: left;
+          padding: 7px 5px;
+          border-bottom: 2px solid #1B1A17;
+          cursor: pointer;
+        }
+        table.squad-table td {
+          padding: 5px 5px;
+          border-bottom: 1px solid #ddd5c6;
+          font-size: 13px;
+          vertical-align: middle;
+          height: 33px;
+        }
+        tr.grp td {
+          height: 26px;
+          border-bottom: 1.5px solid #1B1A17;
+          font: 700 12px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.18em;
+          color: #5E574E;
+          padding-top: 12px;
+          background: transparent;
+        }
+        tr.squad-row {
+          cursor: pointer;
+        }
+        tr.squad-row:hover td {
+          background: rgba(31,79,191,0.04);
+        }
+        tr.squad-row.sel td {
+          background: rgba(31,79,191,0.08);
+        }
+        tr.squad-row.sel td:first-child {
+          box-shadow: inset 4px 0 0 #1F4FBF;
+        }
+        .s-no {
+          font: 800 16px/1 'Barlow Condensed', sans-serif;
+          color: #5E574E;
+          width: 26px;
+        }
+        .s-nm {
+          font-weight: 600;
+          white-space: nowrap;
+        }
+        .s-nm small {
+          font: 600 10.5px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.1em;
+          color: #5E574E;
+          margin-left: 6px;
+        }
+        .s-pos span {
+          font: 700 11px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.08em;
+          padding: 3px 5px 2px;
+          background: #1B1A17;
+          color: #FBF8F1;
+          margin-right: 3px;
+        }
+        .s-pos span.alt {
+          background: transparent;
+          color: #1B1A17;
+          border: 1px solid #1B1A17;
+        }
+        .s-ovr {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 28px;
+          height: 23px;
+          font: 800 15px/1 'Barlow Condensed', sans-serif;
+          color: #ffffff;
+        }
+        .s-cond {
+          width: 65px;
+        }
+        .s-cond i {
+          display: block;
+          height: 6px;
+          background: #d6cfc1;
+          position: relative;
+        }
+        .s-cond i u {
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+        }
+        .s-mor {
+          font: 600 12px/1 Inter, sans-serif;
+        }
+        .s-form {
+          display: flex;
+          gap: 3px;
+        }
+        .s-form b {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+        }
+        .s-st {
+          display: flex;
+          gap: 3px;
+          align-items: center;
+        }
+        .s-ic {
+          font: 800 10.5px/1 'Barlow Condensed', sans-serif;
+          width: 17px;
+          height: 17px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1.5px solid currentColor;
+        }
+        .s-ic.cap {
+          background: #F2B705;
+          color: #1B1A17;
+          border-color: #1B1A17;
+        }
+
+        /* Right Dossier File */
+        .file-wrap {
+          position: relative;
+          min-height: 980px;
+        }
+        .file-tab {
+          position: absolute;
+          top: 0;
+          left: 30px;
+          background: #d8b878;
+          color: #3b2d10;
+          font: 700 16px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          padding: 9px 18px 7px;
+          border-radius: 5px 5px 0 0;
+          z-index: 5;
+        }
+        .file-pg {
+          position: relative;
+          margin-top: 31px;
+          padding: 26px 28px;
+          background: #FBF8F1;
+          border: 1px solid #D6CEC0;
+          box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+        }
+        .file-hd {
+          display: grid;
+          grid-template-columns: 140px 1fr auto;
+          gap: 18px;
+          padding-bottom: 16px;
+          border-bottom: 2px solid #1B1A17;
+        }
+        .file-hd .photo-box {
+          height: 165px;
+          background: #efe3bd;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+        .file-hd h2 {
+          font: 800 42px/0.9 'Barlow Condensed', sans-serif;
+          text-transform: uppercase;
+          margin: 0;
+        }
+        .file-meta {
+          font: 500 12.5px/1.5 Inter, sans-serif;
+          color: #5E574E;
+          margin-top: 6px;
+        }
+        .file-meta b {
+          color: #1B1A17;
+          font-weight: 600;
+        }
+        .file-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 8px;
+        }
+        .file-chips span {
+          font: 700 11.5px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.06em;
+          padding: 4px 6px 3px;
+          border: 1.5px solid #1B1A17;
+        }
+        .file-chips span.filled {
+          background: #1B1A17;
+          color: #FBF8F1;
+        }
+        .file-chips span.trait {
+          border-color: #1F4FBF;
+          color: #1F4FBF;
+        }
+        .file-big-ovr {
+          text-align: right;
+        }
+        .file-big-ovr b {
+          display: block;
+          font: 800 66px/0.85 'Barlow Condensed', sans-serif;
+          color: #1E7B3C;
+        }
+        .file-big-ovr span {
+          font: 700 11px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.12em;
+          color: #5E574E;
+        }
+        .file-big-ovr .pot-stars {
+          color: #C98A12;
+          font-size: 16px;
+          letter-spacing: 2px;
+          margin-top: 6px;
+          display: block;
+        }
+        .file-row3 {
+          display: grid;
+          grid-template-columns: 200px 1fr;
+          gap: 20px;
+          margin-top: 16px;
+        }
+        .facts-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 8px;
+          margin-top: 8px;
+        }
+        .facts-grid div {
+          font: 800 23px/1 'Barlow Condensed', sans-serif;
+        }
+        .facts-grid div span {
+          display: block;
+          font: 600 10.5px/1.2 Inter, sans-serif;
+          color: #5E574E;
+          margin-top: 3px;
+        }
+        .attrs-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0 16px;
+          margin-top: 14px;
+        }
+        .attrs-grid h5 {
+          font: 700 11.5px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.16em;
+          color: #5E574E;
+          text-transform: uppercase;
+          margin: 6px 0 6px;
+        }
+        .attr-row {
+          display: grid;
+          grid-template-columns: 1fr 65px 22px 10px;
+          align-items: center;
+          gap: 6px;
+          height: 21px;
+          font-size: 12px;
+        }
+        .attr-row i {
+          display: block;
+          height: 5px;
+          background: #ddd6c8;
+          position: relative;
+        }
+        .attr-row i u {
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          background: #1B1A17;
+        }
+        .attr-row b {
+          font: 700 14px/1 'Barlow Condensed', sans-serif;
+          text-align: right;
+        }
+        .attr-row em {
+          font-style: normal;
+          font-size: 9px;
+        }
+        .attr-row.key {
+          font-weight: 600;
+        }
+        .attr-row.key i u {
+          background: #1F4FBF;
+        }
+        .coach-note {
+          margin-top: 14px;
+          background: #fff8d8;
+          border-left: 4px solid #C98A12;
+          padding: 10px 12px;
+          font: italic 400 13.5px/1.4 'Source Serif 4', serif;
+        }
+        .coach-note b {
+          font: 700 11px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.14em;
+          font-style: normal;
+          display: block;
+          color: #5E574E;
+          margin-bottom: 4px;
+          text-transform: uppercase;
+        }
+        .file-acts {
+          display: flex;
+          gap: 8px;
+          margin-top: 16px;
+          flex-wrap: wrap;
+        }
+        .btn-act {
+          font: 700 12.5px/1 'Barlow Condensed', sans-serif;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 8px 12px;
+          border-radius: 3px;
+          cursor: pointer;
+        }
+        .btn-act.primary {
+          background: #1B1A17;
+          color: #FBF8F1;
+          border: none;
+        }
+        .btn-act.ghost {
+          background: transparent;
+          color: #1B1A17;
+          border: 1.5px solid #1B1A17;
+        }
+      `}</style>
+
+      <div className="squad-layout">
+        {/* Left Side: Clipboard Team Sheet */}
+        <div className="sheetwrap">
+          <div className="back" />
+          <div className="clipper" />
+          <div className="sheet">
+            <div className="hdr">
+              <div>
+                <div className="h2">The squad</div>
+                <small>
+                  {squadPlayers.length} players · wage bill {formatMoney(totalWage)}/week · average
+                  age {avgAge.toFixed(1)}
+                </small>
+              </div>
+
+              <div className="ftabs">
+                <span
+                  className={activeFilter === 'ALL' ? 'on' : ''}
+                  onClick={() => setActiveFilter('ALL')}
+                >
+                  All
+                </span>
+                <span
+                  className={activeFilter === 'GK' ? 'on' : ''}
+                  onClick={() => setActiveFilter('GK')}
+                >
+                  GK
+                </span>
+                <span
+                  className={activeFilter === 'DEF' ? 'on' : ''}
+                  onClick={() => setActiveFilter('DEF')}
+                >
+                  DEF
+                </span>
+                <span
+                  className={activeFilter === 'MID' ? 'on' : ''}
+                  onClick={() => setActiveFilter('MID')}
+                >
+                  MID
+                </span>
+                <span
+                  className={activeFilter === 'FWD' ? 'on' : ''}
+                  onClick={() => setActiveFilter('FWD')}
+                >
+                  FWD
+                </span>
+                {injuredCount > 0 && (
+                  <span
+                    className={activeFilter === 'INJURED' ? 'on' : ''}
+                    onClick={() => setActiveFilter('INJURED')}
+                  >
+                    Injured {injuredCount}
+                  </span>
+                )}
+                {unhappyCount > 0 && (
+                  <span
+                    className={activeFilter === 'UNHAPPY' ? 'on' : ''}
+                    onClick={() => setActiveFilter('UNHAPPY')}
+                  >
+                    Unhappy {unhappyCount}
+                  </span>
+                )}
+                {expiringContractsCount > 0 && (
+                  <span
+                    className={activeFilter === 'CONTRACTS' ? 'on' : ''}
+                    onClick={() => setActiveFilter('CONTRACTS')}
+                  >
+                    Contracts {expiringContractsCount}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <table className="squad-table">
+              <thead>
+                <tr>
+                  <th onClick={() => handleHeaderSort('number')}>#</th>
+                  <th onClick={() => handleHeaderSort('name')}>Player</th>
+                  <th onClick={() => handleHeaderSort('pos')}>Pos</th>
+                  <th onClick={() => handleHeaderSort('age')}>Age</th>
+                  <th onClick={() => handleHeaderSort('ovr')}>OVR</th>
+                  <th onClick={() => handleHeaderSort('cond')}>Cond</th>
+                  <th onClick={() => handleHeaderSort('morale')}>Morale</th>
+                  <th>Form</th>
+                  <th>Trn</th>
+                  <th>Contract</th>
+                  <th onClick={() => handleHeaderSort('val')}>Value</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {groups.map((grp) => (
+                  <React.Fragment key={grp.name}>
+                    <tr className="grp">
+                      <td colSpan={12}>{grp.name}</td>
+                    </tr>
+                    {grp.players.map((p, pIdx) => {
+                      const isSel = p.id === selectedPlayer?.id;
+                      const pNum = p.squadNumber ?? pIdx + 1;
+                      const primaryPos = p.positions[0]?.pos ?? 'CM';
+                      const altPos = p.positions[1]?.pos;
+                      const ovrVal = p.bestOvr ?? p.ovr;
+                      const mor = getMoraleLabel(p.morale);
+                      const trnRating = p.trainingHistory?.slice(-1)[0]?.rating ?? 7.0;
+                      const contractYears = `${p.contract?.yearsLeft ?? 2}y`;
+                      const is1y = (p.contract?.yearsLeft ?? 2) <= 1;
+
+                      // Icons
+                      const isCap = p.id === userClub.tactics.captain;
+                      const isLdr = leaderIds.has(p.id);
+                      const isInj = p.injury !== null;
+                      const isUnhappy = p.morale < 45;
+                      const isOverloaded = (p.fatigue ?? 0) >= 65;
+
+                      return (
+                        <tr
+                          key={p.id}
+                          className={`squad-row ${isSel ? 'sel' : ''}`}
+                          onClick={() => setSelectedPlayerId(p.id)}
+                        >
+                          <td className="s-no">{pNum}</td>
+                          <td className="s-nm">
+                            {p.knownAs ?? p.lastName}
+                            <small>{p.nationality}</small>
+                          </td>
+                          <td className="s-pos">
+                            <span>{primaryPos}</span>
+                            {altPos && <span className="alt">{altPos}</span>}
+                          </td>
+                          <td>{p.age}</td>
+                          <td>
+                            <span className="s-ovr" style={{ background: getOvrColor(ovrVal) }}>
+                              {ovrVal}
+                            </span>
+                          </td>
+                          <td className="s-cond">
+                            <i>
+                              <u
+                                style={{
+                                  width: `${p.condition}%`,
+                                  background:
+                                    p.condition < 70
+                                      ? '#C42B2B'
+                                      : p.condition < 85
+                                        ? '#C98A12'
+                                        : '#1E7B3C',
+                                }}
+                              />
+                            </i>
+                          </td>
+                          <td className="s-mor" style={{ color: mor.color }}>
+                            {mor.label}
+                          </td>
+                          <td>
+                            <span className="s-form">
+                              {p.form && p.form.length > 0 ? (
+                                p.form.slice(-5).map((fVal, fI) => {
+                                  const col =
+                                    fVal >= 7.2 ? '#1E7B3C' : fVal >= 6.3 ? '#a39b8c' : '#C42B2B';
+                                  return (
+                                    <b
+                                      key={fI}
+                                      style={{ background: col }}
+                                      title={`Rating: ${fVal.toFixed(1)}`}
+                                    />
+                                  );
+                                })
+                              ) : (
+                                <span style={{ color: '#a39b8c', fontSize: '11px' }}>no games</span>
+                              )}
+                            </span>
+                          </td>
+                          <td
+                            style={{
+                              font: "700 14px 'Barlow Condensed', sans-serif",
+                              color:
+                                trnRating >= 7.5
+                                  ? '#1E7B3C'
+                                  : trnRating <= 5.5
+                                    ? '#C42B2B'
+                                    : '#1B1A17',
+                            }}
+                          >
+                            {trnRating.toFixed(1)}
+                          </td>
+                          <td
+                            style={{
+                              color: is1y ? '#C42B2B' : '#1B1A17',
+                              fontWeight: is1y ? 700 : 500,
+                            }}
+                          >
+                            {contractYears}
+                          </td>
+                          <td>{formatMoney(p.marketValue)}</td>
+                          <td>
+                            <span className="s-st">
+                              {isInj && (
+                                <span className="s-ic" style={{ color: '#C42B2B' }}>
+                                  +
+                                </span>
+                              )}
+                              {isCap && <span className="s-ic cap">C</span>}
+                              {!isCap && isLdr && <span className="s-ic">L</span>}
+                              {isOverloaded && (
+                                <span className="s-ic" style={{ color: '#C98A12' }}>
+                                  !
+                                </span>
+                              )}
+                              {isUnhappy && (
+                                <span className="s-ic" style={{ color: '#C42B2B' }}>
+                                  ☹
+                                </span>
+                              )}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* Squad Table Container */}
-        <div
-          style={{
-            flex: 1,
-            backgroundColor: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-s)',
-            overflow: 'auto',
-            boxShadow: 'var(--shadow-1)',
-          }}
-        >
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              textAlign: 'left',
-              fontSize: '13px',
-            }}
-          >
-            <thead
-              style={{
-                position: 'sticky',
-                top: 0,
-                backgroundColor: 'var(--surface-2)',
-                borderBottom: '2px solid var(--border)',
-                zIndex: 10,
-              }}
-            >
-              <tr className="broadcast-label" style={{ color: 'var(--text-dim)' }}>
-                <th
-                  onClick={() => handleSort('number')}
-                  style={{ padding: '12px 14px', width: '40px', cursor: 'pointer' }}
-                >
-                  #
-                </th>
-                <th
-                  onClick={() => handleSort('name')}
-                  style={{ padding: '12px 14px', cursor: 'pointer' }}
-                >
-                  Player
-                </th>
-                <th
-                  onClick={() => handleSort('pos')}
-                  style={{ padding: '12px 14px', width: '60px', cursor: 'pointer' }}
-                >
-                  Pos
-                </th>
-                <th
-                  onClick={() => handleSort('age')}
-                  style={{ padding: '12px 14px', width: '50px', cursor: 'pointer' }}
-                >
-                  Age
-                </th>
-                <th
-                  onClick={() => handleSort('ovr')}
-                  style={{ padding: '12px 14px', width: '50px', cursor: 'pointer' }}
-                >
-                  OVR
-                </th>
-                <th
-                  onClick={() => handleSort('pot')}
-                  style={{ padding: '12px 14px', width: '80px', cursor: 'pointer' }}
-                >
-                  Pot
-                </th>
-                <th
-                  onClick={() => handleSort('cond')}
-                  style={{ padding: '12px 14px', width: '100px', cursor: 'pointer' }}
-                >
-                  Cond
-                </th>
-                <th style={{ padding: '12px 14px', width: '65px' }}>Risk</th>
-                <th style={{ padding: '12px 14px', width: '70px' }}>Morale</th>
-                <th style={{ padding: '12px 14px', width: '90px' }}>Form</th>
-                <th
-                  onClick={() => handleSort('apps')}
-                  style={{
-                    padding: '12px 14px',
-                    width: '50px',
-                    textAlign: 'right',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Apps
-                </th>
-                <th
-                  onClick={() => handleSort('goals')}
-                  style={{
-                    padding: '12px 14px',
-                    width: '50px',
-                    textAlign: 'right',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Gls
-                </th>
-                <th
-                  onClick={() => handleSort('assists')}
-                  style={{
-                    padding: '12px 14px',
-                    width: '50px',
-                    textAlign: 'right',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Ast
-                </th>
-                <th
-                  onClick={() => handleSort('rating')}
-                  style={{
-                    padding: '12px 14px',
-                    width: '60px',
-                    textAlign: 'right',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Avg
-                </th>
-                <th style={{ padding: '12px 14px', width: '90px', textAlign: 'right' }}>Wage</th>
-                <th style={{ padding: '12px 14px', width: '120px' }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayedPlayers.map((player) => {
-                const ovr = Math.round(
-                  (player.attributes.passing +
-                    player.attributes.finishing +
-                    player.attributes.tackling +
-                    player.attributes.pace) /
-                    4,
-                );
-                const potStars = getPotentialStars(player.potential);
+        {/* Right Side: Player Dossier Manila File */}
+        {selectedPlayer && (
+          <div className="file-wrap">
+            <div className="file-tab">
+              {selectedPlayer.lastName} · No. {selectedPlayer.squadNumber ?? 8}
+            </div>
 
-                return (
-                  <tr
-                    key={player.id}
-                    onClick={() => openPlayerProfile(player.id)}
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') openPlayerProfile(player.id);
-                    }}
+            <div className="file-pg">
+              {/* Header */}
+              <div className="file-hd">
+                <div className="photo-box">
+                  <Portrait
+                    playerId={selectedPlayer.id}
+                    initials={`${selectedPlayer.firstName[0] ?? ''}${selectedPlayer.lastName[0] ?? ''}`}
+                    primaryColor={userClub.colors.primary}
+                    secondaryColor={userClub.colors.secondary}
+                    size={110}
+                  />
+                </div>
+
+                <div>
+                  <h2>
+                    {selectedPlayer.firstName} {selectedPlayer.lastName}
+                  </h2>
+                  <div className="file-meta">
+                    <b>{selectedPlayer.age}</b> · {selectedPlayer.nationality} ·{' '}
+                    <b>{selectedPlayer.preferredFoot} foot</b> · {selectedPlayer.height} m ·{' '}
+                    {selectedPlayer.personality ?? 'Professional'} ·{' '}
+                    {leaderIds.has(selectedPlayer.id) ? 'Leader' : 'First-team'}
+                  </div>
+
+                  <div className="file-chips">
+                    {selectedPlayer.positions.map((posInfo, idx) => (
+                      <span key={posInfo.pos} className={idx === 0 ? 'filled' : ''}>
+                        {posInfo.pos} {posInfo.familiarity ?? 100}
+                      </span>
+                    ))}
+                    {(selectedPlayer.traits ?? []).map((t) => (
+                      <span key={t} className="trait">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="file-meta" style={{ marginTop: '8px' }}>
+                    Value <b>{formatMoney(selectedPlayer.marketValue)}</b> · Wage{' '}
+                    <b>{formatMoney(selectedPlayer.contract?.wagePerWeek ?? 15000)}/wk</b> ·
+                    Contract{' '}
+                    <b>
+                      {selectedPlayer.contract?.yearsLeft ?? 2} year
+                      {(selectedPlayer.contract?.yearsLeft ?? 2) === 1 ? '' : 's'}
+                    </b>{' '}
+                    · Role <b>{selectedPlayer.squadRole ?? 'Regular'}</b>
+                  </div>
+                </div>
+
+                <div className="file-big-ovr">
+                  <b>{bestOvr}</b>
+                  <span>OVR AT {bestPos}</span>
+                  <span className="pot-stars">
+                    {'★'.repeat(potStars)}
+                    <span style={{ color: '#cfc6b6' }}>{'★'.repeat(5 - potStars)}</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Middle row: Radar Chart + Season Facts */}
+              <div className="file-row3">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <RadarChart player={selectedPlayer} size={190} />
+                </div>
+
+                <div>
+                  <div
                     style={{
-                      borderBottom: '1px solid var(--border)',
-                      cursor: 'pointer',
-                      transition: 'background-color var(--dur-fast)',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--surface-3)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
+                      font: "700 11px/1 'Barlow Condensed', sans-serif",
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase',
+                      color: '#5E574E',
                     }}
                   >
-                    {/* Squad Number */}
-                    <td
-                      className="tabular-nums"
+                    This season
+                  </div>
+                  <div className="facts-grid">
+                    <div>
+                      {selectedPlayer.stats.apps}
+                      <span>apps</span>
+                    </div>
+                    <div>
+                      {selectedPlayer.stats.goals}
+                      <span>goals</span>
+                    </div>
+                    <div>
+                      {selectedPlayer.stats.assists}
+                      <span>assists</span>
+                    </div>
+                    <div>
+                      {selectedPlayer.stats.avgRating > 0
+                        ? selectedPlayer.stats.avgRating.toFixed(2)
+                        : '—'}
+                      <span>avg rating</span>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      font: "700 11px/1 'Barlow Condensed', sans-serif",
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase',
+                      color: '#5E574E',
+                      marginTop: '14px',
+                    }}
+                  >
+                    Condition · Morale · Training
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '16px',
+                      marginTop: '8px',
+                      font: '600 13px/1 Inter, sans-serif',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <span>
+                      {selectedPlayer.condition}%{' '}
+                      <span style={{ color: '#1E7B3C' }}>
+                        {selectedPlayer.condition >= 85 ? 'fit' : 'recovering'}
+                      </span>
+                    </span>
+                    <span style={{ color: getMoraleLabel(selectedPlayer.morale).color }}>
+                      {getMoraleLabel(selectedPlayer.morale).label}
+                    </span>
+                    <span>
+                      {trainingRating.toFixed(1)} <span style={{ color: '#1E7B3C' }}>▲</span>
+                    </span>
+                    <span
                       style={{
-                        padding: '10px 14px',
-                        color: 'var(--text-faint)',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {player.squadNumber ?? '-'}
-                    </td>
-
-                    {/* Name + Portrait Thumbnail */}
-                    <td style={{ padding: '10px 14px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Portrait
-                          playerId={player.id}
-                          initials={`${player.firstName[0] ?? ''}${player.lastName[0] ?? ''}`}
-                          primaryColor={userClub.colors.primary}
-                          secondaryColor={userClub.colors.secondary}
-                          size={32}
-                        />
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div style={{ fontWeight: 600, color: 'var(--text)' }}>
-                              {player.knownAs ?? `${player.firstName} ${player.lastName}`}
-                            </div>
-                            {leaderIds.has(player.id) && (
-                              <span
-                                title="Dressing Room Leader (§12.17.5)"
-                                className="broadcast-label"
-                                style={{
-                                  backgroundColor: 'rgba(235, 175, 40, 0.2)',
-                                  color: 'var(--gold)',
-                                  padding: '1px 5px',
-                                  borderRadius: '2px',
-                                  fontSize: '9px',
-                                  fontWeight: 700,
-                                }}
-                              >
-                                LEADER
-                              </span>
-                            )}
-                          </div>
-                          {(player.traits?.length ?? 0) > 0 && (
-                            <div style={{ marginTop: 2 }}>
-                              <TraitChips traits={player.traits} tone="dark" />
-                            </div>
-                          )}
-                          <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
-                            {player.nationality} · {player.foot} footed
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Primary Position */}
-                    <td style={{ padding: '10px 14px' }}>
-                      <span
-                        className="broadcast-label"
-                        style={{
-                          backgroundColor: 'var(--surface-2)',
-                          padding: '2px 6px',
-                          borderRadius: 'var(--radius-s)',
-                          color: 'var(--text)',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                        }}
-                      >
-                        {player.positions[0]?.pos}
-                      </span>
-                    </td>
-
-                    {/* Age */}
-                    <td className="tabular-nums" style={{ padding: '10px 14px' }}>
-                      {player.age}
-                    </td>
-
-                    {/* OVR Badge */}
-                    <td style={{ padding: '10px 14px' }}>
-                      <span
-                        className="tabular-nums"
-                        style={{
-                          backgroundColor: getOvrColor(ovr),
-                          color: '#000000',
-                          padding: '2px 6px',
-                          borderRadius: '2px',
-                          fontWeight: 700,
-                          fontSize: '12px',
-                        }}
-                      >
-                        {ovr}
-                      </span>
-                    </td>
-
-                    {/* Potential Stars */}
-                    <td style={{ padding: '10px 14px' }}>
-                      <div style={{ display: 'flex', gap: '2px' }}>
-                        {[1, 2, 3, 4, 5].map((s) => (
-                          <Star
-                            key={s}
-                            size={12}
-                            fill={s <= potStars ? 'var(--gold)' : 'transparent'}
-                            color={s <= potStars ? 'var(--gold)' : 'var(--text-faint)'}
-                          />
-                        ))}
-                      </div>
-                    </td>
-
-                    {/* Condition Bar */}
-                    <td style={{ padding: '10px 14px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <div
-                          style={{
-                            width: '45px',
-                            height: '6px',
-                            backgroundColor: 'var(--surface-3)',
-                            borderRadius: '3px',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: `${player.condition}%`,
-                              height: '100%',
-                              backgroundColor:
-                                player.condition >= 75
-                                  ? 'var(--win)'
-                                  : player.condition >= 50
-                                    ? 'var(--warning)'
-                                    : 'var(--loss)',
-                            }}
-                          />
-                        </div>
-                        <span
-                          className="tabular-nums"
-                          style={{ fontSize: '11px', color: 'var(--text-dim)' }}
-                        >
-                          {player.condition}%
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Injury Risk */}
-                    <td style={{ padding: '10px 14px' }}>
-                      {(() => {
-                        const risk = getInjuryRisk(player, userClub.staff?.physio.stars ?? 3);
-                        const badgeColor =
-                          risk.level === 'High'
-                            ? 'var(--loss)'
-                            : risk.level === 'Medium'
-                              ? 'var(--warning)'
-                              : 'var(--win)';
-                        const badgeBg =
-                          risk.level === 'High'
-                            ? 'rgba(255, 77, 94, 0.15)'
-                            : risk.level === 'Medium'
-                              ? 'rgba(255, 176, 32, 0.15)'
-                              : 'rgba(56, 176, 0, 0.15)';
-                        return (
-                          <span
-                            title={risk.reasons.join(', ') || 'Normal physical load'}
-                            className="broadcast-label"
-                            style={{
-                              backgroundColor: badgeBg,
-                              color: badgeColor,
-                              padding: '2px 5px',
-                              borderRadius: '2px',
-                              fontSize: '10px',
-                              fontWeight: 700,
-                            }}
-                          >
-                            {risk.level === 'High'
-                              ? 'HIGH'
-                              : risk.level === 'Medium'
-                                ? 'MED'
-                                : 'LOW'}
-                          </span>
-                        );
-                      })()}
-                    </td>
-
-                    {/* Morale */}
-                    <td style={{ padding: '10px 14px' }}>
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          color:
-                            player.morale >= 70
-                              ? 'var(--win)'
-                              : player.morale >= 40
-                                ? 'var(--text-dim)'
-                                : 'var(--loss)',
-                        }}
-                      >
-                        {player.morale >= 75
-                          ? 'Superb'
-                          : player.morale >= 60
-                            ? 'Good'
-                            : player.morale >= 40
-                              ? 'Fair'
-                              : 'Unhappy'}
-                      </span>
-                    </td>
-
-                    {/* Form Dots (Last 5) */}
-                    <td style={{ padding: '10px 14px' }}>
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        {player.form.length === 0 ? (
-                          <span style={{ color: 'var(--text-faint)', fontSize: '11px' }}>-</span>
-                        ) : (
-                          player.form.slice(-5).map((rating, idx) => (
-                            <span
-                              key={idx}
-                              title={`Rating: ${rating.toFixed(1)}`}
-                              style={{
-                                width: '8px',
-                                height: '8px',
-                                borderRadius: '50%',
-                                backgroundColor: getFormColor(rating),
-                              }}
-                            />
-                          ))
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Apps */}
-                    <td
-                      className="tabular-nums"
-                      style={{ padding: '10px 14px', textAlign: 'right' }}
-                    >
-                      {player.stats.apps}
-                    </td>
-
-                    {/* Goals */}
-                    <td
-                      className="tabular-nums"
-                      style={{ padding: '10px 14px', textAlign: 'right' }}
-                    >
-                      {player.stats.goals}
-                    </td>
-
-                    {/* Assists */}
-                    <td
-                      className="tabular-nums"
-                      style={{ padding: '10px 14px', textAlign: 'right' }}
-                    >
-                      {player.stats.assists}
-                    </td>
-
-                    {/* Average Rating */}
-                    <td
-                      className="tabular-nums"
-                      style={{
-                        padding: '10px 14px',
-                        textAlign: 'right',
-                        fontWeight: 600,
                         color:
-                          player.stats.ratedApps > 0
-                            ? getFormColor(player.stats.ratingSum / player.stats.ratedApps)
-                            : 'var(--text-dim)',
+                          injuryRisk.level === 'High'
+                            ? '#C42B2B'
+                            : injuryRisk.level === 'Medium'
+                              ? '#C98A12'
+                              : '#1E7B3C',
                       }}
                     >
-                      {player.stats.ratedApps > 0
-                        ? (player.stats.ratingSum / player.stats.ratedApps).toFixed(2)
-                        : '-'}
-                    </td>
+                      Injury risk: {injuryRisk.level.toLowerCase()} · fatigue{' '}
+                      {selectedPlayer.fatigue ?? 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-                    {/* Wage */}
-                    <td
-                      className="tabular-nums"
-                      style={{
-                        padding: '10px 14px',
-                        textAlign: 'right',
-                        fontSize: '12px',
-                        color: 'var(--text-dim)',
-                      }}
-                    >
-                      {player.contract ? `${formatMoney(player.contract.wagePerWeek)}/w` : '-'}
-                    </td>
+              {/* Attributes: Technical, Mental, Physical */}
+              <div className="attrs-grid">
+                <div>
+                  <h5>{isGk ? 'Goalkeeping' : 'Technical'}</h5>
+                  {technicalAttrs.map(([n, v, d, key]) => (
+                    <div key={n} className={`attr-row ${key ? 'key' : ''}`}>
+                      <span>{n}</span>
+                      <i>
+                        <u style={{ width: `${v}%` }} />
+                      </i>
+                      <b>{v}</b>
+                      <em style={{ color: d > 0 ? '#1E7B3C' : d < 0 ? '#C42B2B' : 'transparent' }}>
+                        {d > 0 ? '▲' : d < 0 ? '▼' : ''}
+                      </em>
+                    </div>
+                  ))}
+                </div>
 
-                    {/* Status Icons / Chips */}
-                    <td style={{ padding: '10px 14px' }}>
-                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                        {player.injury && (
-                          <span
-                            title={player.injury.kind}
-                            style={{
-                              backgroundColor: 'rgba(255, 77, 94, 0.2)',
-                              color: 'var(--loss)',
-                              padding: '2px 5px',
-                              borderRadius: '2px',
-                              fontSize: '10px',
-                              fontWeight: 700,
-                              fontFamily: 'var(--font-head)',
-                            }}
-                          >
-                            INJ ({player.injury.matchdaysOut}m)
-                          </span>
-                        )}
-                        {player.suspendedMatches > 0 && (
-                          <span
-                            style={{
-                              backgroundColor: 'rgba(255, 176, 32, 0.2)',
-                              color: 'var(--warning)',
-                              padding: '2px 5px',
-                              borderRadius: '2px',
-                              fontSize: '10px',
-                              fontWeight: 700,
-                              fontFamily: 'var(--font-head)',
-                            }}
-                          >
-                            BAN ({player.suspendedMatches}m)
-                          </span>
-                        )}
-                        {player.transferListed && (
-                          <span
-                            style={{
-                              backgroundColor: 'rgba(61, 165, 255, 0.2)',
-                              color: 'var(--info)',
-                              padding: '2px 5px',
-                              borderRadius: '2px',
-                              fontSize: '10px',
-                              fontWeight: 700,
-                              fontFamily: 'var(--font-head)',
-                            }}
-                          >
-                            LISTED
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                <div>
+                  <h5>Mental</h5>
+                  {mentalAttrs.map(([n, v, d, key]) => (
+                    <div key={n} className={`attr-row ${key ? 'key' : ''}`}>
+                      <span>{n}</span>
+                      <i>
+                        <u style={{ width: `${v}%` }} />
+                      </i>
+                      <b>{v}</b>
+                      <em style={{ color: d > 0 ? '#1E7B3C' : d < 0 ? '#C42B2B' : 'transparent' }}>
+                        {d > 0 ? '▲' : d < 0 ? '▼' : ''}
+                      </em>
+                    </div>
+                  ))}
+                </div>
+
+                <div>
+                  <h5>Physical</h5>
+                  {physicalAttrs.map(([n, v, d, key]) => (
+                    <div key={n} className={`attr-row ${key ? 'key' : ''}`}>
+                      <span>{n}</span>
+                      <i>
+                        <u style={{ width: `${v}%` }} />
+                      </i>
+                      <b>{v}</b>
+                      <em style={{ color: d > 0 ? '#1E7B3C' : d < 0 ? '#C42B2B' : 'transparent' }}>
+                        {d > 0 ? '▲' : d < 0 ? '▼' : ''}
+                      </em>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Coach's Note */}
+              <div className="coach-note">
+                <b>Coach's note</b>
+                {trainingRating >= 7.5
+                  ? 'Sharper on the ball this month. Ready to be the one who decides big games.'
+                  : trainingRating >= 6.5
+                    ? 'Consistent work in training sessions. Maintaining steady physical output.'
+                    : 'Looking slightly off the pace in tactical drills. Needs extra focus.'}
+              </div>
+
+              {/* Actions */}
+              <div className="file-acts">
+                <button className="btn-act primary" onClick={handleTalkToPlayer}>
+                  Talk to him
+                </button>
+                <button className="btn-act ghost" onClick={handleTrainingFocus}>
+                  Training focus
+                </button>
+                <button className="btn-act ghost" onClick={handleContractOffer}>
+                  Offer new contract
+                </button>
+                <button className="btn-act ghost" onClick={handleMakeCaptain}>
+                  Make captain
+                </button>
+                <button className="btn-act ghost" onClick={handleTransferList}>
+                  {selectedPlayer.transferListed ? 'Remove from list' : 'Transfer list'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

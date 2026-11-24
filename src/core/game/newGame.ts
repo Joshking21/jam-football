@@ -7,6 +7,8 @@ import { WorldSnapshot } from '../world/generateWorld';
 import { migrateTactics } from './migrations';
 import { createStartingFamiliarity } from './familiarity';
 import { initClubStaff } from '../club/clubDepth';
+import { pickBestLineup } from '../match/aiManager';
+import { Player } from '../types';
 
 export interface NewGameOptions {
   seed: number;
@@ -94,17 +96,50 @@ export function createNewGame(options: NewGameOptions): GameState {
     cIdx++;
   }
 
-  // Pre-seed an initial shortlist of scout targets from other clubs/free agents
+  // Pre-seed an initial shortlist of scout targets from at least 4 clubs + 1 free agent (R9)
   const otherPlayers = Object.values(snapshot.players).filter((p) => p.clubId !== userClubId);
   const initialShortlist: PlayerId[] = [];
   const targetPositions = ['LW', 'ST', 'CB', 'DM', 'GK', 'RB', 'AM'];
+  const usedClubs = new Set<string>();
+
   for (const pos of targetPositions) {
     const candidate = otherPlayers.find(
-      (p) => !initialShortlist.includes(p.id) && p.positions.some((pp) => pp.pos === pos),
+      (p) =>
+        !initialShortlist.includes(p.id) &&
+        !usedClubs.has(p.clubId ?? '') &&
+        p.positions.some((pp) => pp.pos === pos),
     );
     if (candidate) {
       initialShortlist.push(candidate.id);
+      if (candidate.clubId) usedClubs.add(candidate.clubId);
     }
+  }
+
+  // Include 1 free agent if available
+  const freeAgentCandidate =
+    Object.values(snapshot.freeAgents ?? {})[0] ??
+    Object.values(snapshot.players).find((p) => !p.clubId);
+  if (freeAgentCandidate && !initialShortlist.includes(freeAgentCandidate.id)) {
+    initialShortlist.push(freeAgentCandidate.id);
+  }
+
+  // Initialize AI Best XI for user club and AI clubs (R6)
+  for (const club of Object.values(snapshot.clubs)) {
+    const candidates = club.squad
+      .map((id) => snapshot.players[id])
+      .filter((p): p is Player => p != null)
+      .map((p) => ({
+        ...p,
+        isInjured: p.injury !== null,
+        isSuspended: p.suspendedMatches > 0,
+      }));
+    const best = pickBestLineup(candidates, club.style.formation, club.formationFamiliarity);
+    club.tactics.formation = best.formation;
+    club.tactics.lineup = [...best.lineup];
+    club.tactics.roles = [...best.roles];
+    club.tactics.playerInstructions = best.playerInstructions.map((pi) => [...pi]);
+    club.tactics.duties = [...best.duties];
+    club.tactics.bench = [...best.bench];
   }
 
   return {

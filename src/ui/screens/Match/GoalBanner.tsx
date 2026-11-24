@@ -108,7 +108,7 @@ export const ReplayOverlay: React.FC<ReplayOverlayProps> = ({ onSkip }) => {
         inset: 0,
         pointerEvents: 'auto',
         cursor: 'pointer',
-        zIndex: 45,
+        zIndex: 60,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -117,12 +117,13 @@ export const ReplayOverlay: React.FC<ReplayOverlayProps> = ({ onSkip }) => {
       {/* Top Letterbox Bar */}
       <div
         style={{
-          height: 48,
+          height: 56,
           background: '#000',
           width: '100%',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
+          position: 'relative',
           padding: '0 24px',
         }}
       >
@@ -132,15 +133,23 @@ export const ReplayOverlay: React.FC<ReplayOverlayProps> = ({ onSkip }) => {
             color: '#000',
             fontFamily: 'var(--font-heading)',
             fontWeight: 800,
-            fontSize: 13,
-            padding: '3px 8px',
+            fontSize: 14,
+            padding: '4px 12px',
             borderRadius: 3,
-            letterSpacing: 1,
+            letterSpacing: 2,
+            textTransform: 'uppercase',
           }}
         >
           REPLAY
         </div>
-        <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: 12 }}>
+        <span
+          style={{
+            position: 'absolute',
+            right: 24,
+            color: 'rgba(255, 255, 255, 0.5)',
+            fontSize: 12,
+          }}
+        >
           Click or Space to skip
         </span>
       </div>
@@ -148,7 +157,7 @@ export const ReplayOverlay: React.FC<ReplayOverlayProps> = ({ onSkip }) => {
       {/* Bottom Letterbox Bar */}
       <div
         style={{
-          height: 48,
+          height: 56,
           background: '#000',
           width: '100%',
         }}

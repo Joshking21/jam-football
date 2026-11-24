@@ -287,7 +287,7 @@ export function selectAction(
         break;
       case 'inside_forward':
         if (third === 'ATT') {
-          if (utilities.shot !== undefined) utilities.shot += 0.4 * gainScale;
+          if (utilities.shot !== undefined) utilities.shot += 0.22 * gainScale;
           if (utilities.dribble !== undefined) utilities.dribble += 0.1 * gainScale;
         }
         if (utilities.cross !== undefined) utilities.cross -= 0.5;
@@ -413,9 +413,9 @@ export function selectAction(
   // Tactical Depth: Player Instructions (§13.17.11 & §13.18.9)
   if (ctx.holderPIs && ctx.holderPIs.length > 0) {
     if (ctx.holderPIs.includes('shootMore')) {
-      if (utilities.shot !== undefined) utilities.shot += 0.25;
+      if (!inBox && utilities.shot !== undefined) utilities.shot += 0.35;
       else if ((third === 'MID' && lane === 'Centre') || (third === 'ATT' && lane !== 'Centre')) {
-        utilities.shot = 0.25;
+        utilities.shot = 0.35;
       }
       if (utilities.recycle !== undefined) utilities.recycle -= 0.25;
     }

@@ -2119,11 +2119,12 @@ export class MatchEngine implements MatchSim {
 
       const destThird = classifyThird(dest.ax);
 
-      if (defRole === 'cb_step' || (defRole as any) === 'stopper') sPress += 0.25 * defGainScale;
+      if (defRole === 'cb_step' || (defRole as any) === 'stopper') sPress += 0.1 * defGainScale;
       if (defRole === 'cb_cover' || (defRole as any) === 'covering_cb') sPress -= 0.2;
       if (defRole === 'dm_win' || (defRole as any) === 'ball_winner') sPress += 0.4 * defGainScale;
       if (defRole === 'fb_press' && destThird === 'MID') sPress += 0.3 * defGainScale;
-      if (defRole === 'cm_press' && destThird === 'MID') sPress += 0.3 * defGainScale;
+      if (defRole === 'cm_press' && (destThird === 'MID' || destThird === 'DEF'))
+        sPress += 0.3 * defGainScale;
       if (defRole === 'am_press' && destThird === 'MID') sPress += 0.3 * defGainScale;
       if (defRole === 'w_press' && destThird === 'DEF') sPress += 0.3 * defGainScale;
       if (defPis.includes('closeDownMore')) {
@@ -2164,13 +2165,18 @@ export class MatchEngine implements MatchSim {
           pfSlot >= 0 && oppTeam.lineup[pfSlot]
             ? this.getDefRoleFit('st_press', oppTeam.lineup[pfSlot]!)
             : 1.0;
+        const pressCount = oppTeam.defRoles
+          ? oppTeam.defRoles.filter((r) => r === 'st_press').length
+          : oppTeam.roles.filter((r) => r === 'pressing_forward').length;
+        const pressMult = pressCount > 1 ? 1.15 : 1.0;
         const pressAdd = oppTeam.defRoles?.includes('st_press')
-          ? (K.droles.st_press.teamOppDefPress ?? 0.48)
+          ? (K.droles.st_press.teamOppDefPress ?? 0.52)
           : 0.2;
-        sPress += pressAdd * (0.4 + 0.6 * pfFit);
-        ctx += oppTeam.defRoles?.includes('st_press')
-          ? (K.droles.st_press.oppDefPassCtx ?? -0.3)
-          : -0.12;
+        sPress += pressAdd * (0.4 + 0.6 * pfFit) * pressMult;
+        ctx +=
+          (oppTeam.defRoles?.includes('st_press')
+            ? (K.droles.st_press.oppDefPassCtx ?? -0.28)
+            : -0.12) * pressMult;
       }
       if (destThird === 'DEF' && oppTeam.roles.includes('poacher')) {
         sPress *= 0.9;
@@ -2430,9 +2436,13 @@ export class MatchEngine implements MatchSim {
           (oppTeam.side === 'home' ? K.homeAdvantage : 0)
         : 0;
 
-      if (defRole === 'cb_step' || (defRole as any) === 'stopper') sTkl += 0.35 * defGainScale;
+      if (defRole === 'cb_step' || (defRole as any) === 'stopper') sTkl += 0.16 * defGainScale;
       if (defRole === 'dm_win' || (defRole as any) === 'ball_winner') sTkl += 0.3 * defGainScale;
       if (defRole === 'cb_cover' || (defRole as any) === 'covering_cb') sTkl -= 0.15;
+      if (defRole === 'st_press' && classifyThird(this.ballPosAttacking.ax) === 'DEF')
+        sTkl += 0.15 * defGainScale;
+      if (defRole === 'cm_press' && classifyThird(this.ballPosAttacking.ax) === 'DEF')
+        sTkl += 0.12 * defGainScale;
       if (isTightMarkMarker) sTkl += 0.3;
       if (defPis.includes('stayOnFeet')) {
         sTkl -= 0.25;
@@ -2722,11 +2732,11 @@ export class MatchEngine implements MatchSim {
           ccbSlot >= 0 && oppTeam.lineup[ccbSlot]
             ? this.getDefRoleFit('cb_cover', oppTeam.lineup[ccbSlot]!)
             : 1.0;
-        lineCtx -= 0.25 * (0.4 + 0.6 * ccbFit);
+        lineCtx -= 0.3 * (0.4 + 0.6 * ccbFit);
       }
       if (oppTeam.defRoles?.[0] === 'gk_sweep' || oppTeam.roles[0] === 'sweeper_keeper') {
         const skFit = oppTeam.lineup[0] ? this.getDefRoleFit('gk_sweep', oppTeam.lineup[0]!) : 1.0;
-        lineCtx -= 0.3 * (0.4 + 0.6 * skFit);
+        lineCtx -= 0.18 * (0.4 + 0.6 * skFit);
       }
       if (oppTeam.defRoles?.includes('dm_drop')) {
         lineCtx += K.droles.dm_drop.oppThroughBallsCtx ?? -0.65;
@@ -2748,7 +2758,7 @@ export class MatchEngine implements MatchSim {
         defRole === 'cb_step' ||
         oppTeam.defRoles?.includes('cb_step')
       ) {
-        lineCtx += 0.38;
+        lineCtx += 0.44;
       }
       if (
         oppTeam.opposition.some(
@@ -3200,7 +3210,7 @@ export class MatchEngine implements MatchSim {
         (holderRole === 'inside_forward' || isOppShowInside) &&
         !isOppShowOutside
       ) {
-        if (this.rng.chance(0.5)) {
+        if (this.rng.chance(0.25)) {
           ctx =
             ctx === 'BOX_WIDE' ? 'BOX_CENTRAL' : ctx === 'OUTSIDE_WIDE' ? 'OUTSIDE_CENTRAL' : ctx;
         }
@@ -3214,7 +3224,7 @@ export class MatchEngine implements MatchSim {
         attackerCtxModifier -= 0.25;
       }
       if (holderPIs.includes('shootMore') && ctx !== 'BOX_CENTRAL' && ctx !== 'ONE_ON_ONE') {
-        attackerCtxModifier -= 0.35;
+        attackerCtxModifier -= 0.5;
       }
 
       const isSweeperKeeperOpponent = oppTeam.roles[0] === 'sweeper_keeper';
