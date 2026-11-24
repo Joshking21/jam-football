@@ -16,6 +16,7 @@ import { createFloodlightBeams, FloodlightBeams } from './beams';
 import { RENDER_CONFIG } from '../config/balance';
 import { MatchEvent } from '../core/types';
 import { MatchPhysics } from '../physics/matchPhysics';
+import { GrassTrample, TrampleStamp } from '../physics/trample';
 
 export class MatchScene {
   public renderer: THREE.WebGLRenderer;
@@ -48,6 +49,10 @@ export class MatchScene {
   private ballInNet = false;
   /** §14.12 physics; null until Rapier has loaded (or if it can't), then the director drives. */
   private physics: MatchPhysics | null = null;
+  /** §14.12.6 grass trample and wear maps. */
+  private trample: GrassTrample | null = null;
+  private stamps: TrampleStamp[] = [];
+  private stampFlip = false;
   private tmpQ = new THREE.Quaternion();
   private yawQ = new THREE.Quaternion();
   private upAxis = new THREE.Vector3(0, 1, 0);
@@ -90,6 +95,16 @@ export class MatchScene {
     // 4. Pitch
     this.pitch = createPitch(ctx.weather, this.quality);
     this.scene.add(this.pitch.mesh);
+    try {
+      this.trample = new GrassTrample(this.quality, ctx.weather === 'rain');
+      this.trample.attach(
+        this.pitch.mesh.material as THREE.MeshStandardMaterial,
+        ctx.weather === 'rain',
+      );
+    } catch (e) {
+      console.warn('Grass trample skipped:', e);
+      this.trample = null;
+    }
 
     // 5. Goals
     this.goals = createGoals();
@@ -302,6 +317,54 @@ export class MatchScene {
     }
     this.lights.update(delta);
 
+    // Grass: feet, the ball and falls press the turf (§14.12.6).
+    if (this.trample) {
+      const k = Math.min(3, delta * 60);
+      this.stamps.length = 0;
+      this.stampFlip = !this.stampFlip;
+      this.players.allPlayers.forEach((_v, pid) => {
+        const s = this.choreographer.getPlayerState(pid);
+        if (!s) return;
+        if (this.physics?.isFallen(pid)) {
+          this.stamps.push({
+            x: s.currentPos.x,
+            z: s.currentPos.z,
+            r: 0.8,
+            s: 0.5 * k,
+            wear: 0.012 * k,
+          });
+          return;
+        }
+        if (s.isTackling) {
+          this.stamps.push({
+            x: s.currentPos.x,
+            z: s.currentPos.z,
+            r: 0.45,
+            s: 0.3 * k,
+            wear: 0.01 * k,
+          });
+        }
+        if (s.speed > 0.6) {
+          // Alternate feet either side of the line of running.
+          const side = this.stampFlip ? 0.14 : -0.14;
+          const vx = s.velocity.x / s.speed;
+          const vz = s.velocity.z / s.speed;
+          this.stamps.push({
+            x: s.currentPos.x - vz * side,
+            z: s.currentPos.z + vx * side,
+            r: 0.28,
+            s: 0.012 * s.speed * k,
+            wear: 0.00012 * s.speed * k,
+          });
+        }
+      });
+      const bv = this.physics ? this.physics.ballVel : this.choreographer.ballVelocity;
+      if (bPos.y < 0.2 && bv.length() > 1) {
+        this.stamps.push({ x: bPos.x, z: bPos.z, r: 0.14, s: 0.12 * k });
+      }
+      this.trample.update(this.renderer, delta, this.stamps);
+    }
+
     // Update camera target tracking
     const ballPos = this.ball.getPosition();
     this.cameras.update(delta, ballPos);
@@ -415,6 +478,8 @@ export class MatchScene {
     this.beams?.dispose();
     this.physics?.dispose();
     this.physics = null;
+    this.trample?.dispose();
+    this.trample = null;
     this.environment?.dispose();
     this.postPipeline?.dispose();
 
