@@ -27,9 +27,16 @@ export const DIRECTOR = {
     arrival: 1.6, // speed = dist * arrival near the target
     separation: 1.1,
     catchUpMax: 12,
+    jog: 4.2, // m/s: small adjustments
+    run: 6.4, // m/s: getting back into shape
+    backpedal: 3.2,
+    decel: 9, // m/s²: braking is quicker than speeding up
+    turnSlow: 9, // rad/s at walking pace
+    turnFast: 2.6, // rad/s at a full sprint
+    faceRate: 7, // rad/s: how fast the body turns
   },
   press: { distance: 1.4, coverDistance: 6 },
-  drift: { amp: 1.2, speed: 0.35 },
+  drift: { amp: 0, speed: 0.35 }, // v1.8 B: no random wobble; movement comes from the ball and the shape
   /** A jump in presentation time larger than this snaps everyone into place. */
   snapJumpSec: 0.5, // per frame: anything faster than ~30x (time-lapse, replay jumps)
   celebrateSec: 9,

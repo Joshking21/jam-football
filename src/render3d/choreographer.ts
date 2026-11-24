@@ -125,6 +125,9 @@ export class Choreographer {
   private half: 1 | 2 = 1;
 
   public ballPos = new THREE.Vector3(0, BALL_R, 0);
+  /** The ball as the teams see it for their shape: clamped to the pitch when it's out of play. */
+  private refBall = new THREE.Vector3();
+  private ballOut = false;
   public ballVelocity = new THREE.Vector3();
   /** The player whose feet the ball is at, if any (for name tags, cameras, physics). */
   public carrierId: PlayerId | null = null;
@@ -192,6 +195,7 @@ export class Choreographer {
     this.activePlan = this.planAt(pt);
     this.updateBall(pt, delta);
     this.computeTargets(pt);
+    this.separateTargets();
     if (jump) {
       this.states.forEach((s) => {
         s.currentPos.copy(s.targetPos);
@@ -909,6 +913,9 @@ export class Choreographer {
     const bplan = this.ballPlanAt(pt);
     const poss = this.possessionAt(pt);
     const ball = this.ballPos;
+    // A dead ball (wide of the post, over the bar, out for a throw) is nobody's to chase.
+    this.ballOut = Math.abs(ball.x) > 52.5 || Math.abs(ball.z) > 34;
+    this.refBall.set(clamp(ball.x, -50, 50), 0, clamp(ball.z, -32, 32));
 
     this.states.forEach((s) => {
       s.isKicking = false;
@@ -945,8 +952,9 @@ export class Choreographer {
     else if (this.inFinalThird(poss, ball)) this.boxRuns(poss, null);
     if (bplan && bplan.setPiece === 'freekick' && pt < bplan.kickT + 0.4) this.freeKickWall(bplan);
 
-    // 5. Pressing by the side without the ball.
+    // 5. Pressing by the side without the ball; support angles for the side with it.
     this.press(poss === 'home' ? 'away' : 'home', pt);
+    this.supportCarrier(poss);
 
     // 6. Anticipation: whoever the sim names for the next touch heads there early.
     this.anticipate(pt);
@@ -1002,6 +1010,8 @@ export class Choreographer {
       const s = this.states.get(e.playerId);
       if (!s) continue;
       const spot = toScene3(e.from.x, e.from.y);
+      // Only players already in the area react (no 40 m sprints out of nowhere).
+      if (Math.hypot(s.currentPos.x - spot.x, s.currentPos.z - spot.z) > 25) continue;
       // Arrive just as the touch happens: blend from the shape spot toward the touch spot.
       const k = clamp(1 - (e.t - pt) / 4, 0.35, 1);
       s.targetPos.lerp(tmpB.set(spot.x, 0, spot.z), k);
@@ -1030,51 +1040,141 @@ export class Choreographer {
   }
 
   private inFinalThird(side: Side, ball: THREE.Vector3): boolean {
-    return this.sceneToOwn(side, ball).ax > 74;
+    return !this.ballOut && this.sceneToOwn(side, ball).ax > 74;
   }
 
-  private teamShape(side: Side, inPossession: boolean, pt: number) {
+  /** Role group of a formation slot: one back line, one midfield line, forwards. */
+  private lineOf(side: Side, slot: number): 'GK' | 'DEF' | 'MID' | 'FWD' {
+    const pos = (FORMATIONS[this.teamTactics(side).formation] ?? FORMATIONS['4-4-2']).slots[slot]
+      ?.position;
+    if (!pos || pos === 'GK') return 'GK';
+    if (pos === 'CB' || pos === 'LB' || pos === 'RB' || pos === 'LWB' || pos === 'RWB')
+      return 'DEF';
+    if (pos === 'ST' || pos === 'LW' || pos === 'RW') return 'FWD';
+    return 'MID';
+  }
+
+  /** Where a team's back line stands when defending (own frame ax), given the ball's ax in that frame. */
+  private defensiveLine(side: Side, ballAx: number): number {
+    const tac = this.teamTactics(side);
+    const base = tac.line === 'Deep' ? 14 : tac.line === 'High' ? 28 : 20;
+    // The line keeps ~22 m off the ball, never higher than its setting allows, never inside the six-yard box.
+    return clamp(ballAx - 22, 6, base + 10);
+  }
+
+  /**
+   * Team shape as blocks (v1.8 B): out of possession one straight back line, a midfield line 10-12 m
+   * ahead, forwards ahead of that; compact and shifted to the ball's side. In possession the back
+   * line holds behind the ball, midfield around it, full-backs and wingers give width, and the
+   * forwards sit on the opponents' last line (onside).
+   */
+  private teamShape(side: Side, inPossession: boolean, _pt: number) {
     const tac = this.teamTactics(side);
     const formDef = FORMATIONS[tac.formation] ?? FORMATIONS['4-4-2'];
-    const b = this.sceneToOwn(side, this.ballPos);
-    const widthMult = inPossession
-      ? tac.width === 'Wide'
-        ? 1.2
-        : tac.width === 'Narrow'
-          ? 0.95
-          : 1.1
-      : tac.width === 'Narrow'
-        ? 0.7
-        : 0.8;
-    const lineBase = tac.line === 'Deep' ? 12 : tac.line === 'High' ? 28 : 18;
-    const mentality = tac.mentality === 'Attacking' ? 6 : tac.mentality === 'Defensive' ? -3 : 0;
+    const b = this.sceneToOwn(side, this.refBall);
+    const ballSide = b.ay < 34 ? -1 : 1;
+    const mentality =
+      tac.mentality === 'VeryAttacking'
+        ? 8
+        : tac.mentality === 'Attacking'
+          ? 5
+          : tac.mentality === 'Defensive'
+            ? -4
+            : tac.mentality === 'VeryDefensive'
+              ? -8
+              : 0;
+    const comp = tac.width === 'Narrow' ? 0.62 : tac.width === 'Wide' ? 0.8 : 0.72;
+    const other: Side = side === 'home' ? 'away' : 'home';
+
+    let back: number;
+    let mid: number;
+    let fwd: number;
+    if (!inPossession) {
+      back = this.defensiveLine(side, b.ax);
+      mid = clamp(back + 11, back + 7, Math.max(back + 7, b.ax - 2));
+      fwd = clamp(mid + 12, mid + 8, 70);
+    } else {
+      back = clamp(b.ax - 30 + mentality, 16, 58);
+      back = Math.min(back, b.ax - 8);
+      back = Math.max(back, 8);
+      mid = clamp(b.ax - 6, back + 10, back + 30);
+      // Their back line, seen from our frame: our forwards stay just onside.
+      const theirLine = 105 - this.defensiveLine(other, 105 - b.ax);
+      fwd = Math.min(theirLine - 1, Math.max(mid + 12, b.ax + 6));
+      fwd = Math.max(fwd, mid + 6);
+    }
 
     tac.lineup.forEach((pid, slot) => {
       const s = this.states.get(pid);
       if (!s) return;
       const anchor = formDef.slots[slot]?.anchor ?? { x: 50, y: 34 };
+      const pos = formDef.slots[slot]?.position ?? 'CM';
+      const line = this.lineOf(side, slot);
+      const wide = Math.abs(anchor.y - 34) > 18;
       let ax: number;
       let ay: number;
-      if (slot === 0) {
+      if (line === 'GK') {
         ax = inPossession ? clamp(b.ax * 0.12, 2, 16) : clamp(1.5 + b.ax * 0.09, 1.5, 10);
         ay = 34 + (b.ay - 34) * 0.3;
-      } else if (inPossession) {
-        ax = anchor.x * 0.85 + b.ax * 0.35 + mentality;
-        ay = 34 + (anchor.y - 34) * widthMult;
-        ay += (b.ay - 34) * 0.15;
+      } else if (!inPossession) {
+        ax = line === 'DEF' ? back : line === 'MID' ? mid : fwd;
+        ay = 34 + (anchor.y - 34) * comp + (b.ay - 34) * (line === 'FWD' ? 0.25 : 0.35);
+        // The far-side full-back tucks in and sits a yard deeper to cover.
+        if (line === 'DEF' && wide && Math.sign(anchor.y - 34) !== ballSide) {
+          ax -= 1;
+          ay = 34 + (anchor.y - 34) * comp * 0.85 + (b.ay - 34) * 0.35;
+        }
+        // Wide midfielders track back level with the line on their side when the ball is there.
+        if (line === 'MID' && wide && Math.sign(anchor.y - 34) === ballSide)
+          ax = Math.max(back + 4, mid - 3);
       } else {
-        const raw = anchor.x * 0.7 + b.ax * 0.3;
-        const isDef = anchor.x < 30;
-        ax = isDef ? clamp(raw, lineBase - 6, lineBase + 18) : raw;
-        ay = (34 + (anchor.y - 34) * widthMult) * 0.75 + b.ay * 0.25;
+        if (line === 'DEF') {
+          const overlap =
+            wide &&
+            (tac.width === 'Wide' || mentality > 0) &&
+            Math.sign(anchor.y - 34) === ballSide;
+          ax = wide ? back + (overlap ? 16 : 6) : back;
+          ay = wide
+            ? 34 + Math.sign(anchor.y - 34) * (overlap ? 29 : 24)
+            : 34 + (anchor.y - 34) * 0.9 + (b.ay - 34) * 0.15;
+        } else if (line === 'MID') {
+          ax = wide ? Math.min(fwd - 4, mid + 6) : mid + (pos === 'DM' ? -6 : pos === 'AM' ? 6 : 0);
+          ay = wide
+            ? 34 + Math.sign(anchor.y - 34) * 29
+            : 34 + (anchor.y - 34) * 0.95 + (b.ay - 34) * 0.25;
+        } else {
+          ax = pos === 'ST' ? fwd : fwd - 3;
+          ay =
+            pos === 'ST'
+              ? 34 + (anchor.y - 34) * 1.2 + (b.ay - 34) * 0.3
+              : 34 + Math.sign(anchor.y - 34 || 1) * 28;
+        }
       }
-      // Off-ball movement: nobody stands still.
-      const ph = this.phase.get(pid) ?? 0;
-      if (slot !== 0) {
-        ax += Math.sin(pt * DIRECTOR.drift.speed + ph) * DIRECTOR.drift.amp;
-        ay += Math.cos(pt * DIRECTOR.drift.speed * 0.8 + ph * 1.7) * DIRECTOR.drift.amp;
-      }
-      this.ownToScene(side, clamp(ax, 1, 104), clamp(ay, 1, 67), s.targetPos);
+      // Real lines aren't ruled: each player sits a little off it, the same way every time.
+      if (line !== 'GK') ax += Math.sin((this.phase.get(pid) ?? 0) * 3.1) * 0.9;
+      this.ownToScene(side, clamp(ax, 1, 103), clamp(ay, 2, 66), s.targetPos);
+    });
+  }
+
+  /** In possession, the two nearest teammates offer angles to the man on the ball (diagonal, 9-12 m). */
+  private supportCarrier(side: Side) {
+    if (!this.carrierId || this.sideOf.get(this.carrierId) !== side) return;
+    const c = this.states.get(this.carrierId);
+    if (!c) return;
+    const fwd = attacksToward105(side, this.half) ? 1 : -1;
+    const helpers = this.nearest(side, c.currentPos, 3)
+      .filter((p) => p !== this.carrierId)
+      .slice(0, 2);
+    helpers.forEach((pid, i) => {
+      const h = this.states.get(pid)!;
+      const lateral = i === 0 ? 1 : -1;
+      // One angle ahead, one square/behind: a passing triangle.
+      const along = i === 0 ? 8 : -3;
+      h.targetPos.set(
+        clamp(c.currentPos.x + fwd * along, -50, 50),
+        0,
+        clamp(c.currentPos.z + lateral * 10 * (c.currentPos.z > 0 ? -1 : 1), -31, 31),
+      );
     });
   }
 
@@ -1094,6 +1194,7 @@ export class Choreographer {
   }
 
   private press(side: Side, pt: number) {
+    if (this.ballOut) return;
     const tac = this.teamTactics(side);
     const ball = this.ballPos;
     const own = this.sceneToOwn(side, ball);
@@ -1167,7 +1268,7 @@ export class Choreographer {
       1,
     )[0];
     if (postMan)
-      this.ownToScene(plan.side, 104.4, 34 + nearSide * 3.3, this.states.get(postMan)!.targetPos);
+      this.ownToScene(plan.side, 104.0, 34 + nearSide * 2.8, this.states.get(postMan)!.targetPos); // inside the post
     const gk = this.teamTactics(other).lineup[0];
     if (gk) this.ownToScene(plan.side, 104, 34 + nearSide * 0.8, this.states.get(gk)!.targetPos);
   }
@@ -1235,12 +1336,12 @@ export class Choreographer {
         s.speedCap = DIRECTOR.steer.walkSpeed;
       });
     });
-    // The beaten keeper fetches the ball.
+    // The beaten keeper stays on his line, looking at the ball in the net (he doesn't walk into it).
     const gk = this.teamTactics(conceding).lineup[0];
     if (gk)
       this.states
         .get(gk)!
-        .targetPos.set(this.ballPos.x - Math.sign(this.ballPos.x) * 0.6, 0, this.ballPos.z);
+        .targetPos.set(Math.sign(this.ballPos.x) * 51.3, 0, clamp(this.ballPos.z, -3, 3));
   }
 
   private kickoffSpot(side: Side, slot: number, half: 1 | 2, kicking: boolean): THREE.Vector3 {
@@ -1272,6 +1373,47 @@ export class Choreographer {
     });
   }
 
+  /** Two players are never sent to the same spot: targets closer than 1.1 m are eased apart. */
+  private separateTargets() {
+    const list = Array.from(this.states.values());
+    const R = 1.1;
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        const a = list[i]!.targetPos;
+        const b = list[j]!.targetPos;
+        const dx = a.x - b.x;
+        const dz = a.z - b.z;
+        const d = Math.hypot(dx, dz);
+        if (d < R) {
+          const nx = d > 1e-3 ? dx / d : 1;
+          const nz = d > 1e-3 ? dz / d : 0;
+          const push = (R - d) / 2;
+          a.x += nx * push;
+          a.z += nz * push;
+          b.x -= nx * push;
+          b.z -= nz * push;
+        }
+      }
+    }
+  }
+
+  /** Body facing turns at a human rate: along the run, or toward the ball when slow or backpedalling. */
+  private face(s: PlayerSteeringState, delta: number, towardBall: boolean) {
+    let target: number | null = null;
+    if (s.speed > 1.2 && !towardBall) {
+      target = Math.atan2(s.velocity.x, s.velocity.z);
+    } else {
+      tmpC.subVectors(this.ballPos, s.currentPos);
+      if (tmpC.lengthSq() > 0.1) target = Math.atan2(tmpC.x, tmpC.z);
+    }
+    if (target === null) return;
+    let d = target - s.facingAngle;
+    while (d > Math.PI) d -= Math.PI * 2;
+    while (d < -Math.PI) d += Math.PI * 2;
+    const max = DIRECTOR.steer.faceRate * delta;
+    s.facingAngle += clamp(d, -max, max);
+  }
+
   // ---------------------------------------------------------------------------
   // Steering
   // ---------------------------------------------------------------------------
@@ -1282,34 +1424,74 @@ export class Choreographer {
     const desired = tmpA;
     this.states.forEach((s, pid) => {
       const pace = this.paces[pid] ?? 60;
-      let maxSpeed = S.baseSpeed + (S.paceSpeed * pace) / 99;
-      if (s.speedCap !== undefined) maxSpeed = Math.min(maxSpeed, s.speedCap);
+      const top = S.baseSpeed + (S.paceSpeed * pace) / 99;
       desired.subVectors(s.targetPos, s.currentPos).setY(0);
       const dist = desired.length();
-      // The sim's named players must reach the ball: a catch-up burst when far away.
-      let accel = S.accel;
-      if (s.urgent && dist > 3) {
-        maxSpeed = Math.max(maxSpeed, Math.min(S.catchUpMax, 7 + dist * 0.25));
-        accel = S.accel * 2;
-      }
-      const want = Math.min(maxSpeed, dist * S.arrival);
-      if (dist > 0.05) desired.multiplyScalar(want / dist);
-      else desired.set(0, 0, 0);
-      // Acceleration limit.
-      tmpB.subVectors(desired, s.velocity);
-      const dv = tmpB.length();
-      const maxDv = accel * delta;
-      if (dv > maxDv) tmpB.multiplyScalar(maxDv / dv);
-      s.velocity.add(tmpB);
-      s.currentPos.addScaledVector(s.velocity, delta);
-      s.speed = s.velocity.length();
 
-      if (s.speed > 0.6) {
-        s.facingAngle = Math.atan2(s.velocity.x, s.velocity.z);
-      } else {
-        tmpC.subVectors(this.ballPos, s.currentPos);
-        if (tmpC.lengthSq() > 0.1) s.facingAngle = Math.atan2(tmpC.x, tmpC.z);
+      // How hard he goes: jog to small adjustments, run to get back into shape, sprint only for
+      // the ball (urgent) or a long way out of position.
+      let maxSpeed = dist < 6 ? Math.min(top, S.jog) : dist < 16 ? Math.min(top, S.run) : top;
+      let accel = S.accel;
+      if (s.urgent) {
+        maxSpeed = dist > 3 ? Math.max(top, Math.min(S.catchUpMax, 7 + dist * 0.25)) : top;
+        accel = S.accel * 1.6;
       }
+      if (s.speedCap !== undefined) maxSpeed = Math.min(maxSpeed, s.speedCap);
+
+      // Backpedal: a short way back while the ball is in front of him, facing it.
+      tmpC.subVectors(this.ballPos, s.currentPos).setY(0);
+      const toBallLen = tmpC.length();
+      const backwards = dist < 6 && toBallLen > 0.5 && desired.dot(tmpC) < -0.3 * dist * toBallLen;
+      if (backwards && !s.urgent) maxSpeed = Math.min(maxSpeed, S.backpedal);
+
+      const want = Math.min(maxSpeed, dist * S.arrival);
+      const speed = s.velocity.length();
+
+      // Turning: the faster he goes, the wider he turns; a sharp change at speed means plant and slow.
+      let newSpeed: number;
+      let dirX: number;
+      let dirZ: number;
+      if (dist < 0.05) {
+        dirX = speed > 0.01 ? s.velocity.x / speed : 0;
+        dirZ = speed > 0.01 ? s.velocity.z / speed : 0;
+        newSpeed = Math.max(0, speed - S.decel * delta);
+      } else {
+        const tx = desired.x / dist;
+        const tz = desired.z / dist;
+        if (speed < 0.8) {
+          dirX = tx;
+          dirZ = tz;
+        } else {
+          const cur = Math.atan2(s.velocity.x, s.velocity.z);
+          const tgt = Math.atan2(tx, tz);
+          let d = tgt - cur;
+          while (d > Math.PI) d -= Math.PI * 2;
+          while (d < -Math.PI) d += Math.PI * 2;
+          let omega = S.turnSlow + (S.turnFast - S.turnSlow) * Math.min(1, speed / 9);
+          if (s.urgent) omega *= 1.6; // going for the ball: sharper, riskier turns
+          const step = clamp(d, -omega * delta, omega * delta);
+          const a = cur + step;
+          dirX = Math.sin(a);
+          dirZ = Math.cos(a);
+          if (Math.abs(d) > 2.0 && speed > 3) {
+            // Plant and turn: brake before changing direction.
+            newSpeed = Math.max(0, speed - S.decel * delta);
+            s.velocity.set(dirX * newSpeed, 0, dirZ * newSpeed);
+            s.currentPos.addScaledVector(s.velocity, delta);
+            s.speed = newSpeed;
+            this.face(s, delta, false);
+            return;
+          }
+        }
+        newSpeed =
+          want > speed
+            ? Math.min(want, speed + accel * delta)
+            : Math.max(want, speed - S.decel * delta);
+      }
+      s.velocity.set(dirX * newSpeed, 0, dirZ * newSpeed);
+      s.currentPos.addScaledVector(s.velocity, delta);
+      s.speed = newSpeed;
+      this.face(s, delta, backwards);
     });
     if (jump) return;
 
