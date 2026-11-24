@@ -414,29 +414,34 @@ export const MatchScreen: React.FC = () => {
       }
     }
 
-    // D. Initialize Match Worker
-    const worker = new Worker(new URL('../../workers/match.worker.ts', import.meta.url), {
-      type: 'module',
-    });
+    // D. Initialize Match Worker. Capture states already simulated the whole match above, so the
+    // worker would only add every event a second time (doubled goals and stats).
+    const worker = captureState
+      ? null
+      : new Worker(new URL('../../workers/match.worker.ts', import.meta.url), {
+          type: 'module',
+        });
     workerRef.current = worker;
 
-    worker.onmessage = (e: MessageEvent<WorkerToClientMessage>) => {
-      const msg = e.data;
-      if (msg.type === 'events') {
-        playback.addEvents(msg.events);
-      } else if (msg.type === 'result') {
-        setMatchResult(msg.result);
-      } else if (msg.type === 'error') {
-        console.error('Match worker error:', msg.message);
-      }
-    };
+    if (worker) {
+      worker.onmessage = (e: MessageEvent<WorkerToClientMessage>) => {
+        const msg = e.data;
+        if (msg.type === 'events') {
+          playback.addEvents(msg.events);
+        } else if (msg.type === 'result') {
+          setMatchResult(msg.result);
+        } else if (msg.type === 'error') {
+          console.error('Match worker error:', msg.message);
+        }
+      };
 
-    worker.postMessage({
-      type: 'start',
-      input,
-      seed: matchSeed,
-      lookaheadSec: 300,
-    } satisfies ClientToWorkerMessage);
+      worker.postMessage({
+        type: 'start',
+        input,
+        seed: matchSeed,
+        lookaheadSec: 300,
+      } satisfies ClientToWorkerMessage);
+    }
 
     // E. Initialize simulated out-of-town scores
     const otherFixtures = gameState.fixtures
@@ -463,7 +468,19 @@ export const MatchScreen: React.FC = () => {
       const state = playback.update(realDelta);
       setPlaybackState(state);
 
-      // Update 3D Scene
+      // Update 3D Scene: the director reads the whole event list for a continuous ball timeline.
+      scene.setEvents(playback.getEvents());
+      const replayGoal = state.isReplay ? state.lastGoalEvent : null;
+      scene.setReplay(
+        Boolean(replayGoal),
+        replayGoal?.side === 'home'
+          ? state.half === 1
+            ? 52.5
+            : -52.5
+          : state.half === 1
+            ? -52.5
+            : 52.5,
+      );
       scene.updatePlayback(state.pt, state.currentEvent, state.half);
 
       // Update name tags visibility (SPEC §14, M1)
@@ -518,7 +535,7 @@ export const MatchScreen: React.FC = () => {
         cancelAnimationFrame(animFrameRef.current);
       }
       scene.dispose();
-      worker.terminate();
+      worker?.terminate();
     };
   }, []);
 

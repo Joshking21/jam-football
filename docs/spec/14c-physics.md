@@ -76,7 +76,7 @@
 
 **Priority rule:** a player the next event needs (the receiver, shooter or taker) gets drive force ×3, and contacts against him are capped. The sim's actors always arrive on time.
 
-**Separation:** the §14.3 separation force is replaced by real collisions. Capsule centres are never closer than 0.45 m except during a fall.
+**Separation:** the §14.3 separation force is replaced by real collisions. Capsule centres are never closer than 0.4 m except during a fall (hard driving can squeeze the 0.6 m capsules a little, never through).
 
 #### 14.12.4 Falls and get-ups: active ragdoll (`ragdoll.ts`)
 **The ragdoll:**
@@ -95,6 +95,8 @@
 4. INJURY stays down for 4–8 s with `HoldLeg`.
 
 **Limits:** at most 3 ragdolls at once (Medium: 2). On Low, play `FallForward` or `FallBack` clips instead, with no ragdoll.
+
+**Until a rigged `player.glb` exists (v1.8 build note):** the fall is the player's capsule unlocking its rotation and tipping from an impulse low and from the fouler's side; the figure follows the body, and he gets up after 1.5 s. The bone ragdoll above replaces it when the Mixamo-named rig arrives.
 
 #### 14.12.5 Feet, kicks and heads: IK (`ik.ts`)
 Use an analytic two-bone IK solver written by us (thigh–shin and upper arm–forearm), plus look-at on the neck and head.
@@ -175,7 +177,7 @@ Use an analytic two-bone IK solver written by us (thigh–shin and upper arm–f
 **Tests (vitest, in node; the compat build runs there):**
 - **Solver:** 300 random passes, lofted balls and shots, with drag and spin, arrive within 0.4 m and 0.1 s.
 - **Contracts:** in a headless physics playback of 5 seeded matches, every GOAL ends at rest inside the net, every POST touches the frame, and every caught save ends in the keeper's hands.
-- **No tunnelling:** over those matches, capsule centres stay ≥ 0.45 m apart except during falls.
+- **No tunnelling:** over those matches, capsule centres stay ≥ 0.4 m apart except during falls.
 - **Get-ups:** every non-injury fall returns to steering within 2.0 s.
 - **The coach:** over 500 random walks, the controller never ends inside a collider and every walk still finishes in ≤ 2.5 s (§11.25.2).
 - **Replay:** the replay buffer gives identical transforms when played twice.

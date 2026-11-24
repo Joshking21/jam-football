@@ -15,6 +15,8 @@ import { createStadiumEnvironment, StadiumEnvironment } from './environment';
 import { createFloodlightBeams, FloodlightBeams } from './beams';
 import { RENDER_CONFIG } from '../config/balance';
 import { MatchEvent } from '../core/types';
+import { MatchPhysics } from '../physics/matchPhysics';
+import { GrassTrample, TrampleStamp } from '../physics/trample';
 
 export class MatchScene {
   public renderer: THREE.WebGLRenderer;
@@ -44,6 +46,17 @@ export class MatchScene {
   private currentEvent: MatchEvent | null = null;
   private currentHalf: 1 | 2 = 1;
   private lastTriggeredGoalSeq = -1;
+  private ballInNet = false;
+  /** §14.12 physics; null until Rapier has loaded (or if it can't), then the director drives. */
+  private physics: MatchPhysics | null = null;
+  /** §14.12.6 grass trample and wear maps. */
+  private trample: GrassTrample | null = null;
+  private stamps: TrampleStamp[] = [];
+  private stampFlip = false;
+  private tmpQ = new THREE.Quaternion();
+  private yawQ = new THREE.Quaternion();
+  private upAxis = new THREE.Vector3(0, 1, 0);
+  private pendingGoalSide: 'home' | 'away' | null = null;
 
   constructor(ctx: Match3DContext) {
     this.container = ctx.container;
@@ -82,13 +95,23 @@ export class MatchScene {
     // 4. Pitch
     this.pitch = createPitch(ctx.weather, this.quality);
     this.scene.add(this.pitch.mesh);
+    try {
+      this.trample = new GrassTrample(this.quality, ctx.weather === 'rain');
+      this.trample.attach(
+        this.pitch.mesh.material as THREE.MeshStandardMaterial,
+        ctx.weather === 'rain',
+      );
+    } catch (e) {
+      console.warn('Grass trample skipped:', e);
+      this.trample = null;
+    }
 
     // 5. Goals
     this.goals = createGoals();
     this.scene.add(this.goals.group);
 
     // 6. Stadium (Stands, Floodlights, Sponsors)
-    this.stadium = createStadium(ctx.homeClub, this.quality);
+    this.stadium = createStadium(ctx.homeClub, this.quality, ctx.awayClub);
     this.scene.add(this.stadium.group);
 
     // 7. Crowd
@@ -148,6 +171,21 @@ export class MatchScene {
           lineup: awayLineup,
         },
         paces,
+      );
+    }
+
+    // 10b. Physics (§14.12): loads lazily; the director's motion is used until it's ready.
+    {
+      const ids = [...this.choreographerLineups()];
+      const strength: Record<string, number> = {};
+      [...ctx.homePlayers, ...ctx.awayPlayers].forEach(
+        (p) => (strength[p.id] = p.attributes.strength),
+      );
+      void MatchPhysics.create(this.choreographer, ids, strength, ctx.weather === 'rain').then(
+        (p) => {
+          if (this.isDisposed) p?.dispose();
+          else this.physics = p;
+        },
       );
     }
 
@@ -223,10 +261,30 @@ export class MatchScene {
     // Update choreographer physics, steering and ball flight
     this.choreographer.update(delta, this.currentPt, this.currentEvent, this.currentHalf);
 
+    // Physics acts the plan out (players' true positions are written back into the director).
+    this.physics?.step(delta, this.currentPt);
+
     // Update 3D ball
-    const bPos = this.choreographer.ballPos;
+    const bPos = this.physics ? this.physics.ballPos : this.choreographer.ballPos;
     this.ball.setPosition(bPos.x, bPos.y, bPos.z);
-    this.ball.updateRotation(this.choreographer.ballVelocity, delta);
+    this.ball.updateRotation(
+      this.physics ? this.physics.ballVel : this.choreographer.ballVelocity,
+      delta,
+    );
+
+    // The net bulges and the crowd goes up when the ball actually crosses the line.
+    const inNet = Math.abs(bPos.x) > 52.7 && Math.abs(bPos.z) < 3.66 && bPos.y < 2.44;
+    if (inNet && !this.ballInNet) {
+      this.goals.hitNet(
+        Math.sign(bPos.x) * 52.5,
+        bPos.z,
+        bPos.y,
+        (this.physics ? this.physics.ballVel : this.choreographer.ballVelocity).length(),
+      );
+      if (this.pendingGoalSide) this.crowd.triggerGoal(this.pendingGoalSide);
+      this.pendingGoalSide = null;
+    }
+    this.ballInNet = inNet;
 
     // Update 3D player figures from steering states
     this.players.allPlayers.forEach((visual, pid) => {
@@ -245,7 +303,67 @@ export class MatchScene {
     this.goals.update(delta);
     this.crowd.update(delta);
     this.players.update(delta);
+
+    // Falls (§14.12.4): a knocked-down player follows his body's real rotation.
+    if (this.physics) {
+      const ph = this.physics;
+      this.players.allPlayers.forEach((visual, pid) => {
+        if (!ph.isFallen(pid)) return;
+        const state = this.choreographer.getPlayerState(pid);
+        this.yawQ.setFromAxisAngle(this.upAxis, state ? state.facingAngle : 0);
+        visual.group.quaternion.copy(ph.rotationOf(pid, this.tmpQ)).multiply(this.yawQ);
+        visual.group.position.y = Math.max(-0.75, ph.heightOf(pid));
+      });
+    }
     this.lights.update(delta);
+
+    // Grass: feet, the ball and falls press the turf (§14.12.6).
+    if (this.trample) {
+      const k = Math.min(3, delta * 60);
+      this.stamps.length = 0;
+      this.stampFlip = !this.stampFlip;
+      this.players.allPlayers.forEach((_v, pid) => {
+        const s = this.choreographer.getPlayerState(pid);
+        if (!s) return;
+        if (this.physics?.isFallen(pid)) {
+          this.stamps.push({
+            x: s.currentPos.x,
+            z: s.currentPos.z,
+            r: 0.8,
+            s: 0.5 * k,
+            wear: 0.012 * k,
+          });
+          return;
+        }
+        if (s.isTackling) {
+          this.stamps.push({
+            x: s.currentPos.x,
+            z: s.currentPos.z,
+            r: 0.45,
+            s: 0.3 * k,
+            wear: 0.01 * k,
+          });
+        }
+        if (s.speed > 0.6) {
+          // Alternate feet either side of the line of running.
+          const side = this.stampFlip ? 0.14 : -0.14;
+          const vx = s.velocity.x / s.speed;
+          const vz = s.velocity.z / s.speed;
+          this.stamps.push({
+            x: s.currentPos.x - vz * side,
+            z: s.currentPos.z + vx * side,
+            r: 0.28,
+            s: 0.012 * s.speed * k,
+            wear: 0.00012 * s.speed * k,
+          });
+        }
+      });
+      const bv = this.physics ? this.physics.ballVel : this.choreographer.ballVelocity;
+      if (bPos.y < 0.2 && bv.length() > 1) {
+        this.stamps.push({ x: bPos.x, z: bPos.z, r: 0.14, s: 0.12 * k });
+      }
+      this.trample.update(this.renderer, delta, this.stamps);
+    }
 
     // Update camera target tracking
     const ballPos = this.ball.getPosition();
@@ -281,6 +399,22 @@ export class MatchScene {
     }
   };
 
+  /** The full event list so far; the director builds one continuous ball timeline from it. */
+  private *choreographerLineups(): Generator<string> {
+    for (const pid of this.players.allPlayers.keys()) {
+      if (this.choreographer.getPlayerState(pid)) yield pid;
+    }
+  }
+
+  public setEvents(events: MatchEvent[]) {
+    this.choreographer.setEvents(events);
+  }
+
+  /** Replays use the behind-goal camera (§14.7). */
+  public setReplay(on: boolean, attackingGoalX: number) {
+    this.cameras.setReplay(on, attackingGoalX);
+  }
+
   public updatePlayback(pt: number, event: MatchEvent | null, half: 1 | 2) {
     this.currentPt = pt;
     this.currentEvent = event;
@@ -301,7 +435,15 @@ export class MatchScene {
   }
 
   public updateNameTags(carrierId: string | null, commentaryId: string | null, showAll: boolean) {
-    this.players.updateNameTags(carrierId, commentaryId, showAll);
+    // Label whoever really has the ball, and never two tags on top of each other (REVIEW-M4 T10).
+    const carrier = this.choreographer.carrierId ?? carrierId;
+    let second = commentaryId && commentaryId !== carrier ? commentaryId : null;
+    if (carrier && second) {
+      const a = this.choreographer.getPlayerState(carrier);
+      const b = this.choreographer.getPlayerState(second);
+      if (a && b && a.currentPos.distanceTo(b.currentPos) < 10) second = null;
+    }
+    this.players.updateNameTags(carrier, second, showAll);
   }
 
   public setBallPosition(x: number, y: number, z: number) {
@@ -309,8 +451,8 @@ export class MatchScene {
   }
 
   public triggerGoalEvent(scoringSide: 'home' | 'away') {
-    this.goals.triggerRipple(scoringSide);
-    this.crowd.triggerGoal(scoringSide);
+    // The net and the crowd react when the ball crosses the line (see animate).
+    this.pendingGoalSide = scoringSide;
   }
 
   public dispose() {
@@ -334,6 +476,10 @@ export class MatchScene {
     this.cameras.dispose();
     this.lights.dispose();
     this.beams?.dispose();
+    this.physics?.dispose();
+    this.physics = null;
+    this.trample?.dispose();
+    this.trample = null;
     this.environment?.dispose();
     this.postPipeline?.dispose();
 

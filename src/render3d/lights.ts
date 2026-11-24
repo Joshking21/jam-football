@@ -1,6 +1,7 @@
 // Implements SPEC §14.2, §14.10, ART-DIRECTION §3 3D Lighting, Sky, Fog & Rain
 import * as THREE from 'three';
 import { RENDER_CONFIG } from '../config/balance';
+import { FLOODLIT } from '../config/render3d';
 import { QualityPreset, TimeSlot, WeatherType } from './types';
 
 export interface LightsBundle {
@@ -55,41 +56,32 @@ export function createLights(
     group.add(sunLight.target);
     lightsToDispose.push(sunLight);
   } else {
-    // Night / Evening Floodlights (4 corners pointing 20m inside corners per ART-DIRECTION §3.3)
+    // Night / Evening: four soft directional lights from the pylon corners (v1.8). They light the
+    // pitch evenly like TV floodlighting; only one casts shadows (SPEC §14.2).
     const mult = (cfg as any).floodlightMult ?? 1.0;
-    const candela = (RENDER_CONFIG.floodlights.candela ?? 14000) * mult;
-    const decay = RENDER_CONFIG.floodlights.decay ?? 2;
-
     floodlightCoords.forEach((coord, idx) => {
-      const spot = new THREE.SpotLight(
-        cfg.keyLight.color,
-        candela,
-        180,
-        Math.PI / 3.0,
-        0.85,
-        decay,
-      );
-      spot.position.copy(coord);
-
-      // Aim 20m inside the corner of the pitch
-      const targetX = coord.x > 0 ? 32.5 : -32.5;
-      const targetZ = coord.z > 0 ? 14 : -14;
-      spot.target.position.set(targetX, 0, targetZ);
-
-      // Only the floodlight nearest the default broadcast camera casts shadows (SPEC §14.2)
-      if (idx === 0 && quality !== 'Low') {
-        spot.castShadow = true;
-        spot.shadow.mapSize.width = quality === 'High' ? 2048 : 1024;
-        spot.shadow.mapSize.height = quality === 'High' ? 2048 : 1024;
-        spot.shadow.camera.near = 10;
-        spot.shadow.camera.far = 160;
-        spot.shadow.bias = -0.0004;
+      const light = new THREE.DirectionalLight(cfg.keyLight.color, FLOODLIT.perLight * mult);
+      light.position.copy(coord);
+      light.target.position.set(coord.x * 0.25, 0, coord.z * 0.25);
+      if (idx === FLOODLIT.shadowLight && quality !== 'Low') {
+        light.castShadow = true;
+        light.shadow.mapSize.width = quality === 'High' ? 2048 : 1024;
+        light.shadow.mapSize.height = quality === 'High' ? 2048 : 1024;
+        light.shadow.camera.near = 10;
+        light.shadow.camera.far = 170;
+        light.shadow.camera.left = -70;
+        light.shadow.camera.right = 70;
+        light.shadow.camera.top = 50;
+        light.shadow.camera.bottom = -50;
+        light.shadow.bias = -0.0005;
+        light.shadow.normalBias = 0.02;
+        light.shadow.radius = 3;
       }
-
-      group.add(spot);
-      group.add(spot.target);
-      lightsToDispose.push(spot);
+      group.add(light);
+      group.add(light.target);
+      lightsToDispose.push(light);
     });
+    hemiLight.intensity += FLOODLIT.fill;
   }
 
   // 3. Faint Starfield at Night (600 points per ART-DIRECTION §3.1)

@@ -19,16 +19,18 @@ export function createFloodlightBeams(
 ): FloodlightBeams {
   const group = new THREE.Group();
   const isRain = weather === 'rain';
-  const baseOpacity = isRain ? 0.09 : 0.05;
+  const baseOpacity = isRain ? 0.07 : 0.035;
 
   // Custom vertex & fragment shader for volumetric cone
   const coneVertexShader = `
     varying vec3 vNormal;
     varying vec3 vPosition;
     varying vec2 vUv;
+    varying float vWorldY;
 
     void main() {
       vUv = uv;
+      vWorldY = (modelMatrix * vec4(position, 1.0)).y;
       vNormal = normalize(normalMatrix * normal);
       vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -41,10 +43,13 @@ export function createFloodlightBeams(
     varying vec3 vNormal;
     varying vec3 vPosition;
     varying vec2 vUv;
+    varying float vWorldY;
 
     void main() {
-      // Fade along length of cone (vUv.y: 0 at top, 1 at base)
-      float lengthFade = pow(1.0 - vUv.y, 1.5);
+      // three's cone has the apex at uv.y = 1 and the base at 0: brightest at the lamp, fading out.
+      float lengthFade = pow(vUv.y, 1.6);
+      // Never reach the pitch or the crowd: gone by 14 m above the ground (REVIEW-M4 T6).
+      lengthFade *= smoothstep(14.0, 30.0, vWorldY);
 
       // Fresnel silhouette edge fade
       vec3 viewDir = normalize(-vPosition);
@@ -55,9 +60,9 @@ export function createFloodlightBeams(
     }
   `;
 
-  const coneGeom = new THREE.ConeGeometry(16, 85, 32, 1, true);
+  const coneGeom = new THREE.ConeGeometry(14, 60, 32, 8, true);
   // Center cone pivot at apex
-  coneGeom.translate(0, -42.5, 0);
+  coneGeom.translate(0, -30, 0);
 
   const materials: THREE.ShaderMaterial[] = [];
   const sprites: THREE.Sprite[] = [];

@@ -7,27 +7,28 @@ export function createSafeCanvas(width: number, height: number): HTMLCanvasEleme
     canvas.height = height;
     return canvas;
   }
-  // Safe mock for Node / Vitest environments
+  // Safe mock for Node / Vitest environments: every drawing call is a no-op, gradients and
+  // patterns return stubs, and property writes (fillStyle, font…) are accepted.
+  const gradient = { addColorStop: () => {} };
+  const ctx = new Proxy(
+    {},
+    {
+      get: (_t, prop) => {
+        if (
+          prop === 'createRadialGradient' ||
+          prop === 'createLinearGradient' ||
+          prop === 'createPattern'
+        )
+          return () => gradient;
+        if (prop === 'measureText') return () => ({ width: 0 });
+        return () => {};
+      },
+      set: () => true,
+    },
+  );
   return {
     width,
     height,
-    getContext: () => ({
-      fillRect: () => {},
-      strokeRect: () => {},
-      beginPath: () => {},
-      moveTo: () => {},
-      lineTo: () => {},
-      stroke: () => {},
-      fill: () => {},
-      arc: () => {},
-      ellipse: () => {},
-      rect: () => {},
-      clip: () => {},
-      save: () => {},
-      restore: () => {},
-      fillText: () => {},
-      roundRect: () => {},
-      createRadialGradient: () => ({ addColorStop: () => {} }),
-    }),
+    getContext: () => ctx,
   } as unknown as HTMLCanvasElement;
 }

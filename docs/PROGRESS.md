@@ -204,3 +204,14 @@ REVIEW REQUESTED: M4 (third pass)
 
 
 
+
+## 2026-11-24 · M5 task 10 finished, M5b physics merged (Claude; Gemini was stopped by the user)
+- Changed: src/core/player/traits.ts, src/core/match/engine.ts, src/core/types.ts, src/core/game/{newGame,migrations}.ts, src/core/world/generateWorld.ts, src/config/balance.ts, src/ui/screens/{MatchScreen,TacticsScreen,PlayerProfileModal,SquadScreen,PreMatchScreen}.tsx, src/ui/screens/Match/ShoutWheel.tsx, src/ui/screens/Tactics/MatchPlanSheet.tsx, src/ui/components/TraitChips.tsx, tests/core/match/shoutsPlansTraits.test.ts; merged branch claude/physics (src/render3d/*, src/physics/*, src/config/render3d.ts, tests/render3d, tests/physics)
+- Ran:
+  - `npm run check` parts: prettier PASS, tsc PASS, vitest 41 files / 288 tests PASS, vite build PASS (main chunk 336 KB gzip; physics chunk 1.65 MB gzip, lazy)
+  - `scripts/probe-goals.ts`: 25/25 goals end with the physics ball in the net (6 matches)
+  - `npm run calibrate` with traits on: goals/match 2.78 PASS, home win 47.2% PASS; FAIL: draw % 19.8 (24–28), 0–0 % 4.4 (6–10), no-dominant-choice shootMore ±9.0 (≤ ±6), defensive roles ±8.6, menBack corner headers, cb_step through balls. Sim-speed FAILs are void (tests ran alongside). A baseline run on 2e03460 (before task 10) is being compared; see the next entry.
+- Notes:
+  - Task 10 engine by Gemini; Claude fixed 9 type errors, made traits part of the fixed world (per-player seed, assigned at new game and on save load; the frozen snapshot had none), tuned trait base chance 0.08 → 0.10 (56% with ≥1 trait), and built the UI (shout wheel + chip, Ask-me-first card, Match plan sheet with Theo's set, traits in player file / squad / pre-match, learn/unlearn a habit) and the tests.
+  - M5b: see docs/WIP-M5b.md. Director fixes found during the merge: queued corner flights are no longer cancelled by a same-second clearance; clearances count as touches (a poor clearance drops to the shooter); no hop at the start of passes.
+- Open issues: calibration FAILs above (check against the baseline); REVIEW-M4 T4, T5, T8, T9, T11–T13 and REVIEW-M5 R1–R6, R8–R12; M5 task 11 next (after the Club/Squad rebuild per §23).

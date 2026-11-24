@@ -21,6 +21,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           three: ['three'],
+          physics: ['@dimforge/rapier3d-compat'],
         },
       },
     },
