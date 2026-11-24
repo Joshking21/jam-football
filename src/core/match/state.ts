@@ -93,6 +93,14 @@ export interface LivePlayerState {
   isInjured: boolean;
   failedDribbles: number;
   errorsLeadingToGoal: number;
+  // Knocks & Decisions (§12.19)
+  hasKnock?: boolean;
+  knockDecision?: 'take_off' | 'play_on' | 'carry_to_ht';
+  isRushedBack?: boolean;
+  rushPhysioFactor?: number;
+  hasWarmupScare?: boolean;
+  severityOneLevelUp?: boolean;
+  breakdownInjury?: { kind: string; matchdaysOut: number } | null;
 }
 
 export interface MatchSnapshot {

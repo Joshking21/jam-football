@@ -316,6 +316,12 @@ export function getInjuryRisk(
   if (player.condition < 75) {
     reasons.push('Match conditioning deficit');
   }
+  if ((player.rushedBack?.matchesLeft ?? 0) > 0) {
+    reasons.push('Rushed back');
+  }
+  if ((player.carriedKnockWeeks ?? 0) > 0) {
+    reasons.push('Carried a knock');
+  }
 
   let level: 'Low' | 'Medium' | 'High' = 'Low';
   if (factor >= BALANCE.club.injuryRiskMedThreshold) {

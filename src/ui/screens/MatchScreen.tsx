@@ -27,6 +27,7 @@ import { RadarOverlay } from './Match/RadarOverlay';
 import { HalfTimeModal } from './Match/HalfTimeModal';
 import { FullTimeModal } from './Match/FullTimeModal';
 import { ShoutWheel, ShoutChip, PlanAskCard, ActiveShout, SHOUTS } from './Match/ShoutWheel';
+import { KnockChoiceCard } from './Match/KnockChoiceCard';
 import type { ShoutId } from '../../core/types';
 import { TalkTone, getHalfTimeTalkContext } from '../../core/player/talks';
 import { createMatch, simulateInstant } from '../../core/match/engine';
@@ -82,6 +83,10 @@ export const MatchScreen: React.FC = () => {
   } | null>(null);
   const [planAskLeft, setPlanAskLeft] = useState(0);
   const planAskRef = useRef<typeof planAsk>(null);
+
+  // In-Match Knock state (§12.19.1)
+  const handledKnockTRef = useRef<number | null>(null);
+  const [handledKnockT, setHandledKnockT] = useState<number | null>(null);
 
   // Overlays & Drawers
   const [statsOpen, setStatsOpen] = useState(false);
@@ -489,6 +494,17 @@ export const MatchScreen: React.FC = () => {
       // Update Playback Clock
       const state = playback.update(realDelta);
       setPlaybackState(state);
+
+      // In-match knock pause (§12.19.1)
+      if (
+        state.currentEvent?.type === 'KNOCK' &&
+        state.currentEvent.side === userSide &&
+        (gameState?.knocksSetting ?? 'ask') === 'ask' &&
+        handledKnockTRef.current !== state.currentEvent.t &&
+        !state.paused
+      ) {
+        playback.togglePause();
+      }
 
       // Update 3D Scene: the director reads the whole event list for a continuous ball timeline.
       scene.setEvents(playback.getEvents());
@@ -948,6 +964,44 @@ export const MatchScreen: React.FC = () => {
               onSkip={() => resolvePlanAsk(false)}
             />
           )}
+
+          {/* In-Match Knock Choice Card (§12.19.1) */}
+          {(() => {
+            const evt = playbackState.currentEvent;
+            if (
+              evt?.type === 'KNOCK' &&
+              evt.side === userSide &&
+              evt.playerId &&
+              (gameState?.knocksSetting ?? 'ask') === 'ask' &&
+              handledKnockT !== evt.t
+            ) {
+              const player = gameState?.players[evt.playerId];
+              if (!player) return null;
+              const pct = evt.knock?.pct ?? 80;
+              return (
+                <KnockChoiceCard
+                  player={player}
+                  pct={pct}
+                  isFirstHalf={playbackState.half === 1}
+                  onChoice={(decision) => {
+                    playbackRef.current?.addCommand({
+                      kind: 'knock',
+                      side: userSide,
+                      playerId: evt.playerId!,
+                      decision,
+                      issuedAtT: playbackState.pt,
+                    });
+                    handledKnockTRef.current = evt.t;
+                    setHandledKnockT(evt.t);
+                    if (playbackRef.current?.paused) {
+                      playbackRef.current?.togglePause();
+                    }
+                  }}
+                />
+              );
+            }
+            return null;
+          })()}
 
           {/* Top Left Scoreboard Bug */}
           <ScoreboardBug

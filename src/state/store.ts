@@ -17,6 +17,7 @@ import {
   OneToOneType,
 } from '@/core/types';
 import { replaceStaffMember } from '@/core/club/clubDepth';
+import { DisciplineChoice, resolveDisciplineIncident } from '@/core/people/incidents';
 import {
   TRAINING_TEMPLATES,
   BALANCED_WEEK_SCHEDULE,
@@ -157,6 +158,11 @@ export interface AppState {
     playerId: PlayerId,
     type: OneToOneType,
   ) => { success: boolean; message: string };
+  // SPEC §12.19 & §12.20 Decision store actions
+  resolveDisciplineDecision: (choice: DisciplineChoice) => void;
+  resolveRushBackOffer: (decision: 'wait' | 'risk') => void;
+  resolveWarmupScare: (decision: 'start' | 'leave_out') => void;
+  setKnocksSetting: (setting: 'ask' | 'always_off' | 'play_on_if_late') => void;
 }
 
 export const useStore = create<AppState>((set, get) => {
@@ -1227,6 +1233,98 @@ export const useStore = create<AppState>((set, get) => {
       get().showToast(res.appliedEffect, 'success');
       triggerDebouncedAutosave(next);
       return { success: true, message: res.appliedEffect };
+    },
+
+    resolveDisciplineDecision: (choice: DisciplineChoice) => {
+      const state = get().gameState;
+      if (!state || !state.activeIncident) return;
+      const rng = createRng(
+        deriveSeed(state.seed, 'resolve-incident', `${state.matchday}-${state.activeIncident.id}`),
+      );
+      const result = resolveDisciplineIncident(state, state.activeIncident, choice, rng);
+      set({ gameState: result.nextGameState });
+      get().showToast(`Discipline action applied: ${choice}`, 'info');
+      triggerDebouncedAutosave(result.nextGameState);
+    },
+
+    resolveRushBackOffer: (decision: 'wait' | 'risk') => {
+      const state = get().gameState;
+      if (!state || !state.pendingRushBack) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const offer = next.pendingRushBack;
+      const p = next.players[offer.playerId];
+      if (p) {
+        if (decision === 'risk') {
+          p.injury = null;
+          p.condition = 70;
+          p.rushedBack = {
+            matchesLeft: 2,
+            originalMatchdaysOut: offer.originalMatchdaysOut,
+            injuryKind: offer.injuryKind,
+          };
+          p.carriedKnockWeeks = 2;
+          if (!p.injuryLog) p.injuryLog = [];
+          p.injuryLog.push({
+            kind: offer.injuryKind,
+            matchdaysOut: offer.originalMatchdaysOut,
+            reInjuries: 0,
+            rushed: true,
+            matchday: next.matchday,
+          });
+          get().showToast(`Risked ${p.lastName}: available with Not fully fit chip`, 'warning');
+        } else {
+          get().showToast(`Cautious call on ${p.lastName}: remaining on normal recovery`, 'info');
+        }
+      }
+      next.pendingRushBack = null;
+      set({ gameState: next });
+      triggerDebouncedAutosave(next);
+    },
+
+    resolveWarmupScare: (decision: 'start' | 'leave_out') => {
+      const state = get().gameState;
+      if (!state || !state.pendingWarmupScare) return;
+      const next = JSON.parse(JSON.stringify(state)) as GameState;
+      const scare = next.pendingWarmupScare;
+      const p = next.players[scare.playerId];
+      const userClub = next.clubs[next.userClubId];
+      if (p && userClub) {
+        if (decision === 'start') {
+          p.warmupScare = true;
+          get().showToast(
+            `Starting ${p.lastName} despite tight muscle (injury risk elevated)`,
+            'warning',
+          );
+        } else {
+          p.warmupScare = false;
+          const slot = userClub.tactics.lineup.findIndex((id) => id === p.id);
+          if (slot >= 0 && userClub.tactics.bench.length > 0) {
+            const benchCandidates = userClub.tactics.bench
+              .map((id) => next.players[id])
+              .filter(
+                (bp): bp is Player => bp != null && bp.injury === null && bp.suspendedMatches === 0,
+              );
+            if (benchCandidates.length > 0) {
+              const bestBench = benchCandidates[0]!;
+              userClub.tactics.lineup[slot] = bestBench.id;
+              userClub.tactics.bench = userClub.tactics.bench.filter((id) => id !== bestBench.id);
+              userClub.tactics.bench.push(p.id);
+              get().showToast(`Left ${p.lastName} out: ${bestBench.lastName} starts`, 'info');
+            }
+          }
+        }
+      }
+      next.pendingWarmupScare = null;
+      set({ gameState: next });
+      triggerDebouncedAutosave(next);
+    },
+
+    setKnocksSetting: (setting: 'ask' | 'always_off' | 'play_on_if_late') => {
+      const state = get().gameState;
+      if (!state) return;
+      const next = { ...state, knocksSetting: setting };
+      set({ gameState: next });
+      triggerDebouncedAutosave(next);
     },
   };
 });

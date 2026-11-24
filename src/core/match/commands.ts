@@ -10,6 +10,7 @@ export const DEAD_BALL_EVENT_TYPES: Set<MatchEventType> = new Set([
   'OFFSIDE',
   'GOAL',
   'INJURY',
+  'KNOCK',
   'HALF_TIME',
 ]);
 
@@ -43,6 +44,13 @@ export function shouldApplyCommand(
   if (cmd.kind === 'shout') {
     // Shouts take effect at first step at or after issuedAtT + 10 (§13.21)
     return currentT >= cmd.issuedAtT + 10;
+  }
+
+  if (cmd.kind === 'knock') {
+    // Knocks take effect at the first dead ball at or after issuedAtT (§12.19.1)
+    if (currentT < cmd.issuedAtT) return false;
+    if (isHalfTime) return true;
+    return lastEventType != null && DEAD_BALL_EVENT_TYPES.has(lastEventType);
   }
 
   return false;

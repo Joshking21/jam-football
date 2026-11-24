@@ -11,6 +11,8 @@ import { CountUp } from '../components/CountUp';
 import { Ticker } from '../components/Ticker';
 import { Modal } from '../components/Modal';
 import { TelestratorPitch } from '../components/TelestratorPitch';
+import { DisciplineIncidentModal } from '../components/DisciplineIncidentModal';
+import { RushBackModal } from '../components/RushBackModal';
 import {
   Calendar,
   Cloud,
@@ -38,6 +40,8 @@ export const HubScreen: React.FC = () => {
   const showToast = useStore((state) => state.showToast);
   const updateUserTactics = useStore((state) => state.updateUserTactics);
   const openConversationModal = useStore((state) => state.openConversationModal);
+  const resolveDisciplineDecision = useStore((state) => state.resolveDisciplineDecision);
+  const resolveRushBackOffer = useStore((state) => state.resolveRushBackOffer);
 
   const [showOpponentReport, setShowOpponentReport] = useState(false);
   const [tipApplied, setTipApplied] = useState(false);
@@ -984,6 +988,25 @@ export const HubScreen: React.FC = () => {
           </div>
         </Modal>
       )}
+
+      {/* Disciplinary Incident Modal (§12.20) */}
+      {gameState.activeIncident && !gameState.activeIncident.resolved && (
+        <DisciplineIncidentModal
+          incident={gameState.activeIncident}
+          players={gameState.players}
+          onChoice={resolveDisciplineDecision}
+        />
+      )}
+
+      {/* Rushing Player Back Modal (§12.19.2) */}
+      {gameState.pendingRushBack &&
+        !gameState.pendingRushBack.resolved &&
+        gameState.players[gameState.pendingRushBack.playerId] && (
+          <RushBackModal
+            player={gameState.players[gameState.pendingRushBack.playerId]!}
+            onChoice={resolveRushBackOffer}
+          />
+        )}
 
       {/* Broadcast Ticker Bar at bottom */}
       <Ticker items={tickerItems} />

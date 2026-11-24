@@ -15,6 +15,7 @@ export const SettingsModal: React.FC = () => {
   const updateSettings = useStore((state) => state.updateSettings);
   const gameState = useStore((state) => state.gameState);
   const setGameState = useStore((state) => state.setGameState);
+  const setKnocksSetting = useStore((state) => state.setKnocksSetting);
   const showToast = useStore((state) => state.showToast);
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('audio');
@@ -198,6 +199,49 @@ export const SettingsModal: React.FC = () => {
                 checked={settings.confirmInstant}
                 onChange={(checked) => updateSettings({ confirmInstant: checked })}
               />
+
+              {/* In-Match Knock Response (§12.19.1) */}
+              <div>
+                <label
+                  style={{
+                    display: 'block',
+                    fontWeight: 600,
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                  }}
+                >
+                  In-Match Knock Response
+                </label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {(
+                    [
+                      { id: 'ask', label: 'Ask every time' },
+                      { id: 'always_off', label: 'Always take off' },
+                      { id: 'play_on_if_late', label: 'Play on if late' },
+                    ] as const
+                  ).map((opt) => {
+                    const active = (gameState?.knocksSetting ?? 'ask') === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => setKnocksSetting(opt.id)}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: 'var(--radius-s)',
+                          background: active ? 'var(--accent)' : 'var(--surface-3)',
+                          color: active ? 'var(--accent-ink)' : 'var(--text)',
+                          fontWeight: 600,
+                          fontSize: '13px',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
 

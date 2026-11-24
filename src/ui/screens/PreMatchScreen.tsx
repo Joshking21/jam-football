@@ -12,6 +12,7 @@ import { Portrait } from '../components/Portrait';
 import { TacticsScreen } from './TacticsScreen';
 import { Ticker } from '../components/Ticker';
 import { TelestratorPitch } from '../components/TelestratorPitch';
+import { WarmupScareModal } from '../components/WarmupScareModal';
 import { getPreMatchTickerItems } from '../components/tickerHelper';
 import {
   Check,
@@ -44,6 +45,7 @@ export const PreMatchScreen: React.FC = () => {
   const performTeamTalk = useStore((state) => state.performTeamTalk);
   const answerPressQuestion = useStore((state) => state.answerPressQuestion);
   const skipPressConference = useStore((state) => state.skipPressConference);
+  const resolveWarmupScare = useStore((state) => state.resolveWarmupScare);
   const showToast = useStore((state) => state.showToast);
 
   const [currentStep, setCurrentStep] = useState<PreMatchStep>(gameState?.pendingPress ? 0 : 1);
@@ -1215,6 +1217,16 @@ export const PreMatchScreen: React.FC = () => {
       </div>
 
       <Ticker items={getPreMatchTickerItems(gameState, nextFix)} />
+
+      {/* Pre-Match Warm-up Scare Modal (§12.19.3) */}
+      {gameState.pendingWarmupScare &&
+        !gameState.pendingWarmupScare.resolved &&
+        gameState.players[gameState.pendingWarmupScare.playerId] && (
+          <WarmupScareModal
+            player={gameState.players[gameState.pendingWarmupScare.playerId]!}
+            onChoice={resolveWarmupScare}
+          />
+        )}
     </div>
   );
 };

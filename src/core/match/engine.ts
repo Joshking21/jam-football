@@ -529,6 +529,10 @@ export class MatchEngine implements MatchSim {
         isInjured: false,
         failedDribbles: 0,
         errorsLeadingToGoal: 0,
+        isRushedBack: p.isRushedBack,
+        rushPhysioFactor: p.rushPhysioFactor,
+        hasWarmupScare: p.hasWarmupScare,
+        breakdownInjury: p.breakdownInjury,
       };
       this.playerLines[id] = createPlayerMatchLine(id, 'home', p.condition);
     }
@@ -547,6 +551,10 @@ export class MatchEngine implements MatchSim {
         isInjured: false,
         failedDribbles: 0,
         errorsLeadingToGoal: 0,
+        isRushedBack: p.isRushedBack,
+        rushPhysioFactor: p.rushPhysioFactor,
+        hasWarmupScare: p.hasWarmupScare,
+        breakdownInjury: p.breakdownInjury,
       };
       this.playerLines[id] = createPlayerMatchLine(id, 'away', p.condition);
     }
@@ -784,31 +792,143 @@ export class MatchEngine implements MatchSim {
     const fatFactor = p.fatigue > 60 ? 1.5 : 1.0;
     const pressFactor = oppPressing === 'High' ? 1.15 : 1.0;
     const lambda = BALANCE.injuries.hazardBase * condFactor * fatFactor * pressFactor;
+
+    // Knock check (§12.19.1)
+    if (!p.hasKnock && !p.isInjured) {
+      const knockHazard = BALANCE.injuryDecisions.knockHazardMultiplier * lambda;
+      const pKnock = knockHazard * dtMinutes;
+      if (this.rng.chance(pKnock)) {
+        p.hasKnock = true;
+        const physioStars =
+          (p.side === 'home' ? this.input.home.physioStars : this.input.away.physioStars) ?? 3;
+        const pct = clamp(
+          BALANCE.injuryDecisions.knockPhysioBasePct +
+            (physioStars - 1) * BALANCE.injuryDecisions.knockPhysioStarStep,
+          70,
+          90,
+        );
+
+        // Check for pre-queued knock command
+        const cmd = this.pendingCommands.find(
+          (c): c is Extract<MatchCommand, { kind: 'knock' }> =>
+            c.kind === 'knock' && c.playerId === p.id,
+        );
+
+        let decision: 'take_off' | 'play_on' | 'carry_to_ht';
+        const team = p.side === 'home' ? this.homeTeam : this.awayTeam;
+        const hasSubs = team.subsUsed < 5 && team.bench.length > 0;
+
+        if (cmd) {
+          decision = cmd.decision;
+        } else if (this.input.aiControls.includes(p.side)) {
+          // AI clubs always take the cautious option
+          decision = hasSubs ? 'take_off' : 'play_on';
+        } else {
+          const setting = this.input.knocksSetting ?? 'ask';
+          if (!hasSubs) {
+            decision = 'play_on';
+          } else if (setting === 'always_off') {
+            decision = 'take_off';
+          } else if (setting === 'play_on_if_late' && this.t > 4500) {
+            decision = 'play_on';
+          } else {
+            // Default when cannot ask or instant: take off if subs remain
+            decision = 'take_off';
+          }
+        }
+
+        p.knockDecision = decision;
+
+        this.emitEvent('KNOCK', K.durations.foul, {
+          side: p.side,
+          playerId: p.id,
+          importance: 1,
+          knock: { pct, decision },
+        });
+
+        if (decision === 'take_off') {
+          p.condition = Math.max(
+            1,
+            p.condition + BALANCE.injuryDecisions.knockTakeOffConditionDelta,
+          );
+          const slot = team.lineup.findIndex((id) => id === p.id);
+          if (slot >= 0 && hasSubs) {
+            const inId = team.bench[0]!;
+            team.subsUsed++;
+            team.inPlayWindowsUsed++;
+            team.lineup[slot] = inId;
+            team.bench = team.bench.filter((id) => id !== inId);
+            team.substitutedPlayers.push(p.id);
+            this.invalidateTeamInvolvements(p.side);
+            this.emitEvent('SUB', K.durations.substitution, {
+              side: p.side,
+              playerId: p.id,
+              targetId: inId,
+              importance: 1,
+            });
+          }
+        }
+        return;
+      }
+    }
+
+    let effLambda = lambda;
+    if (p.hasKnock && (p.knockDecision === 'play_on' || p.knockDecision === 'carry_to_ht')) {
+      effLambda *= BALANCE.injuryDecisions.knockPlayOnHazardMultiplier;
+    }
+    if (p.isRushedBack) {
+      effLambda *= BALANCE.injuryDecisions.rushHazardMultiplier * (p.rushPhysioFactor ?? 1.0);
+    }
+    if (p.hasWarmupScare) {
+      effLambda *= BALANCE.injuryDecisions.warmupScareStartHazardMultiplier;
+    }
+
     // Fast Taylor approximation: lambda * dt < 0.001 so 1 - exp(-x) ≈ x
-    const pInj = lambda * dtMinutes;
+    const pInj = effLambda * dtMinutes;
 
     if (this.rng.chance(pInj)) {
       p.isInjured = true;
       const pl = this.playerLines[p.id];
       if (pl) pl.injured = true;
 
-      // Severity
-      const roll = this.rng.next();
       let matchdaysOut = 1;
       let severity: 'Minor' | 'Moderate' | 'Major' = 'Minor';
-      if (roll < 0.55) {
-        severity = 'Minor';
-        matchdaysOut = this.rng.int(1, 2);
-      } else if (roll < 0.9) {
-        severity = 'Moderate';
-        matchdaysOut = this.rng.int(3, 5);
+      let kind = 'Muscle strain';
+
+      // Check rushed back breakdown (§12.19.2)
+      if (p.isRushedBack && p.breakdownInjury) {
+        kind = p.breakdownInjury.kind;
+        matchdaysOut = Math.ceil(
+          p.breakdownInjury.matchdaysOut * BALANCE.injuryDecisions.rushBreakdownMultiplier,
+        );
+        severity = matchdaysOut > 5 ? 'Major' : matchdaysOut > 2 ? 'Moderate' : 'Minor';
       } else {
-        severity = 'Major';
-        matchdaysOut = this.rng.int(6, 12);
+        const roll = this.rng.next();
+        if (p.hasKnock && (p.knockDecision === 'play_on' || p.knockDecision === 'carry_to_ht')) {
+          // Severity rolls one level up: Minor -> Moderate, Moderate -> Major (§12.19.1)
+          if (roll < 0.55) {
+            severity = 'Moderate';
+            matchdaysOut = this.rng.int(3, 5);
+          } else {
+            severity = 'Major';
+            matchdaysOut = this.rng.int(6, 12);
+          }
+        } else {
+          if (roll < 0.55) {
+            severity = 'Minor';
+            matchdaysOut = this.rng.int(1, 2);
+          } else if (roll < 0.9) {
+            severity = 'Moderate';
+            matchdaysOut = this.rng.int(3, 5);
+          } else {
+            severity = 'Major';
+            matchdaysOut = this.rng.int(6, 12);
+          }
+        }
       }
 
       const injury: Injury = {
-        kind: 'Muscle strain',
+        kind,
         severity,
         matchdaysOut,
       };
@@ -1024,6 +1144,37 @@ export class MatchEngine implements MatchSim {
           isHalfEffect,
         },
       });
+    } else if (cmd.kind === 'knock') {
+      const p = this.players[cmd.playerId];
+      if (p) {
+        p.hasKnock = true;
+        p.knockDecision = cmd.decision;
+        if (cmd.decision === 'play_on') {
+          p.severityOneLevelUp = true;
+        }
+        if (cmd.decision === 'take_off') {
+          p.condition = Math.max(
+            1,
+            p.condition + BALANCE.injuryDecisions.knockTakeOffConditionDelta,
+          );
+          const slot = team.lineup.findIndex((id) => id === cmd.playerId);
+          if (slot >= 0 && team.bench.length > 0 && team.subsUsed < 5) {
+            const inId = team.bench[0]!;
+            team.subsUsed++;
+            if (!isHalfTime) team.inPlayWindowsUsed++;
+            team.lineup[slot] = inId;
+            team.bench = team.bench.filter((id) => id !== inId);
+            team.substitutedPlayers.push(cmd.playerId);
+            this.invalidateTeamInvolvements(cmd.side);
+            this.emitEvent('SUB', K.durations.substitution, {
+              side: cmd.side,
+              playerId: cmd.playerId,
+              targetId: inId,
+              importance: 1,
+            });
+          }
+        }
+      }
     }
   }
 
@@ -1125,7 +1276,7 @@ export class MatchEngine implements MatchSim {
     this.lastAiCheckT = this.t;
     const minute = Math.floor(this.t / 60);
 
-    for (const side of this.input.aiControls) {
+    for (const side of this.input.aiControls ?? []) {
       const team = side === 'home' ? this.homeTeam : this.awayTeam;
       const ourScore = side === 'home' ? this.score.home : this.score.away;
       const oppScore = side === 'home' ? this.score.away : this.score.home;
@@ -1246,6 +1397,29 @@ export class MatchEngine implements MatchSim {
           importance: 1,
         });
         this.processReadyCommands('HALF_TIME');
+
+        // Replace carry_to_ht knock players at half-time without using in-play window (§12.19.1)
+        for (const p of Object.values(this.players)) {
+          if (p.hasKnock && p.knockDecision === 'carry_to_ht') {
+            const team = p.side === 'home' ? this.homeTeam : this.awayTeam;
+            const slot = team.lineup.findIndex((id) => id === p.id);
+            if (slot >= 0 && team.bench.length > 0 && team.subsUsed < 5) {
+              const inId = team.bench[0]!;
+              team.subsUsed++;
+              // Note: Half-time sub does not use inPlayWindowsUsed
+              team.lineup[slot] = inId;
+              team.bench = team.bench.filter((id) => id !== inId);
+              team.substitutedPlayers.push(p.id);
+              this.invalidateTeamInvolvements(p.side);
+              this.emitEvent('SUB', K.durations.substitution, {
+                side: p.side,
+                playerId: p.id,
+                targetId: inId,
+                importance: 1,
+              });
+            }
+          }
+        }
 
         // Transition to second half
         this.half = 2;
@@ -4149,10 +4323,33 @@ export class MatchEngine implements MatchSim {
 
   private getPlayerSheet(id: PlayerId): any {
     const pHome = this.input.home.players[id];
-    if (pHome) return pHome;
-    const pAway = this.input.away.players[id];
-    if (pAway) return pAway;
-    throw new Error(`Player ${id} not found in team sheets`);
+    const sheet = pHome ?? this.input.away.players[id];
+    if (!sheet) throw new Error(`Player ${id} not found in team sheets`);
+
+    const live = this.players[id];
+    let penalty = 0;
+    if (live) {
+      if (
+        live.hasKnock &&
+        (live.knockDecision === 'play_on' || live.knockDecision === 'carry_to_ht')
+      ) {
+        penalty += 7.5; // -0.3 z-units (SPEC §12.19.1)
+      }
+      if (live.isRushedBack) {
+        penalty += 2.5; // -0.1 z-units (SPEC §12.19.2)
+      }
+      if (live.hasWarmupScare) {
+        penalty += 2.5; // -0.1 z-units (SPEC §12.19.3)
+      }
+    }
+
+    if (penalty === 0) return sheet;
+
+    const adjustedAttrs = { ...sheet.attributes };
+    for (const k of Object.keys(adjustedAttrs) as (keyof Attributes)[]) {
+      adjustedAttrs[k] = Math.max(1, Math.round(adjustedAttrs[k] - penalty));
+    }
+    return { ...sheet, attributes: adjustedAttrs };
   }
 
   private isTeamLeadingLate(side: Side): boolean {

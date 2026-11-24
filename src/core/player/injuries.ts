@@ -113,3 +113,49 @@ export function checkTrainingInjury(
   }
   return null;
 }
+
+/**
+ * Physio assessment of knock readability (SPEC §12.19.1)
+ * "He can carry on. About {pct}%." pct = 70–90, higher with better physio stars.
+ */
+export function getKnockPhysioRead(physioStars: number = 3): { pct: number; line: string } {
+  const pct = Math.min(
+    90,
+    Math.max(
+      70,
+      BALANCE.injuryDecisions.knockPhysioBasePct +
+        (physioStars - 1) * BALANCE.injuryDecisions.knockPhysioStarStep,
+    ),
+  );
+  return {
+    pct,
+    line: `He can carry on. About ${pct}%.`,
+  };
+}
+
+/**
+ * Checks for a warm-up scare before matchday (SPEC §12.19.3)
+ * One starter has a "tight" muscle with chance 3% (×2 if fatigue > 50, ×0.7 with 4–5★ physio).
+ */
+export function checkWarmupScare(rng: Rng, fatigue: number, physioStars: number = 3): boolean {
+  let chance = BALANCE.injuryDecisions.warmupScareBaseChance;
+  if (fatigue > BALANCE.injuryDecisions.warmupScareFatigueThreshold) {
+    chance *= BALANCE.injuryDecisions.warmupScareFatigueMultiplier;
+  }
+  if (physioStars >= 4) {
+    chance *= BALANCE.injuryDecisions.warmupScarePhysioDiscount;
+  }
+  return rng.chance(chance);
+}
+
+/**
+ * Calculates physio multiplier for rushed-back player hazard (SPEC §12.19.2)
+ * (1.2 - 0.08 * stars)
+ */
+export function calculateRushPhysioFactor(physioStars: number = 3): number {
+  return Math.max(
+    0.6,
+    BALANCE.injuryDecisions.rushPhysioBase -
+      BALANCE.injuryDecisions.rushPhysioStarSlope * physioStars,
+  );
+}

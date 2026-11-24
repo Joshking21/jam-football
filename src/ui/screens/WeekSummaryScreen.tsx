@@ -8,6 +8,8 @@ import { Crest } from '../components/Crest';
 import { Ticker } from '../components/Ticker';
 import { formatMoney } from '../../core/math';
 import { Player } from '../../core/types';
+import { DisciplineIncidentModal } from '../components/DisciplineIncidentModal';
+import { RushBackModal } from '../components/RushBackModal';
 import {
   Calendar,
   DollarSign,
@@ -23,6 +25,8 @@ export const WeekSummaryScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
   const advanceGame = useStore((state) => state.advanceGame);
   const openConversationModal = useStore((state) => state.openConversationModal);
+  const resolveDisciplineDecision = useStore((state) => state.resolveDisciplineDecision);
+  const resolveRushBackOffer = useStore((state) => state.resolveRushBackOffer);
 
   if (!gameState) return null;
 
@@ -101,6 +105,12 @@ export const WeekSummaryScreen: React.FC = () => {
               variant="primary"
               size="l"
               onClick={handleNextMatchday}
+              disabled={Boolean(gameState.activeIncident && !gameState.activeIncident.resolved)}
+              title={
+                gameState.activeIncident && !gameState.activeIncident.resolved
+                  ? 'Resolve pending disciplinary incident before continuing'
+                  : undefined
+              }
               style={{ minWidth: '180px' }}
             >
               Advance Week <ArrowRight size={18} />
@@ -458,6 +468,25 @@ export const WeekSummaryScreen: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Disciplinary Incident Modal (§12.20) */}
+      {gameState.activeIncident && !gameState.activeIncident.resolved && (
+        <DisciplineIncidentModal
+          incident={gameState.activeIncident}
+          players={gameState.players}
+          onChoice={resolveDisciplineDecision}
+        />
+      )}
+
+      {/* Rushing Player Back Modal (§12.19.2) */}
+      {gameState.pendingRushBack &&
+        !gameState.pendingRushBack.resolved &&
+        gameState.players[gameState.pendingRushBack.playerId] && (
+          <RushBackModal
+            player={gameState.players[gameState.pendingRushBack.playerId]!}
+            onChoice={resolveRushBackOffer}
+          />
+        )}
 
       <Ticker
         items={[

@@ -30,7 +30,12 @@ import {
   calculateWeeklyFatigueRecovery,
   calculateMatchFatigue,
 } from '../player/condition';
-import { checkTrainingInjury } from '../player/injuries';
+import {
+  checkTrainingInjury,
+  calculateRushPhysioFactor,
+  checkWarmupScare,
+} from '../player/injuries';
+import { checkForWeeklyDisciplineIncident } from '../people/incidents';
 import { processPlayerDevelopment } from '../player/development';
 import { processPlayerMatchCards } from '../player/discipline';
 import { rawOvr } from '../player/ratings';
@@ -145,9 +150,17 @@ export function buildTeamSheet(
 ): TeamSheet {
   const sheetPlayers: TeamSheet['players'] = {};
 
+  const physioStars = club.staff?.physio.stars ?? 3;
   for (const pId of club.squad) {
     const p = players[pId];
     if (!p) continue;
+    const isRushedBack = (p.rushedBack?.matchesLeft ?? 0) > 0;
+    const rushPhysioFactor = isRushedBack ? calculateRushPhysioFactor(physioStars) : undefined;
+    const hasWarmupScare = Boolean(p.warmupScare);
+    const breakdownInjury = p.rushedBack
+      ? { kind: p.rushedBack.injuryKind, matchdaysOut: p.rushedBack.originalMatchdaysOut }
+      : null;
+
     sheetPlayers[pId] = {
       attributes: { ...p.attributes },
       positions: [...p.positions],
@@ -159,6 +172,10 @@ export function buildTeamSheet(
       shirt: p.squadNumber ?? 99,
       foot: p.foot,
       traits: p.traits ?? [],
+      isRushedBack,
+      rushPhysioFactor,
+      hasWarmupScare,
+      breakdownInjury,
     };
   }
 
@@ -187,6 +204,7 @@ export function buildTeamSheet(
     focusBoost,
     cohesion: club.cohesion ?? 55,
     prep,
+    physioStars,
   };
 }
 
@@ -209,6 +227,7 @@ export function applyMatchResults(
   }
 
   // 1. Update fixtures
+  const sentOffPlayerIds: PlayerId[] = [];
   for (const f of next.fixtures) {
     if (f.matchday !== currentMatchday) continue;
     const res = results[f.id];
@@ -296,6 +315,9 @@ export function applyMatchResults(
 
       // Cards & Suspensions (§12.6)
       const isDirectRed = pl.red > 0 && pl.yellow === 0;
+      if (pl.red > 0 && p.clubId === next.userClubId) {
+        sentOffPlayerIds.push(p.id);
+      }
       const cardRes = processPlayerMatchCards(p, {
         yellow: pl.yellow,
         red: pl.red,
@@ -315,11 +337,56 @@ export function applyMatchResults(
       }
     }
 
-    // Injuries sustained
+    // Injuries sustained & decisions logging (§12.19)
     for (const inj of res.injuries) {
       const p = next.players[inj.playerId];
       if (p) {
+        const wasRushed = (p.rushedBack?.matchesLeft ?? 0) > 0;
         p.injury = { ...inj.injury };
+        if (!p.injuryLog) p.injuryLog = [];
+        p.injuryLog.push({
+          kind: inj.injury.kind,
+          matchdaysOut: inj.injury.matchdaysOut,
+          reInjuries: wasRushed ? 1 : 0,
+          rushed: wasRushed,
+          matchday: currentMatchday,
+        });
+
+        if (wasRushed && p.clubId === next.userClubId) {
+          const userClub = next.clubs[next.userClubId];
+          if (userClub) userClub.fanMood = clamp(userClub.fanMood - 1, 0, 100);
+          next.counters.inbox++;
+          const pName = p.knownAs ?? `${p.firstName} ${p.lastName}`;
+          next.inbox.unshift({
+            id: `inbox_${next.counters.inbox}`,
+            matchday: currentMatchday,
+            kind: 'Medical',
+            title: `Medical Setback: ${pName}`,
+            body: `${pName} suffered a breakdown after being rushed back early. The setback has sidelined him for ${inj.injury.matchdaysOut} matchdays.`,
+            read: false,
+            requiresAction: false,
+          });
+          if (!next.weekDecisionsLog) next.weekDecisionsLog = [];
+          next.weekDecisionsLog.push(
+            `Risked ${p.lastName}: suffered breakdown (${inj.injury.matchdaysOut} weeks out)`,
+          );
+        }
+      }
+    }
+
+    // Knocks recorded (§12.19.1)
+    const knockEvents = res.events.filter((e) => e.type === 'KNOCK');
+    for (const ke of knockEvents) {
+      if (ke.playerId) {
+        const kp = next.players[ke.playerId];
+        if (kp) {
+          kp.carriedKnockWeeks = 2;
+          if (kp.clubId === next.userClubId) {
+            if (!next.weekDecisionsLog) next.weekDecisionsLog = [];
+            const decLabel = ke.knock?.decision === 'take_off' ? 'taken off' : 'played on';
+            next.weekDecisionsLog.push(`${kp.lastName} carried a knock: ${decLabel}`);
+          }
+        }
       }
     }
 
@@ -441,6 +508,8 @@ export function applyMatchResults(
     if (homeRow.form.length > 5) homeRow.form.shift();
     if (awayRow.form.length > 5) awayRow.form.shift();
   }
+
+  next.matchRedCardPlayerIds = sentOffPlayerIds;
 
   next.table = sortTable(next.table, next.fixtures, next.clubs);
 
@@ -965,6 +1034,37 @@ export function runWeeklyProcessing(state: GameState): GameState {
 
       next.players[id] = devRes.player;
     }
+
+    // Decrement decision counters (§12.19, §12.20)
+    if (p.rushedBack) {
+      p.rushedBack.matchesLeft -= 1;
+      if (p.rushedBack.matchesLeft <= 0) p.rushedBack = null;
+    }
+    if (p.carriedKnockWeeks && p.carriedKnockWeeks > 0) {
+      p.carriedKnockWeeks -= 1;
+    }
+    if (p.offenceMultipliers) {
+      p.offenceMultipliers = p.offenceMultipliers
+        .map((m) => ({ ...m, weeksLeft: m.weeksLeft - 1 }))
+        .filter((m) => m.weeksLeft > 0);
+    }
+    p.warmupScare = false;
+
+    // Check for rush-back offer (§12.19.2) if 1 week from fit
+    if (
+      p.clubId === next.userClubId &&
+      p.injury &&
+      p.injury.matchdaysOut === 1 &&
+      !next.pendingRushBack
+    ) {
+      next.pendingRushBack = {
+        playerId: p.id,
+        matchday: currentMatchday,
+        originalMatchdaysOut: 1,
+        injuryKind: p.injury.kind,
+        resolved: false,
+      };
+    }
   }
 
   // 2. Club Weekly Finances & Fan Mood Drift (§12.10, §12.14)
@@ -1200,6 +1300,20 @@ export function runWeeklyProcessing(state: GameState): GameState {
     next.inbox.unshift(rumourItem);
   }
 
+  // 6. Check for weekly discipline incident (SPEC §12.20)
+  if (!next.activeIncident) {
+    const incidentRng = createRng(deriveSeed(next.seed, 'incident', `${currentMatchday}`));
+    const incident = checkForWeeklyDisciplineIncident(
+      next,
+      incidentRng,
+      next.matchRedCardPlayerIds ?? [],
+    );
+    if (incident) {
+      next.activeIncident = incident;
+    }
+  }
+  next.matchRedCardPlayerIds = [];
+
   next.phase = 'WeekSummary';
   return next;
 }
@@ -1351,6 +1465,28 @@ function checkPreMatchDerbyPress(state: GameState): void {
   }
 }
 
+function checkPreMatchWarmupScare(state: GameState): void {
+  const userClub = state.clubs[state.userClubId];
+  if (!userClub) return;
+  if (!state.pendingWarmupScare) {
+    const userStarters = userClub.tactics.lineup
+      .map((id) => (id ? state.players[id] : null))
+      .filter((p): p is Player => p != null);
+    if (userStarters.length > 0) {
+      const scareRng = createRng(deriveSeed(state.seed, 'warmup-scare', `${state.matchday}`));
+      const starter = scareRng.pick(userStarters)!;
+      const physioStars = userClub.staff?.physio.stars ?? 3;
+      if (checkWarmupScare(scareRng, starter.fatigue, physioStars)) {
+        state.pendingWarmupScare = {
+          playerId: starter.id,
+          matchday: state.matchday,
+          resolved: false,
+        };
+      }
+    }
+  }
+}
+
 export function advance(
   state: GameState,
   action?: {
@@ -1372,6 +1508,7 @@ export function advance(
       next.matchday = 1;
       next.phase = 'PreMatch';
       checkPreMatchDerbyPress(next);
+      checkPreMatchWarmupScare(next);
       return next;
     }
 
@@ -1464,6 +1601,9 @@ export function advance(
     }
 
     case 'WeekSummary': {
+      if (state.activeIncident && !state.activeIncident.resolved) {
+        throw new Error('Active discipline incident must be resolved before continuing.');
+      }
       if (state.matchday === 9) {
         const next = JSON.parse(JSON.stringify(state)) as GameState;
         next.phase = 'TransferWindow';
@@ -1493,6 +1633,7 @@ export function advance(
       next.matchday += 1;
       next.phase = 'PreMatch';
       checkPreMatchDerbyPress(next);
+      checkPreMatchWarmupScare(next);
       return next;
     }
 

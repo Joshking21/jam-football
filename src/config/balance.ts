@@ -129,11 +129,60 @@ export const BALANCE = {
       Major: 0.1,
     },
   },
+  // Injury Decisions (SPEC §12.19)
+  injuryDecisions: {
+    knockHazardMultiplier: 0.6,
+    knockPhysioBasePct: 70,
+    knockPhysioStarStep: 5, // 70 to 90
+    knockPlayOnSkillPenalty: -0.3,
+    knockPlayOnHazardMultiplier: 4.0,
+    knockTakeOffConditionDelta: -10,
+    rushCondition: 70,
+    rushHazardMultiplier: 3.0,
+    rushPhysioBase: 1.2,
+    rushPhysioStarSlope: 0.08, // (1.2 - 0.08 * stars)
+    rushSkillPenalty: -0.1,
+    rushBreakdownMultiplier: 1.5,
+    warmupScareBaseChance: 0.03,
+    warmupScareFatigueThreshold: 50,
+    warmupScareFatigueMultiplier: 2.0,
+    warmupScarePhysioDiscount: 0.7, // 4-5 stars
+    warmupScareStartHazardMultiplier: 2.5,
+    warmupScareStartSkillPenalty: -0.1,
+  },
   // Discipline (SPEC §12.6)
   discipline: {
     yellowProbability: 0.16,
     directRedProbability: 0.006,
     yellowSuspensionCount: 5,
+  },
+  // Discipline Decisions (SPEC §12.20)
+  disciplineDecisions: {
+    lateBaseChance: 0.015,
+    latePersonalityMult: {
+      Relaxed: 2.0,
+      Professional: 0.2,
+    } as Record<string, number>,
+    lateLowMoraleThreshold: 30,
+    lateLowMoraleMult: 2.0,
+    lateExtraSessionsMult: 0.5,
+    pressMouthChance: 0.3,
+    bustUpCohesionThreshold: 45,
+    bustUpChance: 0.1,
+    repeatFineWeeks: 8,
+    temperamentalTransferDemandChance: 0.3,
+    repeatOffenceMultiplier: {
+      warn: 1.5,
+      let_go: 2.0,
+    },
+    repeatOffenceDurationWeeks: 4,
+    consistencyRecordWeeks: 6,
+    consistencyCohesionPenalty: -4,
+    personalityMoraleMult: {
+      Professional: 0.5,
+      Temperamental: 1.5,
+      Leader: 0.8,
+    } as Record<string, number>,
   },
   // Finances (SPEC §12.10)
   finances: {

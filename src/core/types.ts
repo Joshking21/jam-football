@@ -159,6 +159,36 @@ export interface Player {
   consecutiveHighRatingsNotPlaying?: number;
   decisionContextBonus?: number;
   traitProgress?: Record<string, number>;
+  // SPEC §12.19 & §12.20 Injury and Discipline Decisions
+  knock?: {
+    t: number;
+    decision?: 'take_off' | 'play_on' | 'carry_to_ht';
+    pct: number;
+  } | null;
+  rushedBack?: {
+    matchesLeft: number;
+    originalMatchdaysOut: number;
+    injuryKind: string;
+  } | null;
+  carriedKnockWeeks?: number;
+  injuryLog?: {
+    kind: string;
+    matchdaysOut: number;
+    reInjuries: number;
+    rushed: boolean;
+    matchday?: number;
+  }[];
+  disciplineRecord?: {
+    matchday: number;
+    incident: string;
+    punishment: string;
+  }[];
+  offenceMultipliers?: {
+    incident: string;
+    multiplier: number;
+    weeksLeft: number;
+  }[];
+  warmupScare?: boolean;
 }
 
 // --- 8.4 Tactics ---
@@ -787,6 +817,13 @@ export interface GameState {
   scoutedThisMatchday?: PlayerId[];
   score: number; // leaderboard score, computed at season end
   counters: { news: number; inbox: number; offer: number };
+  // SPEC §12.19 & §12.20 Decisions state
+  activeIncident?: DisciplineIncident | null;
+  recentPunishments?: RecentPunishment[];
+  pendingRushBack?: RushBackOffer | null;
+  pendingWarmupScare?: WarmupScare | null;
+  knocksSetting?: 'ask' | 'always_off' | 'play_on_if_late';
+  weekDecisionsLog?: string[];
 }
 
 // --- 8.10 Press Conference Types (SPEC §12.6, §16.2) ---
@@ -891,12 +928,17 @@ export interface TeamSheet {
       shirt: number;
       foot?: Foot;
       traits?: TraitId[];
+      isRushedBack?: boolean;
+      rushPhysioFactor?: number;
+      hasWarmupScare?: boolean;
+      breakdownInjury?: { kind: string; matchdaysOut: number } | null;
     }
   >;
   trainingBonus: { attack: number; defence: number; setPieces: number }; // z-units, §12.3
   focusBoost: number; // from team talk, §12.8
   cohesion?: number; // §12.17.5
   prep?: MatchPrep; // §12.17.2
+  physioStars?: number;
 }
 
 export interface MatchInput {
@@ -907,6 +949,7 @@ export interface MatchInput {
   weather: Fixture['weather'];
   userSide: Side | null;
   aiControls: Side[]; // sides run by aiManager
+  knocksSetting?: 'ask' | 'always_off' | 'play_on_if_late';
 }
 
 export type MatchEventType =
@@ -939,6 +982,7 @@ export type MatchEventType =
   | 'YELLOW'
   | 'RED'
   | 'INJURY'
+  | 'KNOCK'
   | 'SUB'
   | 'TACTIC_CHANGE'
   | 'MATCH_PLAN_TRIGGERED'
@@ -974,6 +1018,7 @@ export interface MatchEvent {
   scoreAfter: { home: number; away: number };
   /** Extra detail for SHOUT and MATCH_PLAN_TRIGGERED events (§13.21, §13.22). */
   data?: Record<string, string | number | boolean>;
+  knock?: { pct: number; decision?: 'take_off' | 'play_on' | 'carry_to_ht' };
 }
 
 export interface TeamMatchStats {
@@ -1084,6 +1129,13 @@ export type MatchCommand =
       side: Side;
       shout: ShoutId;
       issuedAtT: number;
+    }
+  | {
+      kind: 'knock';
+      side: Side;
+      playerId: PlayerId;
+      decision: 'take_off' | 'play_on' | 'carry_to_ht';
+      issuedAtT: number;
     };
 
 // --- 8.11 Player Conversation Types (SPEC §12.9, §16.4, §12.18.7) ---
@@ -1125,4 +1177,42 @@ export interface ActiveConversation {
   type: ConversationType;
   playerId: PlayerId;
   opening: ConversationOpening;
+}
+
+// --- 8.12 Discipline & Injury Decision Types (SPEC §12.19, §12.20) ---
+export type DisciplineIncidentType = 'late_training' | 'sent_off' | 'press_mouth' | 'bust_up';
+
+export interface DisciplineIncident {
+  id: string;
+  matchday: number;
+  type: DisciplineIncidentType;
+  playerIds: PlayerId[];
+  title: string;
+  description: string;
+  resolved: boolean;
+  chosenPunishment?: string;
+  headline?: string;
+}
+
+export interface RecentPunishment {
+  playerId: PlayerId;
+  incidentType: DisciplineIncidentType;
+  punishmentLevel: number; // 1: let_go, 2: warn, 3: fine or drop
+  matchday: number;
+}
+
+export interface RushBackOffer {
+  playerId: PlayerId;
+  matchday: number;
+  originalMatchdaysOut: number;
+  injuryKind: string;
+  resolved?: boolean;
+  decision?: 'wait' | 'risk';
+}
+
+export interface WarmupScare {
+  playerId: PlayerId;
+  matchday: number;
+  resolved?: boolean;
+  decision?: 'start' | 'leave_out';
 }

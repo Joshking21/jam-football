@@ -923,6 +923,20 @@ export const SquadScreen: React.FC = () => {
                                 }}
                               />
                             </i>
+                            {Boolean((p.rushedBack?.matchesLeft ?? 0) > 0) && (
+                              <span
+                                style={{
+                                  fontSize: '10px',
+                                  color: '#C42B2B',
+                                  fontWeight: 700,
+                                  display: 'block',
+                                  lineHeight: 1,
+                                  marginTop: '2px',
+                                }}
+                              >
+                                Not fit
+                              </span>
+                            )}
                           </td>
                           <td className="s-mor" style={{ color: mor.color }}>
                             {mor.label}
@@ -1128,6 +1142,22 @@ export const SquadScreen: React.FC = () => {
                       <span style={{ color: '#1E7B3C' }}>
                         {selectedPlayer.condition >= 85 ? 'fit' : 'recovering'}
                       </span>
+                      {Boolean((selectedPlayer.rushedBack?.matchesLeft ?? 0) > 0) && (
+                        <span
+                          style={{
+                            marginLeft: '6px',
+                            backgroundColor: '#FEE2E2',
+                            color: '#991B1B',
+                            border: '1px solid #F87171',
+                            borderRadius: '3px',
+                            padding: '1px 6px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                          }}
+                        >
+                          Not fully fit
+                        </span>
+                      )}
                     </span>
                     <span style={{ color: getMoraleLabel(selectedPlayer.morale).color }}>
                       {getMoraleLabel(selectedPlayer.morale).label}
@@ -1211,6 +1241,56 @@ export const SquadScreen: React.FC = () => {
                   : trainingRating >= 6.5
                     ? 'Consistent work in training sessions. Maintaining steady physical output.'
                     : 'Looking slightly off the pace in tactical drills. Needs extra focus.'}
+              </div>
+
+              {/* Injury & Discipline Record (§12.19 & §12.20) */}
+              <div
+                style={{
+                  marginTop: '12px',
+                  borderTop: '1px solid #E5DFD3',
+                  paddingTop: '8px',
+                }}
+              >
+                <div
+                  style={{
+                    font: "700 11px/1 'Barlow Condensed', sans-serif",
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    color: '#5E574E',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Disciplinary & Injury Record
+                </div>
+                <div
+                  style={{
+                    fontSize: '12px',
+                    color: '#1B1A17',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '2px',
+                  }}
+                >
+                  <div>
+                    <b>Discipline:</b> {selectedPlayer.disciplineRecord?.yellows ?? 0} yellow ·{' '}
+                    {selectedPlayer.disciplineRecord?.reds ?? 0} red ·{' '}
+                    {selectedPlayer.disciplineRecord?.finesCount ?? 0} fine
+                    {(selectedPlayer.disciplineRecord?.finesCount ?? 0) === 1 ? '' : 's'}
+                  </div>
+                  {selectedPlayer.injuryLog && selectedPlayer.injuryLog.length > 0 ? (
+                    <div>
+                      <b>Injuries:</b>{' '}
+                      {selectedPlayer.injuryLog.slice(-3).map((inj, i) => (
+                        <span key={i} style={{ marginRight: '8px' }}>
+                          MD{inj.matchday}: {inj.type.replace(/_/g, ' ')} ({inj.weeksOut}w
+                          {inj.wasRushed ? ', rushed back' : ''})
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ color: '#7E7567' }}>No significant injury absences recorded.</div>
+                  )}
+                </div>
               </div>
 
               {/* Actions */}

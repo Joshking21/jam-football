@@ -3,6 +3,8 @@ import { describe, it, expect } from 'vitest';
 import { createNewGame } from '@/core/game/newGame';
 import { advance, validateLineup } from '@/core/game/advance';
 import { pickBestLineup } from '@/core/match/aiManager';
+import { resolveDisciplineIncident } from '@/core/people/incidents';
+import { createRng } from '@/core/rng';
 
 describe('advance (SPEC §10 Game Flow)', () => {
   it('advances from BoardMeeting to Preseason', () => {
@@ -109,6 +111,14 @@ describe('advance (SPEC §10 Game Flow)', () => {
           userClub.tactics.duties = [...best.duties];
           userClub.tactics.bench = [...best.bench];
         }
+      }
+      if (state.activeIncident && !state.activeIncident.resolved) {
+        state = resolveDisciplineIncident(
+          state,
+          state.activeIncident,
+          'warn',
+          createRng(state.matchday + 1),
+        ).nextGameState;
       }
       state = advance(state);
     }
