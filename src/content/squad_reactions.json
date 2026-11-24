@@ -1,0 +1,1643 @@
+{
+  "_note": "SPEC §14.11.2 v1.7. Written by tools/content/build_reactions.py; do not edit by hand.",
+  "groups": {
+    "PRE": ["PRE_FAV", "PRE_DOG", "PRE_EVEN"],
+    "HT_WIN": ["HT_WIN"],
+    "HT_DRAW": ["HT_DRAW"],
+    "HT_LOSE": ["HT_LOSE"],
+    "FT_WIN": ["FT_WIN"],
+    "FT_DRAW": ["FT_DRAW"],
+    "FT_LOSE": ["FT_LOSE"]
+  },
+  "families": {
+    "hard": ["Demand", "Disappoint"],
+    "lift": ["Motivate", "Praise"],
+    "calm": ["Calm", "Focus"]
+  },
+  "sets": {
+    "PRE": {
+      "hard": {
+        "positive": {
+          "summary": "Jaws set. They're ready.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "defiant",
+              "gesture": "StandUp",
+              "id": "react_pre_hard_positive",
+              "line": "Come on! You heard him!",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "SlapWall"
+            },
+            {
+              "who": "room",
+              "emotion": "defiant",
+              "gesture": "Clap"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Too much. The room's gone tight.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "ArmsFolded",
+              "id": "react_pre_hard_negative",
+              "line": "We know, gaffer. We know.",
+              "voice": "player3"
+            },
+            {
+              "who": "young",
+              "emotion": "nervous",
+              "gesture": "BounceLegs"
+            },
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "LookAway"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Half fired up, half nervous.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "defiant",
+              "gesture": "StandUp",
+              "id": "react_pre_hard_positive",
+              "line": "Come on! You heard him!",
+              "voice": "player2"
+            },
+            {
+              "who": "young",
+              "emotion": "nervous",
+              "gesture": "BounceLegs"
+            },
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "LookAway"
+            }
+          ]
+        }
+      },
+      "lift": {
+        "positive": {
+          "summary": "Buzzing. Studs drumming on the floor.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "excited",
+              "gesture": "FistPump",
+              "id": "react_pre_lift_positive",
+              "line": "Let's go, then!",
+              "voice": "player3"
+            },
+            {
+              "who": "room",
+              "emotion": "excited",
+              "gesture": "Clap"
+            },
+            {
+              "who": "young",
+              "emotion": "happy",
+              "gesture": "Nod"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Polite nods. Nobody quite buys it.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "neutral",
+              "gesture": "Nod",
+              "id": "react_pre_lift_negative",
+              "line": "Right. Yeah.",
+              "voice": "player2"
+            },
+            {
+              "who": "veteran",
+              "emotion": "wry",
+              "gesture": "Shrug"
+            },
+            {
+              "who": "young",
+              "emotion": "nervous",
+              "gesture": "TieBoots"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Half fired up, half nervous.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "excited",
+              "gesture": "FistPump",
+              "id": "react_pre_lift_positive",
+              "line": "Let's go, then!",
+              "voice": "player3"
+            },
+            {
+              "who": "veteran",
+              "emotion": "wry",
+              "gesture": "Shrug"
+            },
+            {
+              "who": "young",
+              "emotion": "nervous",
+              "gesture": "TieBoots"
+            }
+          ]
+        }
+      },
+      "calm": {
+        "positive": {
+          "summary": "Settled. Quiet, but switched on.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "warm",
+              "gesture": "Nod",
+              "id": "react_pre_calm_positive",
+              "line": "Simple. We can do that.",
+              "voice": "player2"
+            },
+            {
+              "who": "keeper",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            },
+            {
+              "who": "young",
+              "emotion": "warm",
+              "gesture": "Sigh"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Too flat. Somebody yawns.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "worried",
+              "gesture": "StandUp",
+              "id": "react_pre_calm_negative",
+              "line": "Lads, wake up. Come on.",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "veteran",
+              "emotion": "neutral",
+              "gesture": "LookAway"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Half fired up, half nervous.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "warm",
+              "gesture": "Nod",
+              "id": "react_pre_calm_positive",
+              "line": "Simple. We can do that.",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "veteran",
+              "emotion": "neutral",
+              "gesture": "LookAway"
+            }
+          ]
+        }
+      },
+      "any": {
+        "neutral": {
+          "summary": "They listen. Nods. Studs on the floor.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            },
+            {
+              "who": "young",
+              "emotion": "nervous",
+              "gesture": "TieBoots"
+            }
+          ]
+        }
+      }
+    },
+    "HT_WIN": {
+      "hard": {
+        "positive": {
+          "summary": "Nobody's relaxing now.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "defiant",
+              "gesture": "StandUp",
+              "id": "react_ht_win_hard_positive",
+              "line": "He's right. It's not done.",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "Nod"
+            },
+            {
+              "who": "keeper",
+              "emotion": "defiant",
+              "gesture": "Clap"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "They think they've done nothing wrong.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "ShakeHead",
+              "id": "react_ht_win_hard_negative",
+              "line": "We're winning, gaffer!",
+              "voice": "player3"
+            },
+            {
+              "who": "veteran",
+              "emotion": "wry",
+              "gesture": "LookAway"
+            },
+            {
+              "who": "young",
+              "emotion": "hurt",
+              "gesture": "HeadDown"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some fired up, some sulking.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "defiant",
+              "gesture": "StandUp",
+              "id": "react_ht_win_hard_positive",
+              "line": "He's right. It's not done.",
+              "voice": "player2"
+            },
+            {
+              "who": "veteran",
+              "emotion": "wry",
+              "gesture": "LookAway"
+            },
+            {
+              "who": "young",
+              "emotion": "hurt",
+              "gesture": "HeadDown"
+            }
+          ]
+        }
+      },
+      "lift": {
+        "positive": {
+          "summary": "Grins. They want another.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "excited",
+              "gesture": "FistPump",
+              "id": "react_ht_win_lift_positive",
+              "line": "Another one. Come on!",
+              "voice": "player3"
+            },
+            {
+              "who": "room",
+              "emotion": "happy",
+              "gesture": "Clap"
+            },
+            {
+              "who": "captain",
+              "emotion": "happy",
+              "gesture": "HugNeighbour"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Too pleased with themselves.",
+          "beats": [
+            {
+              "who": "veteran",
+              "emotion": "worried",
+              "gesture": "ShakeHead",
+              "id": "react_ht_win_lift_negative",
+              "line": "Careful. It's not over.",
+              "voice": "player2"
+            },
+            {
+              "who": "young",
+              "emotion": "amused",
+              "gesture": "Laugh"
+            },
+            {
+              "who": "hothead",
+              "emotion": "happy",
+              "gesture": "Laugh"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some fired up, some sulking.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "excited",
+              "gesture": "FistPump",
+              "id": "react_ht_win_lift_positive",
+              "line": "Another one. Come on!",
+              "voice": "player3"
+            },
+            {
+              "who": "young",
+              "emotion": "amused",
+              "gesture": "Laugh"
+            },
+            {
+              "who": "hothead",
+              "emotion": "happy",
+              "gesture": "Laugh"
+            }
+          ]
+        }
+      },
+      "calm": {
+        "positive": {
+          "summary": "Calm and sure. Same again.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "warm",
+              "gesture": "Nod",
+              "id": "react_ht_win_calm_positive",
+              "line": "Same again, lads.",
+              "voice": "player2"
+            },
+            {
+              "who": "keeper",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            },
+            {
+              "who": "young",
+              "emotion": "warm",
+              "gesture": "Nod"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Comfortable. Too comfortable.",
+          "beats": [
+            {
+              "who": "veteran",
+              "emotion": "wry",
+              "gesture": "Shrug",
+              "id": "react_ht_win_calm_negative",
+              "line": "Easy, this.",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "young",
+              "emotion": "neutral",
+              "gesture": "LookAway"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some fired up, some sulking.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "warm",
+              "gesture": "Nod",
+              "id": "react_ht_win_calm_positive",
+              "line": "Same again, lads.",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "young",
+              "emotion": "neutral",
+              "gesture": "LookAway"
+            }
+          ]
+        }
+      },
+      "any": {
+        "neutral": {
+          "summary": "Water bottles, nods, a few words.",
+          "beats": [
+            {
+              "who": "room",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            },
+            {
+              "who": "keeper",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            }
+          ]
+        }
+      }
+    },
+    "HT_DRAW": {
+      "hard": {
+        "positive": {
+          "summary": "Stung. They're up and talking.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "angry",
+              "gesture": "SlapWall",
+              "id": "react_ht_draw_hard_positive",
+              "line": "Come on! We're better than this!",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "defiant",
+              "gesture": "StandUp"
+            },
+            {
+              "who": "young",
+              "emotion": "nervous",
+              "gesture": "Nod"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Shoulders drop. One answers back.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "KickBottle",
+              "id": "react_ht_draw_hard_negative",
+              "line": "What do you want from us?",
+              "voice": "player3"
+            },
+            {
+              "who": "young",
+              "emotion": "hurt",
+              "gesture": "HeadDown"
+            },
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "LookAway"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some fired up, some sulking.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "angry",
+              "gesture": "SlapWall",
+              "id": "react_ht_draw_hard_positive",
+              "line": "Come on! We're better than this!",
+              "voice": "player2"
+            },
+            {
+              "who": "young",
+              "emotion": "hurt",
+              "gesture": "HeadDown"
+            },
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "LookAway"
+            }
+          ]
+        }
+      },
+      "lift": {
+        "positive": {
+          "summary": "Belief. They can win this.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "excited",
+              "gesture": "Clap",
+              "id": "react_ht_draw_lift_positive",
+              "line": "Let's go and win it!",
+              "voice": "player2"
+            },
+            {
+              "who": "room",
+              "emotion": "defiant",
+              "gesture": "Clap"
+            },
+            {
+              "who": "young",
+              "emotion": "happy",
+              "gesture": "Nod"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Nobody's sure what's changed.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "neutral",
+              "gesture": "Nod",
+              "id": "react_ht_draw_lift_negative",
+              "line": "Okay. Okay.",
+              "voice": "player2"
+            },
+            {
+              "who": "veteran",
+              "emotion": "wry",
+              "gesture": "Shrug"
+            },
+            {
+              "who": "hothead",
+              "emotion": "neutral",
+              "gesture": "LookAway"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some fired up, some sulking.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "excited",
+              "gesture": "Clap",
+              "id": "react_ht_draw_lift_positive",
+              "line": "Let's go and win it!",
+              "voice": "player2"
+            },
+            {
+              "who": "veteran",
+              "emotion": "wry",
+              "gesture": "Shrug"
+            },
+            {
+              "who": "hothead",
+              "emotion": "neutral",
+              "gesture": "LookAway"
+            }
+          ]
+        }
+      },
+      "calm": {
+        "positive": {
+          "summary": "Clear heads. They know the job.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "warm",
+              "gesture": "Nod",
+              "id": "react_ht_draw_calm_positive",
+              "line": "We're fine. Keep going.",
+              "voice": "player2"
+            },
+            {
+              "who": "keeper",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            },
+            {
+              "who": "young",
+              "emotion": "warm",
+              "gesture": "Sigh"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Too calm. Nobody's angry about it.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "ShakeHead",
+              "id": "react_ht_draw_calm_negative",
+              "line": "That's it? That's the talk?",
+              "voice": "player3"
+            },
+            {
+              "who": "veteran",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "young",
+              "emotion": "nervous",
+              "gesture": "BounceLegs"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some fired up, some sulking.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "warm",
+              "gesture": "Nod",
+              "id": "react_ht_draw_calm_positive",
+              "line": "We're fine. Keep going.",
+              "voice": "player2"
+            },
+            {
+              "who": "veteran",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "young",
+              "emotion": "nervous",
+              "gesture": "BounceLegs"
+            }
+          ]
+        }
+      },
+      "any": {
+        "neutral": {
+          "summary": "Quiet. Bottles passed round.",
+          "beats": [
+            {
+              "who": "room",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            },
+            {
+              "who": "hothead",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            }
+          ]
+        }
+      }
+    },
+    "HT_LOSE": {
+      "hard": {
+        "positive": {
+          "summary": "Fury. The good kind.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "angry",
+              "gesture": "StandUp",
+              "id": "react_ht_lose_hard_positive",
+              "line": "He's right! Look at us!",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "SlapWall"
+            },
+            {
+              "who": "room",
+              "emotion": "defiant",
+              "gesture": "Clap"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Some fire back. Some shrink.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "ThrowTowel",
+              "id": "react_ht_lose_hard_negative",
+              "line": "We're trying, gaffer!",
+              "voice": "player3"
+            },
+            {
+              "who": "young",
+              "emotion": "hurt",
+              "gesture": "TowelOverHead"
+            },
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "LookAway"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some fired up, some sulking.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "angry",
+              "gesture": "StandUp",
+              "id": "react_ht_lose_hard_positive",
+              "line": "He's right! Look at us!",
+              "voice": "player2"
+            },
+            {
+              "who": "young",
+              "emotion": "hurt",
+              "gesture": "TowelOverHead"
+            },
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "LookAway"
+            }
+          ]
+        }
+      },
+      "lift": {
+        "positive": {
+          "summary": "Chins up. They believe again.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "defiant",
+              "gesture": "TapChest",
+              "id": "react_ht_lose_lift_positive",
+              "line": "One goal. We've got this.",
+              "voice": "player2"
+            },
+            {
+              "who": "room",
+              "emotion": "defiant",
+              "gesture": "Clap"
+            },
+            {
+              "who": "young",
+              "emotion": "warm",
+              "gesture": "Nod"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Nobody buys it. They're losing.",
+          "beats": [
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "ShakeHead",
+              "id": "react_ht_lose_lift_negative",
+              "line": "Played well? We're losing.",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "LookAway"
+            },
+            {
+              "who": "young",
+              "emotion": "sad",
+              "gesture": "HeadDown"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some fired up, some sulking.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "defiant",
+              "gesture": "TapChest",
+              "id": "react_ht_lose_lift_positive",
+              "line": "One goal. We've got this.",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "LookAway"
+            },
+            {
+              "who": "young",
+              "emotion": "sad",
+              "gesture": "HeadDown"
+            }
+          ]
+        }
+      },
+      "calm": {
+        "positive": {
+          "summary": "Breathing again. Heads clear.",
+          "beats": [
+            {
+              "who": "keeper",
+              "emotion": "warm",
+              "gesture": "Nod",
+              "id": "react_ht_lose_calm_positive",
+              "line": "Okay. Nobody panic.",
+              "voice": "player2"
+            },
+            {
+              "who": "captain",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            },
+            {
+              "who": "young",
+              "emotion": "warm",
+              "gesture": "Sigh"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "They wanted fire. They got a cuddle.",
+          "beats": [
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "ArmsFolded",
+              "id": "react_ht_lose_calm_negative",
+              "line": "That's all, is it?",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "ShakeHead"
+            },
+            {
+              "who": "captain",
+              "emotion": "worried",
+              "gesture": "HandsOnHead"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some fired up, some sulking.",
+          "beats": [
+            {
+              "who": "keeper",
+              "emotion": "warm",
+              "gesture": "Nod",
+              "id": "react_ht_lose_calm_positive",
+              "line": "Okay. Nobody panic.",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "ShakeHead"
+            },
+            {
+              "who": "captain",
+              "emotion": "worried",
+              "gesture": "HandsOnHead"
+            }
+          ]
+        }
+      },
+      "any": {
+        "neutral": {
+          "summary": "Silence. Long stares at the floor.",
+          "beats": [
+            {
+              "who": "room",
+              "emotion": "sad",
+              "gesture": "HeadDown"
+            },
+            {
+              "who": "captain",
+              "emotion": "worried",
+              "gesture": "HandsOnHead"
+            }
+          ]
+        }
+      }
+    },
+    "FT_WIN": {
+      "hard": {
+        "positive": {
+          "summary": "Nobody's celebrating. Good.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "neutral",
+              "gesture": "Nod",
+              "id": "react_ft_win_hard_positive",
+              "line": "Fair. We were sloppy.",
+              "voice": "player2"
+            },
+            {
+              "who": "veteran",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            },
+            {
+              "who": "young",
+              "emotion": "worried",
+              "gesture": "HeadDown"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "They won. They wanted a smile.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "KickBottle",
+              "id": "react_ft_win_hard_negative",
+              "line": "We just won, gaffer!",
+              "voice": "player3"
+            },
+            {
+              "who": "young",
+              "emotion": "hurt",
+              "gesture": "LookAway"
+            },
+            {
+              "who": "veteran",
+              "emotion": "wry",
+              "gesture": "Shrug"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some nod. Some won't look at you.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "neutral",
+              "gesture": "Nod",
+              "id": "react_ft_win_hard_positive",
+              "line": "Fair. We were sloppy.",
+              "voice": "player2"
+            },
+            {
+              "who": "young",
+              "emotion": "hurt",
+              "gesture": "LookAway"
+            },
+            {
+              "who": "veteran",
+              "emotion": "wry",
+              "gesture": "Shrug"
+            }
+          ]
+        }
+      },
+      "lift": {
+        "positive": {
+          "summary": "Music on. Somebody's dancing.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "excited",
+              "gesture": "FistPump",
+              "id": "react_ft_win_lift_positive",
+              "line": "Get in! Get in!",
+              "voice": "player3"
+            },
+            {
+              "who": "room",
+              "emotion": "happy",
+              "gesture": "HugNeighbour"
+            },
+            {
+              "who": "young",
+              "emotion": "happy",
+              "gesture": "Laugh"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Some think it was a bit lucky.",
+          "beats": [
+            {
+              "who": "veteran",
+              "emotion": "wry",
+              "gesture": "Shrug",
+              "id": "react_ft_win_lift_negative",
+              "line": "It wasn't that good, gaffer.",
+              "voice": "player2"
+            },
+            {
+              "who": "captain",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            },
+            {
+              "who": "young",
+              "emotion": "happy",
+              "gesture": "Laugh"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some nod. Some won't look at you.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "excited",
+              "gesture": "FistPump",
+              "id": "react_ft_win_lift_positive",
+              "line": "Get in! Get in!",
+              "voice": "player3"
+            },
+            {
+              "who": "captain",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            },
+            {
+              "who": "young",
+              "emotion": "happy",
+              "gesture": "Laugh"
+            }
+          ]
+        }
+      },
+      "calm": {
+        "positive": {
+          "summary": "Happy, tired, quiet.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "warm",
+              "gesture": "Clap",
+              "id": "react_ft_win_calm_positive",
+              "line": "Good shift, lads.",
+              "voice": "player2"
+            },
+            {
+              "who": "keeper",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "young",
+              "emotion": "happy",
+              "gesture": "Nod"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Flat, for a win.",
+          "beats": [
+            {
+              "who": "young",
+              "emotion": "neutral",
+              "gesture": "Shrug",
+              "id": "react_ft_win_calm_negative",
+              "line": "Is that it?",
+              "voice": "player1"
+            },
+            {
+              "who": "room",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "hothead",
+              "emotion": "neutral",
+              "gesture": "LookAway"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some nod. Some won't look at you.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "warm",
+              "gesture": "Clap",
+              "id": "react_ft_win_calm_positive",
+              "line": "Good shift, lads.",
+              "voice": "player2"
+            },
+            {
+              "who": "room",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "hothead",
+              "emotion": "neutral",
+              "gesture": "LookAway"
+            }
+          ]
+        }
+      },
+      "any": {
+        "neutral": {
+          "summary": "Boots off. Small smiles.",
+          "beats": [
+            {
+              "who": "room",
+              "emotion": "warm",
+              "gesture": "Nod"
+            },
+            {
+              "who": "young",
+              "emotion": "happy",
+              "gesture": "Laugh"
+            }
+          ]
+        }
+      }
+    },
+    "FT_DRAW": {
+      "hard": {
+        "positive": {
+          "summary": "They know it. Two points dropped.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "angry",
+              "gesture": "SlapWall",
+              "id": "react_ft_draw_hard_positive",
+              "line": "He's right. Should've won that.",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "defiant",
+              "gesture": "Nod"
+            },
+            {
+              "who": "young",
+              "emotion": "worried",
+              "gesture": "HeadDown"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "They think a point was fair.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "ShakeHead",
+              "id": "react_ft_draw_hard_negative",
+              "line": "A point's not nothing, gaffer.",
+              "voice": "player3"
+            },
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "ArmsFolded"
+            },
+            {
+              "who": "young",
+              "emotion": "hurt",
+              "gesture": "HeadDown"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some nod. Some won't look at you.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "angry",
+              "gesture": "SlapWall",
+              "id": "react_ft_draw_hard_positive",
+              "line": "He's right. Should've won that.",
+              "voice": "player2"
+            },
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "ArmsFolded"
+            },
+            {
+              "who": "young",
+              "emotion": "hurt",
+              "gesture": "HeadDown"
+            }
+          ]
+        }
+      },
+      "lift": {
+        "positive": {
+          "summary": "Gutted, but up for next week.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "defiant",
+              "gesture": "TapChest",
+              "id": "react_ft_draw_lift_positive",
+              "line": "Next week. We win it.",
+              "voice": "player2"
+            },
+            {
+              "who": "room",
+              "emotion": "defiant",
+              "gesture": "Clap"
+            },
+            {
+              "who": "young",
+              "emotion": "warm",
+              "gesture": "Nod"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "A draw's a draw. Nobody's lifted.",
+          "beats": [
+            {
+              "who": "veteran",
+              "emotion": "tired",
+              "gesture": "Sigh",
+              "id": "react_ft_draw_lift_negative",
+              "line": "It's a draw, gaffer.",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "neutral",
+              "gesture": "LookAway"
+            },
+            {
+              "who": "captain",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some nod. Some won't look at you.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "defiant",
+              "gesture": "TapChest",
+              "id": "react_ft_draw_lift_positive",
+              "line": "Next week. We win it.",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "neutral",
+              "gesture": "LookAway"
+            },
+            {
+              "who": "captain",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            }
+          ]
+        }
+      },
+      "calm": {
+        "positive": {
+          "summary": "Tired. Fair enough.",
+          "beats": [
+            {
+              "who": "keeper",
+              "emotion": "warm",
+              "gesture": "Nod",
+              "id": "react_ft_draw_calm_positive",
+              "line": "Point's a point.",
+              "voice": "player2"
+            },
+            {
+              "who": "room",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "captain",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Too relaxed about it.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "ShakeHead",
+              "id": "react_ft_draw_calm_negative",
+              "line": "We should be fuming.",
+              "voice": "player3"
+            },
+            {
+              "who": "veteran",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "young",
+              "emotion": "neutral",
+              "gesture": "LookAway"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some nod. Some won't look at you.",
+          "beats": [
+            {
+              "who": "keeper",
+              "emotion": "warm",
+              "gesture": "Nod",
+              "id": "react_ft_draw_calm_positive",
+              "line": "Point's a point.",
+              "voice": "player2"
+            },
+            {
+              "who": "veteran",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "young",
+              "emotion": "neutral",
+              "gesture": "LookAway"
+            }
+          ]
+        }
+      },
+      "any": {
+        "neutral": {
+          "summary": "Ice packs. Not much said.",
+          "beats": [
+            {
+              "who": "room",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "keeper",
+              "emotion": "neutral",
+              "gesture": "Nod"
+            }
+          ]
+        }
+      }
+    },
+    "FT_LOSE": {
+      "hard": {
+        "positive": {
+          "summary": "Silent. Taking it. They'll answer it.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "hurt",
+              "gesture": "Nod",
+              "id": "react_ft_lose_hard_positive",
+              "line": "We deserved that.",
+              "voice": "player2"
+            },
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "KickBottle"
+            },
+            {
+              "who": "young",
+              "emotion": "sad",
+              "gesture": "TowelOverHead"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "The room turns on itself.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "StandUp",
+              "id": "react_ft_lose_hard_negative",
+              "line": "Don't put it all on us!",
+              "voice": "player3"
+            },
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "ArmsFolded"
+            },
+            {
+              "who": "young",
+              "emotion": "sad",
+              "gesture": "TowelOverHead"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some nod. Some won't look at you.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "hurt",
+              "gesture": "Nod",
+              "id": "react_ft_lose_hard_positive",
+              "line": "We deserved that.",
+              "voice": "player2"
+            },
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "ArmsFolded"
+            },
+            {
+              "who": "young",
+              "emotion": "sad",
+              "gesture": "TowelOverHead"
+            }
+          ]
+        }
+      },
+      "lift": {
+        "positive": {
+          "summary": "Heads come up, slowly.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "defiant",
+              "gesture": "StandUp",
+              "id": "react_ft_lose_lift_positive",
+              "line": "Next week. Remember this.",
+              "voice": "player2"
+            },
+            {
+              "who": "room",
+              "emotion": "defiant",
+              "gesture": "Clap"
+            },
+            {
+              "who": "young",
+              "emotion": "sad",
+              "gesture": "Nod"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "Praise, after that? Nobody looks up.",
+          "beats": [
+            {
+              "who": "veteran",
+              "emotion": "cold",
+              "gesture": "LookAway",
+              "id": "react_ft_lose_lift_negative",
+              "line": "Don't. We were rubbish.",
+              "voice": "player2"
+            },
+            {
+              "who": "young",
+              "emotion": "sad",
+              "gesture": "HeadDown"
+            },
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "ShakeHead"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some nod. Some won't look at you.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "defiant",
+              "gesture": "StandUp",
+              "id": "react_ft_lose_lift_positive",
+              "line": "Next week. Remember this.",
+              "voice": "player2"
+            },
+            {
+              "who": "young",
+              "emotion": "sad",
+              "gesture": "HeadDown"
+            },
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "ShakeHead"
+            }
+          ]
+        }
+      },
+      "calm": {
+        "positive": {
+          "summary": "Hurting, but steady.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "sad",
+              "gesture": "Nod",
+              "id": "react_ft_lose_calm_positive",
+              "line": "Yeah. We go again.",
+              "voice": "player2"
+            },
+            {
+              "who": "keeper",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            },
+            {
+              "who": "young",
+              "emotion": "sad",
+              "gesture": "HeadDown"
+            }
+          ]
+        },
+        "negative": {
+          "summary": "They wanted somebody to be angry.",
+          "beats": [
+            {
+              "who": "hothead",
+              "emotion": "angry",
+              "gesture": "ThrowTowel",
+              "id": "react_ft_lose_calm_negative",
+              "line": "That's it? Nothing?",
+              "voice": "player3"
+            },
+            {
+              "who": "captain",
+              "emotion": "worried",
+              "gesture": "HandsOnHead"
+            },
+            {
+              "who": "veteran",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            }
+          ]
+        },
+        "mixed": {
+          "summary": "Split. Some nod. Some won't look at you.",
+          "beats": [
+            {
+              "who": "captain",
+              "emotion": "sad",
+              "gesture": "Nod",
+              "id": "react_ft_lose_calm_positive",
+              "line": "Yeah. We go again.",
+              "voice": "player2"
+            },
+            {
+              "who": "captain",
+              "emotion": "worried",
+              "gesture": "HandsOnHead"
+            },
+            {
+              "who": "veteran",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            }
+          ]
+        }
+      },
+      "any": {
+        "neutral": {
+          "summary": "Nobody speaks. Boots come off slowly.",
+          "beats": [
+            {
+              "who": "room",
+              "emotion": "sad",
+              "gesture": "HeadDown"
+            },
+            {
+              "who": "captain",
+              "emotion": "tired",
+              "gesture": "Sigh"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

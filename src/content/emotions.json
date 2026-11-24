@@ -1,0 +1,127 @@
+{
+  "_note": "SPEC §16.11. Every voiced line carries an `emotion`. It picks the painted face (one of the 5 §14.11.5 moods, with a strength), the speaker's default gesture, and the voice delivery when the line is generated (tools/eleven/vo.py). Written by Claude; edit here, not in code.",
+  "emotions": {
+    "neutral": {
+      "face": "neutral",
+      "strength": 0.0,
+      "gesture": null,
+      "voice": { "stability": 0.5, "style": 0.2 }
+    },
+    "warm": {
+      "face": "happy",
+      "strength": 0.4,
+      "gesture": "Nod",
+      "voice": { "stability": 0.55, "style": 0.3 }
+    },
+    "happy": {
+      "face": "happy",
+      "strength": 0.8,
+      "gesture": "Clap",
+      "voice": { "stability": 0.4, "style": 0.45 }
+    },
+    "proud": {
+      "face": "happy",
+      "strength": 0.6,
+      "gesture": "TapChest",
+      "voice": { "stability": 0.45, "style": 0.45 }
+    },
+    "excited": {
+      "face": "happy",
+      "strength": 1.0,
+      "gesture": "FistPump",
+      "voice": { "stability": 0.25, "style": 0.7 }
+    },
+    "amused": {
+      "face": "happy",
+      "strength": 0.5,
+      "gesture": "Laugh",
+      "voice": { "stability": 0.4, "style": 0.5 }
+    },
+    "wry": {
+      "face": "neutral",
+      "strength": 0.3,
+      "gesture": "Shrug",
+      "voice": { "stability": 0.5, "style": 0.4 }
+    },
+    "angry": {
+      "face": "angry",
+      "strength": 1.0,
+      "gesture": "Shout",
+      "voice": { "stability": 0.3, "style": 0.65 }
+    },
+    "defiant": {
+      "face": "angry",
+      "strength": 0.5,
+      "gesture": "TapChest",
+      "voice": { "stability": 0.35, "style": 0.55 }
+    },
+    "cold": {
+      "face": "neutral",
+      "strength": 0.0,
+      "gesture": "ArmsFolded",
+      "voice": { "stability": 0.75, "style": 0.1 }
+    },
+    "hurt": {
+      "face": "worried",
+      "strength": 0.7,
+      "gesture": "LookAway",
+      "voice": { "stability": 0.45, "style": 0.4 }
+    },
+    "sad": {
+      "face": "worried",
+      "strength": 0.9,
+      "gesture": "HeadDown",
+      "voice": { "stability": 0.6, "style": 0.3 }
+    },
+    "nervous": {
+      "face": "worried",
+      "strength": 0.5,
+      "gesture": "BounceLegs",
+      "voice": { "stability": 0.3, "style": 0.35 }
+    },
+    "worried": {
+      "face": "worried",
+      "strength": 0.8,
+      "gesture": "HandsOnHead",
+      "voice": { "stability": 0.45, "style": 0.35 }
+    },
+    "tired": {
+      "face": "neutral",
+      "strength": 0.2,
+      "gesture": "Sigh",
+      "voice": { "stability": 0.65, "style": 0.15 }
+    },
+    "shocked": {
+      "face": "shocked",
+      "strength": 1.0,
+      "gesture": "HandsOnHead",
+      "voice": { "stability": 0.3, "style": 0.6 }
+    }
+  },
+  "gestures": {
+    "_note": "Clip names for the shared rig (§18.3). `procedural` gestures are head/neck/spine bone offsets in code (no clip needed). `fallback` is played when the clip is missing. `sit` gestures have a seated version named Sit{Name}.",
+    "Nod": { "procedural": true, "sit": true },
+    "ShakeHead": { "procedural": true, "sit": true },
+    "HeadDown": { "procedural": true, "sit": true },
+    "LookAway": { "procedural": true, "sit": true },
+    "Sigh": { "procedural": true, "sit": true },
+    "Shrug": { "fallback": "Idle", "sit": true },
+    "Clap": { "fallback": "Idle", "sit": true },
+    "FistPump": { "fallback": "Celebrate" },
+    "TapChest": { "fallback": "Idle" },
+    "Laugh": { "fallback": "Idle", "sit": true },
+    "Shout": { "fallback": "Point" },
+    "Point": { "fallback": "Idle" },
+    "ArmsFolded": { "fallback": "Idle", "sit": true },
+    "HandsOnHead": { "fallback": "Dejected", "sit": true },
+    "BounceLegs": { "procedural": true, "sit": true },
+    "StandUp": { "fallback": "Idle" },
+    "SlapWall": { "fallback": "Point" },
+    "KickBottle": { "fallback": "Pass" },
+    "ThrowTowel": { "fallback": "Throw" },
+    "TowelOverHead": { "fallback": "Dejected", "sit": true },
+    "HugNeighbour": { "fallback": "Celebrate", "sit": true },
+    "TieBoots": { "fallback": "Idle", "sit": true },
+    "Listen": { "fallback": "Idle", "sit": true }
+  }
+}
