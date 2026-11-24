@@ -1,8 +1,11 @@
 // Implements SPEC §11.17 Half-Time Screen & docs/design/fulltime/ (approved 23 Nov)
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Club, TeamMatchStats, MatchEvent, Player, PlayerId, Fixture } from '../../../core/types';
 import { OutOfTownScore } from './AssistantDrawer';
 import { TalkTone } from '@/core/player/talks';
+import { adviseHalfTime, AdviceAction } from '@/core/people/assistant';
+import { createRng } from '@/core/rng';
+import { buildTeamSheet } from '@/core/game/advance';
 
 interface HalfTimeModalProps {
   isOpen: boolean;
@@ -20,6 +23,7 @@ interface HalfTimeModalProps {
   onSecondHalf: (talkTone?: TalkTone) => void;
   onOpenSubs: () => void;
   onOpenTactics: () => void;
+  onApplyAdvice?: (action: AdviceAction) => void;
 }
 
 export const HalfTimeModal: React.FC<HalfTimeModalProps> = ({
@@ -38,7 +42,9 @@ export const HalfTimeModal: React.FC<HalfTimeModalProps> = ({
   onSecondHalf,
   onOpenSubs,
   onOpenTactics,
+  onApplyAdvice,
 }) => {
+  const [appliedIds, setAppliedIds] = useState<Record<string, boolean>>({});
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -83,6 +89,61 @@ export const HalfTimeModal: React.FC<HalfTimeModalProps> = ({
   const totalPoss = (homeStats.possessionSec || 1) + (awayStats.possessionSec || 1);
   const homePoss = Math.round(((homeStats.possessionSec || 1) / totalPoss) * 100);
   const awayPoss = 100 - homePoss;
+
+  // §15.5 Half-time assistant analysis
+  const userClub = isUserHome ? homeClub : awayClub;
+  const oppClub = isUserHome ? awayClub : homeClub;
+  const htAdvices = players
+    ? adviseHalfTime(
+        {
+          kind: 'halfTime',
+          ourSide: isUserHome ? 'home' : 'away',
+          homeStats: {
+            goals: homeStats.goals,
+            shots: homeStats.shots,
+            shotsOnTarget: homeStats.shotsOnTarget,
+            xg: homeStats.xg,
+            possessionSec: homeStats.possessionSec ?? 1350,
+            passes: homeStats.passes,
+            passesCompleted: homeStats.passesCompleted,
+            corners: homeStats.corners,
+            fouls: homeStats.fouls,
+            yellow: homeStats.yellow,
+            red: homeStats.red,
+            offsides: homeStats.offsides,
+            tackles: 0,
+            interceptions: 0,
+            saves: 0,
+            bigChances: 0,
+          },
+          awayStats: {
+            goals: awayStats.goals,
+            shots: awayStats.shots,
+            shotsOnTarget: awayStats.shotsOnTarget,
+            xg: awayStats.xg,
+            possessionSec: awayStats.possessionSec ?? 1350,
+            passes: awayStats.passes,
+            passesCompleted: awayStats.passesCompleted,
+            corners: awayStats.corners,
+            fouls: awayStats.fouls,
+            yellow: awayStats.yellow,
+            red: awayStats.red,
+            offsides: awayStats.offsides,
+            tackles: 0,
+            interceptions: 0,
+            saves: 0,
+            bigChances: 0,
+          },
+          events: htEvents,
+          ourLineup: userClub.tactics.lineup,
+          ourBench: userClub.tactics.bench,
+          ourRatings: {},
+          oppSheet: buildTeamSheet(oppClub, players, isUserHome ? 'away' : 'home'),
+          players,
+        },
+        createRng((fixture?.matchday ?? 1) * 100 + 45),
+      )
+    : [];
 
   // 5 stats rows per reference
   const statsRows = [
@@ -812,6 +873,74 @@ export const HalfTimeModal: React.FC<HalfTimeModalProps> = ({
             </div>
           </div>
         </div>
+
+        {/* §15.5 Assistant Half-Time Briefing */}
+        {htAdvices.length > 0 && (
+          <div
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: 6,
+              padding: '12px 16px',
+              marginBottom: 14,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: 'Barlow Condensed',
+                fontWeight: 700,
+                fontSize: 12,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: '#F4B41A',
+              }}
+            >
+              Theo Vance · Half-Time Notes
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {htAdvices.map((adv) => (
+                <div
+                  key={adv.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    fontSize: 13,
+                    color: '#E9ECEF',
+                  }}
+                >
+                  <span>&bull; {adv.text}</span>
+                  {adv.apply && onApplyAdvice && (
+                    <button
+                      disabled={Boolean(appliedIds[adv.id])}
+                      onClick={() => {
+                        onApplyAdvice(adv.apply!);
+                        setAppliedIds((prev) => ({ ...prev, [adv.id]: true }));
+                      }}
+                      style={{
+                        background: appliedIds[adv.id] ? 'rgba(34, 197, 94, 0.25)' : '#2563EB',
+                        color: appliedIds[adv.id] ? '#4ADE80' : '#FFF',
+                        border: 'none',
+                        borderRadius: 4,
+                        padding: '4px 10px',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        cursor: appliedIds[adv.id] ? 'default' : 'pointer',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {appliedIds[adv.id] ? 'Applied' : 'Apply'}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Foot Actions */}
         <div

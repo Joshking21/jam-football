@@ -33,6 +33,8 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { ClubId } from '../../core/types';
+import { adviseWeek } from '../../core/people/assistant';
+import { createRng, deriveSeed } from '../../core/rng';
 
 export const HubScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
@@ -42,6 +44,7 @@ export const HubScreen: React.FC = () => {
   const openConversationModal = useStore((state) => state.openConversationModal);
   const resolveDisciplineDecision = useStore((state) => state.resolveDisciplineDecision);
   const resolveRushBackOffer = useStore((state) => state.resolveRushBackOffer);
+  const applyAdviceAction = useStore((state) => state.applyAdviceAction);
 
   const [showOpponentReport, setShowOpponentReport] = useState(false);
   const [tipApplied, setTipApplied] = useState(false);
@@ -100,13 +103,16 @@ export const HubScreen: React.FC = () => {
       <Sun size={16} />
     );
 
-  // Theo's advice line based on opponent passing style
-  const theoLine =
-    oppClub.style?.passing === 'Direct'
-      ? 'They go long early. Win the second balls and we’ll have the ball for most of the afternoon.'
-      : oppClub.style?.passing === 'Short'
-        ? 'They build slowly from the back. Press their centre-backs and they’ll give it away in good areas.'
-        : 'They mix it up. Keep our shape for the first twenty minutes and let them show us what they want.';
+  // Theo's weekly tip per SPEC §15.3
+  const weekTip = adviseWeek(
+    {
+      kind: 'week',
+      userClub,
+      players: gameState.players,
+      matchday: gameState.matchday,
+    },
+    createRng(deriveSeed(gameState.seed, 'week-tip', gameState.matchday)),
+  )[0];
 
   // Newspaper story headline & text
   const newsHeadline =
@@ -134,15 +140,10 @@ export const HubScreen: React.FC = () => {
   ];
 
   const handleApplyTip = () => {
+    if (!weekTip?.apply) return;
     setTipApplied(true);
-    updateUserTactics({
-      instructions: {
-        ...userClub.tactics.instructions,
-        pressing: 'Mid',
-        line: 'Normal',
-      },
-    });
-    showToast('Applied assistant advice for upcoming fixture', 'success');
+    applyAdviceAction(weekTip.apply);
+    showToast('Applied assistant advice for this week', 'success');
   };
 
   return (
@@ -314,7 +315,8 @@ export const HubScreen: React.FC = () => {
                 <Award size={22} />
               </div>
               <div className="theo-quote">
-                <span className="theo-quote-who">Theo Vance · Assistant Manager</span>"{theoLine}"
+                <span className="theo-quote-who">Theo Vance · Assistant Manager</span>"
+                {weekTip?.text ?? 'Training was sharp today. Good mood about the place.'}"
               </div>
               <Button
                 variant="secondary"
@@ -826,28 +828,13 @@ export const HubScreen: React.FC = () => {
                 }}
               >
                 <div style={{ fontSize: '14px', lineHeight: '1.5', color: 'var(--text)' }}>
-                  {oppClub.style?.passing === 'Direct' ? (
-                    <>
-                      {oppClub.name} deploy a direct passing approach and rely heavily on long
-                      diagonals. Setting our pressing to <b>Mid Block</b> and maintaining compact
-                      line distance will limit their second ball wins.
-                    </>
-                  ) : (
-                    <>
-                      {tiredCount > 2 ? (
-                        <>
-                          We have <b>{tiredCount} first-team regulars carrying fatigue</b>. Rotating
-                          the squad slightly ahead of kickoff will prevent late-game dropoffs and
-                          muscular injury risk.
-                        </>
-                      ) : (
-                        <>
-                          The squad is in peak physical readiness. Setting our line to <b>Normal</b>{' '}
-                          with disciplined zonal responsibilities will stifle their forward
-                          transitions.
-                        </>
-                      )}
-                    </>
+                  <div style={{ fontWeight: 600, marginBottom: '4px' }}>
+                    {weekTip?.text ?? 'Training was sharp today. Good mood about the place.'}
+                  </div>
+                  {weekTip?.reason && (
+                    <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+                      {weekTip.reason}
+                    </div>
                   )}
                 </div>
 
@@ -860,29 +847,30 @@ export const HubScreen: React.FC = () => {
                     marginTop: 'auto',
                   }}
                 >
-                  {tipApplied ? (
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        color: 'var(--win)',
-                        fontWeight: 600,
-                        fontSize: '13px',
-                      }}
-                    >
-                      <Check size={16} /> Applied to match tactics
-                    </span>
-                  ) : (
-                    <Button
-                      variant="secondary"
-                      size="m"
-                      icon={<Check size={16} />}
-                      onClick={handleApplyTip}
-                    >
-                      Apply
-                    </Button>
-                  )}
+                  {weekTip?.apply &&
+                    (tipApplied ? (
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          color: 'var(--win)',
+                          fontWeight: 600,
+                          fontSize: '13px',
+                        }}
+                      >
+                        <Check size={16} /> Applied
+                      </span>
+                    ) : (
+                      <Button
+                        variant="secondary"
+                        size="m"
+                        icon={<Check size={16} />}
+                        onClick={handleApplyTip}
+                      >
+                        Apply
+                      </Button>
+                    ))}
 
                   <Button variant="ghost" size="m" onClick={() => setScreen('tactics')}>
                     See Tactics Board <ChevronRight size={14} />

@@ -242,3 +242,18 @@ REVIEW REQUESTED: M4 (third pass)
     - **6-Week Consistency Rule (§12.20.2):** Tracks recent punishments over a 6-week window. Unequal punishment for the same incident type across squad members triggers cohesion -4 penalty and captain memo in inbox.
     - **Player Dossier & UI Updates:** Integrated 'Not fully fit' badge and Disciplinary & Injury Record into `SquadScreen.tsx` dossier; wired modals into `HubScreen.tsx`, `WeekSummaryScreen.tsx`, `PreMatchScreen.tsx`, and `MatchScreen.tsx`; knock response preference added to `SettingsModal.tsx`.
     - Added unit test suite `tests/core/people/decisions.test.ts` (11 tests covering all formulas, knock commands, half-time substitution rules, rush-back offers, warm-up scare probabilities, fines, consistency rule, and advance blocking).
+
+## 2026-11-24 · M6.1 Assistant coach advice engine (Theo Vance)
+- Changed: src/config/balance.ts, src/core/people/assistant.ts, src/state/store.ts, src/ui/screens/HubScreen.tsx, src/ui/screens/PreMatchScreen.tsx, src/ui/screens/MatchScreen.tsx, src/ui/screens/Match/AssistantDrawer.tsx, src/ui/screens/Match/HalfTimeModal.tsx, src/ui/screens/PostMatchScreen.tsx, tests/core/people/assistant.test.ts
+- Ran:
+  - `npx vitest run tests/core/people/assistant.test.ts`: 1 file / 8 tests PASS (0 failures)
+  - `npx prettier --check`: All matched files use Prettier code style! PASS
+  - `npx vite build`: built in 14.90s, main chunk 390.08 kB gzip PASS
+- Notes:
+  - Implemented Milestone M6 Task 1 (SPEC §15 The assistant coach):
+    - **Advice Engine (`src/core/people/assistant.ts`):** Pure `advise(context, rng)` dispatcher supporting `preMatch`, `week`, `inMatch`, `halfTime`, and `postMatch` contexts, resolving variants and `{player}`, `{lane}`, `{opponent}` tokens from `src/content/assistant.json` with all thresholds in `BALANCE.assistant`.
+    - **Pre-Match (§15.2) & Week Tips (§15.3):** Up to 3 priority-sorted pre-match recommendations (`pre_stay_compact`, `pre_take_game`, `pre_go_in_behind`, `pre_play_out_quick`, `pre_attack_weak_side`, `pre_cb_reassure`) with individual Apply + "Apply All" in `PreMatchScreen.tsx`. Weekly tips (`week_rest`, `week_train_tactical`, `week_light_training`, `week_talk_unhappy`, `week_give_minutes`, `week_positive`) wired into `HubScreen.tsx`.
+    - **In-Match Rules (§15.4):** Evaluated every 5 match minutes over a 15-minute trailing event window (max 6 per match, 20-minute per-rule cooldown) covering flank exposure (`fb_defensive` / `Narrow`), pressing fatigue, crossing vs tall CBs, high line offsides, tired player sub (`<58` cond), second-yellow risk sub, 70'+ chasing goal, 80'+ see it out, and <35% direct possession. Wired into `MatchScreen.tsx` & `AssistantDrawer.tsx` with live `MatchCommand` Apply and Dismiss buttons.
+    - **Half-Time & Post-Match (§15.5):** Half-time xG comparison, danger man press, and worst-starter sub bullets wired into `HalfTimeModal.tsx`; post-match expectation/MVP/deciding-stat summary and recommended next-week training focus Apply wired into `PostMatchScreen.tsx`.
+    - **Store Action:** Added `applyAdviceAction(action)` in `src/state/store.ts`.
+    - **Unit Tests:** Added `tests/core/people/assistant.test.ts` (8 tests verifying all rule families, cooldowns, caps, live match command application, half-time, and post-match analysis).

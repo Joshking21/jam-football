@@ -10,6 +10,7 @@ export interface AssistantAdviceItem {
   reason?: string;
   applied?: boolean;
   onApply?: () => void;
+  onDismiss?: () => void;
 }
 
 export interface OutOfTownScore {
@@ -158,28 +159,47 @@ export const AssistantDrawer: React.FC<AssistantDrawerProps> = ({
                     </div>
                   )}
 
-                  {item.onApply && (
-                    <button
-                      onClick={item.onApply}
-                      disabled={item.applied}
-                      style={{
-                        background: item.applied ? 'rgba(34, 197, 94, 0.2)' : '#2563EB',
-                        color: item.applied ? '#22C55E' : '#FFF',
-                        border: 'none',
-                        borderRadius: 4,
-                        padding: '6px 12px',
-                        fontSize: 11,
-                        fontWeight: 700,
-                        cursor: item.applied ? 'default' : 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                      }}
-                    >
-                      {item.applied ? <CheckCircle size={13} /> : null}
-                      <span>{item.applied ? 'Applied' : 'Apply Suggestion'}</span>
-                    </button>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {item.onApply && (
+                      <button
+                        onClick={item.onApply}
+                        disabled={item.applied}
+                        style={{
+                          background: item.applied ? 'rgba(34, 197, 94, 0.2)' : '#2563EB',
+                          color: item.applied ? '#22C55E' : '#FFF',
+                          border: 'none',
+                          borderRadius: 4,
+                          padding: '6px 12px',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          cursor: item.applied ? 'default' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                      >
+                        {item.applied ? <CheckCircle size={13} /> : null}
+                        <span>{item.applied ? 'Applied' : 'Apply'}</span>
+                      </button>
+                    )}
+                    {item.onDismiss && !item.applied && (
+                      <button
+                        onClick={item.onDismiss}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          border: 'none',
+                          borderRadius: 4,
+                          padding: '6px 10px',
+                          fontSize: 11,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Dismiss
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

@@ -18,6 +18,7 @@ import {
 } from '@/core/types';
 import { replaceStaffMember } from '@/core/club/clubDepth';
 import { DisciplineChoice, resolveDisciplineIncident } from '@/core/people/incidents';
+import type { AdviceAction } from '@/core/people/assistant';
 import {
   TRAINING_TEMPLATES,
   BALANCED_WEEK_SCHEDULE,
@@ -163,6 +164,8 @@ export interface AppState {
   resolveRushBackOffer: (decision: 'wait' | 'risk') => void;
   resolveWarmupScare: (decision: 'start' | 'leave_out') => void;
   setKnocksSetting: (setting: 'ask' | 'always_off' | 'play_on_if_late') => void;
+  // SPEC §15 Assistant advice action
+  applyAdviceAction: (action: AdviceAction) => void;
 }
 
 export const useStore = create<AppState>((set, get) => {
@@ -1325,6 +1328,67 @@ export const useStore = create<AppState>((set, get) => {
       const next = { ...state, knocksSetting: setting };
       set({ gameState: next });
       triggerDebouncedAutosave(next);
+    },
+
+    applyAdviceAction: (action: AdviceAction) => {
+      const state = get().gameState;
+      if (!state) return;
+      const userClub = state.clubs[state.userClubId];
+      if (!userClub) return;
+
+      switch (action.type) {
+        case 'setInstructions':
+          get().updateUserTactics({
+            instructions: {
+              ...userClub.tactics.instructions,
+              ...action.instructions,
+            },
+          });
+          break;
+        case 'setFormation':
+          get().updateUserTactics({ formation: action.formation });
+          break;
+        case 'setPlayerRole': {
+          const roles = [...(userClub.tactics.roles ?? [])];
+          roles[action.slot] = action.role;
+          get().updateUserTactics({ roles });
+          break;
+        }
+        case 'substitute': {
+          const lineup = [...userClub.tactics.lineup];
+          const bench = [...userClub.tactics.bench];
+          const slot = lineup.indexOf(action.outId);
+          const benchIdx = bench.indexOf(action.inId);
+          if (slot >= 0 && benchIdx >= 0) {
+            lineup[slot] = action.inId;
+            bench[benchIdx] = action.outId;
+            get().updateUserTactics({ lineup, bench });
+          }
+          break;
+        }
+        case 'setTrainingTemplate':
+          get().applyTrainingTemplate(action.templateId);
+          break;
+        case 'restPlayer': {
+          get().setPlayerWorkload(action.playerId, 'Light');
+          break;
+        }
+        case 'openConversation':
+          get().openConversationModal();
+          break;
+        case 'setSetPieces':
+          if (userClub.tactics.setPieces) {
+            get().updateUserTactics({
+              setPieces: {
+                ...userClub.tactics.setPieces,
+                ...action.changes,
+              },
+            });
+          }
+          break;
+        default:
+          break;
+      }
     },
   };
 });

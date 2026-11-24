@@ -32,6 +32,8 @@ import type { ShoutId } from '../../core/types';
 import { TalkTone, getHalfTimeTalkContext } from '../../core/player/talks';
 import { createMatch, simulateInstant } from '../../core/match/engine';
 import { createDefaultSetPieceTactics } from '../../core/match/setPieces';
+import { adviseInMatch, AdviceAction } from '../../core/people/assistant';
+import { createRng } from '../../core/rng';
 import type { ClientToWorkerMessage, WorkerToClientMessage } from '../../workers/match.worker';
 
 export const MatchScreen: React.FC = () => {
@@ -107,11 +109,14 @@ export const MatchScreen: React.FC = () => {
   const [outOfTownScores, setOutOfTownScores] = useState<OutOfTownScore[]>([]);
   const [adviceList, setAdviceList] = useState<AssistantAdviceItem[]>([]);
 
-  // Set-piece assistant tracking refs (§13.20.9)
+  // Set-piece & tactical assistant tracking refs (§13.20.9, §15.4)
   const oppCornerHeadersRef = useRef<number[]>([]);
   const hasAdvisedDropForwardRef = useRef<boolean>(false);
   const ourCornerCountRef = useRef<number>(0);
   const hasAdvisedRotateRef = useRef<boolean>(false);
+  const lastAdviceEvalMinRef = useRef<number>(0);
+  const firedAdviceHistoryRef = useRef<Record<string, number>>({});
+  const totalAdviceFiredRef = useRef<number>(0);
 
   // Substitution tracking
   const [subsUsed, setSubsUsed] = useState(0);
@@ -504,6 +509,137 @@ export const MatchScreen: React.FC = () => {
         !state.paused
       ) {
         playback.togglePause();
+      }
+
+      // Evaluate §15.4 in-match assistant rules every 5 match minutes
+      const curMatchMin = Math.floor(state.pt / 60);
+      if (
+        curMatchMin >= 5 &&
+        curMatchMin % 5 === 0 &&
+        curMatchMin > lastAdviceEvalMinRef.current &&
+        totalAdviceFiredRef.current < 6
+      ) {
+        lastAdviceEvalMinRef.current = curMatchMin;
+        const evsSoFar = playback.getEvents().filter((e) => e.t <= state.pt);
+        const ourYellows: Record<string, number> = {};
+        const liveCondition: Record<string, number> = {};
+        for (const id of userClub.tactics.lineup) {
+          if (id && gameState.players[id]) {
+            // Estimate live condition decay from elapsed minutes if engine snapshot isn't directly read
+            liveCondition[id] = Math.max(
+              35,
+              Math.round(gameState.players[id]!.condition - curMatchMin * 0.35),
+            );
+          }
+        }
+        for (const ev of evsSoFar) {
+          if (ev.type === 'YELLOW' && ev.side === userSide && ev.playerId) {
+            ourYellows[ev.playerId] = (ourYellows[ev.playerId] ?? 0) + 1;
+          }
+        }
+        const oppSheet = userSide === 'home' ? awaySheet : homeSheet;
+        const newAdvices = adviseInMatch(
+          {
+            kind: 'inMatch',
+            currentT: state.pt,
+            minute: curMatchMin,
+            ourSide: userSide,
+            ourScore: userSide === 'home' ? state.score.home : state.score.away,
+            oppScore: userSide === 'home' ? state.score.away : state.score.home,
+            ourInstructions: userClub.tactics.instructions,
+            ourLineup: userClub.tactics.lineup,
+            ourBench: userClub.tactics.bench,
+            ourRoles: userClub.tactics.roles ?? [],
+            subsUsed,
+            windowsUsed,
+            liveCondition,
+            ourYellows,
+            events: evsSoFar,
+            players: gameState.players,
+            oppSheet,
+            firedHistory: firedAdviceHistoryRef.current,
+            totalFiredInMatch: totalAdviceFiredRef.current,
+          },
+          createRng(deriveSeed(gameState.seed, 'im-advice', `${fixture.id}-${curMatchMin}`)),
+        );
+        if (newAdvices.length > 0) {
+          const adv = newAdvices[0]!;
+          firedAdviceHistoryRef.current[adv.ruleId] = curMatchMin;
+          totalAdviceFiredRef.current += 1;
+          const applyFn = adv.apply
+            ? () => {
+                const act: AdviceAction = adv.apply!;
+                if (act.type === 'setInstructions') {
+                  const command: MatchCommand = {
+                    kind: 'instructions',
+                    side: userSide,
+                    instructions: { ...userClub.tactics.instructions, ...act.instructions },
+                    issuedAtT: state.pt,
+                  };
+                  workerRef.current?.postMessage({
+                    type: 'command',
+                    command,
+                  } satisfies ClientToWorkerMessage);
+                  updateUserTactics({
+                    instructions: { ...userClub.tactics.instructions, ...act.instructions },
+                  });
+                } else if (act.type === 'setPlayerRole') {
+                  const nextRoles = [...(userClub.tactics.roles ?? [])];
+                  nextRoles[act.slot] = act.role;
+                  const command: MatchCommand = {
+                    kind: 'formation',
+                    side: userSide,
+                    formation: userClub.tactics.formation,
+                    lineup: userClub.tactics.lineup,
+                    roles: nextRoles,
+                    issuedAtT: state.pt,
+                  };
+                  workerRef.current?.postMessage({
+                    type: 'command',
+                    command,
+                  } satisfies ClientToWorkerMessage);
+                  updateUserTactics({ roles: nextRoles });
+                } else if (act.type === 'substitute') {
+                  const command: MatchCommand = {
+                    kind: 'sub',
+                    side: userSide,
+                    outId: act.outId,
+                    inId: act.inId,
+                    issuedAtT: state.pt,
+                  };
+                  workerRef.current?.postMessage({
+                    type: 'command',
+                    command,
+                  } satisfies ClientToWorkerMessage);
+                } else if (act.type === 'issueShout') {
+                  const command: MatchCommand = {
+                    kind: 'shout',
+                    side: userSide,
+                    shout: act.shout,
+                    issuedAtT: state.pt,
+                  };
+                  workerRef.current?.postMessage({
+                    type: 'command',
+                    command,
+                  } satisfies ClientToWorkerMessage);
+                }
+                setAdviceList((prev) =>
+                  prev.map((item) => (item.id === adv.id ? { ...item, applied: true } : item)),
+                );
+                showToast('Applied assistant recommendation', 'success');
+              }
+            : undefined;
+          setAdviceList((prev) => [
+            {
+              id: adv.id,
+              text: adv.text,
+              reason: adv.reason,
+              onApply: applyFn,
+              onDismiss: () => setAdviceList((p) => p.filter((x) => x.id !== adv.id)),
+            },
+            ...prev.slice(0, 5),
+          ]);
+        }
       }
 
       // Update 3D Scene: the director reads the whole event list for a continuous ball timeline.
@@ -1141,6 +1277,37 @@ export const MatchScreen: React.FC = () => {
         onSecondHalf={handleResumeSecondHalf}
         onOpenSubs={() => setSubsOpen(true)}
         onOpenTactics={() => showToast('Adjust tactics in the drawer or pause', 'info')}
+        onApplyAdvice={(act) => {
+          const pt = playbackRef.current?.pt ?? 2700;
+          if (act.type === 'setInstructions') {
+            const command: MatchCommand = {
+              kind: 'instructions',
+              side: userSide,
+              instructions: { ...userClub.tactics.instructions, ...act.instructions },
+              issuedAtT: pt,
+            };
+            workerRef.current?.postMessage({
+              type: 'command',
+              command,
+            } satisfies ClientToWorkerMessage);
+            updateUserTactics({
+              instructions: { ...userClub.tactics.instructions, ...act.instructions },
+            });
+          } else if (act.type === 'substitute') {
+            const command: MatchCommand = {
+              kind: 'sub',
+              side: userSide,
+              outId: act.outId,
+              inId: act.inId,
+              issuedAtT: pt,
+            };
+            workerRef.current?.postMessage({
+              type: 'command',
+              command,
+            } satisfies ClientToWorkerMessage);
+          }
+          showToast('Applied half-time recommendation', 'success');
+        }}
       />
 
       {/* Full-Time Screen */}

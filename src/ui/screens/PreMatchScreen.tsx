@@ -35,6 +35,8 @@ import {
 import { rawOvr } from '@/core/player/ratings';
 import { Player, TeamInstructions } from '@/core/types';
 import { createDefaultSetPieceTactics } from '@/core/match/setPieces';
+import { advisePreMatch } from '@/core/people/assistant';
+import { createRng, deriveSeed } from '@/core/rng';
 
 type PreMatchStep = 0 | 1 | 2 | 3;
 
@@ -46,6 +48,7 @@ export const PreMatchScreen: React.FC = () => {
   const answerPressQuestion = useStore((state) => state.answerPressQuestion);
   const skipPressConference = useStore((state) => state.skipPressConference);
   const resolveWarmupScare = useStore((state) => state.resolveWarmupScare);
+  const applyAdviceAction = useStore((state) => state.applyAdviceAction);
   const showToast = useStore((state) => state.showToast);
 
   const [currentStep, setCurrentStep] = useState<PreMatchStep>(gameState?.pendingPress ? 0 : 1);
@@ -147,87 +150,30 @@ export const PreMatchScreen: React.FC = () => {
   const edge3 = diff3 >= 0.25 ? 'us' : diff3 <= -0.25 ? 'them' : 'even';
   const bigEdge3 = Math.abs(diff3) >= 1.0;
 
-  // Assistant Theo Vance advice per §15.2
-  const bestForward =
-    userStarters.find((p) =>
-      p.positions.some((pos) => pos.pos === 'ST' || pos.pos === 'LW' || pos.pos === 'RW'),
-    ) ?? userStarters[9];
-  const backLine = userStarters.filter((p) =>
-    p.positions.some((pos) => ['CB', 'LB', 'RB'].includes(pos.pos)),
+  // Assistant Theo Vance advice per §15.2 (max 3 advices, priority sorted)
+  const preAdvices = advisePreMatch(
+    {
+      kind: 'preMatch',
+      userClub,
+      oppClub,
+      players: gameState.players,
+    },
+    createRng(deriveSeed(gameState.seed, 'pre-advice', activeMatchday)),
   );
-  const backLinePaceAvg =
-    backLine.length > 0
-      ? Math.round(backLine.reduce((sum, p) => sum + p.attributes.pace, 0) / backLine.length)
-      : 66;
-  const cbHeadingAvg = Math.round(
-    userStarters
-      .filter((p) => p.positions.some((pos) => pos.pos === 'CB'))
-      .reduce((sum, p) => sum + p.attributes.heading, 0) /
-      Math.max(1, userStarters.filter((p) => p.positions.some((pos) => pos.pos === 'CB')).length),
-  );
-
-  let theoAdvice: {
-    title: string;
-    text: string;
-    reason: string;
-    changes: Partial<TeamInstructions>;
-  } = {
-    title: 'Maintain Tactical Shape',
-    text: `Countering their ${oppClub.style?.formation || '4-3-3'} with mid-block pressure will force turnovers in midfield.`,
-    reason: `Their ${oppClub.style?.passing?.toLowerCase() || 'mixed'} passing depends on central service.`,
-    changes: { mentality: 'Balanced', pressing: 'Mid' },
-  };
-
-  if (
-    (oppClub.style?.line === 'High' || oppClub.style?.pressing === 'High') &&
-    bestForward &&
-    bestForward.attributes.pace >= 75
-  ) {
-    theoAdvice = {
-      title: 'Exploit High Line in Behind',
-      text: `Make ${bestForward.lastName} an advanced threat. Their defensive line presses high, leaving green space behind.`,
-      reason: `Direct passing toward ${bestForward.lastName} (pace ${bestForward.attributes.pace}) will create breakaways.`,
-      changes: { passing: 'Direct' as const, mentality: 'Attacking' as const },
-    };
-  } else if (oppClub.style?.pressing === 'High' && backLinePaceAvg >= 65) {
-    theoAdvice = {
-      title: 'Play Out Quickly Under Pressure',
-      text: `Play out quickly with tempo. Our defenders have the pace (${backLinePaceAvg} avg) to bypass their initial press.`,
-      reason: 'Bypassing their first press opens up clean passing lanes into the final third.',
-      changes: { passing: 'Mixed' as const, tempo: 'Fast' as const },
-    };
-  } else if (oppAvgOvr >= userAvgOvr + 4) {
-    theoAdvice = {
-      title: 'Stay Compact & Defend Deep',
-      text: `Stay compact in our half. ${oppClub.name} hold a clear quality advantage in individual duels.`,
-      reason:
-        'A deep defensive line with mid pressing prevents their forwards from finding space between the lines.',
-      changes: { mentality: 'Defensive' as const, line: 'Deep' as const, pressing: 'Mid' as const },
-    };
-  } else if (oppAvgOvr <= userAvgOvr - 4) {
-    theoAdvice = {
-      title: 'Take the Game to Them',
-      text: `Take the game to them with attacking mentality. We have a clear technical advantage across all units.`,
-      reason: 'Early aggressive pressure will pin them in their defensive third.',
-      changes: { mentality: 'Attacking' as const, pressing: 'High' as const },
-    };
-  } else if (cbHeadingAvg >= 72 && oppClub.style?.width === 'Wide') {
-    theoAdvice = {
-      title: 'Dominate Aerial Crossing Delivery',
-      text: `Our centre backs (${cbHeadingAvg} avg heading) will dominate their wide delivery. Keep our defensive shape tight.`,
-      reason: 'Neutralising their wide crosses cuts off their primary avenue of attack.',
-      changes: { line: 'Normal' as const, pressing: 'Mid' as const },
-    };
-  }
 
   const handleApplySuggestedApproach = () => {
-    updateUserTactics({
-      instructions: {
-        ...userClub.tactics.instructions,
-        ...theoAdvice.changes,
-      },
-    });
-    showToast(`Applied assistant tactical adjustment: ${theoAdvice.title}`, 'success');
+    let count = 0;
+    for (const adv of preAdvices) {
+      if (adv.apply) {
+        applyAdviceAction(adv.apply);
+        count++;
+      }
+    }
+    if (count > 0) {
+      showToast(`Applied ${count} assistant tactical adjustment${count > 1 ? 's' : ''}`, 'success');
+    } else {
+      showToast('No tactical changes required for this match', 'info');
+    }
   };
 
   const handleKickOff = async () => {
@@ -895,16 +841,62 @@ export const PreMatchScreen: React.FC = () => {
                         className="broadcast-label"
                         style={{ color: 'var(--accent-text)', fontSize: '11px' }}
                       >
-                        THEO VANCE · ASSISTANT MANAGER ADVICE
+                        THEO VANCE · ASSISTANT MANAGER ADVICE ({preAdvices.length})
                       </div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
-                        "{theoAdvice.text}"
-                      </div>
-                      <div
-                        style={{ fontSize: '11px', color: 'var(--text-dim)', lineHeight: '1.4' }}
-                      >
-                        Reason: {theoAdvice.reason}
-                      </div>
+                      {preAdvices.length === 0 ? (
+                        <div style={{ fontSize: '13px', color: 'var(--text-dim)' }}>
+                          No specific tactical adjustments flagged. Stick to your game plan.
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {preAdvices.map((adv) => (
+                            <div
+                              key={adv.id}
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                gap: '10px',
+                                paddingBottom: '6px',
+                                borderBottom: '1px solid var(--border)',
+                              }}
+                            >
+                              <div>
+                                <div
+                                  style={{
+                                    fontSize: '13px',
+                                    fontWeight: 600,
+                                    color: 'var(--text)',
+                                  }}
+                                >
+                                  "{adv.text}"
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: '11px',
+                                    color: 'var(--text-dim)',
+                                    lineHeight: '1.35',
+                                  }}
+                                >
+                                  {adv.reason}
+                                </div>
+                              </div>
+                              {adv.apply && (
+                                <Button
+                                  variant="secondary"
+                                  size="s"
+                                  onClick={() => {
+                                    applyAdviceAction(adv.apply!);
+                                    showToast('Applied assistant recommendation', 'success');
+                                  }}
+                                >
+                                  Apply
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Opponent Set-Piece Threat Card (SPEC §13.20.9, §15.2) */}
@@ -1056,7 +1048,7 @@ export const PreMatchScreen: React.FC = () => {
                         icon={<Zap size={16} />}
                         onClick={handleApplySuggestedApproach}
                       >
-                        Apply Counter-Tactic ({theoAdvice.title})
+                        Apply All Assistant Advice
                       </Button>
                       <Button variant="primary" size="l" onClick={() => setCurrentStep(2)}>
                         Proceed to Team Selection (Step 2) <ChevronRight size={18} />

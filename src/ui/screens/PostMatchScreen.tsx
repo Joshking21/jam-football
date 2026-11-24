@@ -15,6 +15,8 @@ import {
   TALKS_DATA,
 } from '../../core/player/talks';
 import { PressAnswerResult } from '../../core/game/press';
+import { advisePostMatch } from '../../core/people/assistant';
+import { createRng, deriveSeed } from '../../core/rng';
 
 export const PostMatchScreen: React.FC = () => {
   const gameState = useStore((state) => state.gameState);
@@ -22,10 +24,12 @@ export const PostMatchScreen: React.FC = () => {
   const performTeamTalk = useStore((state) => state.performTeamTalk);
   const answerPressQuestion = useStore((state) => state.answerPressQuestion);
   const skipPressConference = useStore((state) => state.skipPressConference);
+  const applyAdviceAction = useStore((state) => state.applyAdviceAction);
   const showToast = useStore((state) => state.showToast);
 
   const [postMatchTalk, setPostMatchTalk] = useState<TalkTone>('Praise');
   const [pressResult, setPressResult] = useState<PressAnswerResult | null>(null);
+  const [trainingApplied, setTrainingApplied] = useState(false);
 
   if (!gameState) return null;
 
@@ -51,6 +55,23 @@ export const PostMatchScreen: React.FC = () => {
   const userGoals = result ? (isHome ? result.homeGoals : result.awayGoals) : 0;
   const oppGoals = result ? (isHome ? result.awayGoals : result.homeGoals) : 0;
   const ftContext = getFullTimeTalkContext(userGoals, oppGoals);
+
+  const oppClub = isHome ? awayClub : homeClub;
+  const postMatchAnalysis = result
+    ? advisePostMatch(
+        {
+          kind: 'postMatch',
+          userClub,
+          oppClub,
+          isHome,
+          result,
+          players: gameState.players,
+        },
+        createRng(
+          deriveSeed(gameState.seed, 'pm-advice', latestFixture?.matchday ?? gameState.matchday),
+        ),
+      )
+    : null;
 
   const handleContinueToWeekSummary = async () => {
     performTeamTalk(ftContext, postMatchTalk);
@@ -499,6 +520,56 @@ export const PostMatchScreen: React.FC = () => {
                     </div>
                   </div>
                 )}
+              </div>
+            </Panel>
+          )}
+
+          {/* §15.5 Assistant Post-Match Analysis & Training Focus */}
+          {postMatchAnalysis && (
+            <Panel title="THEO VANCE · POST-MATCH ANALYSIS">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ fontSize: '14px', lineHeight: 1.5, color: 'var(--text)' }}>
+                  {postMatchAnalysis.summary}
+                </div>
+                {postMatchAnalysis.advices.map((adv) => (
+                  <div
+                    key={adv.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px',
+                      padding: '10px 14px',
+                      backgroundColor: 'var(--surface-2)',
+                      borderRadius: 'var(--radius-s)',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
+                        {adv.text}
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{adv.reason}</div>
+                    </div>
+                    {adv.apply && (
+                      <Button
+                        variant={trainingApplied ? 'secondary' : 'primary'}
+                        size="s"
+                        disabled={trainingApplied}
+                        onClick={() => {
+                          applyAdviceAction(adv.apply!);
+                          setTrainingApplied(true);
+                          showToast(
+                            `Next week training set to ${postMatchAnalysis.recommendedTraining}`,
+                            'success',
+                          );
+                        }}
+                      >
+                        {trainingApplied ? 'Applied' : 'Apply for Next Week'}
+                      </Button>
+                    )}
+                  </div>
+                ))}
               </div>
             </Panel>
           )}
