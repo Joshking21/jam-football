@@ -19,7 +19,6 @@ function supporterSprite(): THREE.CanvasTexture {
   const c = createSafeCanvas(64, 96);
   const ctx = c.getContext('2d');
   if (ctx) {
-    ctx.clearRect(0, 0, 64, 96);
     ctx.fillStyle = '#ffffff';
     // Shoulders and torso.
     ctx.beginPath();

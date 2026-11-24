@@ -25,7 +25,6 @@ function netTexture(): THREE.CanvasTexture {
   const c = createSafeCanvas(128, 128);
   const ctx = c.getContext('2d');
   if (ctx) {
-    ctx.clearRect(0, 0, 128, 128);
     ctx.strokeStyle = 'rgba(255,255,255,1)';
     ctx.lineWidth = 6;
     // Diamond (hexagonal-ish) mesh: two diagonal families.

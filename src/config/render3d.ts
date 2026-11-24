@@ -44,7 +44,7 @@ export const CAMERA = {
     fov: 26,
     fovBox: 22,
   },
-  replay: { behindGoal: 9, height: 4.5, side: 6, fov: 34 },
+  replay: { behindGoal: 3.6, height: 3.4, side: 7.5, fov: 38 }, // between the net (2 m deep) and the boards (4 m)
 } as const;
 
 /** Floodlit lighting (v1.8, REVIEW-M4 T6): four soft directional lights from the pylon corners

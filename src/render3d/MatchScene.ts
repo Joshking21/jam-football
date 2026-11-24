@@ -327,7 +327,15 @@ export class MatchScene {
   }
 
   public updateNameTags(carrierId: string | null, commentaryId: string | null, showAll: boolean) {
-    this.players.updateNameTags(carrierId, commentaryId, showAll);
+    // Label whoever really has the ball, and never two tags on top of each other (REVIEW-M4 T10).
+    const carrier = this.choreographer.carrierId ?? carrierId;
+    let second = commentaryId && commentaryId !== carrier ? commentaryId : null;
+    if (carrier && second) {
+      const a = this.choreographer.getPlayerState(carrier);
+      const b = this.choreographer.getPlayerState(second);
+      if (a && b && a.currentPos.distanceTo(b.currentPos) < 4) second = null;
+    }
+    this.players.updateNameTags(carrier, second, showAll);
   }
 
   public setBallPosition(x: number, y: number, z: number) {
