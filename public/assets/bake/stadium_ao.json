@@ -1,0 +1,321 @@
+{
+ "totalVertices": 47376,
+ "meshes": [
+  {
+   "name": "BufferGeometry",
+   "vertices": 14400
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "ExtrudeGeometry",
+   "vertices": 36
+  },
+  {
+   "name": "ExtrudeGeometry",
+   "vertices": 36
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "BufferGeometry",
+   "vertices": 14400
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "ExtrudeGeometry",
+   "vertices": 36
+  },
+  {
+   "name": "ExtrudeGeometry",
+   "vertices": 36
+  },
+  {
+   "name": "BufferGeometry",
+   "vertices": 8040
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "ExtrudeGeometry",
+   "vertices": 36
+  },
+  {
+   "name": "ExtrudeGeometry",
+   "vertices": 36
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "BufferGeometry",
+   "vertices": 8040
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "ExtrudeGeometry",
+   "vertices": 36
+  },
+  {
+   "name": "ExtrudeGeometry",
+   "vertices": 36
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "PlaneGeometry",
+   "vertices": 4
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "PlaneGeometry",
+   "vertices": 4
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "PlaneGeometry",
+   "vertices": 4
+  },
+  {
+   "name": "CylinderGeometry",
+   "vertices": 52
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "PlaneGeometry",
+   "vertices": 4
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "BoxGeometry",
+   "vertices": 24
+  },
+  {
+   "name": "PlaneGeometry",
+   "vertices": 4
+  }
+ ]
+}

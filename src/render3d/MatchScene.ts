@@ -17,6 +17,7 @@ import { RENDER_CONFIG } from '../config/balance';
 import { MatchEvent } from '../core/types';
 import { MatchPhysics } from '../physics/matchPhysics';
 import { GrassTrample, TrampleStamp } from '../physics/trample';
+import { loadStadiumAO } from './stadiumBake';
 
 export class MatchScene {
   public renderer: THREE.WebGLRenderer;
@@ -113,6 +114,8 @@ export class MatchScene {
     // 6. Stadium (Stands, Floodlights, Sponsors)
     this.stadium = createStadium(ctx.homeClub, this.quality, ctx.awayClub);
     this.scene.add(this.stadium.group);
+    // Baked AO from Blender, if delivered (§14.10); the stadium renders as before without it.
+    void loadStadiumAO(this.stadium.group);
 
     // 7. Crowd
     this.crowd = createCrowd(ctx.homeClub, ctx.awayClub, this.quality);

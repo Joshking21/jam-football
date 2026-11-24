@@ -1,4 +1,11 @@
 {
   "version": 1,
-  "files": {}
+  "files": {
+    "bake/stadium_ao.bin": {
+      "bytes": 47376
+    },
+    "bake/stadium_ao.json": {
+      "bytes": 4414
+    }
+  }
 }
