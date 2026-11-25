@@ -1557,9 +1557,69 @@ export const RENDER_CONFIG = {
       lineRes: 4096,
     },
   },
+  tod: {
+    monday_morning: {
+      sunColor: '#E6F0FA',
+      skyColor: '#90AFCF',
+      intensity: 1.1,
+      windowEmissive: '#B8D5E5',
+      lampLevel: 0.2,
+    },
+    wednesday_afternoon: {
+      sunColor: '#FFD39B',
+      skyColor: '#F0A35B',
+      intensity: 1.25,
+      windowEmissive: '#FFE2B8',
+      lampLevel: 0.4,
+    },
+    friday_evening: {
+      sunColor: '#4A3A55',
+      skyColor: '#1A1828',
+      intensity: 0.45,
+      windowEmissive: '#FFB04A',
+      lampLevel: 0.95,
+    },
+    matchday: {
+      sunColor: '#FFF4E5',
+      skyColor: '#0E1726',
+      intensity: 1.4,
+      windowEmissive: '#FFE0A0',
+      lampLevel: 0.85,
+    },
+  },
+};
+
+export const FACES_CONFIG = {
+  audioThresholds: { closed: 0.02, small: 0.08, open: 0.18, wide: 0.35 },
+  hysteresis: 0.015,
+  minHoldMs: 70,
+  blinkIntervalMin: 2.0,
+  blinkIntervalMax: 6.0,
+  blinkDuration: 0.15,
+  headTiltMinDeg: 3,
+  headTiltMaxDeg: 5,
+  gazeMaxYawDeg: 25,
+  captionSyllablesPerSec: 5,
+  commaPauseMs: 150,
+  periodPauseMs: 300,
+};
+
+export const CLUB3D_CONFIG = {
+  walkMaxSeconds: 2.5,
+  walkSpeed: 4.2,
+  cameraRailSpringMs: 600,
+  lookAroundYawMaxDeg: 60,
+  lookAroundPitchMinDeg: -20,
+  lookAroundPitchMaxDeg: 15,
+  lookAroundLeanMaxM: 1.5,
+  cameraMinHeadDist: 1.2,
+  cameraWallMargin: 0.3,
+  todCrossfadeSec: 1.2,
 };
 
 (BALANCE as Record<string, unknown>).render = RENDER_CONFIG;
+(BALANCE as Record<string, unknown>).faces = FACES_CONFIG;
+(BALANCE as Record<string, unknown>).club3d = CLUB3D_CONFIG;
 
 (BALANCE as Record<string, unknown>).tacticsDepth = {
   roles: K.roles,

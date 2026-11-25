@@ -293,3 +293,20 @@ REVIEW REQUESTED: M4 (third pass)
     - **Commentary Resolution Integration:** Updated `src/core/match/commentary.ts` to expose full `ResolvedCommentary` payload including importance, nameSlot, voice actor, and player/club audio cues.
     - **Match Integration:** Wired `voiceQueue.speakCommentary()` and `voiceQueue.updateSimTime(ev.t)` into `MatchScreen.tsx` event playback; refactored `CommentaryStrip.tsx` to read synchronized captions directly from `voiceQueue.subscribe()`.
     - **Unit Tests:** Extended `tests/audio/audio.test.ts` to 21 tests covering preemption, stale line dropping, caption subscriber callbacks, assistant stinger, coach dialogue, and ducking lifecycle.
+
+## 2026-11-25 · M6b Club spaces scene manager, unified floor coordinates, nav graph, and talk scenes
+- Changed: src/club3d/{types,rooms,nav,walk,lookAround,mouth,faces,people,talkScenes,timeOfDay,ClubScene,ClubSpacesCanvas,index}.ts, src/config/balance.ts, src/App.tsx, tests/club3d/club3d.test.ts
+- Ran:
+  - `npx prettier --check`: All matched files use Prettier code style! PASS
+  - `npx vitest run tests/audio/audio.test.ts tests/club3d/club3d.test.ts`: 2 files / 33 tests PASS (0 failures)
+  - `npx vite build`: built in 28.24s, main chunk 408.09 kB gzip (physics chunk 1.65 MB gzip, lazy) PASS
+- Notes:
+  - Implemented Milestone M6b foundation (SPEC §11.25 Club spaces, §14.11 People & painted faces, §14.12.7 Physics & character controller):
+    - **Unified Floor Coordinates & Rooms Geometry (`src/club3d/rooms.ts`):** Defined single connected coordinate space joining Exterior (stadium entrance, car park), Corridor spine (X: -20 to 40, Z: -1.5 to 1.5), Office (Hub, Tactics, Inbox, Club), Boardroom (meeting & reviews), Dressing Room (U of lockers, central tactics stand), Tunnel (leading to pitch light), Press Room (table, mics, backdrop), and outdoor path to Training Ground (two pitches, cones, touchline clipboard). Procedural fallback geometry with collision boxes and door frames.
+    - **Navigation Graph & Timed Walks (`src/club3d/nav.ts`, `walk.ts`):** Dijkstra waypoint pathfinding connecting all rooms through corridor junctions. Walk durations strictly clamped to <= 2.5s (`BALANCE.club3d.walkMaxSeconds`). Rapier `KinematicCharacterController` integration (capsule r=0.28, h=1.78, maxStep=0.3, maxSlope=40°, groundSnap=0.2). Space/click instant skip support and setting toggle ("Coach walks between rooms").
+    - **Look-Around Camera Controller (`src/club3d/lookAround.ts`):** Right-click drag yaw (±60°) and pitch (-20° to +15°), wheel lean (±1.5m), wall margin clamping (>= 0.3m), and 1.2m minimum distance constraint to character heads. 600ms spring ease-back on release. One-time 4s hint banner.
+    - **Faces & Audio-Driven Mouths (`src/club3d/mouth.ts`, `faces.ts`, `people.ts`):** 5 emotional moods (neutral, happy, angry, worried, shocked), blinking scheduler (2–6s), 3–5° listening head tilt, gaze look-at towards speaker (±25° max). `AnalyserNode` RMS loudness mouth mapping with hysteresis and 70ms minimum hold time, with procedural caption-rhythm speech fallback.
+    - **Talk Scenes & Team-Talk Reactions (`src/club3d/talkScenes.ts`):** Two-beat pattern (Speaking beat with Space skip -> Choice beat with choice card). Team-talk reaction formulas from real morale changes (morale >= +4 FistPump/SitClap, +1..+3 SitNod, 0 Listen, -1..-3 SitHeadDown, <= -4 ArmsFolded).
+    - **Time of Day System (`src/club3d/timeOfDay.ts`):** 4 weekly beats (Monday morning, Wednesday afternoon, Friday evening, Matchday) with 1.2s lighting crossfades and TopBar chip status formatting.
+    - **React & Three.js Shell (`src/club3d/ClubScene.ts`, `ClubSpacesCanvas.tsx`):** Wired `<ClubSpacesCanvas />` into `App.tsx` behind management screens with room ambience playback via `audioEngine`.
+    - **Unit Tests:** Authored `tests/club3d/club3d.test.ts` (12 tests covering geometry bounds, screen-to-room mappings, nav paths, walk clamps, camera bounds, mouth hysteresis, caption rhythm, face moods, team talk reactions, talk scene state transitions, and time-of-day beats).

@@ -30,6 +30,7 @@ import { Toast } from './ui/components/Toast';
 import { ScreenTransition, getScreenWorld } from './ui/components/ScreenTransition';
 import { applySettingsToDom } from './state/settings';
 import { audioEngine } from './audio';
+import { ClubSpacesCanvas } from './club3d';
 
 export const App: React.FC = () => {
   const screen = useStore((state) => state.screen);
@@ -166,6 +167,7 @@ export const App: React.FC = () => {
   // 2. Management screens shell (TopBar tabs + ScreenTransition + Content)
   return (
     <div className={`app-shell ${currentWorld}`}>
+      <ClubSpacesCanvas />
       <TopBar />
 
       <main className={`app-shell-main ${currentWorld === 'office' ? 'office' : ''}`}>
