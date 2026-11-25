@@ -2344,8 +2344,8 @@ export class MatchEngine implements MatchSim {
           : oppTeam.roles.filter((r) => r === 'pressing_forward').length;
         const pressMult = pressCount > 1 ? 1.15 : 1.0;
         const pressAdd = oppTeam.defRoles?.includes('st_press')
-          ? (K.droles.st_press.teamOppDefPress ?? 0.52)
-          : 0.2;
+          ? (K.droles.st_press.teamOppDefPress ?? 0.44)
+          : 0.14;
         sPress += pressAdd * (0.4 + 0.6 * pfFit) * pressMult;
         ctx +=
           (oppTeam.defRoles?.includes('st_press')
@@ -2774,7 +2774,7 @@ export class MatchEngine implements MatchSim {
         0.4 * z(receiverSheet.attributes.strength) +
         (side === 'home' ? K.homeAdvantage : 0);
 
-      if (recvRole === 'target_man') sAirAtt += 0.38 * recvGainScale;
+      if (recvRole === 'target_man') sAirAtt += 0.48 * recvGainScale;
 
       let sAirDef = defenderSheet
         ? 0.5 * z(defenderSheet.attributes.heading) +
@@ -3189,7 +3189,7 @@ export class MatchEngine implements MatchSim {
         const aSlot = team.lineup.indexOf(a.id);
         const aRole = aSlot >= 0 ? (team.roles[aSlot] ?? 'st') : 'st';
         let w = Math.max(1, a.attributes.heading);
-        if (aRole === 'target_man') w *= 1.4;
+        if (aRole === 'target_man') w *= 1.6;
         if (aRole === 'false_nine') w *= 0.5;
         return w;
       });
@@ -3284,7 +3284,7 @@ export class MatchEngine implements MatchSim {
         0.4 * z(targetAtt.attributes.strength) +
         (side === 'home' ? K.homeAdvantage : 0);
 
-      if (targetAttRole === 'target_man') sAirAtt += 0.35 * (0.4 + 0.6 * targetAttFit);
+      if (targetAttRole === 'target_man') sAirAtt += 0.44 * (0.4 + 0.6 * targetAttFit);
 
       let sAirDef = targetDef
         ? 0.5 * z(targetDef.attributes.heading) +

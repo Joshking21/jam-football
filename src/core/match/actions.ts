@@ -287,7 +287,7 @@ export function selectAction(
         break;
       case 'inside_forward':
         if (third === 'ATT') {
-          if (utilities.shot !== undefined) utilities.shot += 0.22 * gainScale;
+          if (utilities.shot !== undefined) utilities.shot += 0.32 * gainScale;
           if (utilities.dribble !== undefined) utilities.dribble += 0.1 * gainScale;
         }
         if (utilities.cross !== undefined) utilities.cross -= 0.5;

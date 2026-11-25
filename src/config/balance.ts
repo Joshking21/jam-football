@@ -977,8 +977,8 @@ export const K = {
     },
     familiarity: {
       threshold: 70,
-      divisor: 350,
-      maxPenalty: -0.26,
+      divisor: 370,
+      maxPenalty: -0.24,
       weeklyMatchGain: 6,
       tacticalTrainingGain: 6,
       weeklyDecay: 2,
@@ -1003,7 +1003,7 @@ export const K = {
       asD_tkl: 0.35,
       asD_press: 0.25,
       asD_airD: 0.2,
-      beatenNextStepThroughCtx: 0.3,
+      beatenNextStepThroughCtx: 0.22,
       foulsMult: 1.2,
     },
     cb_cover: {
@@ -1064,8 +1064,8 @@ export const K = {
     },
     st_central: {},
     st_press: {
-      teamOppDefPress: 0.52,
-      oppDefPassCtx: -0.28,
+      teamOppDefPress: 0.44,
+      oppDefPassCtx: -0.2,
       fatigueMult: 1.15,
     },
     st_shoulder: {
