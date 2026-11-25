@@ -7,6 +7,7 @@ export const ClubSpacesCanvas: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<ClubScene | null>(null);
   const [hint, setHint] = useState<string | null>(null);
+  const [prompt, setPrompt] = useState<string | null>(null);
 
   const screen = useStore((state) => state.screen);
   const setScreen = useStore((state) => state.setScreen);
@@ -22,6 +23,10 @@ export const ClubSpacesCanvas: React.FC = () => {
       if (targetScreen) {
         setScreen(targetScreen as any);
       }
+    });
+
+    scene.setOnInteractionPromptChange((p) => {
+      setPrompt(p);
     });
 
     const interval = setInterval(() => {
@@ -69,6 +74,35 @@ export const ClubSpacesCanvas: React.FC = () => {
         pointerEvents: 'auto',
       }}
     >
+      {prompt && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '72px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(8, 10, 14, 0.92)',
+            border: '2px solid #F2B705',
+            boxShadow: '0 0 20px rgba(242, 183, 5, 0.4)',
+            color: '#FFFFFF',
+            padding: '10px 22px',
+            fontFamily: 'Barlow Condensed, sans-serif',
+            fontWeight: 800,
+            fontSize: '18px',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            pointerEvents: 'none',
+            zIndex: 20,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+          }}
+        >
+          <span style={{ color: '#F2B705' }}>INTERACT:</span>
+          <span>{prompt}</span>
+        </div>
+      )}
+
       {hint && (
         <div
           style={{

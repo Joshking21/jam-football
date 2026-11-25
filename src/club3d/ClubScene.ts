@@ -31,6 +31,19 @@ export class ClubScene {
   private raycaster = new THREE.Raycaster();
   private mouse = new THREE.Vector2();
   private onHotspotClick?: (hotspotId: string, screen?: string) => void;
+  private onInteractionPromptChange?: (prompt: string | null) => void;
+
+  // Free Walking State (§24)
+  private coachPerson: any = null;
+  private currentPrompt: string | null = null;
+  private nearestHotspot: any = null;
+  private keysDown = {
+    w: false,
+    a: false,
+    s: false,
+    d: false,
+    shift: false,
+  };
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -81,6 +94,16 @@ export class ClubScene {
     this.loadRoom('office');
     this.lookAroundController.setRoom(ROOM_DEFINITIONS.office);
     audioEngine.setRoom('office');
+
+    // Add 3D Coach to the world
+    this.coachPerson = this.peopleManager.createPerson(
+      'coach',
+      'The Manager',
+      'coach',
+      [-12, 0, 5.8],
+      0,
+    );
+    this.scene.add(this.coachPerson.group);
 
     // 6. Bind Input Events
     this.bindEvents();
@@ -166,12 +189,40 @@ export class ClubScene {
     });
 
     window.addEventListener('keydown', (e) => {
+      // Ignore if typing in input
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
+        return;
+      }
+
       if (this.walkController.isWalking()) {
         // Any click or key skips walk (§11.25.2)
         this.walkController.skip();
         return;
       }
+
+      const key = e.key.toLowerCase();
+      if (key === 'w') this.keysDown.w = true;
+      if (key === 's') this.keysDown.s = true;
+      if (key === 'a') this.keysDown.a = true;
+      if (key === 'd') this.keysDown.d = true;
+      if (e.shiftKey) this.keysDown.shift = true;
+
+      if (key === 'e') {
+        if (this.nearestHotspot && this.nearestHotspot.opens?.screen && this.onHotspotClick) {
+          this.onHotspotClick(this.nearestHotspot.id, this.nearestHotspot.opens.screen);
+        }
+      }
+
       this.lookAroundController.onKeyDown(e);
+    });
+
+    window.addEventListener('keyup', (e) => {
+      const key = e.key.toLowerCase();
+      if (key === 'w') this.keysDown.w = false;
+      if (key === 's') this.keysDown.s = false;
+      if (key === 'a') this.keysDown.a = false;
+      if (key === 'd') this.keysDown.d = false;
+      if (!e.shiftKey) this.keysDown.shift = false;
     });
 
     el.addEventListener('click', (e) => {
@@ -220,6 +271,87 @@ export class ClubScene {
     // 1. Update Controllers
     this.timeOfDayController.update(dt);
     this.walkController.update(dt);
+
+    // 1b. WASD Free Walking (§24)
+    if (this.coachPerson && !this.walkController.isWalking()) {
+      let dx = 0;
+      let dz = 0;
+      if (this.keysDown.w) dz -= 1;
+      if (this.keysDown.s) dz += 1;
+      if (this.keysDown.a) dx -= 1;
+      if (this.keysDown.d) dx += 1;
+
+      const isMoving = dx !== 0 || dz !== 0;
+
+      if (isMoving) {
+        const moveVec = new THREE.Vector3(dx, 0, dz).normalize();
+        const speed = this.keysDown.shift ? 5.8 : 3.4; // m/s
+        const deltaPos = moveVec.clone().multiplyScalar(speed * dt);
+
+        const curPos = this.coachPerson.group.position;
+        const b = ROOM_DEFINITIONS[this.currentRoomId].bounds;
+        const margin = 0.35;
+
+        const nextX = THREE.MathUtils.clamp(
+          curPos.x + deltaPos.x,
+          b.min[0] + margin,
+          b.max[0] - margin,
+        );
+        const nextZ = THREE.MathUtils.clamp(
+          curPos.z + deltaPos.z,
+          b.min[2] + margin,
+          b.max[2] - margin,
+        );
+
+        this.coachPerson.group.position.x = nextX;
+        this.coachPerson.group.position.z = nextZ;
+
+        const facing = Math.atan2(moveVec.x, moveVec.z);
+        this.coachPerson.group.rotation.y = facing;
+
+        const targetClip = this.keysDown.shift ? 'Run' : 'Walk';
+        if (this.coachPerson.currentClip !== targetClip) {
+          this.peopleManager.playClip('coach', targetClip);
+        }
+
+        // Camera smoothly follows behind coach in free walk
+        const camOffset = new THREE.Vector3(0, 1.6, 2.8);
+        const camTarget = this.coachPerson.group.position.clone().add(camOffset);
+        this.camera.position.lerp(camTarget, 0.1);
+        this.camera.lookAt(
+          this.coachPerson.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)),
+        );
+      } else {
+        if (this.coachPerson.currentClip === 'Walk' || this.coachPerson.currentClip === 'Run') {
+          this.peopleManager.playClip('coach', 'Idle');
+        }
+      }
+
+      // Check proximity to Hotspots for [E] prompt
+      const def = ROOM_DEFINITIONS[this.currentRoomId];
+      if (def) {
+        let closest: any = null;
+        let minDist = 2.0;
+
+        for (const spot of def.hotspots) {
+          const sPos = new THREE.Vector3(...spot.position);
+          const dist = this.coachPerson.group.position.distanceTo(sPos);
+          if (dist < minDist) {
+            minDist = dist;
+            closest = spot;
+          }
+        }
+
+        this.nearestHotspot = closest;
+        const prompt = closest ? `[E] · ${closest.name}` : null;
+        if (prompt !== this.currentPrompt) {
+          this.currentPrompt = prompt;
+          if (this.onInteractionPromptChange) {
+            this.onInteractionPromptChange(prompt);
+          }
+        }
+      }
+    }
 
     const headPositions = this.peopleManager.getAll().map((p) => {
       return [p.position[0], p.position[1] + 1.62, p.position[2]] as [number, number, number];

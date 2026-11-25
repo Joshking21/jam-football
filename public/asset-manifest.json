@@ -6,6 +6,30 @@
     },
     "bake/stadium_ao.json": {
       "bytes": 4414
+    },
+    "models/club/bench.glb": {
+      "bytes": 1816
+    },
+    "models/club/board_table.glb": {
+      "bytes": 1808
+    },
+    "models/club/desk.glb": {
+      "bytes": 1868
+    },
+    "models/club/locker.glb": {
+      "bytes": 1820
+    },
+    "models/club/tv.glb": {
+      "bytes": 1828
+    },
+    "models/club/whiteboard.glb": {
+      "bytes": 1840
+    },
+    "models/manager.glb": {
+      "bytes": 206816
+    },
+    "models/player.glb": {
+      "bytes": 188504
     }
   }
 }
