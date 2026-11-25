@@ -31,6 +31,7 @@ import { ScreenTransition, getScreenWorld } from './ui/components/ScreenTransiti
 import { applySettingsToDom } from './state/settings';
 import { audioEngine } from './audio';
 import { ClubSpacesCanvas } from './club3d';
+import { ErrorBoundary } from './ui/components/ErrorBoundary';
 
 export const App: React.FC = () => {
   const screen = useStore((state) => state.screen);
@@ -167,7 +168,9 @@ export const App: React.FC = () => {
   // 2. Management screens shell (TopBar tabs + ScreenTransition + Content)
   return (
     <div className={`app-shell ${currentWorld}`}>
-      <ClubSpacesCanvas />
+      <ErrorBoundary fallback={null}>
+        <ClubSpacesCanvas />
+      </ErrorBoundary>
       <TopBar />
 
       <main className={`app-shell-main ${currentWorld === 'office' ? 'office' : ''}`}>

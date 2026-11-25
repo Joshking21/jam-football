@@ -118,6 +118,10 @@ export class ClubScene {
     this.onHotspotClick = callback;
   }
 
+  public setOnInteractionPromptChange(callback: (prompt: string | null) => void) {
+    this.onInteractionPromptChange = callback;
+  }
+
   private loadRoom(roomId: RoomId) {
     // Only current room is visible (§11.25.1)
     for (const [id, grp] of this.loadedRooms.entries()) {

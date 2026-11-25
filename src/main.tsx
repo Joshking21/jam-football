@@ -10,6 +10,7 @@ import '@fontsource/inter/600.css';
 import '@/ui/styles/global.css';
 
 import { App } from './App';
+import { ErrorBoundary } from './ui/components/ErrorBoundary';
 import { initAssetRegistry } from './assets/registry';
 
 // Initialize asset registry immediately
@@ -19,7 +20,9 @@ const rootElement = document.getElementById('root');
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
     </React.StrictMode>,
   );
 }
