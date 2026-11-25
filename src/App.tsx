@@ -29,6 +29,7 @@ import { TopBar } from './ui/components/TopBar';
 import { Toast } from './ui/components/Toast';
 import { ScreenTransition, getScreenWorld } from './ui/components/ScreenTransition';
 import { applySettingsToDom } from './state/settings';
+import { audioEngine } from './audio';
 
 export const App: React.FC = () => {
   const screen = useStore((state) => state.screen);
@@ -43,7 +44,22 @@ export const App: React.FC = () => {
   // Apply initial visual settings (contrast, motion, text size)
   useEffect(() => {
     applySettingsToDom(settings);
+    audioEngine.ensureContext();
+    audioEngine.updateSettings(settings);
   }, [settings]);
+
+  // Global Audio & Music Lifecycle (SPEC §17.2)
+  useEffect(() => {
+    if (screen === 'title') {
+      audioEngine.playMusic('title_theme');
+    } else if (screen === 'match') {
+      audioEngine.stopMusic();
+    } else if (screen === 'seasonEnd') {
+      audioEngine.playMusic('season_end');
+    } else {
+      audioEngine.playMusic('menu_loop');
+    }
+  }, [screen]);
 
   // Global Keyboard Navigation (SPEC §11.0)
   useEffect(() => {

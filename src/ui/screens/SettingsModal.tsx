@@ -5,6 +5,7 @@ import { Modal } from '@/ui/components/Modal';
 import { Button } from '@/ui/components/Button';
 import { Volume2, Gamepad2, Monitor, Eye, Database } from 'lucide-react';
 import { saveGame, loadGame, deleteSaveSlot } from '@/state/saves';
+import { audioEngine } from '@/audio';
 
 type SettingsTab = 'audio' | 'gameplay' | 'graphics' | 'accessibility' | 'data';
 

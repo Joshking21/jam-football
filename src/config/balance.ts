@@ -216,6 +216,63 @@ export const BALANCE = {
     inMatchLowPossessionShare: 0.35,
     halfTimeWorstRatingThreshold: 6.4,
   },
+  // Audio Engine & Settings (SPEC §17)
+  audio: {
+    // Crossfades & transitions (seconds)
+    crossfadeDurationMusic: 1.5, // §17.2: Crossfades 1.5 s
+    crossfadeDurationRoom: 0.6, // §17.5: crossfaded over 0.6 s
+    dangerSmoothingSec: 1.5, // §17.3: smoothed over 1.5 s
+    voiceFadeOutMs: 150, // §17.4: fade current line out over 150 ms
+    voiceMaxDropAgeSimSec: 3.0, // §17.4: Drop lines older than 3 sim seconds
+    chantIntervalMinSec: 60, // §17.3: random every 60-120 s
+    chantIntervalMaxSec: 120,
+
+    // Attenuation & gains (dB)
+    menuMusicDb: -6, // §17.2: -6 dB
+    roomAmbienceDb: -18, // §17.5: -18 dB
+    duckingCrowdDb: -6, // §17.4: Duck crowd by -6 dB while voice plays
+    duckingMusicDb: -10, // §17.4: Duck music by -10 dB while voice plays
+    awayGoalDb: -8, // §17.3: away goals at -8 dB
+    homeGoalDb: 0, // §17.3: home goals full
+    homeAttackSwellDb: 3, // §17.3: crowd swells (+3 dB) on home attacks
+
+    // Spatial panning
+    panMax: 0.6, // §17.3: StereoPannerNode, ±0.6
+
+    // Match pitch dimensions & third thresholds (pitch: 105 x 68)
+    pitchLength: 105.0,
+    pitchWidth: 68.0,
+    defThirdMaxX: 35.0,
+    midThirdMaxX: 70.0,
+    boxMinX: 88.5,
+    boxMinY: 13.84,
+    boxMaxY: 54.16,
+
+    // Procedural synthesis frequencies (Hz) and timings (seconds)
+    synth: {
+      whistleFreq1: 2600,
+      whistleFreq2: 2850,
+      whistleShortDuration: 0.22,
+      whistleLongDuration: 0.75,
+      kickPassFreqStart: 130,
+      kickPassFreqEnd: 45,
+      kickPassDuration: 0.09,
+      kickShotFreqStart: 160,
+      kickShotFreqEnd: 38,
+      kickShotDuration: 0.14,
+      postFreq1: 1250,
+      postFreq2: 2450,
+      postDuration: 0.55,
+      netDuration: 0.22,
+      headerDuration: 0.1,
+      roarDuration: 2.8,
+      groanDuration: 1.4,
+      oohDuration: 1.1,
+      booDuration: 1.5,
+      crowdCalmCutoffHz: 500,
+      crowdTenseCutoffHz: 2200,
+    },
+  },
   // Finances (SPEC §12.10)
   finances: {
     tvIncomeWeekly: 600_000,

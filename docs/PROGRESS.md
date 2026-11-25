@@ -257,3 +257,22 @@ REVIEW REQUESTED: M4 (third pass)
     - **Half-Time & Post-Match (§15.5):** Half-time xG comparison, danger man press, and worst-starter sub bullets wired into `HalfTimeModal.tsx`; post-match expectation/MVP/deciding-stat summary and recommended next-week training focus Apply wired into `PostMatchScreen.tsx`.
     - **Store Action:** Added `applyAdviceAction(action)` in `src/state/store.ts`.
     - **Unit Tests:** Added `tests/core/people/assistant.test.ts` (8 tests verifying all rule families, cooldowns, caps, live match command application, half-time, and post-match analysis).
+
+## 2026-11-25 · M6.2 Audio engine, buses, crowd danger mix, and procedural synthesis
+- Changed: src/config/balance.ts, src/audio/{types,synth,ducking,ambience,engine,matchAudio,index}.ts, src/state/store.ts, src/App.tsx, src/ui/screens/MatchScreen.tsx, src/ui/screens/SettingsModal.tsx, tests/audio/audio.test.ts, tests/core/people/decisions.test.ts
+- Ran:
+  - `npx prettier --check`: All matched files use Prettier code style! PASS
+  - `npx vitest run tests/audio/audio.test.ts`: 1 file / 16 tests PASS (0 failures)
+  - `npx vitest run`: 44 test files / 323 tests PASS (0 failures)
+  - `npx vite build`: built in 47.42s, main chunk 397.03 kB gzip (physics chunk 1.65 MB gzip, lazy) PASS
+- Notes:
+  - Implemented Milestone M6 Task 2 (SPEC §17 Audio):
+    - **Audio Engine & Routing Buses (§17.1):** Single Web Audio `AudioContext` created and unlocked on user gesture. Hierarchical gain bus routing (`master` -> [`music`, `crowd`, `commentary`, `sfx`]). Dynamic volume sync with `settings.audio` (`master`, `music`, `crowd`, `commentary`, `effects`, `voice` mute toggle). AudioBuffer caching with silent skip on missing manifest files.
+    - **Music System (§17.2):** 1.5s crossfading for `title_theme` (TitleScreen), `menu_loop` (-6 dB across all management screens), clean stop during matches, and `season_end`. Complete procedural chord pad/drone synthesizer fallback when mp3 assets are absent.
+    - **Match Crowd & Danger Mix (§17.3):** Dynamic crossfading between calm and tense crowd loops derived from match ball coordinates: `danger = 0` (own DEF third) -> `1` (opponent penalty box), smoothed over 1.5s. Home-side attack swell (+3 dB). Random chant generator scheduled every 60–120s.
+    - **Spatial Panning & SFX (§17.3, §19.7):** Ball kicks spatially panned relative to camera center via `StereoPannerNode` clamped strictly to `[-0.6, 0.6]`. Dedicated procedural synthesizers for all match cues (short/long/FT whistles, kick pass/shot, header thud, post ping, net rustle, goal roars with -8 dB away attenuation, groan on woodwork/miss, ooh on keeper save, boo on foul) and UI motion sounds (`ui_click`, `ui_confirm`, `ui_error`, `ui_whoosh`, `ui_tick`, `ui_clack`, `ui_paper`, `ui_stamp`, `notification`, `camera_shutter`).
+    - **Voice Ducking (§17.4):** Pure gain ramping ducking crowd by -6 dB and music by -10 dB during spoken lines and assistant stingers.
+    - **Room Ambience (§17.5):** 0.6s crossfades between room loops (`exterior`, `corridor`, `office`, `boardroom`, `dressing`, `tunnel`, `training`, `press`) balanced at -18 dB against UI sound effects.
+    - **UI & Match Integration:** Wired into `App.tsx` (lifecycle & screen routing), `MatchScreen.tsx` (playback event hooks & real-time ball position danger tracking), `SettingsModal.tsx` (real-time volume slider adjustment), and store dispatch.
+    - **Unit Tests:** Authored `tests/audio/audio.test.ts` (16 tests verifying bus routing, volume scaling, ducking attenuation, procedural sound synthesis, spatial pan clamping, danger progression from defensive third to penalty box, event dispatching, and offline fallback).
+

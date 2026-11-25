@@ -46,6 +46,7 @@ import {
 import { clamp, formatMoney } from '@/core/math';
 import { valueOf, wageFor } from '@/core/player/value';
 import { BALANCE } from '@/config/balance';
+import { audioEngine } from '@/audio';
 
 export type AppScreen =
   | 'title'
@@ -259,6 +260,7 @@ export const useStore = create<AppState>((set, get) => {
       const current = get().settings;
       const updated = { ...current, ...partial };
       saveSettings(updated);
+      audioEngine.updateSettings(updated);
       set({ settings: updated });
     },
 

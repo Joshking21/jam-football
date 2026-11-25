@@ -34,6 +34,7 @@ import { createMatch, simulateInstant } from '../../core/match/engine';
 import { createDefaultSetPieceTactics } from '../../core/match/setPieces';
 import { adviseInMatch, AdviceAction } from '../../core/people/assistant';
 import { createRng } from '../../core/rng';
+import { audioEngine, matchAudio } from '../../audio';
 import type { ClientToWorkerMessage, WorkerToClientMessage } from '../../workers/match.worker';
 
 export const MatchScreen: React.FC = () => {
@@ -162,6 +163,10 @@ export const MatchScreen: React.FC = () => {
         setIsFullTime(true);
       },
       onEventStarted: (ev) => {
+        // Trigger spatial match audio and crowd reactions (§17.3)
+        const cameraX = sceneRef.current?.camera?.position?.x ?? 52.5;
+        matchAudio.onEvent(ev, userSide, cameraX);
+
         if (ev.type === 'MATCH_PLAN_TRIGGERED' && ev.side === userSide && ev.data) {
           const whenText: Record<string, string> = {
             Losing: 'Losing',
@@ -275,6 +280,7 @@ export const MatchScreen: React.FC = () => {
       },
     });
     playbackRef.current = playback;
+    audioEngine.startMatchAudio();
 
     // B. Build Match3DContext
     const homeSheet = buildTeamSheet(homeClub, gameState.players, 'home');
@@ -675,6 +681,11 @@ export const MatchScreen: React.FC = () => {
         scene.setBallPosition(sceneX, 0.11, sceneZ);
       }
 
+      // Update crowd danger mix (§17.3)
+      const ballPos = playback.getBallPosition(state.pt);
+      const attackingSide = state.currentEvent?.side ?? userSide;
+      matchAudio.updateBall(ballPos.x, ballPos.y, attackingSide, userSide);
+
       // Update Out of Town Scores progress
       if (state.pt > 0 && Math.random() < 0.005) {
         setOutOfTownScores((prev) =>
@@ -705,6 +716,7 @@ export const MatchScreen: React.FC = () => {
     animFrameRef.current = requestAnimationFrame(frameLoop);
 
     return () => {
+      audioEngine.stopMatchAudio();
       if (animFrameRef.current !== null) {
         cancelAnimationFrame(animFrameRef.current);
       }
