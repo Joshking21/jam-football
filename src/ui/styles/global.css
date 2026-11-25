@@ -165,12 +165,27 @@ a {
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  background: var(--bg);
+  background: transparent;
   width: 100%;
 }
 
 .app-shell-main.office {
-  background: var(--desk);
+  background: transparent;
+}
+
+.app-shell.panel-fade .app-shell-main {
+  opacity: 0.15;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.app-shell.free-roam-active .app-shell-main {
+  display: none !important;
+}
+
+.app-shell.free-roam-active .app-shell-topbar {
+  background: rgba(7, 12, 24, 0.7);
+  backdrop-filter: blur(8px);
 }
 
 .app-content-area {

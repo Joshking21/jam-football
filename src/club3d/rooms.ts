@@ -54,7 +54,7 @@ export const ROOM_DEFINITIONS: Record<RoomId, RoomDefinition> = {
         position: [-12, 1.1, 1.45],
         radius: 1.0,
         room: 'corridor',
-        opens: { screen: 'hub' },
+        opens: { room: 'office', screen: 'hub' },
         touch: {
           hand: 'R',
           point: [-12.3, 1.05, 1.45],
@@ -68,7 +68,7 @@ export const ROOM_DEFINITIONS: Record<RoomId, RoomDefinition> = {
         position: [0, 1.1, 1.45],
         radius: 1.0,
         room: 'corridor',
-        opens: { screen: 'boardMeeting' },
+        opens: { room: 'boardroom', screen: 'boardMeeting' },
         touch: {
           hand: 'R',
           point: [-0.3, 1.05, 1.45],
@@ -82,7 +82,7 @@ export const ROOM_DEFINITIONS: Record<RoomId, RoomDefinition> = {
         position: [15, 1.1, 1.45],
         radius: 1.0,
         room: 'corridor',
-        opens: { scene: 'press_conference' },
+        opens: { room: 'press', scene: 'press_conference' },
         touch: {
           hand: 'R',
           point: [14.7, 1.05, 1.45],
@@ -96,7 +96,7 @@ export const ROOM_DEFINITIONS: Record<RoomId, RoomDefinition> = {
         position: [-5, 1.1, -1.45],
         radius: 1.0,
         room: 'corridor',
-        opens: { screen: 'squad' },
+        opens: { room: 'dressing', screen: 'squad' },
         touch: {
           hand: 'L',
           point: [-4.7, 1.05, -1.45],
@@ -110,7 +110,7 @@ export const ROOM_DEFINITIONS: Record<RoomId, RoomDefinition> = {
         position: [39.5, 1.1, 0],
         radius: 1.2,
         room: 'corridor',
-        opens: { screen: 'training' },
+        opens: { room: 'training', screen: 'training' },
         touch: {
           hand: 'R',
           point: [39.5, 1.05, 0.4],
@@ -175,9 +175,9 @@ export const ROOM_DEFINITIONS: Record<RoomId, RoomDefinition> = {
         id: 'office_door',
         name: 'Corridor Door',
         position: [-12, 1.1, 1.55],
-        radius: 0.9,
+        radius: 1.2,
         room: 'office',
-        opens: { screen: 'hub' },
+        opens: { room: 'corridor' },
         touch: {
           hand: 'L',
           point: [-11.7, 1.05, 1.55],

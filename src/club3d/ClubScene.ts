@@ -32,6 +32,8 @@ export class ClubScene {
   private mouse = new THREE.Vector2();
   private onHotspotClick?: (hotspotId: string, screen?: string) => void;
   private onInteractionPromptChange?: (prompt: string | null) => void;
+  private onFreeRoamChange?: (roaming: boolean) => void;
+  public isFreeRoam = false;
 
   // Free Walking State (§24)
   private coachPerson: any = null;
@@ -122,6 +124,17 @@ export class ClubScene {
     this.onInteractionPromptChange = callback;
   }
 
+  public setOnFreeRoamChange(callback: (roaming: boolean) => void) {
+    this.onFreeRoamChange = callback;
+  }
+
+  public setFreeRoam(roaming: boolean) {
+    this.isFreeRoam = roaming;
+    if (this.onFreeRoamChange) {
+      this.onFreeRoamChange(roaming);
+    }
+  }
+
   private loadRoom(roomId: RoomId) {
     // Only current room is visible (§11.25.1)
     for (const [id, grp] of this.loadedRooms.entries()) {
@@ -138,7 +151,13 @@ export class ClubScene {
     }
 
     this.currentRoomId = roomId;
-    this.lookAroundController.setRoom(ROOM_DEFINITIONS[roomId]);
+    const def = ROOM_DEFINITIONS[roomId];
+    if (def) {
+      this.lookAroundController.setRoom(def);
+      if (this.coachPerson) {
+        this.coachPerson.group.position.set(def.doorPosition[0], 0, def.doorPosition[2]);
+      }
+    }
     audioEngine.setRoom(roomId);
   }
 
@@ -211,9 +230,22 @@ export class ClubScene {
       if (key === 'd') this.keysDown.d = true;
       if (e.shiftKey) this.keysDown.shift = true;
 
+      if (key === 'v') {
+        this.setFreeRoam(!this.isFreeRoam);
+      }
+
+      if (e.key === 'Escape' && this.isFreeRoam) {
+        this.setFreeRoam(false);
+      }
+
       if (key === 'e') {
-        if (this.nearestHotspot && this.nearestHotspot.opens?.screen && this.onHotspotClick) {
-          this.onHotspotClick(this.nearestHotspot.id, this.nearestHotspot.opens.screen);
+        if (this.nearestHotspot && this.nearestHotspot.opens) {
+          const opens = this.nearestHotspot.opens as any;
+          if (opens.room) {
+            this.goToRoom(opens.room, true);
+          } else if (opens.screen && this.onHotspotClick) {
+            this.onHotspotClick(this.nearestHotspot.id, opens.screen);
+          }
         }
       }
 
@@ -361,7 +393,35 @@ export class ClubScene {
       return [p.position[0], p.position[1] + 1.62, p.position[2]] as [number, number, number];
     });
 
-    this.lookAroundController.update(dt, this.camera, headPositions);
+    if (this.isFreeRoam && this.coachPerson) {
+      const orbitYaw = (this.lookAroundController.state.yawDeg * Math.PI) / 180;
+      const orbitPitch = (this.lookAroundController.state.pitchDeg * Math.PI) / 180;
+
+      const dist = 3.2 + this.lookAroundController.state.leanM;
+      const height = 1.8 + Math.sin(orbitPitch) * 1.5;
+      const horizDist = dist * Math.cos(orbitPitch);
+
+      const camOffset = new THREE.Vector3(
+        Math.sin(orbitYaw) * horizDist,
+        height,
+        Math.cos(orbitYaw) * horizDist,
+      );
+
+      const coachPos = this.coachPerson.group.position;
+      const camTarget = coachPos.clone().add(camOffset);
+
+      const b = ROOM_DEFINITIONS[this.currentRoomId].bounds;
+      const margin = 0.35;
+      camTarget.x = THREE.MathUtils.clamp(camTarget.x, b.min[0] + margin, b.max[0] - margin);
+      camTarget.y = THREE.MathUtils.clamp(camTarget.y, b.min[1] + margin, b.max[1] - margin);
+      camTarget.z = THREE.MathUtils.clamp(camTarget.z, b.min[2] + margin, b.max[2] - margin);
+
+      this.camera.position.lerp(camTarget, 0.15);
+      this.camera.lookAt(coachPos.clone().add(new THREE.Vector3(0, 1.25, 0)));
+      this.camera.updateProjectionMatrix();
+    } else {
+      this.lookAroundController.update(dt, this.camera, headPositions);
+    }
     this.peopleManager.update(dt, null, null);
 
     // 2. Render Scene
