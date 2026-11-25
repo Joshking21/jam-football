@@ -37,7 +37,24 @@ export const ClubSpacesCanvas: React.FC = () => {
 
   useEffect(() => {
     if (sceneRef.current) {
-      const walksEnabled = settings?.visual?.reducedMotion ? false : true;
+      if (typeof window !== 'undefined') {
+        const p = new URLSearchParams(window.location.search);
+        const urlRoom = p.get('room');
+        const stateParam = p.get('state');
+        if (urlRoom) {
+          sceneRef.current.goToRoom(urlRoom as any, false);
+          return;
+        }
+        if (stateParam === 'corridor' || stateParam === 'door' || stateParam === 'corridor-brush') {
+          sceneRef.current.goToRoom('corridor', false);
+          return;
+        }
+        if (stateParam === 'press') {
+          sceneRef.current.goToRoom('press', false);
+          return;
+        }
+      }
+      const walksEnabled = settings?.reduceMotion ? false : true;
       sceneRef.current.goToScreen(screen, walksEnabled);
     }
   }, [screen, settings]);

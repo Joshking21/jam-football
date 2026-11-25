@@ -76,6 +76,12 @@ export class CoachWalkController {
 
     const totalDuration = getWalkDuration(path);
 
+    const pStart = path[0];
+    if (!pStart) {
+      onComplete();
+      return false;
+    }
+
     this.state = {
       active: true,
       fromRoom,
@@ -83,7 +89,7 @@ export class CoachWalkController {
       path,
       totalDuration,
       elapsed: 0,
-      currentPos: [...path[0]],
+      currentPos: [pStart[0], pStart[1], pStart[2]],
       currentFacing: 0,
       onComplete,
     };
@@ -94,7 +100,9 @@ export class CoachWalkController {
   public skip() {
     if (!this.state || !this.state.active) return;
     const dest = this.state.path[this.state.path.length - 1];
-    this.state.currentPos = [...dest];
+    if (dest) {
+      this.state.currentPos = [dest[0], dest[1], dest[2]];
+    }
     const cb = this.state.onComplete;
     this.state = null;
     if (cb) cb();
@@ -113,6 +121,7 @@ export class CoachWalkController {
 
     const p0 = path[currentSegmentIndex];
     const p1 = path[currentSegmentIndex + 1];
+    if (!p0 || !p1) return null;
 
     const currentX = p0[0] + (p1[0] - p0[0]) * segmentProgress;
     const currentY = p0[1] + (p1[1] - p0[1]) * segmentProgress;

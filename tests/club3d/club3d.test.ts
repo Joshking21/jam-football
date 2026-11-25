@@ -85,7 +85,9 @@ describe('M6b Floor Navigation & Walk Durations (§11.25.2)', () => {
       ['node_dressing_center', 'node_tunnel_pitch'],
     ];
 
-    for (const [start, end] of pairs) {
+    for (const pair of pairs) {
+      const start = pair[0]!;
+      const end = pair[1]!;
       const path = findNavPath(start, end);
       expect(path.length).toBeGreaterThan(1);
       const len = getPathLength(path);

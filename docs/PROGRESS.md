@@ -310,3 +310,18 @@ REVIEW REQUESTED: M4 (third pass)
     - **Time of Day System (`src/club3d/timeOfDay.ts`):** 4 weekly beats (Monday morning, Wednesday afternoon, Friday evening, Matchday) with 1.2s lighting crossfades and TopBar chip status formatting.
     - **React & Three.js Shell (`src/club3d/ClubScene.ts`, `ClubSpacesCanvas.tsx`):** Wired `<ClubSpacesCanvas />` into `App.tsx` behind management screens with room ambience playback via `audioEngine`.
     - **Unit Tests:** Authored `tests/club3d/club3d.test.ts` (12 tests covering geometry bounds, screen-to-room mappings, nav paths, walk clamps, camera bounds, mouth hysteresis, caption rhythm, face moods, team talk reactions, talk scene state transitions, and time-of-day beats).
+
+## 2026-11-25 · M6b Automated screenshot capture run and verification
+- Changed: scripts/capture-screens.ts, src/club3d/{ClubScene,ClubSpacesCanvas,mouth,nav,talkScenes,types,walk}.ts, tests/club3d/club3d.test.ts, docs/screens/M6b/*.png
+- Ran:
+  - `npx prettier --check`: All matched files use Prettier code style! PASS
+  - `npx vitest run tests/audio/audio.test.ts tests/club3d/club3d.test.ts`: 2 files / 33 tests PASS (0 failures)
+  - `npx tsx scripts/capture-screens.ts M6b`: 28/28 screenshots captured (1280×720 and 1920×1080 across all 8 rooms and touch states) PASS
+- Notes:
+  - Captured all required Milestone M6b screenshots in `docs/screens/M6b/`:
+    - 3D Rooms: `exterior` (Title/Stand at dusk), `corridor`, `office` (Hub desk), `boardroom` (Board table), `dressing` (U of lockers), `tunnel` (pitch threshold), `training` (training pitches), `press` (press conference table).
+    - Framed screens: `tactics-whiteboard`, `preMatch-briefing`.
+    - Touch states: `door` (door handle reach), `corridor-brush` (wall brush), `desk-rest` (hand resting on desk edge), `board-reach` (tactics magnet tracking).
+  - All screenshots pass the size and rendering guards with no visual truncation.
+
+REVIEW REQUESTED: M6b

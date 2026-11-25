@@ -1,5 +1,5 @@
 // SPEC §11.25 Club spaces types and contracts
-import type { AppScreen } from '../state/types';
+import type { AppScreen } from '../state/store';
 
 export type RoomId =
   | 'exterior'

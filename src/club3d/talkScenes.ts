@@ -33,16 +33,12 @@ export class TalkSceneManager {
     }
 
     const beat = this.beats[this.currentBeatIndex];
+    if (!beat) return;
     if (this.onBeatChanged) this.onBeatChanged(beat);
 
     if (beat.type === 'speaking' && beat.line) {
       // Speak line via voiceQueue
-      voiceQueue.speakCoachLine(beat.speaker || 'Theo', beat.line, beat.voUrl, () => {
-        // When line completes, automatically move to next beat
-        if (this.getCurrentBeat()?.id === beat.id) {
-          this.advanceBeat();
-        }
-      });
+      voiceQueue.speakCoachLine(beat.id, beat.line, beat.targetPersonId, 'none');
     }
   }
 
@@ -50,7 +46,7 @@ export class TalkSceneManager {
     if (this.isFinished || this.currentBeatIndex >= this.beats.length) {
       return null;
     }
-    return this.beats[this.currentBeatIndex];
+    return this.beats[this.currentBeatIndex] ?? null;
   }
 
   /** Skips the current spoken line (`Space` or click) */
@@ -67,7 +63,8 @@ export class TalkSceneManager {
     voiceQueue.cancel();
     let nextChoiceIdx = -1;
     for (let i = this.currentBeatIndex; i < this.beats.length; i++) {
-      if (this.beats[i].type === 'choice') {
+      const b = this.beats[i];
+      if (b && b.type === 'choice') {
         nextChoiceIdx = i;
         break;
       }

@@ -30,8 +30,13 @@ export class MouthAnimator {
     }
     const rms = Math.sqrt(sumSquares / data.length);
 
-    const th = FACES_CONFIG.audioThresholds;
-    const h = FACES_CONFIG.hysteresis;
+    const th = FACES_CONFIG?.audioThresholds ?? {
+      closed: 0.02,
+      small: 0.08,
+      open: 0.18,
+      wide: 0.35,
+    };
+    const h = FACES_CONFIG?.hysteresis ?? 0.015;
 
     let targetShape: MouthShape = 'closed';
 

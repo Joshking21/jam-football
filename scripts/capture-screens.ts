@@ -17,7 +17,7 @@ interface ScreenTarget {
   isMatch?: boolean;
 }
 
-const SCREENS: ScreenTarget[] = [
+const DEFAULT_SCREENS: ScreenTarget[] = [
   // 1. Core UI Screens
   { name: 'title', url: '/?screen=title' },
   { name: 'newGame', url: '/?screen=newGame' },
@@ -51,6 +51,27 @@ const SCREENS: ScreenTarget[] = [
   { name: 'match-rain', url: '/?screen=match&club=c01&state=rain', isMatch: true },
   { name: 'match-timelapse', url: '/?screen=match&club=c01&state=timelapse', isMatch: true },
 ];
+
+const M6B_SCREENS: ScreenTarget[] = [
+  // Every room in 3D (§11.25.1, §23 M6b 13)
+  { name: 'exterior', url: '/?screen=title' },
+  { name: 'corridor', url: '/?screen=hub&club=c01&state=corridor' },
+  { name: 'office', url: '/?screen=hub&club=c01' },
+  { name: 'boardroom', url: '/?screen=boardMeeting&club=c01' },
+  { name: 'dressing', url: '/?screen=squad&club=c01&state=md8' },
+  { name: 'tunnel', url: '/?screen=hub&club=c01&room=tunnel' },
+  { name: 'training', url: '/?screen=training&club=c01&state=md8' },
+  { name: 'press', url: '/?screen=hub&club=c01&state=press' },
+  { name: 'tactics-whiteboard', url: '/?screen=tactics&club=c01&state=md8' },
+  { name: 'preMatch-briefing', url: '/?screen=preMatch&club=c01' },
+  // Touch states (§14.12.8, §23 M6b 3b & 13)
+  { name: 'door', url: '/?screen=hub&club=c01&state=door' },
+  { name: 'corridor-brush', url: '/?screen=hub&club=c01&state=corridor-brush' },
+  { name: 'desk-rest', url: '/?screen=hub&club=c01&state=desk-rest' },
+  { name: 'board-reach', url: '/?screen=tactics&club=c01&state=board-reach' },
+];
+
+const SCREENS = MILESTONE === 'M6b' ? M6B_SCREENS : DEFAULT_SCREENS;
 
 // Per SPEC §19.8 / line 2594: 1280x720 and 1920x1080 (2560 dropped on 22 Nov to save time/data)
 const RESOLUTIONS = [
@@ -199,7 +220,7 @@ async function main() {
   }
 
   console.log(`Building production bundle for milestone ${MILESTONE}...`);
-  execSync('npm run build', { stdio: 'inherit' });
+  execSync('npx vite build', { stdio: 'inherit' });
 
   console.log(`Starting preview server on port 4173 for milestone ${MILESTONE}...`);
   const server = spawn('npx', ['vite', 'preview', '--port', '4173'], {

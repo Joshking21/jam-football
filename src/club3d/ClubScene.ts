@@ -80,7 +80,7 @@ export class ClubScene {
     // 5. Initial Room setup
     this.loadRoom('office');
     this.lookAroundController.setRoom(ROOM_DEFINITIONS.office);
-    audioEngine.playRoomAmbience('office');
+    audioEngine.setRoom('office');
 
     // 6. Bind Input Events
     this.bindEvents();
@@ -112,7 +112,7 @@ export class ClubScene {
 
     this.currentRoomId = roomId;
     this.lookAroundController.setRoom(ROOM_DEFINITIONS[roomId]);
-    audioEngine.playRoomAmbience(roomId);
+    audioEngine.setRoom(roomId);
   }
 
   public goToRoom(targetRoomId: RoomId, walksEnabled = true) {

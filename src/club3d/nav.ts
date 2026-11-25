@@ -186,8 +186,9 @@ export function findNavPath(startNodeId: string, endNodeId: string): Point3D[] {
     let curr: string | null = null;
     let minDist = Infinity;
     for (const node of unvisited) {
-      if (dists[node] < minDist) {
-        minDist = dists[node];
+      const dVal = dists[node];
+      if (dVal !== undefined && dVal < minDist) {
+        minDist = dVal;
         curr = node;
       }
     }
@@ -197,14 +198,16 @@ export function findNavPath(startNodeId: string, endNodeId: string): Point3D[] {
 
     unvisited.delete(curr);
     const currNode = NAV_GRAPH[curr];
-    if (!currNode) continue;
+    const currDist = dists[curr];
+    if (!currNode || currDist === undefined) continue;
 
     for (const neighborId of currNode.edges) {
       if (!unvisited.has(neighborId)) continue;
       const neighbor = NAV_GRAPH[neighborId];
       if (!neighbor) continue;
-      const d = dists[curr] + distance(currNode.pos, neighbor.pos);
-      if (d < dists[neighborId]) {
+      const d = currDist + distance(currNode.pos, neighbor.pos);
+      const neighborDist = dists[neighborId];
+      if (neighborDist !== undefined && d < neighborDist) {
         dists[neighborId] = d;
         prev[neighborId] = curr;
       }
@@ -217,7 +220,7 @@ export function findNavPath(startNodeId: string, endNodeId: string): Point3D[] {
   while (step) {
     const n = NAV_GRAPH[step];
     if (n) path.unshift(n.pos);
-    step = prev[step];
+    step = prev[step] ?? null;
   }
 
   return path;
@@ -227,7 +230,11 @@ export function findNavPath(startNodeId: string, endNodeId: string): Point3D[] {
 export function getPathLength(points: Point3D[]): number {
   let len = 0;
   for (let i = 0; i < points.length - 1; i++) {
-    len += distance(points[i], points[i + 1]);
+    const pA = points[i];
+    const pB = points[i + 1];
+    if (pA && pB) {
+      len += distance(pA, pB);
+    }
   }
   return len;
 }
