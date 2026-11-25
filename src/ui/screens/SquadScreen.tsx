@@ -7,6 +7,8 @@ import { Portrait } from '../components/Portrait';
 import { RadarChart } from '../components/RadarChart';
 import { getClubLeaders, getInjuryRisk } from '../../core/club/clubDepth';
 import { isGoalkeeper } from '../../core/player/roleShapes';
+import { valueOf } from '../../core/player/value';
+import { ovrAt } from '../../core/player/ratings';
 
 type SquadFilter = 'ALL' | 'GK' | 'DEF' | 'MID' | 'FWD' | 'INJURED' | 'UNHAPPY' | 'CONTRACTS';
 
@@ -130,7 +132,9 @@ export const SquadScreen: React.FC = () => {
         return sortAsc ? diff : -diff;
       }
       if (sortCol === 'ovr') {
-        const diff = (b.bestOvr ?? b.ovr) - (a.bestOvr ?? a.ovr);
+        const ovrA = ovrAt(a, a.positions[0]?.pos ?? 'CM');
+        const ovrB = ovrAt(b, b.positions[0]?.pos ?? 'CM');
+        const diff = ovrB - ovrA;
         return sortAsc ? -diff : diff;
       }
       if (sortCol === 'cond') {
@@ -142,7 +146,7 @@ export const SquadScreen: React.FC = () => {
         return sortAsc ? -diff : diff;
       }
       if (sortCol === 'val') {
-        const diff = b.marketValue - a.marketValue;
+        const diff = valueOf(b) - valueOf(a);
         return sortAsc ? -diff : diff;
       }
       // default: pos order
@@ -186,7 +190,7 @@ export const SquadScreen: React.FC = () => {
   // Selected player attributes breakdown
   const isGk = selectedPlayer ? isGoalkeeper(selectedPlayer) : false;
   const bestPos = selectedPlayer?.positions[0]?.pos ?? 'CM';
-  const bestOvr = selectedPlayer?.bestOvr ?? selectedPlayer?.ovr ?? 70;
+  const bestOvr = selectedPlayer ? ovrAt(selectedPlayer, bestPos) : 70;
   const potStars = selectedPlayer
     ? selectedPlayer.potential >= 85
       ? 5
@@ -197,7 +201,7 @@ export const SquadScreen: React.FC = () => {
           : 2
     : 3;
 
-  const trainingRating = selectedPlayer?.trainingHistory?.slice(-1)[0]?.rating ?? 7.2;
+  const trainingRating = selectedPlayer?.ratingHistory?.slice(-1)[0] ?? 7.2;
   const injuryRisk = selectedPlayer ? getInjuryRisk(selectedPlayer) : { level: 'Low' };
 
   // Attribute tables
@@ -875,9 +879,9 @@ export const SquadScreen: React.FC = () => {
                       const pNum = p.squadNumber ?? pIdx + 1;
                       const primaryPos = p.positions[0]?.pos ?? 'CM';
                       const altPos = p.positions[1]?.pos;
-                      const ovrVal = p.bestOvr ?? p.ovr;
+                      const ovrVal = ovrAt(p, primaryPos);
                       const mor = getMoraleLabel(p.morale);
-                      const trnRating = p.trainingHistory?.slice(-1)[0]?.rating ?? 7.0;
+                      const trnRating = p.ratingHistory?.slice(-1)[0] ?? 7.0;
                       const contractYears = `${p.contract?.yearsLeft ?? 2}y`;
                       const is1y = (p.contract?.yearsLeft ?? 2) <= 1;
 
@@ -981,7 +985,7 @@ export const SquadScreen: React.FC = () => {
                           >
                             {contractYears}
                           </td>
-                          <td>{formatMoney(p.marketValue)}</td>
+                          <td>{formatMoney(valueOf(p))}</td>
                           <td>
                             <span className="s-st">
                               {isInj && (
@@ -1039,7 +1043,7 @@ export const SquadScreen: React.FC = () => {
                   </h2>
                   <div className="file-meta">
                     <b>{selectedPlayer.age}</b> · {selectedPlayer.nationality} ·{' '}
-                    <b>{selectedPlayer.preferredFoot} foot</b> · {selectedPlayer.height} m ·{' '}
+                    <b>{selectedPlayer.foot} foot</b> · {selectedPlayer.heightCm} cm ·{' '}
                     {selectedPlayer.personality ?? 'Professional'} ·{' '}
                     {leaderIds.has(selectedPlayer.id) ? 'Leader' : 'First-team'}
                   </div>
@@ -1058,14 +1062,14 @@ export const SquadScreen: React.FC = () => {
                   </div>
 
                   <div className="file-meta" style={{ marginTop: '8px' }}>
-                    Value <b>{formatMoney(selectedPlayer.marketValue)}</b> · Wage{' '}
+                    Value <b>{formatMoney(valueOf(selectedPlayer))}</b> · Wage{' '}
                     <b>{formatMoney(selectedPlayer.contract?.wagePerWeek ?? 15000)}/wk</b> ·
                     Contract{' '}
                     <b>
                       {selectedPlayer.contract?.yearsLeft ?? 2} year
                       {(selectedPlayer.contract?.yearsLeft ?? 2) === 1 ? '' : 's'}
                     </b>{' '}
-                    · Role <b>{selectedPlayer.squadRole ?? 'Regular'}</b>
+                    · Role <b>{selectedPlayer.contract?.role ?? 'Starter'}</b>
                   </div>
                 </div>
 
@@ -1110,8 +1114,8 @@ export const SquadScreen: React.FC = () => {
                       <span>assists</span>
                     </div>
                     <div>
-                      {selectedPlayer.stats.avgRating > 0
-                        ? selectedPlayer.stats.avgRating.toFixed(2)
+                      {selectedPlayer.stats.ratedApps > 0
+                        ? (selectedPlayer.stats.ratingSum / selectedPlayer.stats.ratedApps).toFixed(2)
                         : '—'}
                       <span>avg rating</span>
                     </div>
@@ -1272,18 +1276,15 @@ export const SquadScreen: React.FC = () => {
                   }}
                 >
                   <div>
-                    <b>Discipline:</b> {selectedPlayer.disciplineRecord?.yellows ?? 0} yellow ·{' '}
-                    {selectedPlayer.disciplineRecord?.reds ?? 0} red ·{' '}
-                    {selectedPlayer.disciplineRecord?.finesCount ?? 0} fine
-                    {(selectedPlayer.disciplineRecord?.finesCount ?? 0) === 1 ? '' : 's'}
+                    <b>Discipline:</b> {selectedPlayer.disciplineRecord?.length ?? 0} incidents recorded
                   </div>
                   {selectedPlayer.injuryLog && selectedPlayer.injuryLog.length > 0 ? (
                     <div>
                       <b>Injuries:</b>{' '}
                       {selectedPlayer.injuryLog.slice(-3).map((inj, i) => (
                         <span key={i} style={{ marginRight: '8px' }}>
-                          MD{inj.matchday}: {inj.type.replace(/_/g, ' ')} ({inj.weeksOut}w
-                          {inj.wasRushed ? ', rushed back' : ''})
+                          MD{inj.matchday ?? '—'}: {inj.kind.replace(/_/g, ' ')} ({inj.matchdaysOut}w
+                          {inj.rushed ? ', rushed back' : ''})
                         </span>
                       ))}
                     </div>

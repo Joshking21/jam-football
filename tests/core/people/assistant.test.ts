@@ -292,6 +292,9 @@ describe('SPEC §15.4 In-Match Rules, Cooldowns, Cap, and Engine Application', (
 
     const sim = createMatch(
       {
+        fixtureId: 'f_test',
+        isDerby: false,
+        userSide: 'home',
         home: sheetHome,
         away: sheetAway,
         weather: 'Clear',

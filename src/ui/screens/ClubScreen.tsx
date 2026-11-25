@@ -16,7 +16,7 @@ import { X, Star } from 'lucide-react';
 function getOrdinal(n: number): string {
   const s = ['th', 'st', 'nd', 'rd'];
   const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  return n + (s[(v - 20) % 10] ?? s[v] ?? s[0] ?? 'th');
 }
 
 export const ClubScreen: React.FC = () => {
@@ -38,7 +38,7 @@ export const ClubScreen: React.FC = () => {
   const userRank = userRankIndex >= 0 ? userRankIndex + 1 : 1;
   const userRow = sortedTable[userRankIndex];
   const leaderRow = sortedTable[0];
-  const ptsOffTop = leaderRow && userRow ? Math.max(0, leaderRow.points - userRow.points) : 0;
+  const ptsOffTop = leaderRow && userRow ? Math.max(0, leaderRow.pts - userRow.pts) : 0;
 
   // Squad wages & Staff wages
   const squadPlayers = userClub.squad.map((id) => gameState.players[id]).filter((p) => p != null);
@@ -52,7 +52,8 @@ export const ClubScreen: React.FC = () => {
     : 45_000;
 
   // Operating costs & finances
-  const operatingCosts = BALANCE.finances.operatingCostsWeekly[userClub.reputation] ?? 400_000;
+  const operatingCosts =
+    BALANCE.finances.operatingCostPerReputation * userClub.reputation;
   const sponsorWeekly = BALANCE.finances.sponsorIncomeWeekly[userClub.reputation] ?? 700_000;
   const tvWeekly = 600_000;
 
@@ -60,18 +61,19 @@ export const ClubScreen: React.FC = () => {
   const nextFixture = gameState.fixtures.find(
     (f) =>
       f.matchday === gameState.matchday &&
-      (f.homeClubId === gameState.userClubId || f.awayClubId === gameState.userClubId),
+      (f.homeId === gameState.userClubId || f.awayId === gameState.userClubId),
   );
-  const isHome = nextFixture ? nextFixture.homeClubId === gameState.userClubId : true;
+  const isHome = nextFixture ? nextFixture.homeId === gameState.userClubId : true;
   const opponentId = nextFixture
     ? isHome
-      ? nextFixture.awayClubId
-      : nextFixture.homeClubId
+      ? nextFixture.awayId
+      : nextFixture.homeId
     : null;
   const opponentClub = opponentId ? gameState.clubs[opponentId] : null;
 
   // Gate receipts
-  const avgTicketPrice = userClub.stadium.ticketPrice ?? 38;
+  const avgTicketPrice =
+    BALANCE.finances.ticketPriceByReputation[userClub.reputation] ?? 38;
   const estAttendance = isHome
     ? Math.round(userClub.stadium.capacity * (0.68 + (userClub.fanMood / 100) * 0.28))
     : 0;
@@ -88,9 +90,9 @@ export const ClubScreen: React.FC = () => {
 
   // Stadium attendance data across home games played
   const homeFixtures = gameState.fixtures.filter(
-    (f) => f.homeClubId === gameState.userClubId && f.played,
+    (f) => f.homeId === gameState.userClubId && f.result !== null,
   );
-  const homeAttendances = homeFixtures.map((f) => f.attendance ?? estAttendance);
+  const homeAttendances = homeFixtures.map((f) => f.result?.attendance ?? estAttendance);
   const defaultAttendances = [
     Math.round(userClub.stadium.capacity * 0.72),
     Math.round(userClub.stadium.capacity * 0.76),
@@ -592,7 +594,7 @@ export const ClubScreen: React.FC = () => {
                   marginTop: '8px',
                 }}
               >
-                "Best I've seen us play in years. Keep {topScorer.lastName} at all costs."
+                "Best I've seen us play in years. Keep {topScorer?.lastName ?? 'our star'} at all costs."
               </q>
               <small
                 style={{
@@ -1097,7 +1099,7 @@ export const ClubScreen: React.FC = () => {
                   <button
                     onClick={() => {
                       if (!isWindowActive || userClub.staffReplacedThisRound) return;
-                      hireStaffMember(replacingRole, cand);
+                      hireStaffMember(cand);
                       setReplacingRole(null);
                       showToast(`Hired ${cand.name} as ${replacingRole}!`, 'success');
                     }}

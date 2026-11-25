@@ -10,6 +10,7 @@ export const TitleScreen: React.FC = () => {
   const setScreen = useStore((state) => state.setScreen);
   const openSettings = useStore((state) => state.openSettings);
   const openCredits = useStore((state) => state.openCredits);
+  const openLoadGame = useStore((state) => state.openLoadGame);
   const hasAutosave = useStore((state) => state.hasAutosave);
   const autosaveMeta = useStore((state) => state.autosaveMeta);
   const checkAutosave = useStore((state) => state.checkAutosave);
@@ -186,6 +187,16 @@ export const TitleScreen: React.FC = () => {
             style={{ width: '100%' }}
           >
             New Game
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="m"
+            onClick={openLoadGame}
+            icon={<FolderOpen size={18} />}
+            style={{ width: '100%' }}
+          >
+            Load Game
           </Button>
 
           <Button

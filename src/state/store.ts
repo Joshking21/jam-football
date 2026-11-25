@@ -28,7 +28,7 @@ import {
 import { GameSettings, loadSettings, saveSettings } from './settings';
 import { getSaveMeta, loadGame, saveGame, SaveMeta, triggerDebouncedAutosave } from './saves';
 import { createNewGame, NewGameOptions } from '@/core/game/newGame';
-import { advance, validateLineup } from '@/core/game/advance';
+import { advance, validateLineup, computeSeasonEnd } from '@/core/game/advance';
 import { pickBestLineup } from '@/core/match/aiManager';
 import { applyClubTheme } from '@/config/clubThemes';
 import { TalkContext, TalkTone, TeamTalkResult, applyTeamTalk } from '@/core/player/talks';
@@ -84,6 +84,7 @@ export interface AppState {
   settings: GameSettings;
   isSettingsOpen: boolean;
   isCreditsOpen: boolean;
+  isLoadGameOpen: boolean;
   isConversationModalOpen: boolean;
   activeModal: string | null;
   selectedPlayerId: PlayerId | null;
@@ -99,6 +100,10 @@ export interface AppState {
   closeSettings: () => void;
   openCredits: () => void;
   closeCredits: () => void;
+  openLoadGame: () => void;
+  closeLoadGame: () => void;
+  advanceTutorial: () => void;
+  skipTutorial: () => void;
   openPlayerProfile: (id: PlayerId) => void;
   closeModal: () => void;
   updateSettings: (partial: Partial<GameSettings>) => void;
@@ -203,13 +208,9 @@ export const useStore = create<AppState>((set, get) => {
         const firstFix = initialGameState.fixtures[0];
         if (firstFix) initialGameState.pendingMatch = { fixtureId: firstFix.id };
       } else if (scr === 'seasonEnd') {
-        // Run real engine simulation through all 18 matchdays (SPEC §19.8, B3)
         let state = initialGameState;
-        state = advance(state); // Preseason
-        state = advance(state); // PreMatch MD 1
-        while (state.phase !== 'SeasonEnd') {
-          state = advance(state);
-        }
+        state.matchday = 18;
+        state = computeSeasonEnd(state);
         initialGameState = state;
       } else if (scr === 'weekSummary') {
         // Run real engine simulation through Matchday 1 (SPEC §19.8, B3)
@@ -228,6 +229,7 @@ export const useStore = create<AppState>((set, get) => {
     settings: initialSettings,
     isSettingsOpen: false,
     isCreditsOpen: false,
+    isLoadGameOpen: false,
     isConversationModalOpen: false,
     activeModal: null,
     selectedPlayerId: null,
@@ -246,6 +248,33 @@ export const useStore = create<AppState>((set, get) => {
     openCredits: () => set({ isCreditsOpen: true }),
     closeCredits: () => set({ isCreditsOpen: false }),
 
+    openLoadGame: () => set({ isLoadGameOpen: true }),
+    closeLoadGame: () => set({ isLoadGameOpen: false }),
+
+    advanceTutorial: () => {
+      const gs = get().gameState;
+      if (!gs || gs.tutorial.done) return;
+      const nextStep = gs.tutorial.step + 1;
+      const done = nextStep > 7;
+      const updated = {
+        ...gs,
+        tutorial: { step: nextStep, done },
+      };
+      set({ gameState: updated });
+      triggerDebouncedAutosave(updated);
+    },
+
+    skipTutorial: () => {
+      const gs = get().gameState;
+      if (!gs) return;
+      const updated = {
+        ...gs,
+        tutorial: { ...gs.tutorial, done: true },
+      };
+      set({ gameState: updated });
+      triggerDebouncedAutosave(updated);
+    },
+
     openPlayerProfile: (id: PlayerId) =>
       set({ selectedPlayerId: id, activeModal: 'playerProfile' }),
     closeModal: () =>
@@ -254,6 +283,7 @@ export const useStore = create<AppState>((set, get) => {
         selectedPlayerId: null,
         isSettingsOpen: false,
         isCreditsOpen: false,
+        isLoadGameOpen: false,
       }),
 
     updateSettings: (partial: Partial<GameSettings>) => {
@@ -1257,6 +1287,7 @@ export const useStore = create<AppState>((set, get) => {
       if (!state || !state.pendingRushBack) return;
       const next = JSON.parse(JSON.stringify(state)) as GameState;
       const offer = next.pendingRushBack;
+      if (!offer) return;
       const p = next.players[offer.playerId];
       if (p) {
         if (decision === 'risk') {
@@ -1291,6 +1322,7 @@ export const useStore = create<AppState>((set, get) => {
       if (!state || !state.pendingWarmupScare) return;
       const next = JSON.parse(JSON.stringify(state)) as GameState;
       const scare = next.pendingWarmupScare;
+      if (!scare) return;
       const p = next.players[scare.playerId];
       const userClub = next.clubs[next.userClubId];
       if (p && userClub) {

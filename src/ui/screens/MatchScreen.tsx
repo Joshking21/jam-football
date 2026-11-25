@@ -1,5 +1,5 @@
 // Implements SPEC §11.16–11.18 & §14 Complete 3D Match Day Screen
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useStore } from '../../state/store';
 import {
   MatchEvent,
@@ -164,16 +164,16 @@ export const MatchScreen: React.FC = () => {
       },
       onEventStarted: (ev) => {
         // Trigger spatial match audio and crowd reactions (§17.3)
-        const cameraX = sceneRef.current?.camera?.position?.x ?? 52.5;
+        const cameraX = sceneRef.current?.cameras?.camera?.position?.x ?? 52.5;
         matchAudio.onEvent(ev, userSide, cameraX);
 
         // Trigger commentary voice queue and caption synchronization (§17.4)
         voiceQueue.updateSimTime(ev.t);
         voiceQueue.speakCommentary(ev, gameState.players, {
-          weather: matchInput.weather,
+          weather: fixture.weather,
           isDerby: false,
-          homeScore: score.home,
-          awayScore: score.away,
+          homeScore: playbackRef.current?.score.home ?? 0,
+          awayScore: playbackRef.current?.score.away ?? 0,
         });
 
         if (ev.type === 'MATCH_PLAN_TRIGGERED' && ev.side === userSide && ev.data) {
@@ -483,8 +483,9 @@ export const MatchScreen: React.FC = () => {
           : captureState === 'halftime'
             ? 45
             : Math.min(90, Math.max(1, Math.floor((playbackRef.current?.pt ?? 0) / 60)));
-      const finH = f.result?.homeGoals ?? f.seed % 3;
-      const finA = f.result?.awayGoals ?? (f.seed * 7) % 3;
+      const fixtureSeed = deriveSeed(gameState.seed, 'f-seed', f.id);
+      const finH = f.result?.homeGoals ?? (fixtureSeed % 3);
+      const finA = f.result?.awayGoals ?? ((fixtureSeed * 7) % 3);
       const curH =
         curMinute >= 80
           ? finH
@@ -620,6 +621,7 @@ export const MatchScreen: React.FC = () => {
                     side: userSide,
                     outId: act.outId,
                     inId: act.inId,
+                    slot: Math.max(0, userClub.tactics.lineup.indexOf(act.outId)),
                     issuedAtT: state.pt,
                   };
                   workerRef.current?.postMessage({
@@ -970,8 +972,8 @@ export const MatchScreen: React.FC = () => {
         possessionSec: Math.round(fullHomeStats.possessionSec * frac),
         corners: homeEvents.filter((e) => e.type === 'CORNER').length,
         fouls: homeEvents.filter((e) => e.type === 'FOUL').length,
-        yellow: homeEvents.filter((e) => e.type === 'YELLOW_CARD').length,
-        red: homeEvents.filter((e) => e.type === 'RED_CARD').length,
+        yellow: homeEvents.filter((e) => e.type === 'YELLOW').length,
+        red: homeEvents.filter((e) => e.type === 'RED').length,
       },
       away: {
         ...fullAwayStats,
@@ -982,8 +984,8 @@ export const MatchScreen: React.FC = () => {
         possessionSec: Math.round(fullAwayStats.possessionSec * frac),
         corners: awayEvents.filter((e) => e.type === 'CORNER').length,
         fouls: awayEvents.filter((e) => e.type === 'FOUL').length,
-        yellow: awayEvents.filter((e) => e.type === 'YELLOW_CARD').length,
-        red: awayEvents.filter((e) => e.type === 'RED_CARD').length,
+        yellow: awayEvents.filter((e) => e.type === 'YELLOW').length,
+        red: awayEvents.filter((e) => e.type === 'RED').length,
       },
     };
   }, [matchResult, playbackState.pt, fullHomeStats, fullAwayStats]);
@@ -1009,8 +1011,8 @@ export const MatchScreen: React.FC = () => {
         possessionSec: Math.round(fullHomeStats.possessionSec * 0.5),
         corners: homeEvents.filter((e) => e.type === 'CORNER').length,
         fouls: homeEvents.filter((e) => e.type === 'FOUL').length,
-        yellow: homeEvents.filter((e) => e.type === 'YELLOW_CARD').length,
-        red: homeEvents.filter((e) => e.type === 'RED_CARD').length,
+        yellow: homeEvents.filter((e) => e.type === 'YELLOW').length,
+        red: homeEvents.filter((e) => e.type === 'RED').length,
       },
       away: {
         ...fullAwayStats,
@@ -1021,8 +1023,8 @@ export const MatchScreen: React.FC = () => {
         possessionSec: Math.round(fullAwayStats.possessionSec * 0.5),
         corners: awayEvents.filter((e) => e.type === 'CORNER').length,
         fouls: awayEvents.filter((e) => e.type === 'FOUL').length,
-        yellow: awayEvents.filter((e) => e.type === 'YELLOW_CARD').length,
-        red: awayEvents.filter((e) => e.type === 'RED_CARD').length,
+        yellow: awayEvents.filter((e) => e.type === 'YELLOW').length,
+        red: awayEvents.filter((e) => e.type === 'RED').length,
       },
     };
   }, [matchResult, fullHomeStats, fullAwayStats]);
@@ -1142,13 +1144,17 @@ export const MatchScreen: React.FC = () => {
                   pct={pct}
                   isFirstHalf={playbackState.half === 1}
                   onChoice={(decision) => {
-                    playbackRef.current?.addCommand({
+                    const command: MatchCommand = {
                       kind: 'knock',
                       side: userSide,
                       playerId: evt.playerId!,
                       decision,
                       issuedAtT: playbackState.pt,
-                    });
+                    };
+                    workerRef.current?.postMessage({
+                      type: 'command',
+                      command,
+                    } satisfies ClientToWorkerMessage);
                     handledKnockTRef.current = evt.t;
                     setHandledKnockT(evt.t);
                     if (playbackRef.current?.paused) {
@@ -1208,10 +1214,10 @@ export const MatchScreen: React.FC = () => {
           {(() => {
             const commentary = playbackState.currentEvent
               ? resolveCommentary(playbackState.currentEvent, gameState.players, {
-                  weather: matchInput.weather,
+                  weather: fixture.weather,
                   isDerby: false,
-                  homeScore: score.home,
-                  awayScore: score.away,
+                  homeScore: playbackState.score.home,
+                  awayScore: playbackState.score.away,
                 })
               : null;
             return (
@@ -1321,6 +1327,7 @@ export const MatchScreen: React.FC = () => {
               side: userSide,
               outId: act.outId,
               inId: act.inId,
+              slot: Math.max(0, userClub.tactics.lineup.indexOf(act.outId)),
               issuedAtT: pt,
             };
             workerRef.current?.postMessage({

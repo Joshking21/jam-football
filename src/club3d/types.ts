@@ -42,6 +42,7 @@ export interface Hotspot {
     screen?: AppScreen;
     scene?: string;
     action?: string;
+    room?: RoomId;
   };
   touch?: TouchPoint;
 }

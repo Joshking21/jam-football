@@ -26,17 +26,17 @@ export const InboxScreen: React.FC = () => {
         case 'ACTION':
           return Boolean(item.action) || !item.read;
         case 'BOARD':
-          return item.kind === 'board' || item.id.includes('board');
+          return item.kind === 'Board' || item.id.includes('board');
         case 'PLAYERS':
-          return item.kind === 'player' || item.id.includes('player') || item.id.includes('agent');
+          return item.kind === 'Player' || item.id.includes('player') || item.id.includes('agent');
         case 'MEDICAL':
           return (
-            item.kind === 'medical' || item.id.includes('physio') || item.id.includes('injury')
+            item.kind === 'Medical' || item.id.includes('physio') || item.id.includes('injury')
           );
         case 'SCOUTING':
-          return item.kind === 'transfer' || item.id.includes('scout');
+          return item.kind === 'Transfer' || item.id.includes('scout');
         case 'PRESS':
-          return item.kind === 'press' || item.id.includes('press');
+          return item.kind === 'Press' || item.id.includes('press');
         case 'ALL':
         default:
           return true;
@@ -55,21 +55,21 @@ export const InboxScreen: React.FC = () => {
   const actionCount = allMemos.filter((i) => Boolean(i.action) || !i.read).length;
 
   const getSenderColor = (item: InboxItem) => {
-    if (item.kind === 'board' || item.id.includes('board')) return '#1F4FBF'; // Board blue
-    if (item.id.includes('agent') || item.kind === 'contract') return '#C98A12'; // Agent amber
+    if (item.kind === 'Board' || item.id.includes('board')) return '#1F4FBF'; // Board blue
+    if (item.id.includes('agent') || item.id.includes('contract')) return '#C98A12'; // Agent amber
     if (item.id.includes('discipline') || item.id.includes('warning')) return '#C42B2B'; // Discipline red
-    if (item.kind === 'medical' || item.id.includes('physio')) return '#1E7B3C'; // Medical green
-    if (item.kind === 'transfer' || item.id.includes('scout')) return '#5E574E'; // Scouting grey
-    if (item.id.includes('theo') || item.kind === 'advice') return '#0B1F3A'; // Theo navy
+    if (item.kind === 'Medical' || item.id.includes('physio')) return '#1E7B3C'; // Medical green
+    if (item.kind === 'Transfer' || item.id.includes('scout')) return '#5E574E'; // Scouting grey
+    if (item.id.includes('theo') || item.kind === 'Assistant') return '#0B1F3A'; // Theo navy
     return '#7A7062'; // Press taupe
   };
 
   const getSenderLabel = (item: InboxItem) => {
-    if (item.kind === 'board' || item.id.includes('board')) return 'Board';
-    if (item.id.includes('agent') || item.kind === 'contract') return 'Agent';
+    if (item.kind === 'Board' || item.id.includes('board')) return 'Board';
+    if (item.id.includes('agent') || item.id.includes('contract')) return 'Agent';
     if (item.id.includes('discipline')) return 'Discipline';
-    if (item.kind === 'medical' || item.id.includes('physio')) return 'Medical';
-    if (item.kind === 'transfer' || item.id.includes('scout')) return 'Scouting';
+    if (item.kind === 'Medical' || item.id.includes('physio')) return 'Medical';
+    if (item.kind === 'Transfer' || item.id.includes('scout')) return 'Scouting';
     if (item.id.includes('theo')) return 'Theo';
     return 'Press';
   };
@@ -514,7 +514,7 @@ export const InboxScreen: React.FC = () => {
             <p className="letter-body">{currentItem.body}</p>
 
             {/* Terms box if offer or contract */}
-            {currentItem.kind === 'transferOffer' && (
+            {currentItem.kind === 'Transfer' && (
               <div className="letter-terms">
                 <div>
                   <span>Fee</span>

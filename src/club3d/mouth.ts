@@ -25,7 +25,8 @@ export class MouthAnimator {
     // Calculate RMS loudness
     let sumSquares = 0;
     for (let i = 0; i < data.length; i++) {
-      const normalized = (data[i] - 128) / 128;
+      const val = data[i] ?? 128;
+      const normalized = (val - 128) / 128;
       sumSquares += normalized * normalized;
     }
     const rms = Math.sqrt(sumSquares / data.length);

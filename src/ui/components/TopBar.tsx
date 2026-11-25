@@ -4,7 +4,7 @@ import { useStore, AppScreen } from '../../state/store';
 import { Crest } from './Crest';
 import { ContinueButton } from './ContinueButton';
 import { formatMoney } from '../../core/math';
-import { Settings } from 'lucide-react';
+import { Settings, FolderOpen } from 'lucide-react';
 import { getScreenWorld } from './ScreenTransition';
 
 interface NavTab {
@@ -19,6 +19,7 @@ export const TopBar: React.FC = () => {
   const currentScreen = useStore((state) => state.screen);
   const setScreen = useStore((state) => state.setScreen);
   const openSettings = useStore((state) => state.openSettings);
+  const openLoadGame = useStore((state) => state.openLoadGame);
   const advanceGame = useStore((state) => state.advanceGame);
 
   const userClub = gameState ? gameState.clubs[gameState.userClubId] : null;
@@ -329,6 +330,33 @@ export const TopBar: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Save & Load */}
+        <button
+          onClick={openLoadGame}
+          aria-label="Save or Load Game"
+          title="Career Saves & Load"
+          style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: 'var(--radius-s)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#9CA3AF',
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = '#FFFFFF';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = '#9CA3AF';
+          }}
+        >
+          <FolderOpen size={16} />
+        </button>
 
         {/* Settings gear */}
         <button

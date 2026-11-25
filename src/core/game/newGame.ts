@@ -116,8 +116,9 @@ export function createNewGame(options: NewGameOptions): GameState {
   }
 
   // Include 1 free agent if available
+  const freeAgentId = snapshot.freeAgents?.[0];
   const freeAgentCandidate =
-    Object.values(snapshot.freeAgents ?? {})[0] ??
+    (freeAgentId ? snapshot.players[freeAgentId] : undefined) ??
     Object.values(snapshot.players).find((p) => !p.clubId);
   if (freeAgentCandidate && !initialShortlist.includes(freeAgentCandidate.id)) {
     initialShortlist.push(freeAgentCandidate.id);

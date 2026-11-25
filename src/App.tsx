@@ -25,6 +25,8 @@ import { PlayerProfileModal } from './ui/screens/PlayerProfileModal';
 import { ConversationModal } from './ui/screens/ConversationModal';
 import { SettingsModal } from './ui/screens/SettingsModal';
 import { CreditsModal } from './ui/screens/CreditsModal';
+import { LoadGameModal } from './ui/screens/LoadGameModal';
+import { TutorialCoachMark } from './ui/components/TutorialCoachMark';
 import { TopBar } from './ui/components/TopBar';
 import { Toast } from './ui/components/Toast';
 import { ScreenTransition, getScreenWorld } from './ui/components/ScreenTransition';
@@ -38,7 +40,9 @@ export const App: React.FC = () => {
   const setScreen = useStore((state) => state.setScreen);
   const isSettingsOpen = useStore((state) => state.isSettingsOpen);
   const isCreditsOpen = useStore((state) => state.isCreditsOpen);
+  const isLoadGameOpen = useStore((state) => state.isLoadGameOpen);
   const closeModal = useStore((state) => state.closeModal);
+  const closeLoadGame = useStore((state) => state.closeLoadGame);
   const selectedPlayerId = useStore((state) => state.selectedPlayerId);
   const settings = useStore((state) => state.settings);
   const gameState = useStore((state) => state.gameState);
@@ -74,6 +78,9 @@ export const App: React.FC = () => {
       if (e.key === 'Escape') {
         if (selectedPlayerId) {
           useStore.setState({ selectedPlayerId: null });
+        } else if (isLoadGameOpen) {
+          e.preventDefault();
+          closeLoadGame();
         } else if (isSettingsOpen || isCreditsOpen) {
           e.preventDefault();
           closeModal();
@@ -90,6 +97,7 @@ export const App: React.FC = () => {
     return (
       <>
         <TitleScreen />
+        <LoadGameModal />
         <SettingsModal />
         <CreditsModal />
         <Toast />
@@ -198,8 +206,10 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* Global Modals */}
+      {/* Global Modals & Tutorial */}
+      <TutorialCoachMark />
       <ConversationModal />
+      <LoadGameModal />
       <SettingsModal />
       <CreditsModal />
       <Toast />

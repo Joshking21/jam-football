@@ -1408,6 +1408,40 @@ export function computeSeasonEnd(state: GameState): GameState {
   });
   const managerOfTheSeason = clubsByDelta[0]!.id;
 
+  // Team of the Season (4-3-3, SPEC §12.15: 1 GK, 4 DEF, 3 MID, 3 FWD by average rating)
+  const sortByRating = (list: typeof allPlayers) => {
+    return [...list].sort((a, b) => {
+      const avgA = a.stats.ratedApps > 0 ? a.stats.ratingSum / a.stats.ratedApps : 0;
+      const avgB = b.stats.ratedApps > 0 ? b.stats.ratingSum / b.stats.ratedApps : 0;
+      return avgB - avgA;
+    });
+  };
+
+  const gks = sortByRating(allPlayers.filter((p) => p.positions.some((pos) => pos.pos === 'GK')));
+  const defs = sortByRating(
+    allPlayers.filter((p) => p.positions.some((pos) => ['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(pos.pos))),
+  );
+  const mids = sortByRating(
+    allPlayers.filter((p) => p.positions.some((pos) => ['CM', 'DM', 'AM', 'LM', 'RM'].includes(pos.pos))),
+  );
+  const fwds = sortByRating(
+    allPlayers.filter((p) => p.positions.some((pos) => ['ST', 'LW', 'RW', 'CF'].includes(pos.pos))),
+  );
+
+  const bestGk = gks[0]?.id ?? goldenGlove;
+  const bestDefs = [defs[0]?.id, defs[1]?.id, defs[2]?.id, defs[3]?.id].filter(
+    (id): id is string => !!id,
+  );
+  const bestMids = [mids[0]?.id, mids[1]?.id, mids[2]?.id].filter((id): id is string => !!id);
+  const bestFwds = [fwds[0]?.id, fwds[1]?.id, fwds[2]?.id].filter((id): id is string => !!id);
+
+  const teamOfTheSeason: string[] = [
+    bestGk,
+    ...(bestDefs.length >= 4 ? bestDefs.slice(0, 4) : allPlayers.slice(0, 4).map((p) => p.id)),
+    ...(bestMids.length >= 3 ? bestMids.slice(0, 3) : allPlayers.slice(4, 7).map((p) => p.id)),
+    ...(bestFwds.length >= 3 ? bestFwds.slice(0, 3) : allPlayers.slice(7, 10).map((p) => p.id)),
+  ];
+
   next.awards = {
     playerOfTheSeason,
     goldenBoot,
@@ -1415,19 +1449,7 @@ export function computeSeasonEnd(state: GameState): GameState {
     goldenGlove,
     youngPlayer,
     managerOfTheSeason,
-    teamOfTheSeason: [
-      goldenGlove,
-      allPlayers[0]!.id,
-      allPlayers[1]!.id,
-      allPlayers[2]!.id,
-      allPlayers[3]!.id,
-      allPlayers[4]!.id,
-      allPlayers[5]!.id,
-      allPlayers[6]!.id,
-      allPlayers[7]!.id,
-      goldenBoot,
-      allPlayers[8]!.id,
-    ],
+    teamOfTheSeason,
   };
 
   next.phase = 'SeasonEnd';

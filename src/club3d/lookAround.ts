@@ -13,7 +13,7 @@ export interface LookAroundState {
 }
 
 export class LookAroundController {
-  private state: LookAroundState = {
+  public state: LookAroundState = {
     isHolding: false,
     yawDeg: 0,
     pitchDeg: 0,

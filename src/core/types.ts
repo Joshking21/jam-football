@@ -816,6 +816,7 @@ export interface GameState {
   shortlist?: PlayerId[];
   scoutedThisMatchday?: PlayerId[];
   score: number; // leaderboard score, computed at season end
+  matchRedCardPlayerIds?: PlayerId[];
   counters: { news: number; inbox: number; offer: number };
   // SPEC §12.19 & §12.20 Decisions state
   activeIncident?: DisciplineIncident | null;

@@ -29,23 +29,22 @@ describe('SPEC §12.19.1 In-Match Knocks', () => {
 
   it('handles knock command with take_off decision', () => {
     const game = createNewGame({ userClubId: 'c01', managerName: 'Manager', seed: 101 });
-    const userClub = game.clubs.c01;
+    const userClub = game.clubs.c01!;
+    const awayClub = game.clubs.c02!;
     const starterId = userClub.tactics.lineup[0]!;
     const player = game.players[starterId]!;
     player.condition = 95;
 
-    const sheetHome = buildTeamSheet(userClub, game.players, 1);
-    const sheetAway = buildTeamSheet(game.clubs.c02, game.players, 1);
+    const sheetHome = buildTeamSheet(userClub, game.players, 'home');
+    const sheetAway = buildTeamSheet(awayClub, game.players, 'away');
     const match = createMatch(
       {
+        fixtureId: 'f1',
+        isDerby: false,
+        userSide: 'home',
         home: sheetHome,
         away: sheetAway,
-        weather: 'dry',
-        matchday: 1,
-        homeTactics: userClub.tactics.instructions,
-        awayTactics: game.clubs.c02.tactics.instructions,
-        homeSetPieces: createDefaultSetPieceTactics(),
-        awaySetPieces: createDefaultSetPieceTactics(),
+        weather: 'Clear',
         aiControls: [],
         knocksSetting: 'ask',
       },
@@ -75,22 +74,21 @@ describe('SPEC §12.19.1 In-Match Knocks', () => {
 
   it('handles knock command with play_on and carry_to_ht decisions', () => {
     const game = createNewGame({ userClubId: 'c01', managerName: 'Manager', seed: 102 });
-    const userClub = game.clubs.c01;
+    const userClub = game.clubs.c01!;
+    const awayClub = game.clubs.c02!;
     const starter1Id = userClub.tactics.lineup[0]!;
     const starter2Id = userClub.tactics.lineup[1]!;
 
-    const sheetHome = buildTeamSheet(userClub, game.players, 1);
-    const sheetAway = buildTeamSheet(game.clubs.c02, game.players, 1);
+    const sheetHome = buildTeamSheet(userClub, game.players, 'home');
+    const sheetAway = buildTeamSheet(awayClub, game.players, 'away');
     const match = createMatch(
       {
+        fixtureId: 'f2',
+        isDerby: false,
+        userSide: 'home',
         home: sheetHome,
         away: sheetAway,
-        weather: 'dry',
-        matchday: 1,
-        homeTactics: userClub.tactics.instructions,
-        awayTactics: game.clubs.c02.tactics.instructions,
-        homeSetPieces: createDefaultSetPieceTactics(),
-        awaySetPieces: createDefaultSetPieceTactics(),
+        weather: 'Clear',
         aiControls: [],
       },
       556,
@@ -147,13 +145,13 @@ describe('SPEC §12.19.2 Rushing Players Back', () => {
 
   it('creates rush back offer when matchdaysOut === 1', () => {
     const game = createNewGame({ userClubId: 'c01', managerName: 'Manager', seed: 201 });
-    const userClub = game.clubs.c01;
+    const userClub = game.clubs.c01!;
     const injuredPlayerId = userClub.squad[0]!;
     const p = game.players[injuredPlayerId]!;
 
     // Player with 2 matchdays out decrements to 1 during weekly processing
     p.injury = {
-      type: 'Hamstring strain',
+      kind: 'Hamstring strain',
       matchdaysOut: 2,
       severity: 'Minor',
     };
@@ -197,10 +195,10 @@ describe('SPEC §12.20 Discipline Incidents & Consistency Rule', () => {
   it('prioritises sent off over bust up and other incidents', () => {
     const game = createNewGame({ userClubId: 'c01', managerName: 'Manager', seed: 301 });
     const rng = createRng(42);
-    const redCardPlayerId = game.clubs.c01.squad[2]!;
+    const redCardPlayerId = game.clubs.c01!.squad[2]!;
 
     // Both sent off and low cohesion
-    game.clubs.c01.cohesion = 30;
+    game.clubs.c01!.cohesion = 30;
     const incident = checkForWeeklyDisciplineIncident(game, rng, [redCardPlayerId]);
 
     expect(incident).not.toBeNull();
@@ -210,8 +208,8 @@ describe('SPEC §12.20 Discipline Incidents & Consistency Rule', () => {
 
   it('triggers bust up when cohesion < 45 and temperamental player exists', () => {
     const game = createNewGame({ userClubId: 'c01', managerName: 'Manager', seed: 302 });
-    game.clubs.c01.cohesion = 35;
-    const p1 = game.players[game.clubs.c01.squad[0]!]!;
+    game.clubs.c01!.cohesion = 35;
+    const p1 = game.players[game.clubs.c01!.squad[0]!]!;
     p1.personality = 'Temperamental';
 
     let found = false;
@@ -229,11 +227,11 @@ describe('SPEC §12.20 Discipline Incidents & Consistency Rule', () => {
 
   it('applies fines to player and adds to club balance', () => {
     const game = createNewGame({ userClubId: 'c01', managerName: 'Manager', seed: 303 });
-    const userClub = game.clubs.c01;
+    const userClub = game.clubs.c01!;
     const initialBalance = userClub.balance;
     const pId = userClub.squad[0]!;
     const p = game.players[pId]!;
-    p.contract = { wagePerWeek: 10000, yearsLeft: 2 };
+    p.contract = { wagePerWeek: 10000, yearsLeft: 2, role: 'Starter' };
 
     const incident = {
       id: 'inc_test',

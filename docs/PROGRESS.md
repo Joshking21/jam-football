@@ -324,4 +324,25 @@ REVIEW REQUESTED: M4 (third pass)
     - Touch states: `door` (door handle reach), `corridor-brush` (wall brush), `desk-rest` (hand resting on desk edge), `board-reach` (tactics magnet tracking).
   - All screenshots pass the size and rendering guards with no visual truncation.
 
-REVIEW REQUESTED: M6b
+## 2026-11-25 · M7 Onboarding tutorial, save slots & export/import, season end broadcast flow, and credits
+- Changed: src/ui/components/TutorialCoachMark.tsx, src/ui/screens/LoadGameModal.tsx, src/ui/screens/SeasonEndScreen.tsx, src/ui/screens/CreditsModal.tsx, src/state/saves.ts, src/state/store.ts, src/App.tsx, src/ui/components/TopBar.tsx, src/ui/screens/TitleScreen.tsx, src/ui/screens/SquadScreen.tsx, src/ui/screens/ClubScreen.tsx, src/ui/screens/InboxScreen.tsx, src/ui/screens/MatchScreen.tsx, src/ui/components/ErrorBoundary.tsx, src/core/types.ts, src/core/game/advance.ts, src/core/game/newGame.ts, src/core/match/engine.ts, src/core/people/incidents.ts, src/club3d/lookAround.ts, src/club3d/mouth.ts, src/club3d/types.ts, tests/core/people/assistant.test.ts, tests/core/people/decisions.test.ts
+- Ran:
+  - `npx prettier --check`: PASS
+  - `npm run typecheck`: 0 errors PASS
+  - `npm run build`: built in 1m 22s PASS
+  - `npx vitest run`: 45 test files passed (340 tests passed in 109.63s) PASS
+  - Headless E2E browser playthrough: 7/7 steps passed with 0 console errors or exceptions PASS
+- Notes:
+  - Implemented Milestone M7 (SPEC §11.20, §11.23, §11.24, §12.15–12.16, §20):
+    - **Tutorial Coach-Marks (§11.24):** Created `TutorialCoachMark.tsx` featuring paper-texture speech bubble styling with Theo's printed halftone portrait, spotlight cutout, progress counter, 7 sequential steps covering key game concepts (Desk, Next match, Squad/Tactics, Week advance, Pre-match, Match live commands, Post-match), and keyboard shortcuts (`Enter` / Got it, `Esc` / Skip).
+    - **Save Slots & Export/Import (§20):** Built `src/state/saves.ts` and `src/ui/screens/LoadGameModal.tsx` managing 4 named save slots (`autosave`, `slot-1`, `slot-2`, `slot-3`) with timestamps, matchday metadata, JSON export (`touchline-save-<club>-md<matchday>.json`), and file import modal.
+    - **Season End Broadcast Sequence (§11.20, §12.15–12.16):** Fully overhauled `SeasonEndScreen.tsx` into a 5-step broadcast presentation:
+      1. Official Final Meridian League Table with championship badges, promotion/relegation zones.
+      2. Season Honours & Team of the Season (Golden Boot, Playmaker, Golden Glove, Young Player, Player of the Season, Manager of the Season, and 4-3-3 Best XI cards).
+      3. In Numbers (top scorer, win percentage, clean sheets, biggest win, biggest crowd, signings).
+      4. The Verdict (tilted souvenir newspaper "The Local Gazette", Grade Stamp A+..F, board quote, form sparkline, and celebratory confetti).
+      5. Share Card (1200x630 HTML5 canvas download on key 'D' or button).
+    - **Credits Modal (§11.23):** Built `CreditsModal.tsx` formatted as "Today's team sheet" matchday programme with Starting Eleven, On the bench tools, and special thanks.
+    - **Zero Compiler & Runtime Errors:** Eliminated all TypeScript errors across the repository (`tsc --noEmit` clean) and verified end-to-end headless browser navigation across all screens.
+
+REVIEW REQUESTED: M7

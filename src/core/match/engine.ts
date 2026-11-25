@@ -19,6 +19,7 @@ import {
   TraitId,
   ShoutId,
   MatchPlanRule,
+  Attributes,
 } from '../types';
 import { isTraitClashing } from '../player/traits';
 import { createRng, restoreRng, Rng } from '../rng';
@@ -839,7 +840,7 @@ export class MatchEngine implements MatchSim {
 
         p.knockDecision = decision;
 
-        this.emitEvent('KNOCK', K.durations.foul, {
+        this.emitEvent('KNOCK', K.durations.freeKick, {
           side: p.side,
           playerId: p.id,
           importance: 1,

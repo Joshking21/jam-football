@@ -104,6 +104,51 @@ export async function deleteSaveSlot(slot: string): Promise<void> {
   await del(slot, savesStore);
 }
 
+/**
+ * Export save slot as JSON file download (SPEC §20.4)
+ * Filename format: touchline-save-<club>-md<matchday>.json
+ */
+export async function exportSaveToFile(slot: SaveSlotKey | string): Promise<boolean> {
+  if (!savesStore) return false;
+  const payload = await get<SavePayload>(slot, savesStore);
+  if (!payload) return false;
+
+  const jsonStr = JSON.stringify(payload, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const clubId = payload.meta.clubId || 'save';
+  const md = payload.meta.matchday ?? 0;
+  a.href = url;
+  a.download = `touchline-save-${clubId}-md${md}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  return true;
+}
+
+/**
+ * Import save from a user-selected JSON File (SPEC §20.4)
+ */
+export async function importSaveFromFile(
+  file: File,
+  targetSlot: SaveSlotKey = 'slot-1',
+): Promise<{ success: boolean; message: string; state?: GameState }> {
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    const state: GameState = data.state ?? data;
+    if (!state.userClubId || !state.version || !state.clubs || !state.players) {
+      return { success: false, message: 'Invalid save file format.' };
+    }
+    await saveGame(targetSlot, state);
+    return { success: true, message: `Save imported into ${targetSlot}`, state };
+  } catch (err: any) {
+    return { success: false, message: err?.message || 'Failed to parse JSON file.' };
+  }
+}
+
 // --- Debounced Autosave (SPEC §20.3) ---
 let autosaveTimer: any = null;
 let pendingStateForAutosave: GameState | null = null;

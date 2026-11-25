@@ -64,7 +64,7 @@ export function checkForWeeklyDisciplineIncident(
   }
 
   // 2. Training-ground bust-up (cohesion < 45, 10% chance, 2 players with at least one Temperamental)
-  if (userClub.cohesion < BALANCE.disciplineDecisions.bustUpCohesionThreshold) {
+  if ((userClub.cohesion ?? 50) < BALANCE.disciplineDecisions.bustUpCohesionThreshold) {
     if (rng.chance(BALANCE.disciplineDecisions.bustUpChance)) {
       const temperamental = squadPlayers.filter((p) => p.personality === 'Temperamental');
       if (temperamental.length > 0 && squadPlayers.length >= 2) {
@@ -178,8 +178,8 @@ export function resolveDisciplineIncident(
       punishmentLevel = 3;
       if (p1) {
         // Check for repeat fine within 8 weeks
-        const recentFine = userClub.recentPunishments?.find(
-          (rp) =>
+        const recentFine = gameState.recentPunishments?.find(
+          (rp: RecentPunishment) =>
             rp.playerId === p1.id &&
             rp.punishmentLevel === 3 &&
             gameState.matchday - rp.matchday <= BALANCE.disciplineDecisions.repeatFineWeeks,
@@ -193,7 +193,7 @@ export function resolveDisciplineIncident(
 
         // Cohesion +2 for clear offences (late, sent off, bust up)
         if (['late_training', 'sent_off', 'bust_up'].includes(incident.type)) {
-          userClub.cohesion = clamp(userClub.cohesion + 2, 0, 100);
+          userClub.cohesion = clamp((userClub.cohesion ?? 50) + 2, 0, 100);
         }
 
         // Temperamental repeat fine transfer demand (30%)
@@ -222,7 +222,7 @@ export function resolveDisciplineIncident(
         const moraleLoss = Math.round(6 * getPersonalityMoraleMultiplier(p1));
         p1.morale = Math.max(0, p1.morale - moraleLoss);
         p1.suspendedMatches = Math.max(p1.suspendedMatches ?? 0, 1);
-        userClub.cohesion = clamp(userClub.cohesion + 1, 0, 100);
+        userClub.cohesion = clamp((userClub.cohesion ?? 50) + 1, 0, 100);
 
         if (!p1.disciplineRecord) p1.disciplineRecord = [];
         p1.disciplineRecord.push({
@@ -265,7 +265,7 @@ export function resolveDisciplineIncident(
           const leaderP = nextState.players[l.id];
           if (leaderP) leaderP.morale = Math.max(0, leaderP.morale - 3);
         }
-        userClub.cohesion = clamp(userClub.cohesion - 2, 0, 100);
+        userClub.cohesion = clamp((userClub.cohesion ?? 50) - 2, 0, 100);
 
         if (!p1.offenceMultipliers) p1.offenceMultipliers = [];
         p1.offenceMultipliers.push({
@@ -347,7 +347,7 @@ export function resolveDisciplineIncident(
 
         p1.morale = Math.max(0, p1.morale - 3);
         p2.morale = Math.max(0, p2.morale - 3);
-        userClub.cohesion = clamp(userClub.cohesion + 3, 0, 100);
+        userClub.cohesion = clamp((userClub.cohesion ?? 50) + 3, 0, 100);
 
         if (!p1.disciplineRecord) p1.disciplineRecord = [];
         p1.disciplineRecord.push({
@@ -368,8 +368,8 @@ export function resolveDisciplineIncident(
 
   // Consistency Check (§12.20.2)
   // Keeps 6-week record. If two players commit same offence and get different punishment level, cohesion -4.
-  if (!userClub.recentPunishments) {
-    userClub.recentPunishments = [];
+  if (!nextState.recentPunishments) {
+    nextState.recentPunishments = [];
   }
 
   const primaryPlayerId = p1?.id ?? incident.playerIds[0]!;
@@ -380,8 +380,8 @@ export function resolveDisciplineIncident(
     matchday: gameState.matchday,
   };
 
-  const consistencyViolation = userClub.recentPunishments.some(
-    (rp) =>
+  const consistencyViolation = nextState.recentPunishments.some(
+    (rp: RecentPunishment) =>
       rp.incidentType === incident.type &&
       rp.playerId !== primaryPlayerId &&
       gameState.matchday - rp.matchday <= BALANCE.disciplineDecisions.consistencyRecordWeeks &&
@@ -391,7 +391,7 @@ export function resolveDisciplineIncident(
   let consistencyMemo: InboxItem | undefined = undefined;
   if (consistencyViolation) {
     userClub.cohesion = clamp(
-      userClub.cohesion + BALANCE.disciplineDecisions.consistencyCohesionPenalty,
+      (userClub.cohesion ?? 50) + BALANCE.disciplineDecisions.consistencyCohesionPenalty,
       0,
       100,
     );
@@ -407,7 +407,7 @@ export function resolveDisciplineIncident(
     nextState.inbox.unshift(consistencyMemo);
   }
 
-  userClub.recentPunishments.push(newPunishment);
+  nextState.recentPunishments.push(newPunishment);
 
   // Clear active incident
   nextState.activeIncident = null;
