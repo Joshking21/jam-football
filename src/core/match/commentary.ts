@@ -20,6 +20,18 @@ for (const line of commentaryData.lines as CommentaryLine[]) {
   linesByKey[line.key]!.push(line);
 }
 
+export interface ResolvedCommentary {
+  id: string;
+  key: string;
+  voice: string;
+  text: string;
+  voText: string;
+  nameSlot: string;
+  importance: number;
+  playerId?: string;
+  clubId?: string;
+}
+
 export function resolveCommentary(
   event: MatchEvent,
   players?: Record<string, Player>,
@@ -29,7 +41,7 @@ export function resolveCommentary(
     homeScore?: number;
     awayScore?: number;
   },
-): { text: string; importance: number } | null {
+): ResolvedCommentary | null {
   let key: string | null = null;
   switch (event.type) {
     case 'KICKOFF':
@@ -141,8 +153,11 @@ export function resolveCommentary(
   const chosen = candidates[event.seq % candidates.length]!;
 
   let text = chosen.text;
+  let voText = chosen.voText || chosen.text;
+  let targetPlayerId: string | undefined;
+
   if (text.includes('{player}')) {
-    const targetPlayerId = event.playerId || event.targetId || event.opponentId;
+    targetPlayerId = event.playerId || event.targetId || event.opponentId;
     const playerObj = targetPlayerId && players ? players[targetPlayerId] : null;
     const name = playerObj
       ? playerObj.knownAs || playerObj.lastName || `${playerObj.firstName} ${playerObj.lastName}`
@@ -151,7 +166,13 @@ export function resolveCommentary(
   }
 
   return {
+    id: chosen.id,
+    key: chosen.key,
+    voice: chosen.voice,
     text,
+    voText,
+    nameSlot: chosen.nameSlot,
     importance: chosen.intensity ?? event.importance ?? 0,
+    playerId: targetPlayerId,
   };
 }

@@ -198,7 +198,7 @@ export class AudioEngine {
   /**
    * Retrieves or decodes an audio buffer from an asset path
    */
-  private async loadBuffer(path: string): Promise<AudioBuffer | null> {
+  public async loadBuffer(path: string): Promise<AudioBuffer | null> {
     if (!this.ctx) return null;
     if (this.bufferCache.has(path)) {
       return this.bufferCache.get(path)!;
@@ -659,6 +659,21 @@ export class AudioEngine {
         return this.commentaryGain;
       case 'sfx':
         return this.sfxGain;
+    }
+  }
+
+  /**
+   * Creates an AnalyserNode routed through the commentary bus for mouth animation (§17.4, §14.11.7)
+   */
+  public createAnalyser(): AnalyserNode | null {
+    if (!this.ctx || !this.commentaryGain) return null;
+    try {
+      const analyser = this.ctx.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.connect(this.commentaryGain);
+      return analyser;
+    } catch {
+      return null;
     }
   }
 }

@@ -5,3 +5,4 @@ export * from './synth';
 export * from './ducking';
 export * from './ambience';
 export * from './matchAudio';
+export * from './voiceQueue';

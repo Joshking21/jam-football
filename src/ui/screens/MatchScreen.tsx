@@ -34,7 +34,7 @@ import { createMatch, simulateInstant } from '../../core/match/engine';
 import { createDefaultSetPieceTactics } from '../../core/match/setPieces';
 import { adviseInMatch, AdviceAction } from '../../core/people/assistant';
 import { createRng } from '../../core/rng';
-import { audioEngine, matchAudio } from '../../audio';
+import { audioEngine, matchAudio, voiceQueue } from '../../audio';
 import type { ClientToWorkerMessage, WorkerToClientMessage } from '../../workers/match.worker';
 
 export const MatchScreen: React.FC = () => {
@@ -166,6 +166,15 @@ export const MatchScreen: React.FC = () => {
         // Trigger spatial match audio and crowd reactions (§17.3)
         const cameraX = sceneRef.current?.camera?.position?.x ?? 52.5;
         matchAudio.onEvent(ev, userSide, cameraX);
+
+        // Trigger commentary voice queue and caption synchronization (§17.4)
+        voiceQueue.updateSimTime(ev.t);
+        voiceQueue.speakCommentary(ev, gameState.players, {
+          weather: matchInput.weather,
+          isDerby: false,
+          homeScore: score.home,
+          awayScore: score.away,
+        });
 
         if (ev.type === 'MATCH_PLAN_TRIGGERED' && ev.side === userSide && ev.data) {
           const whenText: Record<string, string> = {
@@ -716,6 +725,7 @@ export const MatchScreen: React.FC = () => {
     animFrameRef.current = requestAnimationFrame(frameLoop);
 
     return () => {
+      voiceQueue.cancel();
       audioEngine.stopMatchAudio();
       if (animFrameRef.current !== null) {
         cancelAnimationFrame(animFrameRef.current);

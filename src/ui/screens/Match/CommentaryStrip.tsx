@@ -1,30 +1,43 @@
 // Implements SPEC §11.16 Bottom Commentary Caption Strip
 import React, { useEffect, useState } from 'react';
 import { Volume2 } from 'lucide-react';
+import { voiceQueue, ActiveCaption } from '../../../audio';
 
 interface CommentaryStripProps {
-  text: string;
+  text?: string;
   importance?: number; // 0..3
 }
 
 export const CommentaryStrip: React.FC<CommentaryStripProps> = ({ text, importance = 0 }) => {
-  const [visible, setVisible] = useState(false);
+  const [activeVoiceCaption, setActiveVoiceCaption] = useState<ActiveCaption | null>(null);
+  const [fallbackVisible, setFallbackVisible] = useState(false);
+
+  // Subscribe to voice queue active caption (§17.4)
+  useEffect(() => {
+    return voiceQueue.subscribe((cap) => {
+      setActiveVoiceCaption(cap);
+    });
+  }, []);
 
   useEffect(() => {
-    if (!text) return;
-    setVisible(true);
+    if (!text || activeVoiceCaption) return;
+    setFallbackVisible(true);
 
     // Fade out after 4 seconds per SPEC §11.16
     const timer = setTimeout(() => {
-      setVisible(false);
+      setFallbackVisible(false);
     }, 4000);
 
     return () => clearTimeout(timer);
-  }, [text]);
+  }, [text, activeVoiceCaption]);
 
-  if (!visible || !text) return null;
+  const currentText = activeVoiceCaption ? activeVoiceCaption.text : text;
+  const currentImportance = activeVoiceCaption ? activeVoiceCaption.importance : importance;
+  const isVisible = activeVoiceCaption !== null || (fallbackVisible && Boolean(text));
 
-  const isBigMoment = importance >= 2;
+  if (!isVisible || !currentText) return null;
+
+  const isBigMoment = currentImportance >= 2;
 
   return (
     <div

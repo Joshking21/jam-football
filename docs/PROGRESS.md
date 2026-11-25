@@ -276,3 +276,20 @@ REVIEW REQUESTED: M4 (third pass)
     - **UI & Match Integration:** Wired into `App.tsx` (lifecycle & screen routing), `MatchScreen.tsx` (playback event hooks & real-time ball position danger tracking), `SettingsModal.tsx` (real-time volume slider adjustment), and store dispatch.
     - **Unit Tests:** Authored `tests/audio/audio.test.ts` (16 tests verifying bus routing, volume scaling, ducking attenuation, procedural sound synthesis, spatial pan clamping, danger progression from defensive third to penalty box, event dispatching, and offline fallback).
 
+
+## 2026-11-25 · M6.3 Commentary voice queue, voice chaining, preemption and ducking
+- Changed: src/audio/engine.ts, src/audio/voiceQueue.ts, src/audio/index.ts, src/core/match/commentary.ts, src/ui/screens/MatchScreen.tsx, src/ui/screens/Match/CommentaryStrip.tsx, tests/audio/audio.test.ts
+- Ran:
+  - `npx prettier --check "src/audio/**/*.{ts,tsx}" "src/core/match/commentary.ts" "src/ui/screens/MatchScreen.tsx" "src/ui/screens/Match/CommentaryStrip.tsx" "tests/audio/audio.test.ts"`: All matched files use Prettier code style! PASS
+  - `npx vitest run tests/audio/audio.test.ts`: 1 file / 21 tests PASS (0 failures)
+  - `npx vite build`: built in 49.54s, main chunk 398.21 kB gzip (physics chunk 1.65 MB gzip, lazy) PASS
+- Notes:
+  - Implemented Milestone M6 Task 3 (SPEC §17.4 Spoken commentary and voice queue):
+    - **Voice Queue System (`src/audio/voiceQueue.ts`):** Priority queue with importance weighting (1: normal events, 2: key events/cards/saves, 3: goals/red cards, 4: urgent safety). 150ms gain fade-out preemption (`BALANCE.audio.voiceFadeOutMs`) when higher-importance line arrives.
+    - **Staleness Drop Rule:** Automatically discards queued lines that are older than 3 sim seconds (`BALANCE.audio.voiceMaxDropAgeSimSec`) at the moment playback starts.
+    - **Voice Chaining (§17.4, §16.3):** Handles `nameSlot: 'start'` and `'end'` by prepending/appending player name audio (`audio/vo/names/{playerId}.mp3`) with seamless buffer concatenation or sequential scheduling. Chains out-of-town goal (`OTHER_GOAL`) clips with club name audio (`audio/vo/clubs/{clubId}.mp3`).
+    - **Caption Synchronization & Procedural Speech Fallback:** Subscribed caption state updater emits live caption lines matching exact spoken timing. When audio files are missing, generates procedural speech cadence (~5 syllables/second, comma 150ms pause, period 300ms pause) and feeds simulated mouth loudness to `AnalyserNode` for 3D face animation.
+    - **Voice Ducking Automation:** Automatically ducks crowd bus by -6 dB and music bus by -10 dB over 100ms when speech starts, restoring original levels over 400ms when speech finishes.
+    - **Commentary Resolution Integration:** Updated `src/core/match/commentary.ts` to expose full `ResolvedCommentary` payload including importance, nameSlot, voice actor, and player/club audio cues.
+    - **Match Integration:** Wired `voiceQueue.speakCommentary()` and `voiceQueue.updateSimTime(ev.t)` into `MatchScreen.tsx` event playback; refactored `CommentaryStrip.tsx` to read synchronized captions directly from `voiceQueue.subscribe()`.
+    - **Unit Tests:** Extended `tests/audio/audio.test.ts` to 21 tests covering preemption, stale line dropping, caption subscriber callbacks, assistant stinger, coach dialogue, and ducking lifecycle.

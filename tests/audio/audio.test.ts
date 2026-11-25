@@ -5,6 +5,7 @@ import {
   AudioEngine,
   DuckingManager,
   MatchAudioController,
+  VoiceQueue,
   synthWhistle,
   synthKick,
   synthPost,
@@ -491,6 +492,108 @@ describe('SPEC §17 Audio Subsystem', () => {
     it('plays and stops music loop with crossfade without throwing', async () => {
       await expect(engine.playMusic('title_theme')).resolves.not.toThrow();
       expect(() => engine.stopMusic()).not.toThrow();
+    });
+  });
+
+  describe('VoiceQueue, Chaining & Ducking (§17.4)', () => {
+    let vq: VoiceQueue;
+
+    beforeEach(() => {
+      vq = new VoiceQueue(engine);
+    });
+
+    it('enqueues commentary and updates active caption for listeners', () => {
+      let latestCaption: any = null;
+      const unsubscribe = vq.subscribe((cap) => {
+        latestCaption = cap;
+      });
+
+      vq.enqueue({
+        id: 'c1',
+        text: 'And we are underway!',
+        importance: 1,
+        simTime: 10,
+      });
+
+      expect(latestCaption).toBeDefined();
+      expect(latestCaption?.text).toBe('And we are underway!');
+      expect(latestCaption?.importance).toBe(1);
+
+      unsubscribe();
+    });
+
+    it('preempts lower-importance line with 150ms fade when higher importance event arrives', () => {
+      const duckSpy = vi.spyOn(engine, 'duck');
+
+      vq.enqueue({
+        id: 'routine_pass',
+        text: 'Passed across the backline.',
+        importance: 0,
+        simTime: 15,
+      });
+
+      expect(vq.getActiveCaption()?.id).toBe('routine_pass');
+
+      // Higher-importance goal arrives immediately
+      vq.enqueue({
+        id: 'spectacular_goal',
+        text: 'What an absolute screamer into the top corner!',
+        importance: 3,
+        simTime: 16,
+      });
+
+      // Triggers ducking
+      expect(duckSpy).toHaveBeenCalled();
+    });
+
+    it('drops stale lines older than 3 sim seconds (§17.4)', () => {
+      vq.updateSimTime(100);
+
+      // Task with simTime = 90 (10 seconds old, > 3.0s threshold)
+      vq.enqueue({
+        id: 'stale_event',
+        text: 'Ancient history.',
+        importance: 1,
+        simTime: 90,
+      });
+
+      expect(vq.getActiveCaption()).toBeNull();
+    });
+
+    it('supports assistant stingers, press questions, and coach voice lines', () => {
+      expect(() => vq.speakAssistantStinger(2)).not.toThrow();
+      expect(vq.getActiveCaption()?.text).toBe('Boss, a word.');
+
+      vq.cancel();
+
+      expect(() =>
+        vq.speakPressQuestion('q1', 'Will you start him?', 'Will you start him?'),
+      ).not.toThrow();
+      expect(vq.getActiveCaption()?.text).toBe('Will you start him?');
+
+      vq.cancel();
+
+      expect(() =>
+        vq.speakCoachLine('talk_win', 'Good shift today.', 'p01', 'start'),
+      ).not.toThrow();
+      expect(vq.getActiveCaption()?.text).toBe('Good shift today.');
+
+      vq.cancel();
+    });
+
+    it('unducks crowd and music when cancelled', () => {
+      const unduckSpy = vi.spyOn(engine, 'unduck');
+
+      vq.enqueue({
+        id: 'c2',
+        text: 'A dangerous attack building.',
+        importance: 2,
+        simTime: 50,
+      });
+
+      vq.cancel();
+      expect(unduckSpy).toHaveBeenCalled();
+      expect(vq.getActiveCaption()).toBeNull();
     });
   });
 });
