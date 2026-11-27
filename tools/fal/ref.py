@@ -142,6 +142,27 @@ REFS = {
             "shadows. Natural photographic look, muted grade. No people, no text, no logos, no readable words."
         ),
     },
+    # The office window (docs/design/office): what the coach sees outside, by time of day.
+    "window-night": {
+        "dir": "C8-window",
+        "size": [1536, 768],
+        "seeds": [71],
+        "prompt": "View from a first-floor office window high in the main stand of a small lower-league football ground in a British harbour town, looking down across the whole pitch to the far stand. " + (
+            "Friday night, the floodlights on over an empty pitch, light mist in the beams, fresh mowing stripes, "
+            "rows of empty seats in the far stand, harbour cranes and a few town lights beyond the roof. Calm, quiet, "
+            "atmospheric. Photographic, natural colour, no people, no text, no logos, no advertising, no readable signs."
+        ),
+    },
+    "window-day": {
+        "dir": "C8-window",
+        "size": [1536, 768],
+        "seeds": [72],
+        "prompt": "View from a first-floor office window high in the main stand of a small lower-league football ground in a British harbour town, looking down across the whole pitch to the far stand. " + (
+            "Monday morning, soft overcast daylight, a groundsman on a ride-on mower cutting stripes into the pitch, "
+            "empty stands, wet grass, gulls, harbour cranes and terraced rooftops beyond the far stand. Quiet working "
+            "morning. Photographic, natural colour, no text, no logos, no advertising, no readable signs."
+        ),
+    },
 }
 
 PRICE_PER_IMAGE = 0.025  # fal flux/dev, ~1 megapixel (check the dashboard after)

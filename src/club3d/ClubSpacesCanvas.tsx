@@ -65,8 +65,8 @@ export const ClubSpacesCanvas: React.FC = () => {
 
     const players = Object.values(gameState.players);
     scene.surfaceManager.updateTactics(userClub.tactics, players);
+    scene.applyGameState(gameState);
   }, [gameState]);
-
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -87,6 +87,16 @@ export const ClubSpacesCanvas: React.FC = () => {
         const p = new URLSearchParams(window.location.search);
         const urlRoom = p.get('room');
         const urlFocus = p.get('focus');
+        // Dev/capture: ?beat=monday_morning|wednesday_afternoon|friday_evening|matchday (§11.25.6).
+        const urlBeat = p.get('beat');
+        if (
+          urlBeat === 'monday_morning' ||
+          urlBeat === 'wednesday_afternoon' ||
+          urlBeat === 'friday_evening' ||
+          urlBeat === 'matchday'
+        ) {
+          sceneRef.current.timeOfDayController.setBeat(urlBeat, true);
+        }
         if (urlRoom) {
           sceneRef.current.goToRoom(urlRoom as any, false);
           if (urlFocus) sceneRef.current.focusById(urlFocus);
@@ -200,12 +210,24 @@ export const ClubSpacesCanvas: React.FC = () => {
               boxShadow: '0 2px 12px rgba(0, 0, 0, 0.5)',
             }}
           >
-            <span><b>WASD / Arrows</b> Move</span>
-            <span><b>Shift</b> Run</span>
-            <span><b>Click</b> Mouse look</span>
-            <span><b>Wheel</b> Zoom</span>
-            <span><b>E</b> Interact</span>
-            <span><b>Esc</b> Free cursor</span>
+            <span>
+              <b>WASD / Arrows</b> Move
+            </span>
+            <span>
+              <b>Shift</b> Run
+            </span>
+            <span>
+              <b>Click</b> Mouse look
+            </span>
+            <span>
+              <b>Wheel</b> Zoom
+            </span>
+            <span>
+              <b>E</b> Interact
+            </span>
+            <span>
+              <b>Esc</b> Free cursor
+            </span>
           </div>
         )}
       </div>

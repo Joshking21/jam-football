@@ -1,5 +1,6 @@
 // SPEC §11.25.1 Rooms layout, coordinate geometry and room definitions
 import * as THREE from 'three';
+import { OfficeModel } from './officeModel';
 import type { RoomId, RoomDefinition, Point3D } from './types';
 
 export const ROOM_DEFINITIONS: Record<RoomId, RoomDefinition> = {
@@ -124,69 +125,72 @@ export const ROOM_DEFINITIONS: Record<RoomId, RoomDefinition> = {
   office: {
     id: 'office',
     name: 'Manager Office',
+    // office.glb (docs/design/office): 6.5 m x 8 m, door on the corridor side (z 1.5). Seated at the desk the coach
+    // faces the TV (-x); the window (+z) is on his left, the door (-z) on his right. Coordinates from
+    // officeToWorld() in officeModel.ts.
     bounds: {
-      min: [-17, 0, 1.5],
-      max: [-7, 3.2, 9.5],
+      min: [-15.25, 0, 1.5],
+      max: [-8.75, 3.0, 9.5],
     },
     doorPosition: [-12, 1.1, 1.5],
     cameraRail: {
-      position: [-12, 1.6, 3.6],
-      target: [-12, 1.15, 7.4],
-      fov: 48,
+      position: [-14.85, 2.15, 2.0],
+      target: [-11.0, 0.9, 6.4],
+      fov: 58,
     },
     hotspots: [
       {
         id: 'desk_hub',
         name: 'Manager Desk',
-        position: [-12, 0.75, 7.3],
+        position: [-10.7, 0.78, 5.5],
         radius: 1.3,
         room: 'office',
         opens: { screen: 'hub' },
         touch: {
           hand: 'auto',
-          point: [-12, 0.76, 6.7],
+          point: [-10.25, 0.78, 5.5],
           normal: [0, 1, 0],
           kind: 'rest',
         },
         surfaceId: 'desk_surface',
         focusView: {
-          position: [-12, 1.8, 5.8],
-          target: [-12, 0.75, 7.3],
+          position: [-15.0, 2.3, 5.5],
+          target: [-10.3, 0.9, 5.5],
           fov: 52,
         },
       },
       {
         id: 'whiteboard_tactics',
-        name: 'Tactics Board',
-        position: [-7.2, 1.5, 5.5],
-        radius: 1.1,
+        name: 'Tactics Table',
+        position: [-13.3, 0.86, 5.5],
+        radius: 1.5,
         room: 'office',
         opens: { screen: 'tactics' },
         touch: {
           hand: 'R',
-          point: [-7.25, 1.5, 5.5],
-          normal: [-1, 0, 0],
-          kind: 'brush',
+          point: [-12.6, 0.86, 5.5],
+          normal: [0, 1, 0],
+          kind: 'brush', // the hand follows the magnet across the table screen
         },
-        surfaceId: 'whiteboard_surface',
+        surfaceId: 'screen_table',
         focusView: {
-          position: [-9.2, 1.5, 5.5],
-          target: [-7.24, 1.5, 5.5],
-          fov: 42,
+          position: [-12.2, 3.0, 5.5],
+          target: [-13.3, 0.85, 5.5],
+          fov: 50,
         },
       },
       {
         id: 'wall_tv',
         name: 'Wall Broadcast TV',
-        position: [-16.8, 1.7, 5.5],
+        position: [-15.15, 1.75, 5.5],
         radius: 1.3,
         room: 'office',
         opens: { screen: 'league' },
-        surfaceId: 'tv_surface',
+        surfaceId: 'screen_tv',
         focusView: {
-          position: [-15.0, 1.7, 5.5],
-          target: [-16.92, 1.7, 5.5],
-          fov: 38,
+          position: [-13.2, 1.75, 5.5],
+          target: [-15.2, 1.75, 5.5],
+          fov: 40,
         },
       },
       {
@@ -522,7 +526,8 @@ export function buildRoomMesh(roomId: RoomId): THREE.Group {
 
   // Ceiling lights for indoor rooms
   if (roomId !== 'exterior' && roomId !== 'training') {
-    const lightColor = roomId === 'office' ? 0xffe8cc : roomId === 'boardroom' ? 0xffecd0 : 0xdde6f0;
+    const lightColor =
+      roomId === 'office' ? 0xffe8cc : roomId === 'boardroom' ? 0xffecd0 : 0xdde6f0;
     const lightIntensity = roomId === 'corridor' ? 1.5 : 2.5;
     const lightCount = roomId === 'corridor' ? 4 : 2;
     const lightY = b.max[1] - 0.15;
@@ -547,11 +552,17 @@ export function buildRoomMesh(roomId: RoomId): THREE.Group {
   // Room-specific props
   const woodDark = new THREE.MeshStandardMaterial({ color: 0x3d2719, roughness: 0.4 });
   const woodMahog = new THREE.MeshStandardMaterial({ color: 0x2b1a11, roughness: 0.3 });
-  const metalGrey = new THREE.MeshStandardMaterial({ color: 0x5a5e64, roughness: 0.5, metalness: 0.3 });
+  const metalGrey = new THREE.MeshStandardMaterial({
+    color: 0x5a5e64,
+    roughness: 0.5,
+    metalness: 0.3,
+  });
   const leather = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.6 });
   const fabric = new THREE.MeshStandardMaterial({ color: 0x2a2a3a, roughness: 0.8 });
 
   if (roomId === 'office') {
+    // The real office (office.glb) replaces everything below once it loads; this box room is the fallback.
+    group.userData.office = new OfficeModel(group);
     // Desk
     const desk = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.74, 1.2), woodDark);
     desk.position.set(-12, 0.37, 7.3);
@@ -706,8 +717,10 @@ export function buildRoomMesh(roomId: RoomId): THREE.Group {
     }
   } else if (roomId === 'press') {
     // Press table
-    const pTable = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.74, 0.9),
-      new THREE.MeshStandardMaterial({ color: 0x1b2d4f, roughness: 0.5 }));
+    const pTable = new THREE.Mesh(
+      new THREE.BoxGeometry(3.6, 0.74, 0.9),
+      new THREE.MeshStandardMaterial({ color: 0x1b2d4f, roughness: 0.5 }),
+    );
     pTable.position.set(15, 0.37, 7.5);
     pTable.castShadow = true;
     group.add(pTable);

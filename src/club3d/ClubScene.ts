@@ -1,5 +1,7 @@
 // SPEC §11.25.1-11.25.4 ClubScene and scene manager
 import * as THREE from 'three';
+import type { OfficeModel } from './officeModel';
+import type { GameState } from '../core/types';
 import type { RoomId, FocusView, Hotspot } from './types';
 import { ROOM_DEFINITIONS, buildRoomMesh, getRoomForScreen } from './rooms';
 import { CoachWalkController } from './walk';
@@ -205,7 +207,24 @@ export class ClubScene {
     const roomGroup = this.loadedRooms.get(roomId);
     if (roomGroup) {
       this.surfaceManager.bindToRoom(roomGroup);
+      // The office model loads after the box room: re-bind its live surfaces once it's in.
+      const office = roomGroup.userData.office as OfficeModel | undefined;
+      if (office) {
+        void office.ready.then((ok) => {
+          if (ok && this.currentRoomId === roomId) this.surfaceManager.bindToRoom(roomGroup);
+          if (ok && this.lastGameState) office.applyState(this.lastGameState);
+        });
+      }
     }
+  }
+
+  private lastGameState: GameState | null = null;
+
+  /** The office dresses itself from the save (folders, results, letter, trophies, paper...). */
+  public applyGameState(gs: GameState) {
+    this.lastGameState = gs;
+    const office = this.loadedRooms.get('office')?.userData.office as OfficeModel | undefined;
+    office?.applyState(gs);
   }
 
   public goToRoom(targetRoomId: RoomId, walksEnabled = true) {
@@ -368,6 +387,13 @@ export class ClubScene {
     // 1. Update Controllers
     this.timeOfDayController.update(dt);
     this.walkController.update(dt);
+    const office = this.loadedRooms.get('office');
+    if (office?.visible) {
+      (office.userData.office as OfficeModel | undefined)?.update(
+        dt,
+        this.timeOfDayController.getBeat(),
+      );
+    }
 
     // 1b. WASD Free Walking (§24) — disabled while focused on a surface
     if (this.coachPerson && !this.walkController.isWalking() && !this.isFocused) {
@@ -411,7 +437,6 @@ export class ClubScene {
         if (this.coachPerson.currentClip !== targetClip) {
           this.peopleManager.playClip('coach', targetClip);
         }
-
       } else {
         if (this.coachPerson.currentClip === 'Walk' || this.coachPerson.currentClip === 'Run') {
           this.peopleManager.playClip('coach', 'Idle');

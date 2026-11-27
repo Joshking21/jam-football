@@ -49,7 +49,7 @@ def image(name):
 
 
 def mat(name, rgb=(0.5, 0.5, 0.5), rough=0.6, metal=0.0, tex=None, emit=None, emit_tex=None, strength=1.0,
-        alpha=1.0):
+        alpha=1.0, normal=None, normal_strength=1.0):
     if name in _mats:
         return _mats[name]
     m = bpy.data.materials.new(name)
@@ -72,6 +72,14 @@ def mat(name, rgb=(0.5, 0.5, 0.5), rough=0.6, metal=0.0, tex=None, emit=None, em
             nt.links.new(t.outputs['Color'], b.inputs['Base Color'])
         else:
             b.inputs['Emission Color'].default_value = (*emit, 1)
+    if normal:
+        t = nt.nodes.new('ShaderNodeTexImage')
+        t.image = image(normal)
+        t.image.colorspace_settings.name = 'Non-Color'
+        nm = nt.nodes.new('ShaderNodeNormalMap')
+        nm.inputs['Strength'].default_value = normal_strength
+        nt.links.new(t.outputs['Color'], nm.inputs['Color'])
+        nt.links.new(nm.outputs['Normal'], b.inputs['Normal'])
     if alpha < 1:
         b.inputs['Alpha'].default_value = alpha
         try:
@@ -83,32 +91,34 @@ def mat(name, rgb=(0.5, 0.5, 0.5), rough=0.6, metal=0.0, tex=None, emit=None, em
 
 
 M = {
-    'planks': mat('FloorOak', tex='planks', rough=0.55),
-    'brick': mat('Brick', tex='brick', rough=0.92),
-    'plaster': mat('Plaster', tex='plaster', rough=0.9),
-    'plaster_warm': mat('PlasterWarm', tex='plaster_warm', rough=0.9),
+    'planks': mat('FloorOak', tex='planks', rough=0.55, normal='n_planks', normal_strength=0.8),
+    'brick': mat('Brick', tex='brick', rough=0.92, normal='n_brick', normal_strength=1.0),
+    'plaster': mat('Plaster', tex='plaster', rough=0.9, normal='n_plaster', normal_strength=0.6),
+    'plaster_warm': mat('PlasterWarm', tex='plaster_warm', rough=0.9, normal='n_plaster', normal_strength=0.6),
+    'desk_oak': mat('DeskOak', tex='dark_oak_worn', rough=0.4),
+    'spines': mat('Spines', tex='spines', rough=0.6),
     'ceiling': mat('Ceiling', (0.82, 0.8, 0.76), rough=0.95),
     'paint_dark': mat('PaintDark', (0.07, 0.09, 0.12), rough=0.7),  # door-side wall, as final.jpg
     'trim': mat('TrimWhite', (0.85, 0.84, 0.8), rough=0.5),
     'oak': mat('DarkOak', tex='dark_oak', rough=0.45),
     'oak_light': mat('MidOak', (0.36, 0.22, 0.12), rough=0.5),
-    'leather': mat('LeatherOxblood', tex='leather_oxblood', rough=0.38),
-    'leather2': mat('LeatherBrown', tex='leather_brown', rough=0.42),
+    'leather': mat('LeatherOxblood', tex='leather_oxblood', rough=0.38, normal='n_leather', normal_strength=0.9),
+    'leather2': mat('LeatherBrown', tex='leather_brown', rough=0.42, normal='n_leather', normal_strength=0.9),
     'brass': mat('Brass', (0.78, 0.6, 0.3), rough=0.28, metal=1.0),
     'steel': mat('SteelBlack', (0.05, 0.05, 0.06), rough=0.35, metal=0.7),
     'chrome': mat('Chrome', (0.8, 0.8, 0.82), rough=0.15, metal=1.0),
     'black': mat('BlackPlastic', (0.02, 0.02, 0.025), rough=0.4),
     'glass': mat('Glass', (0.7, 0.8, 0.85), rough=0.05, alpha=0.12),
-    'rug': mat('Rug', tex='rug', rough=1.0),
+    'rug': mat('Rug', tex='rug_worn', rough=1.0, normal='n_rug', normal_strength=0.7),
     'cork': mat('Cork', tex='cork', rough=0.95),
     'paper': mat('Paper', (0.88, 0.85, 0.77), rough=0.9),
     'card': mat('CardBuff', (0.78, 0.66, 0.42), rough=0.85),
     'ceramic': mat('Ceramic', (0.92, 0.91, 0.88), rough=0.25),
     'gold': mat('TrophyGold', (0.85, 0.66, 0.28), rough=0.22, metal=1.0),
     'silver': mat('TrophySilver', (0.85, 0.86, 0.88), rough=0.2, metal=1.0),
-    'club1': mat('ClubPrimary', (0.6, 0.06, 0.07), rough=0.75),
-    'club2': mat('ClubSecondary', (0.92, 0.9, 0.86), rough=0.75),
-    'coat': mat('CoatWool', (0.05, 0.06, 0.09), rough=0.95),
+    'club1': mat('ClubPrimary', (0.6, 0.06, 0.07), rough=0.75, normal='n_cloth', normal_strength=1.1),
+    'club2': mat('ClubSecondary', (0.92, 0.9, 0.86), rough=0.75, normal='n_cloth', normal_strength=1.1),
+    'coat': mat('CoatWool', (0.05, 0.06, 0.09), rough=0.95, normal='n_wool', normal_strength=1.2),
     'radiator': mat('RadiatorPaint', (0.84, 0.83, 0.79), rough=0.45),
     'tabby': mat('CatTabby', (0.42, 0.3, 0.17), rough=0.95),
     'win': mat('StickerWin', (0.13, 0.55, 0.22), rough=0.6),
@@ -233,6 +243,31 @@ def extrude_outline(name, pts, depth, c, m, rot=(90, 0, 0)):
     return _finish(o, m, True)
 
 
+SPINE_COLS = 16
+
+
+def spine_uv(o, col, facing=Vector((0, 1, 0))):
+    me = o.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    uv = bm.loops.layers.uv.verify()
+    xs = [v.co.x for v in bm.verts]
+    zs = [v.co.z for v in bm.verts]
+    x0, x1, z0, z1 = min(xs), max(xs), min(zs), max(zs)
+    cw = 1.0 / SPINE_COLS
+    for f in bm.faces:
+        c = col if f.normal.dot(facing) > 0.7 else SPINE_COLS - 1
+        for loop in f.loops:
+            p = loop.vert.co
+            u = (p.x - x0) / max(1e-6, x1 - x0)
+            v = (p.z - z0) / max(1e-6, z1 - z0)
+            if abs(f.normal.z) > 0.7:  # top/bottom: page edges run along y
+                v = (p.y - min(q.co.y for q in bm.verts)) / max(1e-6, max(q.co.y for q in bm.verts) - min(q.co.y for q in bm.verts))
+            loop[uv].uv = (c * cw + (0.06 + 0.88 * u) * cw, v)
+    bm.to_mesh(me)
+    bm.free()
+
+
 def parent(children, name):
     e = bpy.data.objects.new(name, None)
     coll.objects.link(e)
@@ -330,7 +365,7 @@ box('tactics_table_kick', (0, TY, 0.03), (2.1, 1.2, 0.06), M['black'])
 
 # ------------------------------------------------------------------------------------------------ the desk (Meshy stand-in)
 DY = -1.3
-desk = [box('meshy_desk_top', (0, DY, 0.755), (2.1, 1.0, 0.05), M['oak'], bevel=0.012)]
+desk = [box('meshy_desk_top', (0, DY, 0.755), (2.1, 1.0, 0.05), M['desk_oak'], bevel=0.012)]
 for s in (-1, 1):
     desk.append(box(f'meshy_desk_ped_{s}', (s * 0.76, DY, 0.37), (0.56, 0.92, 0.72), M['oak'], bevel=0.01))
     for k in range(3):  # drawer fronts on the guest's side (north face) and handles
@@ -453,9 +488,10 @@ for r in range(4):
         z = 0.02 + r * (CH - 0.04) / 4 + 0.27
         x = CX - CW / 2 + (k + 0.5) * CW / 3
         extrude_outline(f'cubby_shirt_{r}_{k}', HANG, 0.01, (x, Y0 + 0.1, z), M['club1'] if (r + k) % 3 else M['club2'], rot=(90, 0, 0))
-for i in range(5):
-    box(f'cubby_binder_{i}', (CX - CW / 3 - 0.12 + i * 0.065, Y0 + 0.2, 0.02 + 3 * (CH - 0.04) / 4 + 0.17),
-        (0.055, 0.3, 0.3), FOLDERS[i % len(FOLDERS)])
+for i in range(6):
+    o = box(f'cubby_binder_{i}', (CX - CW / 3 - 0.14 + i * 0.058, Y0 + 0.2, 0.02 + 3 * (CH - 0.04) / 4 + 0.165),
+            (0.052, 0.3, 0.29), M['spines'], uv=False)
+    spine_uv(o, rnd.randrange(SPINE_COLS - 1))
 # Trophies, laid back: a cup on top of the unit, a shield leaning on the floor beside it.
 lathe('live_trophy_cup', [(0, 0), (0.07, 0), (0.07, 0.03), (0.035, 0.05), (0.02, 0.12), (0.02, 0.15), (0.09, 0.22),
                           (0.1, 0.32), (0.095, 0.33), (0.0, 0.33)], (CX + 0.35, Y0 + 0.2, CH + 0.015), M['gold'])
@@ -472,10 +508,22 @@ ball('live_match_ball', (CX + 0.55, Y0 + 0.5, 0.11), (0.11, 0.11, 0.11), M['cera
 # Shelves of binders and the radio (east end of the brick wall).
 for zi, z in enumerate((0.95, 1.4, 1.85)):
     box(f'shelf_{zi}', (2.45, Y0 + 0.16, z), (1.5, 0.28, 0.03), M['oak'], bevel=0.004)
-    for i in range(10):
-        if zi == 2 and i > 6:
-            continue
-        box(f'shelf_binder_{zi}_{i}', (1.8 + i * 0.13, Y0 + 0.16, z + 0.165), (0.065, 0.25, 0.3), FOLDERS[(i + zi) % len(FOLDERS)])
+    x = 1.74
+    i = 0
+    while x < 3.15 - (0.45 if zi == 2 else 0):
+        wdt = rnd.choice([0.045, 0.06, 0.065, 0.07, 0.035])
+        hgt = rnd.choice([0.3, 0.3, 0.28, 0.24, 0.22])
+        o = box(f'shelf_binder_{zi}_{i}', (x + wdt / 2, Y0 + 0.16, z + 0.015 + hgt / 2), (wdt, 0.24, hgt), M['spines'],
+                rz=rnd.uniform(-1.5, 1.5), uv=False)
+        spine_uv(o, rnd.randrange(SPINE_COLS - 1))
+        x += wdt + rnd.choice([0.002, 0.004, 0.0])
+        i += 1
+        if rnd.random() < 0.08:
+            x += 0.08  # a gap, a book leaning into it
+            lean = box(f'shelf_binder_{zi}_{i}', (x - 0.03, Y0 + 0.16, z + 0.015 + 0.12), (0.04, 0.22, 0.26), M['spines'],
+                       ry=-16, uv=False)
+            spine_uv(lean, rnd.randrange(SPINE_COLS - 1))
+            i += 1
 box('live_radio', (3.0, Y0 + 0.17, 2.0), (0.32, 0.15, 0.2), M['oak_light'], bevel=0.015)
 cyl('live_radio_dial', (2.93, Y0 + 0.25, 2.0), 0.04, 0.01, M['brass'], axis='Y')
 

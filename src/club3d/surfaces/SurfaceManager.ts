@@ -23,7 +23,7 @@ export class SurfaceManager {
       this.tacticsBoard = new TacticsBoard();
     }
     const map = this.tacticsBoard.texture;
-    for (const name of ['whiteboard_surface', 'flipchart_surface']) {
+    for (const name of ['whiteboard_surface', 'flipchart_surface', 'screen_table']) {
       const mesh = this.findMesh(name);
       if (!mesh) continue;
       const current = mesh.material as THREE.MeshBasicMaterial;

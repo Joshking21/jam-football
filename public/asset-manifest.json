@@ -7,6 +7,12 @@
     "bake/stadium_ao.json": {
       "bytes": 4414
     },
+    "images/office/window_day.jpg": {
+      "bytes": 195492
+    },
+    "images/office/window_night.jpg": {
+      "bytes": 160375
+    },
     "models/club/bench.glb": {
       "bytes": 1816
     },
@@ -32,7 +38,7 @@
       "bytes": 206816
     },
     "models/office/office.glb": {
-      "bytes": 2285144
+      "bytes": 2592840
     },
     "models/player.glb": {
       "bytes": 219048
