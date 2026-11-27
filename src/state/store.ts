@@ -46,7 +46,7 @@ import {
 import { clamp, formatMoney } from '@/core/math';
 import { valueOf, wageFor } from '@/core/player/value';
 import { BALANCE } from '@/config/balance';
-import { audioEngine } from '@/audio';
+import { audioEngine } from '@/audio/engine';
 
 export type AppScreen =
   | 'title'
