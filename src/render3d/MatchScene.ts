@@ -1,15 +1,16 @@
 // Implements SPEC §14.2, §14.8, §14.10 Master Three.js Match Scene Orchestrator
 import * as THREE from 'three';
-import { Match3DContext, QualityPreset, CameraMode } from './types';
+import { Match3DContext, QualityPreset, CameraMode, Player3DVisual } from './types';
 import { createPitch, PitchMeshBundle } from './pitch';
 import { createGoals, GoalsBundle } from './goals';
 import { createStadium, StadiumBundle } from './stadium';
 import { createCrowd, CrowdBundle } from './crowd';
 import { createBall, BallBundle } from './ball';
-import { createPlayers, PlayersBundle } from './players';
+import { createPlayers, PlayersBundle, upgradePlayersToRigs } from './players';
+import { loadModelAsset } from './modelLoader';
 import { createCameras, CameraBundle } from './cameras';
 import { createLights, LightsBundle } from './lights';
-import { Choreographer, PlayerPaceMap } from './choreographer';
+import { Choreographer, PlayerPaceMap, PlayerSteeringState } from './choreographer';
 import { createPostPipeline, PostPipeline } from './post';
 import { createStadiumEnvironment, StadiumEnvironment } from './environment';
 import { createFloodlightBeams, FloodlightBeams } from './beams';
@@ -55,6 +56,7 @@ export class MatchScene {
   private stamps: TrampleStamp[] = [];
   private stampFlip = false;
   private tmpQ = new THREE.Quaternion();
+  private tmpV = new THREE.Vector3();
   private yawQ = new THREE.Quaternion();
   private upAxis = new THREE.Vector3(0, 1, 0);
   private pendingGoalSide: 'home' | 'away' | null = null;
@@ -135,6 +137,10 @@ export class MatchScene {
       this.quality,
     );
     this.scene.add(this.players.group);
+    // §14.12.5 skinned players: swap in player.glb when it loads; the figures stand in until then.
+    void loadModelAsset('models/player.glb').then((gltf) => {
+      if (gltf && !this.isDisposed) upgradePlayersToRigs(this.players, gltf, this.quality);
+    });
 
     // 10. Choreographer initialization
     if (ctx.choreographer) {
@@ -187,7 +193,11 @@ export class MatchScene {
       void MatchPhysics.create(this.choreographer, ids, strength, ctx.weather === 'rain').then(
         (p) => {
           if (this.isDisposed) p?.dispose();
-          else this.physics = p;
+          else {
+            this.physics = p;
+            // Fouled players fall as ragdolls once their skinned rig exists (§14.12.4).
+            if (p) p.rigOf = (pid) => this.players.allPlayers.get(pid)?.rig;
+          }
         },
       );
     }
@@ -252,6 +262,57 @@ export class MatchScene {
     this.animate();
   }
 
+  private officials = new Map<string, PlayerSteeringState>();
+
+  /**
+   * Officials (§14.2): the referee trails play on the diagonal, ~12 m off the ball; each linesman
+   * follows the ball along his touchline. Steered here, so the rig gets a real velocity.
+   */
+  private officialState(v: Player3DVisual, ball: THREE.Vector3, dt: number): PlayerSteeringState {
+    let s = this.officials.get(v.id);
+    if (!s) {
+      s = {
+        currentPos: v.group.position.clone(),
+        targetPos: v.group.position.clone(),
+        velocity: new THREE.Vector3(),
+        facingAngle: 0,
+        speed: 0,
+        isKicking: false,
+        isTackling: false,
+        isDiving: false,
+      };
+      this.officials.set(v.id, s);
+    }
+    const bx = Math.max(-50, Math.min(50, ball.x));
+    const bz = Math.max(-32, Math.min(32, ball.z));
+    if (v.id === this.players.referee.id) {
+      s.targetPos.set(bx - Math.sign(bx || 1) * 8, 0, bz * 0.4 - Math.sign(bz || 1) * 9);
+    } else {
+      const zLine = v.group.position.z < 0 ? -34.5 : 34.5;
+      // Each linesman covers one half: hold the halfway area when play is in the other half.
+      const ownHalf = zLine < 0 ? bx < 0 : bx > 0;
+      s.targetPos.set(ownHalf ? bx : 0, 0, zLine);
+    }
+    const to = this.tmpV.subVectors(s.targetPos, s.currentPos).setY(0);
+    const dist = to.length();
+    const want = dist < 1.5 ? 0 : Math.min(7, dist * 0.6);
+    const desired = dist > 1e-3 ? to.multiplyScalar(want / dist) : to.set(0, 0, 0);
+    const k = 1 - Math.exp(-3 * dt);
+    s.velocity.lerp(desired, k);
+    s.speed = s.velocity.length();
+    s.currentPos.addScaledVector(s.velocity, dt);
+    // Face the ball (officials side-step and backpedal rather than turn their backs on play).
+    const fx = ball.x - s.currentPos.x;
+    const fz = ball.z - s.currentPos.z;
+    const face = Math.atan2(fx, fz);
+    let d = face - s.facingAngle;
+    d = Math.atan2(Math.sin(d), Math.cos(d));
+    s.facingAngle += Math.max(-4 * dt, Math.min(4 * dt, d));
+    v.group.position.set(s.currentPos.x, 0, s.currentPos.z);
+    v.group.rotation.y = s.facingAngle;
+    return s;
+  }
+
   private animate = () => {
     if (this.isDisposed) return;
 
@@ -302,6 +363,23 @@ export class MatchScene {
       }
     });
 
+    // Skinned rigs: gait with planted feet, kicks, tackles, dives, head look-at (§14.12.5).
+    this.players.allPlayers.forEach((visual, pid) => {
+      if (!visual.rig) return;
+      const state = this.choreographer.getPlayerState(pid);
+      if (!state) return;
+      visual.rig.update(delta, {
+        state,
+        ball: bPos,
+        fallen: this.physics?.isFallen(pid) ?? false,
+        ragdoll: this.physics?.ragdollOf(pid) ?? null,
+      });
+    });
+    for (const off of [this.players.referee, ...this.players.linesmen]) {
+      const st = this.officialState(off, bPos, delta);
+      if (off.rig) off.rig.update(delta, { state: st, ball: bPos, fallen: false });
+    }
+
     // Update scene dynamic parts
     this.goals.update(delta);
     this.crowd.update(delta);
@@ -311,7 +389,7 @@ export class MatchScene {
     if (this.physics) {
       const ph = this.physics;
       this.players.allPlayers.forEach((visual, pid) => {
-        if (!ph.isFallen(pid)) return;
+        if (!ph.isFallen(pid) || visual.rig) return; // rigs fall as ragdolls
         const state = this.choreographer.getPlayerState(pid);
         this.yawQ.setFromAxisAngle(this.upAxis, state ? state.facingAngle : 0);
         visual.group.quaternion.copy(ph.rotationOf(pid, this.tmpQ)).multiply(this.yawQ);

@@ -42,6 +42,12 @@ export interface PlayerSteeringState {
   speedCap?: number;
   /** Involved in the ball this frame: may sprint harder to get there. */
   urgent?: boolean;
+  /** Seconds from this player's ball contact (negative before it); set around a kick only. */
+  kickDt?: number;
+  /** The contact is at head height (a header, not a kick). */
+  kickHigh?: boolean;
+  /** A real tackle on the ball (slide), as opposed to a pressing stab. */
+  slide?: boolean;
 }
 
 export interface TeamTacticsInput {
@@ -923,6 +929,9 @@ export class Choreographer {
       s.isDiving = false;
       s.isCelebrating = false;
       s.speedCap = undefined;
+      s.kickDt = undefined;
+      s.kickHigh = false;
+      s.slide = false;
       s.urgent = false;
     });
 
@@ -972,8 +981,14 @@ export class Choreographer {
           tmpC.normalize();
           k.targetPos.set(ball.x - tmpC.x * 0.55, 0, ball.z - tmpC.z * 0.55);
           if (Math.abs(pt - bplan.kickT) < 0.25 && bplan.type !== 'DRIBBLE') k.isKicking = true;
-          if (bplan.type === 'TACKLE' || bplan.type === 'INTERCEPTION')
+          if (bplan.type !== 'DRIBBLE' && pt > bplan.kickT - 0.45) {
+            k.kickDt = pt - bplan.kickT;
+            k.kickHigh = ball.y > 1.2;
+          }
+          if (bplan.type === 'TACKLE' || bplan.type === 'INTERCEPTION') {
             k.isTackling = pt < bplan.kickT + 0.4;
+            k.slide = bplan.type === 'TACKLE';
+          }
         }
       }
       if (bplan.receiver && bplan.landing && pt < bplan.flightEnd) {

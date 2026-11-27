@@ -13,12 +13,19 @@ import * as THREE from 'three';
 import type RAPIERNS from '@dimforge/rapier3d-compat';
 import type { Choreographer, BallSeg } from '../render3d/choreographer';
 import { BALL, airAccel, solveLaunch, Vec3 } from './ballFlight';
+import { Ragdoll, RagdollSegment } from './ragdoll';
+
+/** What the physics needs from a skinned rig to make its ragdoll (§14.12.4). */
+export interface RagdollSource {
+  ragdollSegments(): { segs: RagdollSegment[]; frameQ: THREE.Quaternion };
+}
 
 type R = typeof RAPIERNS;
 
 const GROUP_WORLD = 0x0001;
 const GROUP_BALL = 0x0002;
 const GROUP_PLAYER = 0x0004;
+const GROUP_RAGDOLL = 0x0008;
 const groups = (member: number, filter: number) => (member << 16) | filter;
 
 const STEP = 1 / 60;
@@ -28,6 +35,8 @@ const CAPSULE_HALF = 0.6;
 const STAND_Y = CAPSULE_HALF + CAPSULE_R;
 const DRIVE_ACCEL = 14; // m/s², how hard a player can push toward where he wants to go
 const FALL_SECONDS = 1.5;
+/** A ragdoll stays down a little longer: the fall itself takes ~0.8 s. */
+const RAGDOLL_SECONDS = 2.1;
 const MAX_FALLEN = 3;
 
 let rapierPromise: Promise<R | null> | null = null;
@@ -52,6 +61,7 @@ export function loadRapier(): Promise<R | null> {
 interface Fallen {
   pid: string;
   t: number;
+  ragdoll?: Ragdoll;
 }
 
 export class MatchPhysics {
@@ -68,10 +78,13 @@ export class MatchPhysics {
   private wet: boolean;
   private spin = { x: 0, y: 0, z: 0 };
   private tmpA: Vec3 = { x: 0, y: 0, z: 0 };
+  private tmpPel = new THREE.Vector3();
 
   /** Rendered ball position (physics). */
   public ballPos = new THREE.Vector3(0, BALL.radius, 0);
   public ballVel = new THREE.Vector3();
+  /** Set by MatchScene once the skinned rigs exist: fouled players then fall as ragdolls. */
+  public rigOf: ((pid: string) => RagdollSource | undefined) | null = null;
 
   static async create(
     director: Choreographer,
@@ -117,7 +130,7 @@ export class MatchPhysics {
           ),
       );
       world.createCollider(
-        desc.setCollisionGroups(groups(GROUP_WORLD, GROUP_BALL | GROUP_PLAYER)),
+        desc.setCollisionGroups(groups(GROUP_WORLD, GROUP_BALL | GROUP_PLAYER | GROUP_RAGDOLL)),
         body,
       );
     };
@@ -208,6 +221,11 @@ export class MatchPhysics {
     return this.fallen.some((f) => f.pid === pid);
   }
 
+  /** The ragdoll of a fallen player, if he fell as one. */
+  public ragdollOf(pid: string): Ragdoll | null {
+    return this.fallen.find((f) => f.pid === pid)?.ragdoll ?? null;
+  }
+
   /** The body rotation of a player (for falls). */
   public rotationOf(pid: string, out: THREE.Quaternion): THREE.Quaternion {
     const b = this.bodies.get(pid);
@@ -259,6 +277,7 @@ export class MatchPhysics {
       b.setAngvel({ x: 0, y: 0, z: 0 }, true);
       b.lockRotations(true, true);
     });
+    this.fallen.forEach((f) => f.ragdoll?.dispose());
     this.fallen = [];
   }
 
@@ -307,8 +326,14 @@ export class MatchPhysics {
     }
     // Get up.
     this.fallen = this.fallen.filter((f) => {
-      if (this.time - f.t < FALL_SECONDS) return true;
+      if (this.time - f.t < (f.ragdoll ? RAGDOLL_SECONDS : FALL_SECONDS)) return true;
       const b = this.bodies.get(f.pid);
+      if (f.ragdoll) {
+        // Stand up where the pelvis landed.
+        const pel = f.ragdoll.pelvis(new THREE.Vector3());
+        f.ragdoll.dispose();
+        if (b) b.setTranslation({ x: pel.x, y: STAND_Y, z: pel.z }, true);
+      }
       if (b) {
         const p = b.translation();
         b.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true);
@@ -332,6 +357,29 @@ export class MatchPhysics {
     dx /= len;
     dz /= len;
     const m = this.masses.get(pid) ?? 75;
+    const rig = this.rigOf?.(pid);
+    if (rig) {
+      try {
+        const { segs, frameQ } = rig.ragdollSegments();
+        const v = b.linvel();
+        const ragdoll = new Ragdoll(
+          this.R,
+          this.world,
+          segs,
+          frameQ,
+          new THREE.Vector3(v.x, 0, v.z),
+          new THREE.Vector3(dx, 0, dz),
+          strength,
+          groups(GROUP_RAGDOLL, GROUP_WORLD),
+        );
+        // The capsule stays upright and still (it only keeps the space); the ragdoll is the body.
+        b.setLinvel({ x: 0, y: 0, z: 0 }, true);
+        this.fallen.push({ pid, t: this.time, ragdoll });
+        return;
+      } catch (e) {
+        console.warn('Ragdoll failed, tipping the capsule instead:', e);
+      }
+    }
     b.lockRotations(false, true);
     // Hit low and from behind: the legs go, the body tips over.
     b.applyImpulseAtPoint(
@@ -454,9 +502,19 @@ export class MatchPhysics {
     this.ballPos.set(t.x, Math.max(BALL.radius * 0.95, t.y), t.z);
     this.ballVel.set(v.x, v.y, v.z);
     // Feed true positions back so the director steers from where players really are.
+    const pel = this.tmpPel;
     this.bodies.forEach((b, pid) => {
       const s = this.director.getPlayerState(pid);
       if (!s) return;
+      const rd = this.ragdollOf(pid);
+      if (rd) {
+        // A ragdoll player: his space (capsule), name tag and shadow follow the pelvis.
+        rd.pelvis(pel);
+        b.setTranslation({ x: pel.x, y: STAND_Y, z: pel.z }, false);
+        s.currentPos.x = pel.x;
+        s.currentPos.z = pel.z;
+        return;
+      }
       const p = b.translation();
       s.currentPos.x = p.x;
       s.currentPos.z = p.z;

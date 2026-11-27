@@ -9,6 +9,19 @@ import time
 import urllib.error
 import urllib.request
 
+# This machine's Python doesn't see the Windows certificate store: use certifi's CA bundle for every
+# urlopen in the process (fal, Meshy, ElevenLabs and their download URLs).
+try:
+    import ssl
+
+    import certifi
+
+    urllib.request.install_opener(
+        urllib.request.build_opener(urllib.request.HTTPSHandler(context=ssl.create_default_context(cafile=certifi.where())))
+    )
+except ImportError:
+    pass
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ASSETS = ROOT / "public" / "assets"
 CONTENT = ROOT / "src" / "content"

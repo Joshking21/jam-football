@@ -5,6 +5,8 @@ import { RENDER_CONFIG } from '../config/balance';
 import { Player3DVisual, QualityPreset } from './types';
 import { createSafeCanvas } from './canvasHelper';
 import { resolveMatchKits, ResolvedKit } from '../core/match/kits';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { PlayerRig } from './playerRig';
 
 export interface PlayersBundle {
   group: THREE.Group;
@@ -16,6 +18,35 @@ export interface PlayersBundle {
   update: (delta: number) => void;
   updateNameTags: (carrierId: string | null, commentaryId: string | null, showAll: boolean) => void;
   dispose: () => void;
+}
+
+/**
+ * Swaps every procedural figure for the skinned player.glb rig (§14.12.5). Figures keep their
+ * group, name tag and contact shadow; only the body meshes are hidden. Returns how many upgraded.
+ */
+export function upgradePlayersToRigs(
+  bundle: PlayersBundle,
+  gltf: GLTF,
+  quality: QualityPreset,
+): number {
+  let n = 0;
+  const all = [...bundle.homePlayers, ...bundle.awayPlayers, bundle.referee, ...bundle.linesmen];
+  for (const v of all) {
+    if (v.rig || !v.rigKit) continue;
+    try {
+      v.rig = new PlayerRig({ gltf }, v.rigKit, v.group, v.footed ?? 'Right', quality !== 'Low');
+      for (const m of [v.torso, v.head, v.hair, v.leftLeg, v.rightLeg, v.leftArm, v.rightArm]) {
+        m.visible = false;
+      }
+      v.group.rotation.z = 0;
+      v.group.position.y = 0;
+      n++;
+    } catch (e) {
+      console.warn('Player rig failed, keeping the procedural figure:', e);
+      break;
+    }
+  }
+  return n;
 }
 
 export function createPlayers(
@@ -248,6 +279,18 @@ export function createPlayers(
       isKicking: false,
       isTackling: false,
       isDiving: false,
+      rigKit: {
+        shirt: resolvedKit.shirt,
+        shirt2: resolvedKit.shirt2,
+        shorts: resolvedKit.shorts,
+        socks: resolvedKit.socks,
+        text: resolvedKit.text,
+        pattern: side === 'referee' ? 'solid' : resolvedKit.pattern,
+        skin: '#' + skinColor.getHexString(),
+        hair: '#' + hairColor.getHexString(),
+        number: player ? num : undefined,
+      },
+      footed: player?.foot ?? 'Right',
     };
   };
 
@@ -299,6 +342,7 @@ export function createPlayers(
     allPlayers,
     update: (delta: number) => {
       const updateLimbAnimation = (p: Player3DVisual) => {
+        if (p.rig) return; // the skinned rig animates itself (MatchScene drives it)
         // Procedural leg & arm swing
         if (p.isDiving) {
           // Horizontal goalkeeper dive
@@ -365,6 +409,10 @@ export function createPlayers(
       });
     },
     dispose: () => {
+      // Rigs first: their geometry is shared with the cached player.glb and must not be disposed.
+      allPlayers.forEach((v) => v.rig?.dispose());
+      referee.rig?.dispose();
+      linesmen.forEach((v) => v.rig?.dispose());
       shadowMat.dispose();
       shadowGeom.dispose();
       shadowTexture.dispose();

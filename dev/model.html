@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Touchline model viewer</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #1b1d21;
+        font: 500 13px system-ui, sans-serif;
+        color: #e8e6e1;
+      }
+      canvas {
+        display: block;
+      }
+      #ui {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        transition: opacity 0.3s;
+      }
+      #ui.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      select,
+      button {
+        background: #2a2d33;
+        color: #e8e6e1;
+        border: 1px solid #3a3e46;
+        border-radius: 6px;
+        padding: 6px 10px;
+        font: inherit;
+        cursor: pointer;
+      }
+      button.on {
+        background: #3d5a3a;
+        border-color: #5b8a55;
+      }
+      #hint {
+        position: absolute;
+        bottom: 12px;
+        left: 14px;
+        opacity: 0.55;
+        transition: opacity 0.3s;
+      }
+      #hint.hidden {
+        opacity: 0;
+      }
+      #drop {
+        position: absolute;
+        inset: 0;
+        display: none;
+        place-items: center;
+        background: #0008;
+        font-size: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ui">
+      <select id="file"></select>
+      <select id="clip"></select>
+      <button id="spin" class="on">Turntable</button>
+      <button id="ground" class="on">Floor</button>
+      <select id="bg">
+        <option value="#1b1d21">Dark</option>
+        <option value="#5a5f66">Grey</option>
+        <option value="#e9e6df">Light</option>
+      </select>
+    </div>
+    <div id="hint">Drag to orbit · scroll to zoom · right-drag to pan · H hides the controls (for recording) · drop a .glb to open it</div>
+    <div id="drop">Drop the .glb</div>
+    <script type="module" src="./model.ts"></script>
+  </body>
+</html>

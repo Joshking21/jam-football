@@ -39,11 +39,17 @@
 
 ## Open items, in order of priority
 
-### 1. Real ragdolls and IK
-Needs a rigged `player.glb` with Mixamo bone names (§18.3 v1.8). Until Meshy delivers the model, falls use the tipping capsule. **Blocked on Meshy keys.**
+### 1. Skinned players, IK and ragdolls: DONE by Claude (27 Nov), not yet committed
+- **Body**: `tools/blender/build_player.py` builds `public/assets/models/player.glb` in headless Blender (athlete proportions, Mixamo bones, T-pose, 5.8k tris, material slots Skin/Shirt/Shorts/Socks/Boots/Hair, Idle + Run clips for the club rooms). `tools/blender/preview_player.py` renders previews.
+- **Rig** (`src/render3d/playerRig.ts`): procedural gait with feet planted in world space (no skating), stride/contact time by speed, heel recovery, lean into speed and turns, arm swing from the feet, two-bone IK legs and arms, kicks timed to `kickDt` (standing foot plants beside the ball, backswing, strike, follow-through), headers with a jump, slide and standing tackles, keeper dives, celebrations, head looks at the ball. Kit pattern drawn in the shirt shader (no UVs); number on the back on Spine1.
+- **Ragdoll** (`src/physics/ragdoll.ts`): 11 Rapier bodies from the current pose; ball joints, knees and elbows as limited hinges; legs swept by the foul. The capsule follows the pelvis. Get-up blends from the floor through a crouch (1.3 s).
+- **Director** now sets `kickDt`, `kickHigh`, `slide` on the kicker. Officials move (referee trails play, linesmen follow the ball).
+- **Bench**: `npx vite --port 5199`, open `/dev/rig.html` (live) or `?t=1.2&only=kick&view=side`. Not part of the build.
+- **Owned by Claude**: Gemini should not edit `playerRig.ts`, `ragdoll.ts`, `matchPhysics.ts`, `players.ts` or `tools/blender/build_player.py`.
+- Still to do: foot IK on the club-room people; Low-preset check.
 
 ### 2. New animation clips (§18.3 v1.8)
-Stumble, SlideTackle, Jump, Fall*, GetUp*, HoldLeg, Cross, Clear. Same Meshy dependency.
+Mostly replaced by the procedural rig above. A Meshy player, if it ever comes, drops into the same bone names.
 
 ### 3. Grass blades
 Instanced near-camera blades (Medium/High detail). Not started. Pure render work, no engine dependency.

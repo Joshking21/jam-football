@@ -27,6 +27,11 @@ export interface Player3DVisual {
   isKicking: boolean;
   isTackling: boolean;
   isDiving: boolean;
+  /** Kit and footedness for the skinned rig (§14.12.5). */
+  rigKit?: import('./playerRig').RigKit;
+  footed?: 'Left' | 'Right' | 'Both';
+  /** The skinned rig once player.glb has loaded; the procedural figure is hidden then. */
+  rig?: import('./playerRig').PlayerRig;
 }
 
 export interface Match3DContext {
