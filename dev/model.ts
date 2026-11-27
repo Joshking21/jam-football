@@ -4,8 +4,13 @@ import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
+RectAreaLightUniformsLib.init();
 
 const FILES: [string, string][] = [
+  ['Office · Friday evening (Blender)', '/assets/models/office/office.glb#evening'],
+  ['Office · Monday morning (Blender)', '/assets/models/office/office.glb#morning'],
+  ['Coach (game build)', '/assets/models/coach.glb'],
   ['Coach · walking (Meshy, rigged)', '/tests-ai/M-coach/coach_walking.glb'],
   ['Coach · running (Meshy, rigged)', '/tests-ai/M-coach/coach_running.glb'],
   ['Coach · rigged, A-pose', '/tests-ai/M-coach/coach_rigged.glb'],
@@ -71,10 +76,94 @@ const fileSel = $<HTMLSelectElement>('file');
 const clipSel = $<HTMLSelectElement>('clip');
 for (const [label, url] of FILES) fileSel.add(new Option(label, url));
 
+// Rooms are shown at real size from inside, lit for a time of day; characters are normalised on the turntable.
+const roomLights = new THREE.Group();
+scene.add(roomLights);
+let isRoom = false;
+let roomMood: 'evening' | 'morning' = 'evening';
+
+function lightRoom(root: THREE.Object3D) {
+  roomLights.clear();
+  const evening = roomMood === 'evening';
+  scene.background = new THREE.Color(evening ? '#05070c' : '#9fb2c8');
+  scene.environmentIntensity = evening ? 0.12 : 0.45;
+  key.visible = rim.visible = floor.visible = false;
+  // Window (west wall, x = -4): cool light coming in.
+  const win = new THREE.RectAreaLight(evening ? '#8fb0ff' : '#dfe9ff', evening ? 2.2 : 9, 4.2, 1.8);
+  win.position.set(-3.9, 1.75, 0);
+  win.lookAt(0, 1.2, 0);
+  roomLights.add(win);
+  if (!evening) {
+    const sun = new THREE.DirectionalLight('#fff4e6', 1.6);
+    sun.position.set(-6, 5, 2);
+    sun.target.position.set(0, 0, 0);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    Object.assign(sun.shadow.camera, { left: -5, right: 5, top: 5, bottom: -5 });
+    roomLights.add(sun, sun.target);
+  }
+  // Fittings in the model: light_* positions get real lights.
+  root.updateMatrixWorld(true);
+  root.traverse((o) => {
+    const p = o.getWorldPosition(new THREE.Vector3());
+    if (o.name.startsWith('light_downlight')) {
+      const l = new THREE.SpotLight('#ffe9cf', evening ? 1.2 : 4, 6, Math.PI / 3, 0.7, 1.5);
+      l.position.copy(p).y -= 0.05;
+      l.target.position.set(p.x, 0, p.z);
+      roomLights.add(l, l.target);
+    } else if (o.name.startsWith('light_sconce_') && !o.name.includes('plate')) {
+      const l = new THREE.PointLight('#ffb36b', evening ? 2.2 : 0, 4, 1.6);
+      l.position.copy(p);
+      roomLights.add(l);
+    } else if (o.name === 'lamp_bulb') {
+      const l = new THREE.PointLight('#ffbe78', evening ? 3.5 : 0.6, 3.5, 1.5);
+      l.position.copy(p).y += 0.05;
+      l.castShadow = true;
+      roomLights.add(l);
+    } else if (o.name === 'screen_table') {
+      const l = new THREE.RectAreaLight('#6fe0b8', evening ? 1.4 : 0.6, 2.2, 1.3);
+      l.position.copy(p).y += 0.05;
+      l.lookAt(p.x, 3, p.z);
+      roomLights.add(l);
+    }
+  });
+  camera.fov = 62;
+  camera.updateProjectionMatrix();
+  camera.position.set(0, 2.3, -3.05);
+  controls.target.set(0, 0.9, 1.7);
+  controls.autoRotate = false;
+  spin.classList.toggle('on', false);
+  controls.update();
+}
+
 function show(g: GLTF) {
   turn.clear();
   gltf = g;
   const root = g.scene;
+  if (isRoom) {
+    root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh) {
+        m.castShadow = !/^(static_Glass|window_view|screen_)/.test(m.name);
+        m.receiveShadow = true;
+      }
+    });
+    turn.add(root);
+    lightRoom(root);
+    mixer = null;
+    clipSel.innerHTML = '';
+    clipSel.add(new Option('No clips', ''));
+    return;
+  }
+  key.visible = rim.visible = true;
+  floor.visible = groundBtn.classList.contains('on');
+  roomLights.clear();
+  scene.environmentIntensity = 0.55;
+  scene.background = new THREE.Color($<HTMLSelectElement>('bg').value);
+  camera.fov = 32;
+  camera.updateProjectionMatrix();
+  camera.position.set(0, 1.3, 4.6);
+  controls.target.set(0, 0.95, 0);
   root.traverse((o) => {
     const m = o as THREE.Mesh;
     if (m.isMesh) {
@@ -128,8 +217,11 @@ function playClip(i: number) {
   mixer.clipAction(c).play();
 }
 
-function load(url: string) {
-  loader.load(url, show, undefined, (e) => alert('Could not load ' + url + '\n' + e));
+function load(entry: string) {
+  const [url, mood] = entry.split('#');
+  isRoom = url!.includes('/office/');
+  roomMood = mood === 'morning' ? 'morning' : 'evening';
+  loader.load(url!, show, undefined, (e) => alert('Could not load ' + url + '\n' + e));
 }
 
 fileSel.onchange = () => load(fileSel.value);

@@ -16,6 +16,56 @@ export interface PersonInstance {
   facingY: number;
   mixer?: THREE.AnimationMixer;
   actions?: Map<string, THREE.AnimationAction>;
+  /** The placeholder sphere head that the face controller turns; gone once a model with its own face loads. */
+  fallbackHead?: THREE.Object3D;
+}
+
+/** Models with a real modelled face: the placeholder head and painted face patch are removed for them. */
+const HAS_OWN_FACE = new Set(['models/coach.glb']);
+
+/**
+ * The coach's tie is modelled in a flat key green (tools/fal/ref.py): recolour those texels to the club colour,
+ * keeping the texture's shading. Applied in the shader so one texture serves every club.
+ */
+function applyClubTie(root: THREE.Object3D, color: THREE.Color) {
+  const uTie = { value: color };
+  root.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    const mat = mesh.material as THREE.MeshStandardMaterial;
+    if (!mat?.isMeshStandardMaterial) return;
+    const m = mat.clone();
+    m.onBeforeCompile = (sh) => {
+      sh.uniforms.uTie = uTie;
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform vec3 uTie;')
+        .replace(
+          '#include <map_fragment>',
+          `#include <map_fragment>
+          {
+            vec3 c = diffuseColor.rgb;
+            float g = c.g - max(c.r, c.b);
+            float key = smoothstep(0.06, 0.16, g) * step(0.12, c.g);
+            float shade = clamp(c.g / 0.55, 0.0, 1.4);
+            diffuseColor.rgb = mix(c, uTie * shade, key);
+          }`,
+        );
+    };
+    m.customProgramCacheKey = () => 'club-tie';
+    mesh.material = m;
+  });
+}
+
+function clubPrimary(): THREE.Color {
+  const css =
+    typeof document !== 'undefined'
+      ? getComputedStyle(document.documentElement).getPropertyValue('--club-primary').trim()
+      : '';
+  try {
+    return new THREE.Color(css || '#1f3d7a');
+  } catch {
+    return new THREE.Color('#1f3d7a');
+  }
 }
 
 export class PeopleManager {
@@ -75,6 +125,7 @@ export class PeopleManager {
       isSitting: false,
       position: [...pos],
       facingY,
+      fallbackHead: headMesh,
     };
 
     this.people.set(id, instance);
@@ -88,13 +139,18 @@ export class PeopleManager {
   private async tryUpgradeToGlb(instance: PersonInstance) {
     const modelPath =
       instance.role === 'coach'
-        ? 'models/manager.glb'
+        ? 'models/coach.glb'
         : instance.role === 'player'
           ? 'models/player.glb'
           : 'models/manager.glb';
 
     try {
-      const gltf = await loadModelAsset(modelPath);
+      let gltf = await loadModelAsset(modelPath);
+      let usedPath = modelPath;
+      if (!gltf && modelPath === 'models/coach.glb') {
+        gltf = await loadModelAsset('models/manager.glb');
+        usedPath = 'models/manager.glb';
+      }
       if (!gltf) return;
 
       const model = cloneModelScene(gltf);
@@ -109,6 +165,12 @@ export class PeopleManager {
       // Remove fallback capsule body
       const fallback = instance.group.getObjectByName('FallbackBody');
       if (fallback) instance.group.remove(fallback);
+      // A model with its own face replaces the placeholder head and painted face patch.
+      if (HAS_OWN_FACE.has(usedPath) && instance.fallbackHead) {
+        instance.group.remove(instance.fallbackHead);
+        instance.fallbackHead = undefined;
+      }
+      if (usedPath === 'models/coach.glb') applyClubTie(model, clubPrimary());
 
       instance.group.add(model);
 
@@ -191,7 +253,8 @@ export class PeopleManager {
         person.mixer.update(dt);
       }
 
-      const head = person.group.getObjectByName('Head');
+      // Only the placeholder head: a rig's Head bone has its own rest rotation and animation.
+      const head = person.fallbackHead;
       if (head) {
         head.rotation.copy(person.faceController.getHeadRotation());
       }

@@ -25,8 +25,14 @@
     "models/club/whiteboard.glb": {
       "bytes": 1840
     },
+    "models/coach.glb": {
+      "bytes": 1417056
+    },
     "models/manager.glb": {
       "bytes": 206816
+    },
+    "models/office/office.glb": {
+      "bytes": 2285144
     },
     "models/player.glb": {
       "bytes": 219048
