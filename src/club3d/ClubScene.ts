@@ -1,12 +1,13 @@
 // SPEC §11.25.1-11.25.4 ClubScene and scene manager
 import * as THREE from 'three';
-import type { RoomId } from './types';
+import type { RoomId, FocusView, Hotspot } from './types';
 import { ROOM_DEFINITIONS, buildRoomMesh, getRoomForScreen } from './rooms';
 import { CoachWalkController } from './walk';
 import { LookAroundController } from './lookAround';
 import { PeopleManager } from './people';
 import { TimeOfDayController } from './timeOfDay';
 import { TalkSceneManager } from './talkScenes';
+import { SurfaceManager } from './surfaces/SurfaceManager';
 import { audioEngine } from '../audio';
 
 export class ClubScene {
@@ -23,17 +24,24 @@ export class ClubScene {
   public peopleManager: PeopleManager;
   public timeOfDayController: TimeOfDayController;
   public talkSceneManager: TalkSceneManager;
+  public surfaceManager: SurfaceManager;
 
   // State
   private currentRoomId: RoomId = 'office';
   private loadedRooms: Map<RoomId, THREE.Group> = new Map();
   private isDisposed = false;
   private raycaster = new THREE.Raycaster();
-  private mouse = new THREE.Vector2();
   private onHotspotClick?: (hotspotId: string, screen?: string) => void;
   private onInteractionPromptChange?: (prompt: string | null) => void;
   private onFreeRoamChange?: (roaming: boolean) => void;
-  public isFreeRoam = false;
+  private onFocusChange?: (focused: boolean, hotspot: Hotspot | null) => void;
+  public isFreeRoam = true;
+
+  // Focus camera state
+  private focusTarget: FocusView | null = null;
+  private focusHotspot: Hotspot | null = null;
+  private isFocused = false;
+  private focusLerp = 0;
 
   // Free Walking State (§24)
   private coachPerson: any = null;
@@ -46,6 +54,10 @@ export class ClubScene {
     d: false,
     shift: false,
   };
+  // Free-roam follow camera (GTA-style): free 360° yaw, no spring-back
+  private camYaw = 0; // radians; 0 = camera behind coach looking toward -Z
+  private camPitch = 0.15; // radians
+  private camDist = 3.2; // metres, mouse wheel zooms
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -91,6 +103,7 @@ export class ClubScene {
     this.lookAroundController = new LookAroundController();
     this.peopleManager = new PeopleManager();
     this.talkSceneManager = new TalkSceneManager();
+    this.surfaceManager = new SurfaceManager();
 
     // 5. Initial Room setup
     this.loadRoom('office');
@@ -128,6 +141,35 @@ export class ClubScene {
     this.onFreeRoamChange = callback;
   }
 
+  public setOnFocusChange(callback: (focused: boolean, hotspot: Hotspot | null) => void) {
+    this.onFocusChange = callback;
+  }
+
+  public enterFocus(hotspot: Hotspot) {
+    if (!hotspot.focusView) return;
+    this.focusTarget = hotspot.focusView;
+    this.focusHotspot = hotspot;
+    this.isFocused = true;
+    this.focusLerp = 0;
+    if (document.pointerLockElement) document.exitPointerLock();
+    this.clearKeys();
+    if (this.onFocusChange) this.onFocusChange(true, hotspot);
+  }
+
+  /** Focus a hotspot in the current room by id (used by ?focus= for captures). */
+  public focusById(hotspotId: string) {
+    const spot = ROOM_DEFINITIONS[this.currentRoomId]?.hotspots.find((h) => h.id === hotspotId);
+    if (spot) this.enterFocus(spot);
+  }
+
+  public exitFocus() {
+    this.focusTarget = null;
+    this.focusHotspot = null;
+    this.isFocused = false;
+    this.focusLerp = 0;
+    if (this.onFocusChange) this.onFocusChange(false, null);
+  }
+
   public setFreeRoam(roaming: boolean) {
     this.isFreeRoam = roaming;
     if (this.onFreeRoamChange) {
@@ -159,6 +201,11 @@ export class ClubScene {
       }
     }
     audioEngine.setRoom(roomId);
+
+    const roomGroup = this.loadedRooms.get(roomId);
+    if (roomGroup) {
+      this.surfaceManager.bindToRoom(roomGroup);
+    }
   }
 
   public goToRoom(targetRoomId: RoomId, walksEnabled = true) {
@@ -202,14 +249,31 @@ export class ClubScene {
     });
 
     el.addEventListener('mousemove', (e) => {
+      const locked = document.pointerLockElement === el;
+      if (this.isFreeRoam && !this.isFocused && (locked || e.buttons === 2)) {
+        this.camYaw -= e.movementX * 0.0035;
+        this.camPitch = THREE.MathUtils.clamp(this.camPitch + e.movementY * 0.0025, -0.35, 0.9);
+        return;
+      }
       if (e.buttons === 2) {
         this.lookAroundController.onMouseMove(e.movementX, e.movementY);
       }
     });
 
-    el.addEventListener('wheel', (e) => {
-      this.lookAroundController.onWheel(e.deltaY);
-    });
+    el.addEventListener(
+      'wheel',
+      (e) => {
+        if (this.isFreeRoam && !this.isFocused) {
+          this.camDist = THREE.MathUtils.clamp(this.camDist + e.deltaY * 0.003, 1.6, 6);
+          return;
+        }
+        this.lookAroundController.onWheel(e.deltaY);
+      },
+      { passive: true },
+    );
+
+    // Releasing held keys when the tab loses focus avoids a stuck walk
+    window.addEventListener('blur', this.clearKeys);
 
     window.addEventListener('keydown', (e) => {
       // Ignore if typing in input
@@ -224,40 +288,37 @@ export class ClubScene {
       }
 
       const key = e.key.toLowerCase();
-      if (key === 'w') this.keysDown.w = true;
-      if (key === 's') this.keysDown.s = true;
-      if (key === 'a') this.keysDown.a = true;
-      if (key === 'd') this.keysDown.d = true;
+      const move = ClubScene.moveKey(key);
+      if (move) {
+        this.keysDown[move] = true;
+        if (key.startsWith('arrow')) e.preventDefault(); // no page scroll
+      }
       if (e.shiftKey) this.keysDown.shift = true;
-
-      if (key === 'v') {
-        this.setFreeRoam(!this.isFreeRoam);
-      }
-
-      if (e.key === 'Escape' && this.isFreeRoam) {
-        this.setFreeRoam(false);
-      }
 
       if (key === 'e') {
         if (this.nearestHotspot && this.nearestHotspot.opens) {
           const opens = this.nearestHotspot.opens as any;
           if (opens.room) {
             this.goToRoom(opens.room, true);
+          }
+          if (this.nearestHotspot.focusView) {
+            this.enterFocus(this.nearestHotspot);
           } else if (opens.screen && this.onHotspotClick) {
             this.onHotspotClick(this.nearestHotspot.id, opens.screen);
           }
         }
       }
 
+      if (key === 'escape' && this.isFocused) {
+        this.exitFocus();
+      }
+
       this.lookAroundController.onKeyDown(e);
     });
 
     window.addEventListener('keyup', (e) => {
-      const key = e.key.toLowerCase();
-      if (key === 'w') this.keysDown.w = false;
-      if (key === 's') this.keysDown.s = false;
-      if (key === 'a') this.keysDown.a = false;
-      if (key === 'd') this.keysDown.d = false;
+      const move = ClubScene.moveKey(e.key.toLowerCase());
+      if (move) this.keysDown[move] = false;
       if (!e.shiftKey) this.keysDown.shift = false;
     });
 
@@ -267,27 +328,27 @@ export class ClubScene {
         return;
       }
 
-      // Check Hotspot click
-      const rect = el.getBoundingClientRect();
-      this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
-      const def = ROOM_DEFINITIONS[this.currentRoomId];
-      if (!def) return;
-
-      const camPos = this.camera.position;
-      for (const spot of def.hotspots) {
-        const spotVec = new THREE.Vector3(...spot.position);
-        if (camPos.distanceTo(spotVec) < spot.radius * 3) {
-          if (spot.opens?.screen && this.onHotspotClick) {
-            this.onHotspotClick(spot.id, spot.opens.screen);
-          }
-        }
+      // Click the world to take mouse look (Esc gives the cursor back)
+      if (this.isFreeRoam && !this.isFocused && document.pointerLockElement !== el) {
+        el.requestPointerLock?.();
       }
     });
 
     window.addEventListener('resize', this.onResize);
   }
+
+  private static moveKey(key: string): 'w' | 'a' | 's' | 'd' | null {
+    if (key === 'w' || key === 'arrowup') return 'w';
+    if (key === 's' || key === 'arrowdown') return 's';
+    if (key === 'a' || key === 'arrowleft') return 'a';
+    if (key === 'd' || key === 'arrowright') return 'd';
+    return null;
+  }
+
+  private clearKeys = () => {
+    this.keysDown.w = this.keysDown.a = this.keysDown.s = this.keysDown.d = false;
+    this.keysDown.shift = false;
+  };
 
   private onResize = () => {
     if (!this.container || this.isDisposed) return;
@@ -308,14 +369,15 @@ export class ClubScene {
     this.timeOfDayController.update(dt);
     this.walkController.update(dt);
 
-    // 1b. WASD Free Walking (§24)
-    if (this.coachPerson && !this.walkController.isWalking()) {
-      let dx = 0;
-      let dz = 0;
-      if (this.keysDown.w) dz -= 1;
-      if (this.keysDown.s) dz += 1;
-      if (this.keysDown.a) dx -= 1;
-      if (this.keysDown.d) dx += 1;
+    // 1b. WASD Free Walking (§24) — disabled while focused on a surface
+    if (this.coachPerson && !this.walkController.isWalking() && !this.isFocused) {
+      // Move relative to where the camera faces
+      const fwd = (this.keysDown.w ? 1 : 0) - (this.keysDown.s ? 1 : 0);
+      const strafe = (this.keysDown.d ? 1 : 0) - (this.keysDown.a ? 1 : 0);
+      const sy = Math.sin(this.camYaw);
+      const cy = Math.cos(this.camYaw);
+      const dx = -sy * fwd + cy * strafe;
+      const dz = -cy * fwd - sy * strafe;
 
       const isMoving = dx !== 0 || dz !== 0;
 
@@ -350,13 +412,6 @@ export class ClubScene {
           this.peopleManager.playClip('coach', targetClip);
         }
 
-        // Camera smoothly follows behind coach in free walk
-        const camOffset = new THREE.Vector3(0, 1.6, 2.8);
-        const camTarget = this.coachPerson.group.position.clone().add(camOffset);
-        this.camera.position.lerp(camTarget, 0.1);
-        this.camera.lookAt(
-          this.coachPerson.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)),
-        );
       } else {
         if (this.coachPerson.currentClip === 'Walk' || this.coachPerson.currentClip === 'Run') {
           this.peopleManager.playClip('coach', 'Idle');
@@ -393,12 +448,24 @@ export class ClubScene {
       return [p.position[0], p.position[1] + 1.62, p.position[2]] as [number, number, number];
     });
 
-    if (this.isFreeRoam && this.coachPerson) {
-      const orbitYaw = (this.lookAroundController.state.yawDeg * Math.PI) / 180;
-      const orbitPitch = (this.lookAroundController.state.pitchDeg * Math.PI) / 180;
+    if (this.isFocused && this.focusTarget) {
+      // Smoothly animate camera to the focus position
+      this.focusLerp = Math.min(this.focusLerp + dt * 2.5, 1);
+      const t = 1 - Math.pow(1 - this.focusLerp, 3); // ease-out cubic
 
-      const dist = 3.2 + this.lookAroundController.state.leanM;
-      const height = 1.8 + Math.sin(orbitPitch) * 1.5;
+      const targetPos = new THREE.Vector3(...this.focusTarget.position);
+      const targetLook = new THREE.Vector3(...this.focusTarget.target);
+
+      this.camera.position.lerp(targetPos, t * 0.12 + 0.02);
+      this.camera.fov = THREE.MathUtils.lerp(this.camera.fov, this.focusTarget.fov, t * 0.1);
+      this.camera.lookAt(targetLook);
+      this.camera.updateProjectionMatrix();
+    } else if (this.isFreeRoam && this.coachPerson) {
+      const orbitYaw = this.camYaw;
+      const orbitPitch = this.camPitch;
+
+      const dist = this.camDist;
+      const height = 1.4 + Math.sin(orbitPitch) * dist;
       const horizDist = dist * Math.cos(orbitPitch);
 
       const camOffset = new THREE.Vector3(
@@ -436,6 +503,9 @@ export class ClubScene {
       cancelAnimationFrame(this.animFrameId);
     }
     window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('blur', this.clearKeys);
+    if (document.pointerLockElement === this.renderer.domElement) document.exitPointerLock();
+    this.surfaceManager.dispose();
     this.renderer.dispose();
     if (this.renderer.domElement.parentElement) {
       this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);

@@ -109,8 +109,9 @@ export const TopBar: React.FC = () => {
       className="app-shell-topbar"
       style={{
         height: '56px',
-        backgroundColor: '#0F141C',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+        backgroundColor: 'rgba(15, 20, 28, 0.75)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',

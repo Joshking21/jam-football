@@ -143,49 +143,12 @@ a {
   }
 }
 
-/* App shell layout (SPEC §19.6: v1.6 horizontal rundown tabs, no sidebar) */
+/* App shell — the 3D scene IS the game, no HTML panels */
 .app-shell {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  background: var(--bg);
-}
-
-.app-shell-topbar {
-  height: 56px;
-  flex-shrink: 0;
-  z-index: 40;
-}
-
-.app-shell-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  position: relative;
+  position: fixed;
+  inset: 0;
   overflow: hidden;
   background: transparent;
-  width: 100%;
-}
-
-.app-shell-main.office {
-  background: transparent;
-}
-
-.app-shell.panel-fade .app-shell-main {
-  opacity: 0.15;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-}
-
-.app-shell.free-roam-active .app-shell-main {
-  display: none !important;
-}
-
-.app-shell.free-roam-active .app-shell-topbar {
-  background: rgba(7, 12, 24, 0.7);
-  backdrop-filter: blur(8px);
 }
 
 .app-content-area {
@@ -193,7 +156,7 @@ a {
   overflow-y: auto;
   overflow-x: hidden;
   padding: 24px;
-  max-width: 1600px;
+  max-width: 1400px;
   width: 100%;
   margin: 0 auto;
 }

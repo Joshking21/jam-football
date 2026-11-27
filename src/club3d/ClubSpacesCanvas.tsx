@@ -1,29 +1,30 @@
-// SPEC §11.25 React Canvas integration for Club spaces
+// SPEC §11.25 React Canvas integration — GTA-style immersive 3D world
 import React, { useEffect, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { ClubScene } from './ClubScene';
+import type { Hotspot } from './types';
 
 export const ClubSpacesCanvas: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<ClubScene | null>(null);
-  const [hint, setHint] = useState<string | null>(null);
   const [prompt, setPrompt] = useState<string | null>(null);
-  const [isRoaming, setIsRoaming] = useState(false);
+  const [focusedHotspot, setFocusedHotspot] = useState<Hotspot | null>(null);
 
   const screen = useStore((state) => state.screen);
   const setScreen = useStore((state) => state.setScreen);
   const settings = useStore((state) => state.settings);
+  const gameState = useStore((state) => state.gameState);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     const scene = new ClubScene(containerRef.current);
     sceneRef.current = scene;
+    scene.setFreeRoam(true);
 
     scene.setOnHotspotClick((_hotspotId, targetScreen) => {
       if (targetScreen) {
         setScreen(targetScreen as any);
-        scene.setFreeRoam(false);
       }
     });
 
@@ -31,69 +32,69 @@ export const ClubSpacesCanvas: React.FC = () => {
       setPrompt(p);
     });
 
-    scene.setOnFreeRoamChange((roaming) => {
-      setIsRoaming(roaming);
+    scene.setOnFocusChange((focused, hotspot) => {
+      setFocusedHotspot(focused ? hotspot : null);
       const shell = document.querySelector('.app-shell');
       if (shell) {
-        if (roaming) shell.classList.add('free-roam-active');
-        else shell.classList.remove('free-roam-active');
+        shell.classList.toggle('surface-focus', focused);
       }
     });
 
-    scene.lookAroundController.setCallbacks((fading) => {
-      const shell = document.querySelector('.app-shell');
-      if (shell) {
-        if (fading) shell.classList.add('panel-fade');
-        else shell.classList.remove('panel-fade');
+    // Push initial game data to surfaces right after scene init
+    const gs = useStore.getState().gameState;
+    if (gs) {
+      const userClub = gs.clubs[gs.userClubId];
+      if (userClub) {
+        scene.surfaceManager.updateTactics(userClub.tactics, Object.values(gs.players));
       }
-    });
-
-    const interval = setInterval(() => {
-      setHint(scene.lookAroundController.getActiveHint());
-    }, 200);
+    }
 
     return () => {
-      clearInterval(interval);
       scene.dispose();
       sceneRef.current = null;
     };
   }, [setScreen]);
+
+  // Feed tactics data to the whiteboard surface
+  // Feed game data to 3D surface textures
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene || !gameState) return;
+    const userClub = gameState.clubs[gameState.userClubId];
+    if (!userClub) return;
+
+    const players = Object.values(gameState.players);
+    scene.surfaceManager.updateTactics(userClub.tactics, players);
+  }, [gameState]);
+
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
         return;
       }
-      if (e.key.toLowerCase() === 'v') {
-        if (sceneRef.current) {
-          sceneRef.current.setFreeRoam(!sceneRef.current.isFreeRoam);
-        }
-      } else if (e.key === 'Escape' && isRoaming) {
-        if (sceneRef.current) {
-          sceneRef.current.setFreeRoam(false);
-        }
+      if (e.key === 'Escape' && focusedHotspot) {
+        sceneRef.current?.exitFocus();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isRoaming]);
+  }, [focusedHotspot]);
 
   useEffect(() => {
     if (sceneRef.current) {
       if (typeof window !== 'undefined') {
         const p = new URLSearchParams(window.location.search);
         const urlRoom = p.get('room');
-        const stateParam = p.get('state');
+        const urlFocus = p.get('focus');
         if (urlRoom) {
           sceneRef.current.goToRoom(urlRoom as any, false);
+          if (urlFocus) sceneRef.current.focusById(urlFocus);
           return;
         }
-        if (stateParam === 'corridor' || stateParam === 'door' || stateParam === 'corridor-brush') {
-          sceneRef.current.goToRoom('corridor', false);
-          return;
-        }
-        if (stateParam === 'press') {
-          sceneRef.current.goToRoom('press', false);
+        if (urlFocus) {
+          sceneRef.current.goToScreen(screen, false);
+          sceneRef.current.focusById(urlFocus);
           return;
         }
       }
@@ -114,7 +115,7 @@ export const ClubSpacesCanvas: React.FC = () => {
         }}
       />
 
-      {/* Top-layer HUD and Roam Controls */}
+      {/* Interaction HUD */}
       <div
         style={{
           position: 'fixed',
@@ -123,7 +124,7 @@ export const ClubSpacesCanvas: React.FC = () => {
           pointerEvents: 'none',
         }}
       >
-        {prompt && (
+        {prompt && !focusedHotspot && (
           <div
             style={{
               position: 'absolute',
@@ -139,8 +140,8 @@ export const ClubSpacesCanvas: React.FC = () => {
               fontWeight: 800,
               fontSize: '18px',
               letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              pointerEvents: 'none',
+              textTransform: 'uppercase' as const,
+              pointerEvents: 'none' as const,
               zIndex: 20,
               display: 'flex',
               alignItems: 'center',
@@ -152,103 +153,60 @@ export const ClubSpacesCanvas: React.FC = () => {
           </div>
         )}
 
-        {hint && (
+        {/* Focus mode label */}
+        {focusedHotspot && (
           <div
             style={{
               position: 'absolute',
-              bottom: '24px',
-              right: '24px',
-              background: 'rgba(8, 10, 14, 0.85)',
-              border: '1px solid #F2B705',
-              color: '#F2B705',
-              padding: '8px 14px',
-              fontFamily: 'Barlow Condensed, sans-serif',
-              fontWeight: 700,
-              fontSize: '14px',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              pointerEvents: 'none',
-              zIndex: 10,
-            }}
-          >
-            {hint}
-          </div>
-        )}
-
-        {/* 3D Walkaround Controls HUD */}
-        {isRoaming && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '24px',
+              top: '20px',
               left: '50%',
               transform: 'translateX(-50%)',
-              background: 'rgba(7, 12, 24, 0.92)',
-              border: '1px solid #00E58F',
-              borderRadius: '6px',
-              color: '#FFFFFF',
-              padding: '8px 20px',
+              background: 'rgba(8, 10, 14, 0.85)',
+              border: '1px solid rgba(242, 183, 5, 0.5)',
+              color: '#F2B705',
+              padding: '8px 24px',
               fontFamily: 'Barlow Condensed, sans-serif',
-              fontSize: '15px',
-              letterSpacing: '0.06em',
-              pointerEvents: 'auto',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.6)',
+              fontWeight: 700,
+              fontSize: '16px',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase' as const,
+              borderRadius: '4px',
             }}
           >
-            <span style={{ color: '#00E58F', fontWeight: 700 }}>3D FREE ROAM</span>
-            <span><b>[W][A][S][D]</b> Walk</span>
-            <span><b>[Shift]</b> Run</span>
-            <span><b>[Right-Drag]</b> Camera</span>
-            <span><b>[E]</b> Interact</span>
-            <button
-              onClick={() => sceneRef.current?.setFreeRoam(false)}
-              style={{
-                background: '#00E58F',
-                color: '#070C18',
-                border: 'none',
-                borderRadius: '4px',
-                padding: '4px 10px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                marginLeft: '8px',
-              }}
-            >
-              [V] Open Panels
-            </button>
+            {focusedHotspot.name} &middot; <span style={{ color: '#aaa' }}>ESC to exit</span>
           </div>
         )}
 
-        {/* Floating Walk Around Button when in panel view */}
-        {!isRoaming && (
-          <button
-            onClick={() => sceneRef.current?.setFreeRoam(true)}
+        {/* Controls HUD — bottom center */}
+        {!focusedHotspot && (
+          <div
             style={{
               position: 'absolute',
-              bottom: '24px',
-              left: '24px',
-              background: 'rgba(7, 12, 24, 0.90)',
-              border: '1px solid #00E58F',
-              color: '#00E58F',
-              padding: '8px 16px',
+              bottom: '16px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'rgba(7, 12, 24, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: '6px',
+              color: '#FFFFFF',
+              padding: '6px 16px',
               fontFamily: 'Barlow Condensed, sans-serif',
-              fontWeight: 700,
-              fontSize: '14px',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              pointerEvents: 'auto',
+              fontSize: '13px',
+              letterSpacing: '0.06em',
+              pointerEvents: 'auto' as const,
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.4)',
+              gap: '14px',
+              boxShadow: '0 2px 12px rgba(0, 0, 0, 0.5)',
             }}
           >
-            <span>🎮 Walk Around [V]</span>
-          </button>
+            <span><b>WASD / Arrows</b> Move</span>
+            <span><b>Shift</b> Run</span>
+            <span><b>Click</b> Mouse look</span>
+            <span><b>Wheel</b> Zoom</span>
+            <span><b>E</b> Interact</span>
+            <span><b>Esc</b> Free cursor</span>
+          </div>
         )}
       </div>
     </>

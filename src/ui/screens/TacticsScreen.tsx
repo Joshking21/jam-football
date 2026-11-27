@@ -665,7 +665,7 @@ export const TacticsScreen: React.FC = () => {
         display: 'grid',
         gridTemplateColumns: 'minmax(0, 1fr) minmax(400px, 34%)',
         gap: '16px',
-        height: 'calc(100vh - 56px)',
+        height: '100%',
         padding: '14px 18px',
         backgroundColor: 'var(--desk, #100E0C)',
         overflow: 'hidden',

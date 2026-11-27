@@ -2,9 +2,7 @@
 import React, { Suspense, useEffect } from 'react';
 import { useStore } from './state/store';
 import { TitleScreen } from './ui/screens/TitleScreen';
-import { TopBar } from './ui/components/TopBar';
 import { Toast } from './ui/components/Toast';
-import { ScreenTransition, getScreenWorld } from './ui/components/ScreenTransition';
 import { TutorialCoachMark } from './ui/components/TutorialCoachMark';
 import { applySettingsToDom } from './state/settings';
 import { audioEngine } from './audio/engine';
@@ -16,20 +14,7 @@ const lazy = <M, K extends keyof M & string>(load: () => Promise<M>, key: K) =>
 const DevGalleryScreen = lazy(() => import('./ui/screens/DevGalleryScreen'), 'DevGalleryScreen');
 const NewGameScreen = lazy(() => import('./ui/screens/NewGameScreen'), 'NewGameScreen');
 const BoardMeetingScreen = lazy(() => import('./ui/screens/BoardMeetingScreen'), 'BoardMeetingScreen');
-const HubScreen = lazy(() => import('./ui/screens/HubScreen'), 'HubScreen');
-const SquadScreen = lazy(() => import('./ui/screens/SquadScreen'), 'SquadScreen');
-const TacticsScreen = lazy(() => import('./ui/screens/TacticsScreen'), 'TacticsScreen');
-const TrainingScreen = lazy(() => import('./ui/screens/TrainingScreen'), 'TrainingScreen');
-const TransfersScreen = lazy(() => import('./ui/screens/TransfersScreen'), 'TransfersScreen');
-const LeagueScreen = lazy(() => import('./ui/screens/LeagueScreen'), 'LeagueScreen');
-const FixturesScreen = lazy(() => import('./ui/screens/FixturesScreen'), 'FixturesScreen');
-const ClubScreen = lazy(() => import('./ui/screens/ClubScreen'), 'ClubScreen');
-const InboxScreen = lazy(() => import('./ui/screens/InboxScreen'), 'InboxScreen');
-const PreMatchScreen = lazy(() => import('./ui/screens/PreMatchScreen'), 'PreMatchScreen');
 const MatchScreen = lazy(() => import('./ui/screens/MatchScreen'), 'MatchScreen');
-const TextMatchScreen = lazy(() => import('./ui/screens/TextMatchScreen'), 'TextMatchScreen');
-const PostMatchScreen = lazy(() => import('./ui/screens/PostMatchScreen'), 'PostMatchScreen');
-const WeekSummaryScreen = lazy(() => import('./ui/screens/WeekSummaryScreen'), 'WeekSummaryScreen');
 const SeasonEndScreen = lazy(() => import('./ui/screens/SeasonEndScreen'), 'SeasonEndScreen');
 const SackedScreen = lazy(() => import('./ui/screens/SackedScreen'), 'SackedScreen');
 const PlayerProfileModal = lazy(() => import('./ui/screens/PlayerProfileModal'), 'PlayerProfileModal');
@@ -49,7 +34,6 @@ export const App: React.FC = () => {
   const closeLoadGame = useStore((state) => state.closeLoadGame);
   const selectedPlayerId = useStore((state) => state.selectedPlayerId);
   const settings = useStore((state) => state.settings);
-  const gameState = useStore((state) => state.gameState);
 
   // Apply initial visual settings (contrast, motion, text size)
   useEffect(() => {
@@ -175,36 +159,14 @@ export const App: React.FC = () => {
     );
   }
 
-  const currentWorld = getScreenWorld(screen);
-
-  // 2. Management screens shell (TopBar tabs + ScreenTransition + Content)
+  // 2. Immersive 3D management world — no HTML panels, just the 3D scene
   return (
-    <div className={`app-shell ${currentWorld}`}>
+    <div className="app-shell">
       <ErrorBoundary fallback={null}>
         <Suspense fallback={null}>
           <ClubSpacesCanvas />
         </Suspense>
       </ErrorBoundary>
-      <TopBar />
-
-      <main className={`app-shell-main ${currentWorld === 'office' ? 'office' : ''}`}>
-        <ScreenTransition currentScreen={screen}>
-          <Suspense fallback={null}>
-            {screen === 'hub' && <HubScreen />}
-            {screen === 'squad' && <SquadScreen />}
-            {screen === 'tactics' && <TacticsScreen />}
-            {screen === 'training' && <TrainingScreen />}
-            {screen === 'transfers' && <TransfersScreen />}
-            {screen === 'league' && <LeagueScreen />}
-            {screen === 'fixtures' && <FixturesScreen />}
-            {screen === 'club' && <ClubScreen />}
-            {screen === 'inbox' && <InboxScreen />}
-            {screen === 'preMatch' && <PreMatchScreen />}
-            {screen === 'fullTime' && <PostMatchScreen />}
-            {screen === 'weekSummary' && <WeekSummaryScreen />}
-          </Suspense>
-        </ScreenTransition>
-      </main>
 
       <Suspense fallback={null}>
         {selectedPlayerId && (

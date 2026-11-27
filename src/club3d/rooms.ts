@@ -148,6 +148,12 @@ export const ROOM_DEFINITIONS: Record<RoomId, RoomDefinition> = {
           normal: [0, 1, 0],
           kind: 'rest',
         },
+        surfaceId: 'desk_surface',
+        focusView: {
+          position: [-12, 1.8, 5.8],
+          target: [-12, 0.75, 7.3],
+          fov: 52,
+        },
       },
       {
         id: 'whiteboard_tactics',
@@ -162,6 +168,12 @@ export const ROOM_DEFINITIONS: Record<RoomId, RoomDefinition> = {
           normal: [-1, 0, 0],
           kind: 'brush',
         },
+        surfaceId: 'whiteboard_surface',
+        focusView: {
+          position: [-9.2, 1.5, 5.5],
+          target: [-7.24, 1.5, 5.5],
+          fov: 42,
+        },
       },
       {
         id: 'wall_tv',
@@ -170,6 +182,12 @@ export const ROOM_DEFINITIONS: Record<RoomId, RoomDefinition> = {
         radius: 1.3,
         room: 'office',
         opens: { screen: 'league' },
+        surfaceId: 'tv_surface',
+        focusView: {
+          position: [-15.0, 1.7, 5.5],
+          target: [-16.92, 1.7, 5.5],
+          fov: 38,
+        },
       },
       {
         id: 'office_door',
@@ -258,6 +276,12 @@ export const ROOM_DEFINITIONS: Record<RoomId, RoomDefinition> = {
           point: [-2.0, 1.4, -5.8],
           normal: [0, 0, 1],
           kind: 'brush',
+        },
+        surfaceId: 'flipchart_surface',
+        focusView: {
+          position: [-2.0, 1.4, -4.5],
+          target: [-2.0, 1.4, -6.0],
+          fov: 40,
         },
       },
       {
@@ -496,63 +520,266 @@ export function buildRoomMesh(roomId: RoomId): THREE.Group {
   frontWall.position.set(cx, cy, b.min[2]);
   group.add(frontWall);
 
-  // Room-specific props (procedural fallbacks)
+  // Ceiling lights for indoor rooms
+  if (roomId !== 'exterior' && roomId !== 'training') {
+    const lightColor = roomId === 'office' ? 0xffe8cc : roomId === 'boardroom' ? 0xffecd0 : 0xdde6f0;
+    const lightIntensity = roomId === 'corridor' ? 1.5 : 2.5;
+    const lightCount = roomId === 'corridor' ? 4 : 2;
+    const lightY = b.max[1] - 0.15;
+
+    for (let i = 0; i < lightCount; i++) {
+      const t = (i + 0.5) / lightCount;
+      const lx = b.min[0] + t * w;
+      const lz = (b.min[2] + b.max[2]) / 2;
+      const light = new THREE.PointLight(lightColor, lightIntensity, w * 1.5);
+      light.position.set(lx, lightY, lz);
+      group.add(light);
+
+      // Visible fixture
+      const fixtureGeo = new THREE.BoxGeometry(0.6, 0.04, 0.3);
+      const fixtureMat = new THREE.MeshBasicMaterial({ color: lightColor });
+      const fixture = new THREE.Mesh(fixtureGeo, fixtureMat);
+      fixture.position.set(lx, lightY - 0.02, lz);
+      group.add(fixture);
+    }
+  }
+
+  // Room-specific props
+  const woodDark = new THREE.MeshStandardMaterial({ color: 0x3d2719, roughness: 0.4 });
+  const woodMahog = new THREE.MeshStandardMaterial({ color: 0x2b1a11, roughness: 0.3 });
+  const metalGrey = new THREE.MeshStandardMaterial({ color: 0x5a5e64, roughness: 0.5, metalness: 0.3 });
+  const leather = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.6 });
+  const fabric = new THREE.MeshStandardMaterial({ color: 0x2a2a3a, roughness: 0.8 });
+
   if (roomId === 'office') {
     // Desk
-    const deskGeo = new THREE.BoxGeometry(2.2, 0.74, 1.2);
-    const deskMat = new THREE.MeshStandardMaterial({ color: 0x3d2719, roughness: 0.4 });
-    const desk = new THREE.Mesh(deskGeo, deskMat);
+    const desk = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.74, 1.2), woodDark);
     desk.position.set(-12, 0.37, 7.3);
     desk.castShadow = true;
     desk.receiveShadow = true;
     group.add(desk);
 
-    // Whiteboard
-    const wbGeo = new THREE.BoxGeometry(0.04, 1.2, 2.0);
-    const wbMat = new THREE.MeshStandardMaterial({ color: 0xededed, roughness: 0.2 });
-    const wb = new THREE.Mesh(wbGeo, wbMat);
-    wb.position.set(-7.22, 1.5, 5.5);
-    group.add(wb);
+    // Desk chair
+    const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.06, 0.5), leather);
+    chairSeat.position.set(-12, 0.48, 6.0);
+    group.add(chairSeat);
+    const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.06), leather);
+    chairBack.position.set(-12, 0.78, 5.75);
+    group.add(chairBack);
 
-    // Wall TV
-    const tvGeo = new THREE.BoxGeometry(0.06, 1.0, 1.6);
-    const tvMat = new THREE.MeshStandardMaterial({ color: 0x05070a, roughness: 0.1 });
-    const tv = new THREE.Mesh(tvGeo, tvMat);
-    tv.position.set(-16.92, 1.7, 5.5);
-    group.add(tv);
+    // Guest chairs (2)
+    for (const zOff of [-0.5, 0.5]) {
+      const gc = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.06, 0.45), fabric);
+      gc.position.set(-12 + zOff * 2.0, 0.42, 8.5);
+      group.add(gc);
+      const gb = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.5, 0.06), fabric);
+      gb.position.set(-12 + zOff * 2.0, 0.67, 8.72);
+      group.add(gb);
+    }
+
+    // Whiteboard on right wall
+    const wbFrame = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.3, 2.1), metalGrey);
+    wbFrame.position.set(-7.2, 1.5, 5.5);
+    group.add(wbFrame);
+    const wbSurface = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.0, 1.2),
+      new THREE.MeshStandardMaterial({ color: 0xededed, roughness: 0.2 }),
+    );
+    wbSurface.rotation.y = -Math.PI / 2;
+    wbSurface.position.set(-7.24, 1.5, 5.5); // camera side of the frame (frame spans x -7.23..-7.17)
+    wbSurface.name = 'whiteboard_surface';
+    group.add(wbSurface);
+
+    // Wall TV on left wall
+    const tvFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(0.06, 1.05, 1.65),
+      new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1 }),
+    );
+    tvFrame.position.set(-16.92, 1.7, 5.5);
+    group.add(tvFrame);
+    const tvScreen = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.5, 0.9),
+      new THREE.MeshBasicMaterial({ color: 0x0a1428 }),
+    );
+    tvScreen.rotation.y = Math.PI / 2;
+    tvScreen.position.set(-16.88, 1.7, 5.5); // just in front of the frame face at -16.89
+    tvScreen.name = 'tv_surface';
+    group.add(tvScreen);
+
+    // Bookshelf on back wall
+    const shelfMat = woodDark;
+    for (let si = 0; si < 3; si++) {
+      const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.04, 0.3), shelfMat);
+      shelf.position.set(-9.5, 0.6 + si * 0.6, 9.3);
+      group.add(shelf);
+    }
+    // Shelf sides
+    for (const sx of [-0.8, 0.8]) {
+      const side = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.8, 0.3), shelfMat);
+      side.position.set(-9.5 + sx, 0.9, 9.3);
+      group.add(side);
+    }
+
+    // Filing cabinet
+    const cabinet = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.1, 0.6), metalGrey);
+    cabinet.position.set(-15.5, 0.55, 8.8);
+    cabinet.castShadow = true;
+    group.add(cabinet);
+
+    // Coat hooks on wall near door
+    const hookRail = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.06, 0.06), woodDark);
+    hookRail.position.set(-13.5, 1.8, 1.65);
+    group.add(hookRail);
   } else if (roomId === 'dressing') {
     // Crest on floor
     const crestGeo = new THREE.CircleGeometry(1.6, 24);
     crestGeo.rotateX(-Math.PI / 2);
-    const crestMat = new THREE.MeshBasicMaterial({ color: 0xf2b705 });
-    const crest = new THREE.Mesh(crestGeo, crestMat);
+    const crest = new THREE.Mesh(crestGeo, new THREE.MeshBasicMaterial({ color: 0xf2b705 }));
     crest.position.set(-5, 0.01, -7.0);
     group.add(crest);
 
+    // Benches along walls (L-shaped)
+    const benchMat = woodDark;
+    for (const bx of [-13, -8, -3, 2]) {
+      const bench = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.42, 0.5), benchMat);
+      bench.position.set(bx, 0.21, -11.5);
+      group.add(bench);
+    }
+    for (const bx of [-13, -8, -3, 2]) {
+      const bench = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.42, 0.5), benchMat);
+      bench.position.set(bx, 0.21, -2.5);
+      group.add(bench);
+    }
+
+    // Lockers along back wall
+    const lockerMat = metalGrey;
+    for (let li = 0; li < 16; li++) {
+      const locker = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2.0, 0.4), lockerMat);
+      locker.position.set(-14.0 + li * 1.15, 1.0, -12.1);
+      group.add(locker);
+    }
+
     // Tactical flipchart stand
-    const standGeo = new THREE.BoxGeometry(0.8, 1.4, 0.05);
-    const standMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.3 });
-    const stand = new THREE.Mesh(standGeo, standMat);
-    stand.position.set(-2.0, 1.2, -6.0);
-    stand.rotation.y = -Math.PI / 4;
-    group.add(stand);
+    const standBoard = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.9, 1.3),
+      new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.3 }),
+    );
+    standBoard.position.set(-2.0, 1.3, -5.97);
+    standBoard.name = 'flipchart_surface';
+    group.add(standBoard);
+    const standLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.8, 6), metalGrey);
+    standLeg.position.set(-2.0, 0.9, -6.1);
+    group.add(standLeg);
   } else if (roomId === 'boardroom') {
     // Long table
-    const tableGeo = new THREE.BoxGeometry(2.0, 0.74, 5.0);
-    const tableMat = new THREE.MeshStandardMaterial({ color: 0x2b1a11, roughness: 0.3 });
-    const table = new THREE.Mesh(tableGeo, tableMat);
+    const table = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.74, 5.0), woodMahog);
     table.position.set(0, 0.37, 7.5);
     table.castShadow = true;
     table.receiveShadow = true;
     group.add(table);
+
+    // Chairs around table (8 total)
+    for (let ci = 0; ci < 4; ci++) {
+      const cz = 5.5 + ci * 1.2;
+      for (const side of [-1, 1]) {
+        const seat = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.06, 0.45), leather);
+        seat.position.set(side * 1.5, 0.42, cz);
+        group.add(seat);
+        const back = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.5, 0.06), leather);
+        back.position.set(side * 1.5, 0.67, cz + side * -0.22);
+        group.add(back);
+      }
+    }
+
+    // Framed photos on back wall
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.5 });
+    for (let fi = 0; fi < 3; fi++) {
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 0.04), frameMat);
+      frame.position.set(-2.0 + fi * 2.0, 2.0, 11.4);
+      group.add(frame);
+      const photo = new THREE.Mesh(
+        new THREE.BoxGeometry(0.65, 0.45, 0.01),
+        new THREE.MeshBasicMaterial({ color: 0x1a1510 }),
+      );
+      photo.position.set(-2.0 + fi * 2.0, 2.0, 11.37);
+      group.add(photo);
+    }
   } else if (roomId === 'press') {
-    // Press table with club cloth
-    const pTableGeo = new THREE.BoxGeometry(3.6, 0.74, 0.9);
-    const pTableMat = new THREE.MeshStandardMaterial({ color: 0x1b2d4f, roughness: 0.5 });
-    const pTable = new THREE.Mesh(pTableGeo, pTableMat);
+    // Press table
+    const pTable = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.74, 0.9),
+      new THREE.MeshStandardMaterial({ color: 0x1b2d4f, roughness: 0.5 }));
     pTable.position.set(15, 0.37, 7.5);
     pTable.castShadow = true;
     group.add(pTable);
+
+    // Microphones on table
+    for (const mx of [-0.6, 0, 0.6]) {
+      const mic = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.35, 6), metalGrey);
+      mic.position.set(15 + mx, 0.92, 7.5);
+      group.add(mic);
+      const micHead = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 6), metalGrey);
+      micHead.position.set(15 + mx, 1.1, 7.5);
+      group.add(micHead);
+    }
+
+    // Backdrop panel
+    const backdrop = new THREE.Mesh(
+      new THREE.BoxGeometry(4.0, 2.4, 0.08),
+      new THREE.MeshStandardMaterial({ color: 0x101828, roughness: 0.9 }),
+    );
+    backdrop.position.set(15, 1.6, 9.3);
+    group.add(backdrop);
+
+    // Journalist chairs (3 rows)
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 5; col++) {
+        const jc = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.06, 0.4), fabric);
+        jc.position.set(13 + col * 1.0, 0.42 + row * 0.15, 4.5 - row * 1.2);
+        group.add(jc);
+      }
+    }
+  } else if (roomId === 'corridor') {
+    // Doors along walls (visual indicators)
+    const doorMat = new THREE.MeshStandardMaterial({ color: 0x2a1f14, roughness: 0.5 });
+    const doorPositions = [
+      { x: -12, z: 1.42, label: 'MANAGER' },
+      { x: 0, z: 1.42, label: 'BOARDROOM' },
+      { x: 15, z: 1.42, label: 'PRESS' },
+      { x: -5, z: -1.42, label: 'DRESSING' },
+    ];
+    for (const dp of doorPositions) {
+      const door = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.1, 0.1), doorMat);
+      door.position.set(dp.x, 1.05, dp.z);
+      group.add(door);
+      // Door frame
+      const frameMat2 = new THREE.MeshStandardMaterial({ color: 0x1a140e, roughness: 0.6 });
+      const frameTop = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.08, 0.14), frameMat2);
+      frameTop.position.set(dp.x, 2.14, dp.z);
+      group.add(frameTop);
+    }
+
+    // Skirting board along walls
+    const skirtMat = new THREE.MeshStandardMaterial({ color: 0x1a1a20, roughness: 0.7 });
+    const skirtFront = new THREE.Mesh(new THREE.BoxGeometry(w, 0.12, 0.03), skirtMat);
+    skirtFront.position.set(cx, 0.06, b.max[2] - 0.08);
+    group.add(skirtFront);
+    const skirtBack = new THREE.Mesh(new THREE.BoxGeometry(w, 0.12, 0.03), skirtMat);
+    skirtBack.position.set(cx, 0.06, b.min[2] + 0.08);
+    group.add(skirtBack);
+  } else if (roomId === 'tunnel') {
+    // Tunnel walls narrowing toward pitch
+    const tunnelMat = new THREE.MeshStandardMaterial({ color: 0x1c2028, roughness: 0.9 });
+    // Pitch light at the end (emissive glow)
+    const pitchGlow = new THREE.Mesh(
+      new THREE.PlaneGeometry(4, 3),
+      new THREE.MeshBasicMaterial({ color: 0x3a5a2e }),
+    );
+    pitchGlow.position.set(-5, 1.5, -24.3);
+    group.add(pitchGlow);
+
+    const pitchLight = new THREE.PointLight(0x88bb66, 3, 15);
+    pitchLight.position.set(-5, 2.0, -24);
+    group.add(pitchLight);
   }
 
   return group;

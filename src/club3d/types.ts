@@ -45,9 +45,17 @@ export interface Hotspot {
     room?: RoomId;
   };
   touch?: TouchPoint;
+  focusView?: FocusView;
+  surfaceId?: string;
 }
 
 export interface CameraRail {
+  position: Point3D;
+  target: Point3D;
+  fov: number;
+}
+
+export interface FocusView {
   position: Point3D;
   target: Point3D;
   fov: number;
